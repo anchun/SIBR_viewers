@@ -1,0 +1,16 @@
+#version 420
+
+uniform mat4 proj;
+
+layout(location = 0) in vec3 in_vertex;
+//layout(location = 1) in vec2 in_texcoord;
+layout(location = 1) in vec3 in_normal;
+
+//out vec2 texture_coord;
+out vec3 normal_coord;
+
+void main(void) {
+	gl_Position = proj * vec4(in_vertex,1.0);
+	//texture_coord = in_texcoord;
+  normal_coord  = in_normal;
+}

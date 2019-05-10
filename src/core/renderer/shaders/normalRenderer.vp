@@ -1,0 +1,19 @@
+#version 420
+
+uniform mat4 MVP;
+uniform mat4 MV;
+uniform bool imSpaceNormals;
+
+layout(location = 0) in vec3 in_vertex;
+layout(location = 3) in vec3 in_normal;
+
+out vec3 GtoF_normal;
+
+void main(void) {
+	gl_Position = MVP * vec4(in_vertex,1.0);
+
+	if(imSpaceNormals)
+		GtoF_normal = (MV * vec4(in_normal,0.0)).xyz;
+	else
+		GtoF_normal = in_normal;
+}

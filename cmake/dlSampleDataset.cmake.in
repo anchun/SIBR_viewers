@@ -1,0 +1,85 @@
+## Usage example : 
+## 
+## ## needed inputs cmake variables
+## set(DATASET_SAMPLE_URL 	"https://gforge.inria.fr/frs/download.php/33461/museum_front.7z")
+## set(DATASET_SAMPLE_PATH "${CMAKE_INSTALL_PREFIX}/datasets/")
+## set(DATASET_SAMPLE_ZIP 	"${DATASET_SAMPLE_PATH}/museum_front.7z")
+## configure_file(dlSampleDataset.cmake.in dlSampleDataset.cmake @ONLY)
+## ADD_CUSTOM_TARGET(dlSampleDataset ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/dlSampleDataset.cmake VERBATIM)
+## message(STATUS "You can now use dlSampleDataset target to download a simple dataset example to try ${EXECUTABLE_NAME}")
+##
+## Written by jerome.esnault@inria.f
+
+set(DATASET_SAMPLE_URL 	"@DATASET_SAMPLE_URL@")
+set(DATASET_SAMPLE_ZIP 	"@DATASET_SAMPLE_ZIP@")
+set(DATASET_SAMPLE_PATH "@DATASET_SAMPLE_PATH@")
+
+macro(unzipSampleDataset whichZipFile)
+	find_program(7ZIP_CMD NAMES 7z DOC "7-zip executable" PATHS "$ENV{PROGRAMFILES}/7-Zip" "$ENV{PROGRAMFILES(x86)}/7-Zip" "$ENV{ProgramW6432}/7-Zip")
+	if(7ZIP_CMD)
+		message(STATUS "UNZIP: please, WAIT UNTIL ${7ZIP_CMD} finished... ... ...\n(no more than 10 min, according to you work on server) ... ... ...")
+		execute_process( 	COMMAND ${7ZIP_CMD} x ${whichZipFile} -y
+							WORKING_DIRECTORY ${DATASET_SAMPLE_PATH}	TIMEOUT 600
+							RESULT_VARIABLE resVar OUTPUT_VARIABLE outVar ERROR_VARIABLE errVar
+						)
+		if(${resVar} MATCHES "0")
+            message("SUCESS to unzip dataset sample in ${DATASET_SAMPLE_PATH}. Now we can remove the downloaded zip file.")
+			execute_process(COMMAND ${CMAKE_COMMAND} -E remove ${whichZipFile})
+			mark_as_advanced(7ZIP_CMD)
+		else()
+			message(WARNING "something wrong with \"COMMAND ${7ZIP_CMD} x ${whichZipFile} -y\", redo or try to unzip by yourself...")
+			message("unzip: resVar=${resVar}")
+			message("unzip: outVar=${outVar}")
+			message("unzip: errVar=${errVar}")
+			message("unzip: failed or canceled or timeout")
+		endif()
+	else()
+		message(WARNING "You need 7zip (http://www.7-zip.org/download.html) to unzip the downloaded dir.")
+		set(7ZIP_CMD "" CACHE FILEPATH "7-zip executable")
+		mark_as_advanced(CLEAR 7ZIP_CMD)
+	endif()
+endmacro()
+
+## check if need to process someting (download and/or unzip)
+get_filename_component(DATASET_SAMPLE_NAME ${DATASET_SAMPLE_ZIP} NAME_WE)
+if(EXISTS "${DATASET_SAMPLE_PATH}/${DATASET_SAMPLE_NAME}")
+    message(STATUS "Already downloaded and ready to use.")
+    return()
+endif()
+
+
+message(STATUS "Trying to look ${DATASET_SAMPLE_ZIP} if a dataset sample zip file exist...")
+if(EXISTS "${DATASET_SAMPLE_ZIP}")
+
+    ## already downloaded, so just unzip it
+	unzipSampleDataset(${DATASET_SAMPLE_ZIP})
+
+else()
+
+    ## the download part (+ unzip)
+    message(STATUS "Let me try to download the dataset sample package for you...")
+    message(STATUS "Downloading...\n   SRC=${DATASET_SAMPLE_URL}\n   DEST=${DATASET_SAMPLE_ZIP}.tmp\n   INACTIVITY_TIMEOUT=15s")
+    file(DOWNLOAD ${DATASET_SAMPLE_URL} ${DATASET_SAMPLE_ZIP}.tmp INACTIVITY_TIMEOUT 15 STATUS status SHOW_PROGRESS)
+
+    list(GET status 0 numResult)
+    if(${numResult} MATCHES "0")
+
+	    message(STATUS "Download succeed, so let me rename the tmp file to unzip dataset sample in the ${CMAKE_INSTALL_PREFIX}/datasets/")
+	    execute_process(COMMAND ${CMAKE_COMMAND} -E rename ${DATASET_SAMPLE_ZIP}.tmp ${DATASET_SAMPLE_ZIP})
+	    unzipSampleDataset(${DATASET_SAMPLE_ZIP})
+	
+    else()
+
+	    list(GET status 1 errMsg)
+	    message(WARNING "DOWNLOAD ${DATASET_SAMPLE_URL} to ${DATASET_SAMPLE_ZIP} failed\n:${errMsg}")
+        message(WARNING "OK, you need to download the ${DATASET_SAMPLE_URL} manually and put it into ${DATASET_SAMPLE_ZIP}")
+	    message("Take a look at the inria gforge project page: https://gforge.inria.fr/frs/?group_id=2714")
+	
+    endif()
+
+endif()
+
+## clean up the tmp downloaded file
+if(EXISTS "${DATASET_SAMPLE_ZIP}.tmp")
+    execute_process(COMMAND ${CMAKE_COMMAND} -E remove ${DATASET_SAMPLE_ZIP}.tmp)
+endif()

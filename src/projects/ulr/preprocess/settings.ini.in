@@ -1,0 +1,2 @@
+[path_install]: ${CMAKE_INSTALL_PREFIX}/bin/
+[path_data]: ${CMAKE_INSTALL_PREFIX}/bin/datasets/rc_data/

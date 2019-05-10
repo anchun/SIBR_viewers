@@ -1,0 +1,9 @@
+/** @page ULR_Preprocess How to create a dataset for ULR apps
+  *
+  * \tableofcontents
+  * \section ULR_RC Creating from Reality Capture
+  * The ULR application takes the path to the SibrData directory generated using ibr_preprocess_rc_to_sibr.py script, to create and render a scene.
+  * For more details see: \subpage HowToSibr.
+  *
+  * \section ULR_Col Creating from Colmap
+  **/

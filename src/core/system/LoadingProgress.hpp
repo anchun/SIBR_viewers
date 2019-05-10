@@ -1,0 +1,89 @@
+
+#ifndef __SIBR_LOADINGPROGRESS_HPP__
+# define __SIBR_LOADINGPROGRESS_HPP__
+
+# include <functional>
+# include <chrono>
+# include <mutex>
+# include "core/system//Config.hpp"
+
+
+namespace sibr
+{
+	///
+	/// Simple utility class for reporting on the standard output
+	/// a loading progess. (So users know your heavy computations
+	/// didn't crash)
+	///
+	/// Instructions:
+	/// 1) Instanciate just before a loop (for or while), provinding
+	/// the max number of iterations.
+	/// 2) Call walk() once in a the loop.
+	/// \todo
+	/// TODO: multithread use trick SIBR_ERR 
+	/// \ingroup sibr_system
+	///
+	class SIBR_SYSTEM_EXPORT LoadingProgress
+	{
+	public:
+		typedef std::chrono::steady_clock						clock;
+		typedef clock::time_point								time_point;
+		typedef std::function<void (float, const std::string&)>	ExternalCallback;
+
+		/// Build using the given total number of iterations (\param maxIteration),
+		/// a message that will be inserted in next reports (\param status), and
+		/// an interval of time  (\param interval) between each report.
+		LoadingProgress( size_t maxIteration,
+			const std::string& status="", float interval=1.f );
+
+		/// Make the loading progress by the given number of \param step.
+		void				walk( size_t step = 1);
+		///	Returns the current progress in a range [0.0, 1.0]
+		float				current( void ) const;
+
+		/// Return the time interval used
+		inline float				interval( void ) const;
+		/// Change the frequency of each report
+		inline void					interval( float interval );
+
+		/// Return the status message used
+		inline const std::string&	status( void ) const;
+		/// Insert a message in printed reports
+		inline void					status( const std::string& message );
+
+		static void		redirectReport( ExternalCallback extCall );
+
+	private:
+		/// Print a report
+		void				report( void ) const;
+
+		static ExternalCallback	_extCall; ///< Used for advanced use (for redirecting all report)
+		size_t		_currentStep;	///< current number of iterations
+		size_t		_maxProgress;	///< number of iterations before reaching 100%
+		std::string	_status;		///< inserted into a report (you can update it)
+		float		_interval;		///< time interval before next report (sec)
+		time_point	_lastReport;	///< time point saved during the last report
+		std::mutex	_mutex;			///< used ot thread-safe this class (not heavly tested!)
+	};
+
+	///// DEFINITIONS /////
+
+	float				LoadingProgress::interval( void ) const {
+		return _interval;
+	}
+	void				LoadingProgress::interval( float interval ) {
+		_interval = interval;
+	}
+
+
+	const std::string&	LoadingProgress::status( void ) const {
+		return _status;
+	}
+	void				LoadingProgress::status( const std::string& message ) {
+		_status = message;
+	}
+
+
+} // namespace sibr
+
+#endif // __SIBR_LOADINGPROGRESS_HPP__

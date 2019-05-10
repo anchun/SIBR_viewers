@@ -1,0 +1,63 @@
+
+#include "core/graphics/Input.hpp"
+
+namespace sibr
+{
+
+	/*static*/ Input&	Input::global( void )
+	{
+		/// \todo TODO: add warning if no windows have been created
+		static Input	instance;
+		return instance;
+	}
+
+	/*static*/ void		Input::poll( void )
+	{
+		sibr::Input::global().swapStates();
+		glfwPollEvents();
+	}
+
+	Input Input::subInput(const sibr::Input & global, const sibr::Viewport & viewport, const bool mouseOutsideDisablesKeyboard)
+	{
+		if (!global.isInsideViewport(viewport)) {
+			if (mouseOutsideDisablesKeyboard) {
+				return Input();
+			} else {
+				Input sub = global;
+				sub._mouseButton = MouseButton();
+				sub._mouseScroll = 0;
+				return sub;
+			}
+			
+		} else {
+			Input sub = global;
+			sub._mousePrevPos -= sibr::Vector2i(viewport.finalLeft(), viewport.finalTop());
+			sub._mousePos -= sibr::Vector2i(viewport.finalLeft(), viewport.finalTop());
+
+			return sub;
+		}	
+	}
+
+	bool Input::isInsideViewport(const sibr::Viewport & viewport) const
+	{
+		Eigen::AlignedBox2i subBox;
+		subBox.extend(sibr::Vector2i(sibr::Vector2i(viewport.finalLeft(), viewport.finalTop())));
+		subBox.extend(sibr::Vector2i(sibr::Vector2i(viewport.finalRight(), viewport.finalBottom())));
+
+		return subBox.contains(mousePosition());
+	}
+
+	KeyCombination::KeyCombination() : numKeys(0), isTrue(true) { }
+	KeyCombination::KeyCombination(int n, bool b) : numKeys(n), isTrue(b) { }
+
+	KeyCombination::operator bool() const
+	{
+		return isTrue && ( numKeys == sibr::Input::global().key().getNumActivated() );
+	}	
+
+	KeyCombination operator&& ( const KeyCombination & combA, const KeyCombination & combB)
+	{
+		return KeyCombination(combA.numKeys + combB.numKeys, combA.isTrue && combB.isTrue); 
+	}
+
+} // namespace sibr

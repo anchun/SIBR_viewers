@@ -1,0 +1,10 @@
+/*! 
+	\defgroup sibr_raycaster
+
+	\brief Raycasting utilities.
+
+	This module provides functionalities related to raycasting on 2D and 3D geometry. 
+	It contains basic 2D intersection tests, a wrapper around the embree raycasting library (http://embree.github.io/), 
+	and helpers to perform raycasting over all pixels of an image.
+	
+*/

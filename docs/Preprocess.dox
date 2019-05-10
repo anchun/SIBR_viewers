@@ -1,0 +1,11 @@
+/** @page preprocess_main_page Dataset generation utilities
+
+Each application is provided with multiple pre-processing utilities, some general, some specific to the project.
+Python scripts designed to process and prepare datasets are provided with each project along with instructions on how to use them.
+
+We provide pre-processing documentation following which you can create SIBR compatible datasets from output of some proprietary utility programs:
+  - \subpage RealityCapture
+  - \subpage ULR_Preprocess
+  - \subpage SPixelWarp_Preprocess
+
+ **/

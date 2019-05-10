@@ -1,0 +1,18 @@
+/** \file topview.vp
+ *
+ * Vertex shader with projection and modelview transformations
+ * for rendering top view
+ */
+
+#version 420
+
+layout(location = 0) in vec4 in_vertex;   /**< Input vertex coordinates */
+layout(location = 1) in vec4 in_texcoord; /**< Input texture coordinates */
+
+uniform mat4 proj;                        /**< Projection matrix */
+out vec4 texcoord;                        /**< Output texture coordinates */
+
+void main(void) {
+  gl_Position = proj * in_vertex;
+  texcoord    = in_texcoord;
+}

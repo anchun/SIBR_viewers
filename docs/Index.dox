@@ -1,0 +1,127 @@
+/*! \mainpage SIBR - Documentation
+ *
+ * \section intro_sec Introduction
+
+ * Simple Image-Based Rendering or **SIBR**, is a specialized collection of libraries and toolkits for quickly implementing image-based rendering applications.
+ * \todo Add more Description about SIBR.
+ *
+ * \image HTML ulr_screenshot.png SIBR
+ * \section install_sec Installation
+ *
+ * \subsection sibr_prerequisite Prerequisite
+ *
+ * - Visual Studio 2017 (https://visualstudio.microsoft.com/vs/older-downloads/).
+ * - Use Cmake 3.8.2, later versions might not be supported (https://cmake.org/files/v3.8/).
+ * - 7zip should be installed (https://www.7-zip.org/download.html).
+ * - Python 3 should be installed and configured in the PATH (https://www.python.org/downloads/).
+ * - PIL (pip install pillow, in an admin command if needed: https://pypi.org/project/Pillow/).
+ * - ImageMagick (https://imagemagick.org/script/download.php).
+ * - Doxygen should be installed and configured in the PATH for generating the documentation (http://www.doxygen.nl/download.html).
+ * - CUDA 8+ (https://developer.nvidia.com/cuda-downloads).
+ *
+ * \subsection sibr_generate_and_compile Generating the solution and compiling
+ *
+ * - Clone sibr_basic repository (https://gitlab.inria.fr/sprakash/sibr_basic).
+ *  \code git clone git@gitlab.inria.fr:sprakash/sibr_basic.git \endcode
+ * - Run Cmake-gui once, select the <repo_root>/ as a source directory, <repo_root>/build/ as the build directory. Configure, select the Visual Studio C++ Win64 compiler.
+ * - Select the projects you want to generate among the BUILD elements in the list.
+ * - Generate.
+ * - Open the generated Visual Studio solution (<repo_root>/build/sibr_projects.sln).
+ * - Build the BUILD_ALL target, and then the INSTALL target.
+ * - The compiled executables will be put in install/bin.
+ * \note If install fails, you will have to copy the required .dll files which are not copied automatically in the install/bin directory.
+ *       In general make sure these .dll files are in the bin directory : boost_system-vc141-mt-1_64.dll, boost_filesystem-vc141-mt-1_64.dll, glew32.dll, assimp-vc140-mt.dll, embree.dll
+ *
+ * \subsection sibr_projects_generate_and_compile Adding new projects to SIBR
+ *
+ * SIBR comes with ULR as the default project. If you need to create a new project, it can be based upon ULR and created.
+ * For more information see \subpage help_new_project.
+ *
+ * In addition to ULR, there are several IBR algorithms already implemented in SIBR.
+ * The projects can be added as "submodules" in the projects directory.
+ * Users need access to the project's gitlab repository to add it as a submodule.
+ * You can follow the given steps to add the project as submodule once access is given.
+ *
+ * - Go to the sibr_basic repository and pull.
+ * - Intialize git submodule.
+ *  \code git submodule init \endcode
+ * - Run submodule update to clone the project added as submodules.
+ *  \code git submodule update \endcode
+ * - Run Cmake-gui again, and select the <repo_root>/ as a source directory, <repo_root>/build/ as the build directory. Configure, select the Visual Studio C++ Win64 compiler.
+ * - Select the projects you want to generate among the BUILD elements in the list.
+ * - Generate.
+ * - Open the generated Visual Studio solution (<repo_root>/build/sibr_projects.sln) and build the project as above.
+ *
+ * For troubleshooting Git Submodule issues such as updating, modifying, or resolving merge conflicts in the project submodule, follow the Git Submodule tutorial at https://git-scm.com/book/en/v2/Git-Tools-Submodules.
+ *
+ * \subsection sibr_projects_create Creating new projects in SIBR as submodules
+ *
+ * \section arch_sec Architecture Overview
+ *
+ * This is a diagram describing the overall SIBR architecture:
+ * \image html sibr_new_architecture.png "Architecture Diagram"
+ *
+ * SIBR is built using layers.
+ *
+ * \subsection Core
+ * SIBR core module exposes five internal libraries (system, graphics, assets, view, and renderer) which can be used to implement multiple IBR algorithms.
+ *
+ * \subsubsection system
+ * At the very low level, we have **core/system** that contains OS tools (e.g. filesystems), mathematical tools (e.g. vector operations), and standard tools (e.g. string operations). It also contains a configuration file (Config.hpp) that defines many useful macros/const.
+ *
+ * In short:
+ * - we use STL and C++11 (std::shared_ptr are heavily used)
+ * - we use Boost Libraries to manage filesystems.
+ * - we use Eigen for math tools. (Dev tips: Please use sibr::Vector<NumComp, Type> (e.g. sibr::Vector3f), because they define important flags.)
+ *
+ * \subsubsection graphics
+ * Next we expose **core/graphics** which contains graphics tools.
+ *
+ * In short:
+ * - we use OpenCV for managing images and image operations. Note that we wrapped OpenCV's cv::Mat in sibr::Image to control/check types statically. See sibr::Image class for details.
+ *
+ * \subsubsection assets
+ * The classes contained in **core/assets** represent resource files present in IBR datasets. These classes are useful for loading and reading different types of files found in a typical dataset.
+ *
+ * The **core/view** library exposes tools for making viewer apps for live rendering and debugging of the algorithms.
+ * \subsubsection view
+ * The two main classes exposed by this library are:
+ * - sibr::BasicIBRScene, a class containing a default set of assets (cameras, images, proxies etc.) which can be initialized by means of a scene metadata file. (Dev tips:) Avoid using it deeply in the code and keeping the assets as independent as possible.)
+ * - sibr::MultiViewManager, a class implementing a viewer to which multiple-views can be added with basic camera behavior and debug view <**TODO**:Rephrase>.
+ *
+ * **To remove??**:
+ * Note concerning 'view' library:
+ * They propose a User Interface, defining input behaviors and rendering in a specific viewport (Currently, 'viewport' are not exploited yet).
+ * 'View' classes can then be plugged to an sibr::IBRView, chained in an hierarchical way (parent, subviews, pop-up, dialog, ...).
+ * For the rendering side, prefer write 'Renderer' classes, i.e., classes that contains shaders, shader parameters, opengl states and everything required to launch one draw call.
+ * Then 'Viewer' classes can use one or multiple 'Renderer' classes.
+ *
+ *
+ * \subsubsection renderer
+ * The classes in **core/renderer** library implements general rendering tools and functionalities required for every IBR application renderer.
+ * **What??**: Because they are library, you can freely use their tools for your own project (e.g. re-use SpixelImage from sibr_spixelwarp).
+ *
+ *
+ * \subsection Projects
+ *
+ * The projects module provides algorithm specific sub-module(s) that contain renderers and preprocessing classes used only for the particular algorithm to which the sub-module is dedicated.
+ * Users can write small applications to implement multiple versions of the given algorithm using the core module and algorithm specific classes.
+ *
+ * An example Unstructured Luminograph Rendering (ULR) application is provided by default with SIBR to help user's get started.
+ *
+ * \subsubsection apps
+ * The apps directory contains short application allowing the user's to test a rendering algorithm.
+ *
+ * \subsubsection renderer
+ *
+ * \subsubsection preprocessing
+ *
+ * \section sibr_troubleshooting Troubleshoot
+ *
+ * - Cmake can't find GLU, GLEW or another libary: use Cmake 3.8 specifically, check that you are connected to the Internet.
+ * - Weird OpenCV error: you probably selected the 32-bits compiler in cmake-gui. Make sure OpenCV bin directory is configured in your PATH.
+ * - 'Cmd.exe failed wither error 009' or similar: make sure Python is installed and in the PATH.
+ * - BUILD_ALL or INSTALL fail because of a project you don't really need: build and install each project separately by selecting the proper targets.
+ * - Some apps may depend on other basic apps. Make sure you have checked all the required apps before configuring and generating the solution.
+ *
+ */

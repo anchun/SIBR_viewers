@@ -1,0 +1,147 @@
+#pragma once
+
+# include "Config.hpp"
+# include <core/system/Config.hpp>
+# include <core/graphics/Texture.hpp>
+# include <core/graphics/Shader.hpp>
+# include <core/graphics/Mesh.hpp>
+# include <core/renderer/RenderMaskHolder.hpp>
+# include <core/view/BasicIBRScene.hpp>
+
+namespace sibr { 
+
+	/**
+	 * \class ULRV3Renderer
+	 * \brief Perform per-pixel Unstructured Lumigraph Rendering (Buehler et al., 2001). No selection is done on the CPU side.
+	 * Relies on texture arrays and uniform buffer objects to support a high number of cameras. 
+	 */
+	class SIBR_EXP_ULR_EXPORT ULRV3Renderer : public RenderMaskHolderArray
+	{
+		SIBR_CLASS_PTR(ULRV3Renderer);
+	
+	public:
+
+		/**
+		 * Constructor.
+		 * \param cameras The input cameras to use.
+		 * \param w The width of the internal rendertargets.
+		 * \param h The height of the internal rendertargets.
+		 * \param fShader An optional name of the fragment shader to use (default to ulr_v3).
+		 * \param vShader An optional name of the vertex shader to use (default to ulr_v3).
+		 * \param facecull Should the mesh be renderer with backface culling.
+		 */
+		ULRV3Renderer(const std::vector<sibr::InputCamera> & cameras, 
+			const uint w, const uint h, 
+			const std::string & fShader = "ulr_v3", 
+			const std::string & vShader = "ulr_v3", 
+			const bool facecull = true
+		);
+
+		/**
+		 * Change the shaders used by the ULR renderer.
+		 * \param fShader The name of the fragment shader to use.
+		 * \param vShader The name of the vertex shader to use.
+		 */
+		void setupShaders(
+			const std::string & fShader = "ulr_v3",
+			const std::string & vShader = "ulr_v3"
+		);
+
+		/**
+		 * Performs ULR rendering to a given destination rendertarget.
+		 * \param mesh The mesh to use as geometric proxy.
+		 * \param eye The novel viewpoint.
+		 * \param dst The destination rendertarget.
+		 * \param inputRGBs A texture array containing the input RGB images.
+		 * \param inputDepths A texture array containing the input depth maps.
+		 */
+		void process(
+			const sibr::Mesh & mesh,
+			const sibr::Camera& eye,
+			IRenderTarget& dst,
+			const sibr::Texture2DArrayRGB::Ptr & inputRGBs,
+			const sibr::Texture2DArrayLum32F::Ptr & inputDepths
+			);
+
+		/** 
+		 *  Update which cameras should be used for rendering, based on the indices passed.
+		 *  \param camIds The indices to enable.
+		 **/
+		void updateCameras(const std::vector<uint> & camIds);
+
+		/// Set the epsilon occlusion threshold.
+		float & epsilonOcclusion() { return _epsilonOcclusion.get(); }
+
+		/// Enable or disable the masks.
+		bool & useMasks() { return _useMasks.get(); }
+
+		/// Flip the RGB images before using them.
+		bool & flipRGBs() { return _flipRGBs.get(); }
+
+		bool & showWeights() { return _showWeights.get(); }
+
+	protected:
+
+		/**
+		 * Render the world positions of the proxy points in an intermediate rendertarget.
+		 * \param mesh the proxy mesh.
+		 * \param eye The novel viewpoint.
+		 */
+		void renderProxyDepth(const sibr::Mesh & mesh, const sibr::Camera& eye);
+
+		/**
+		* Perform ULR blending.
+		* \param eye The novel viewpoint.
+		* \param dst The destination rendertarget.
+		* \param inputRGBs A texture array containing the input RGB images.
+		* \param inputDepths A texture array containing the input depth maps.
+		*/
+		void renderBlending(
+			const sibr::Camera& eye,
+			IRenderTarget& dst,
+			const sibr::Texture2DArrayRGB::Ptr & inputRGBs,
+			const sibr::Texture2DArrayLum32F::Ptr & inputDepths
+		);
+
+		/// Shader names.
+		std::string fragString, vertexString;
+
+		sibr::GLShader _ulrShader;
+		sibr::GLShader _depthShader;
+
+		sibr::RenderTargetRGBA32F::Ptr		_depthRT;
+		GLuniform<Matrix4f>					_nCamProj;
+		GLuniform<Vector3f>					_nCamPos;
+
+		GLuniform<bool>
+			_occTest = true,
+			_useMasks = false,
+			_discardBlackPixels = true,
+			_areMasksBinary = true,
+			_invertMasks = false,
+			_flipRGBs = false,
+			_showWeights = false;
+
+		size_t _maxNumCams = 0;
+		GLuniform<int> _camsCount = 0;
+
+		GLuniform<float>					_epsilonOcclusion = 0.01f;
+		bool								_backFaceCulling = true;
+
+		/// Camera infos data structure shared between the CPU and GPU.
+		/// We have to be careful about alignment if we want to send those struct directly into the UBO.
+		struct CameraUBOInfos {	 
+			Matrix4f vp; 
+			Vector3f pos;
+			int selected = 0;
+			Vector3f dir;
+			float dummy = 0.0f; // padding to a multiple of 16 bytes.
+		};
+
+		std::vector<CameraUBOInfos> _cameraInfos;
+		GLuint _uboIndex;
+	};
+
+
+} /*namespace sibr*/ 
+
