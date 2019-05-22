@@ -85,9 +85,9 @@ namespace sibr
 
 	protected:
 		//IBRScene::Ptr	_old_scene;
-		bool			_active;
+		bool			_active = true;
 		Vector2i		_resolution;
-		bool			_focus;
+		bool			_focus = false;
 
 	};
 

@@ -20,7 +20,7 @@ namespace sibr {
 		textureShader.init("Texture",
 			sibr::loadFile(sibr::Resources::Instance()->getResourceFilePathName("texture.vp")),
 			sibr::loadFile(sibr::Resources::Instance()->getResourceFilePathName("texture.fp")));
-		uint interpFlag = (SIBR_SCENE_LINEAR_SAMPLING & true) ? SIBR_GPU_LINEAR_SAMPLING : 0; // LINEAR_SAMPLING Set to default
+		uint interpFlag = (SIBR_SCENE_LINEAR_SAMPLING & SIBR_SCENE_LINEAR_SAMPLING) ? SIBR_GPU_LINEAR_SAMPLING : 0; // LINEAR_SAMPLING Set to default
 
 		for (uint i = 0; i<imgs->inputImages().size(); i++) {
 			if (cams->inputCameras()[i].isActive()) {
