@@ -126,7 +126,7 @@ namespace sibr
 
 	std::vector<InputCamera> InputCamera::load(const std::string& datasetPath, float zNear, float zFar, const std::string & bundleName, const std::string & listName )
 	{
-		const std::string bundlerFile = datasetPath + "/" + bundleName;
+		const std::string bundlerFile = datasetPath + "/cameras/" + bundleName;
 		const std::string listFile = datasetPath + "/images/" + listName;
 		const std::string clipFile = datasetPath + "/clipping_planes.txt";
 		SIBR_LOG << "Loading input cameras." << std::endl;

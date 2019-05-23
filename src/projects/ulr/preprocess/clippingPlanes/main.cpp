@@ -36,11 +36,10 @@ int main(const int argc, const char** argv)
 	Mesh						proxy(false);
 
 	// check needed things are there
-	if (imageListFile.load(datasetPath + "/images/list_images.txt") == false)
+	if (imageListFile.load(datasetPath + "/images/list_images.txt") == false && imageListFile.load(datasetPath + "/list_images.txt") == false)
 		return 1;
 
-	const std::string proxyPath = datasetPath + "/meshes/pmvs_recon.ply";
-	if (proxy.load(proxyPath) == false)
+	if (proxy.load(datasetPath + "/meshes/pmvs_recon.ply") == false && proxy.load(datasetPath + "/pmvs_recon.ply") == false && proxy.load(datasetPath + "/recon.ply") == false && proxy.load(datasetPath + "/meshes/recon.ply") == false)
 		return 1;
 
 	const std::string clipping_planes_file_path = datasetPath + "/clipping_planes.txt";

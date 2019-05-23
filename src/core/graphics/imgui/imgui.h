@@ -719,7 +719,12 @@ enum ImGuiKey_
     ImGuiKey_Space,
     ImGuiKey_Enter,
     ImGuiKey_Escape,
+	ImGuiKey_W,         // for WASDRF camera motion
     ImGuiKey_A,         // for text edit CTRL+A: select all
+	ImGuiKey_S,         // for WASDRF camera motion
+	ImGuiKey_D,         // for WASDRF camera motion
+	ImGuiKey_R,         // for WASDRF camera motion
+	ImGuiKey_F,         // for WASDRF camera motion
     ImGuiKey_C,         // for text edit CTRL+C: copy
     ImGuiKey_V,         // for text edit CTRL+V: paste
     ImGuiKey_X,         // for text edit CTRL+X: cut

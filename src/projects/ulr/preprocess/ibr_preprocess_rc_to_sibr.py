@@ -315,7 +315,7 @@ resolutions_txt_path = os.path.join(path_data, "resolutions.txt")
 input_bundle.generate_list_of_images_file(resolutions_txt_path)
 
 # call distordCrop
-p_exit = subprocess.call([crop_app, "--path", path_data, "--ratio",  "0.3", "--avg_width", str(avg_resolution[0]), "avg_height", str(avg_resolution[1]) ])
+p_exit = subprocess.call([crop_app, "--path", path_data, "--ratio",  "0.3", "--avg_width", str(avg_resolution[0]), "--avg_height", str(avg_resolution[1]) ])
 print(crop_app, " exited with ", p_exit);
 checkOutput(p_exit, False)
 
@@ -409,8 +409,11 @@ if (target_res is not None):
 textured_mesh_base_name = get_textured_mesh_base_name(path_data)
 
 # copy files
+path_list_images = os.path.join(path_dest, images_dir, "list_images.txt")
+# shutil.copy( path_list_images, os.path.join(path_data, 'list_images.txt'))
 files_to_move = [   #['pmvs/models/pmvs_recon.ply',''],
                     ['pmvs_recon.ply', pmvs_model_dir],
+                    ['recon.ply', pmvs_model_dir],
                     ['rc_out.csv', path_dest],
                     [textured_mesh_base_name + ".obj", pmvs_model_dir],
                     [textured_mesh_base_name + ".mtl", textures_dir],
@@ -422,7 +425,7 @@ for filename, directory_name in files_to_move:
     print("Trying ",  source_file , "-->", destination_file )
     if (os.path.exists(source_file)):
         print("Moving ",  source_file , " ", destination_file )
-        shutil.move( source_file , destination_file )
+        shutil.copy( source_file , destination_file )
 
 
 ################################################################################
@@ -431,7 +434,7 @@ for filename, directory_name in files_to_move:
 # clippingPlanes executable
 clipping_planes_app = executables_folder + "clippingPlanes" + executables_suffix +".exe"
 
-clipping_planes_args = [clipping_planes_app, path_data]
+clipping_planes_args = [clipping_planes_app, path_dest]
 
 # call clippingPlanes app
 p_exit = subprocess.call(clipping_planes_args)
@@ -443,7 +446,6 @@ checkOutput(p_exit, False)
 ######################## CREATE SCENE METADATA #############################
 
 # read list image file
-path_list_images = os.path.join(path_dest, images_dir, "list_images.txt")
 list_images = []
 
 if os.path.exists(path_list_images):
@@ -492,8 +494,8 @@ for filename in os.listdir(path_data):
         shutil.move(src, dst)
 
 # rename pmvs_recon.ply to recon.ply
-shutil.move(os.path.join(path_dest, pmvs_model_dir, "pmvs_recon.ply"), os.path.join(path_dest, pmvs_model_dir, "recon.ply"))
-
+if (os.path.exists(os.path.join(path_dest, pmvs_model_dir, "pmvs_recon.ply"))):
+    shutil.move(os.path.join(path_dest, pmvs_model_dir, "pmvs_recon.ply"), os.path.join(path_dest, pmvs_model_dir, "recon.ply"))
 
 path_scene_metadata = os.path.join(path_dest, "scene_metadata.txt")
 

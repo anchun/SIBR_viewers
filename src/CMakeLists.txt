@@ -48,15 +48,16 @@ set(SIBR_INSTALL_FOLDER   "_install_")
 if (MSVC11)
     include_directories(../extlibs/win64-msvc2012/glfw-3.1.2/include/)
     link_directories(../extlibs/win64-msvc2012/glfw-3.1.2/lib/)
+
 elseif (MSVC14)
     include_directories(../extlibs/win64-msvc2017/glfw-3.2.1/include/)
     link_directories(../extlibs/win64-msvc2017/glfw-3.2.1/lib/)
+
 else()
     # setting VS2012 as default
     message("WARNING using glfw 3.1.2 compiled with MSVC11 (Visual Studio 2012)")
     include_directories(../extlibs/win64-msvc2012/glfw-3.1.2/include/)
     link_directories(../extlibs/win64-msvc2012/glfw-3.1.2/lib/)
-
 endif()
 
 ## For GENERATE_EXPORT_HEADER cmake macro of common/core lib used by sub-projects (used when target SHARED under windows)
