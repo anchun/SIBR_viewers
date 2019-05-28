@@ -7,7 +7,7 @@ namespace sibr
 
 	cv::Scalar jetColor(float gray) {
 		const sibr::Vector3ub col = jetColor<uchar>(gray);
-		return toOpenCV<uchar,uchar,3>(col);
+		return toOpenCV<uchar, uchar, 3>(col);
 	}
 
 	sibr::Vector3ub getLinearColorFromProbaV(double proba) {
@@ -44,6 +44,50 @@ namespace sibr
 		const double & theta = angles[1];
 
 		return sibr::Vector2d(0.5*(phi / M_PI + 1.0), theta / M_PI);
+	}
+
+	float sRGB2LinF(float inF) {
+		if (inF < 0.04045) {
+			return inF / 12.92;
+		}
+		else {
+			return pow((inF + 0.055) / (1.055), 2.4);
+		}
+	}
+
+	float lin2sRGBF(float inF) {
+
+		if (inF < 0.0031308) {
+			return std::max(0.0, std::min(1.0, 12.92*inF));
+		}
+		else {
+			return std::max(0.0, std::min(1.0, 1.055*pow(inF, 1.0 / 2.4) - 0.055));
+		}
+
+	}
+
+	void sRGB2Lin(sibr::ImageRGB32F& img) {
+#pragma omp parallel for
+		for (int j = 0; j < img.h(); j++) {
+			for (int i = 0; i < img.w(); i++) {
+				for (int c = 0; c < 3; c++) {
+					img.pixel(i, j)[c] = sRGB2LinF(img.pixel(i, j)[c]);
+				}
+			}
+		}
+
+	}
+
+	void lin2sRGB(sibr::ImageRGB32F& img) {
+#pragma omp parallel for
+		for (int j = 0; j < img.h(); j++) {
+			for (int i = 0; i < img.w(); i++) {
+				for (int c = 0; c < 3; c++) {
+					img.pixel(i, j)[c] = lin2sRGBF(img.pixel(i, j)[c]);
+				}
+			}
+		}
+
 	}
 
 } // namespace sibr

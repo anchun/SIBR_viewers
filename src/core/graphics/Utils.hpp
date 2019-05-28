@@ -60,7 +60,13 @@ namespace sibr
 	SIBR_GRAPHICS_EXPORT sibr::Vector2d cartesianToSpherical(const sibr::Vector3d & dir); 
 
 	//dir assumed normalized, returns [u,v] in [0,1]^2
-	SIBR_GRAPHICS_EXPORT sibr::Vector2d cartesianToSphericalUVs(const sibr::Vector3d & dir); 
+	SIBR_GRAPHICS_EXPORT sibr::Vector2d cartesianToSphericalUVs(const sibr::Vector3d & dir);
+
+	//Inplace conversion of float image from sRGB space to linear.
+	SIBR_GRAPHICS_EXPORT void sRGB2Lin(sibr::ImageRGB32F& img);
+
+	//Inplace conversion of float image from linear space to sRGB.
+	SIBR_GRAPHICS_EXPORT void lin2sRGB(sibr::ImageRGB32F& img);
 
 
 	inline float		lerp(float from, float to, float fac);

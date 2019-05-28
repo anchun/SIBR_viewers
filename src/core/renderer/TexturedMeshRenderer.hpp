@@ -16,7 +16,7 @@ namespace sibr {
 		typedef std::shared_ptr<TexturedMeshRenderer>	Ptr;
 
 	public:
-		TexturedMeshRenderer( void );
+		TexturedMeshRenderer(bool flipY = false );
 
 		void	process(
 			/*input*/	const Mesh& mesh,
