@@ -132,7 +132,11 @@ namespace sibr
 
 		/** Return a string that can be used to create a bundle file from this camera
 		*/
-		std::string toBundleString() const;
+		std::string toBundleString(bool negativeZ = false) const;
+
+		/** Save a vector of cameras as a bundle file
+		*/
+		static void saveAsBundle(std::vector<sibr::InputCamera> cams, std::string fileName, bool negativeZ=false);
 
 		/** Load cameras from a bundler file.
 		 *\param datasetPath path to the root of the dataset, should contain bundle.out, list_images.txt and optionally clipping_planes.txt 

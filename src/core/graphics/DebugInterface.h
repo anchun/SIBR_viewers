@@ -46,7 +46,7 @@ protected :
 	Img fullResImg;
 	Img interfaceImg;
 	Img interfaceImgActive;
-	std::vector<sibr::ImageRGB*> inputImgsPtrs;
+	std::vector<sibr::ImageRGB::Ptr> inputImgsPtrs;
 
 	std::string interfaceName;
 
@@ -65,10 +65,10 @@ protected :
 
 	bool keychanged;
 
-	void computeFullResImgs( std::vector<sibr::ImageRGB*> & imgs );
+	void computeFullResImgs( std::vector<sibr::ImageRGB::Ptr> & imgs );
 	void computeInterfaceImgFromFullRes( const  sibr::Vector2i & dimInterface );
 
-	void setInterfaceImg(  std::vector<sibr::ImageRGB*> & imgs, const  sibr::Vector2i & dimInterface  );
+	void setInterfaceImg(  std::vector<sibr::ImageRGB::Ptr> & imgs, const  sibr::Vector2i & dimInterface  );
 	//Img concatImgs(  std::vector<sibr::ImageRGB*> & imgs );
 
 	sibr::Vector2i squareGrid( int n);

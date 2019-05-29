@@ -17,7 +17,7 @@ void DebugInterface::printHelp( void )
 	std::cout << "\t  + or -         :  switch to next/previous view in single view mode"<< std::endl;
 }
 
-void DebugInterface::display( std::vector<sibr::ImageRGB*> & imgs, int waitKeyDelay , ViewingMode _viewingMode, sibr::Vector2i dim_interface, std::string interface_name, CallBackFunction func)
+void DebugInterface::display( std::vector<sibr::ImageRGB::Ptr> & imgs, int waitKeyDelay , ViewingMode _viewingMode, sibr::Vector2i dim_interface, std::string interface_name, CallBackFunction func)
 {
 	std::cout<<"[DebugInterface] interface <" << interfaceName << "> created" << std::endl;
 	printHelp();
@@ -61,7 +61,7 @@ void DebugInterface::display( std::vector<sibr::ImageRGB32F*> & imgs, int waitKe
 	std::vector<Img> imgsConverted(imgs.size());
 	std::vector<sibr::ImageRGB*> imgsPtr;
 	int id = 0;
-	for( auto & imgCvt : imgsConverted){
+	for(auto & imgCvt : imgsConverted){
 		//imgCvt = Img(new sibr::ImageRGB( (imgs.at(id))->cast<sibr::ImageRGB>().clone() ));
 		imgCvt = std::make_shared<sibr::ImageRGB>(imgs.at(id)->cast<sibr::ImageRGB>().clone());
 		imgsPtr.push_back(imgCvt.get());
@@ -72,11 +72,11 @@ void DebugInterface::display( std::vector<sibr::ImageRGB32F*> & imgs, int waitKe
 	display(imgsPtr,waitKeyDelay,_viewingMode,dim_interface,interface_name,func);
 }
 
-void DebugInterface::display( std::vector<Img> & imgs, int waitKeyDelay , ViewingMode _viewingMode, sibr::Vector2i dim_interface, std::string interface_name,  CallBackFunction func )
+void DebugInterface::display( std::vector<sibr::ImageRGB *> & imgs, int waitKeyDelay , ViewingMode _viewingMode, sibr::Vector2i dim_interface, std::string interface_name,  CallBackFunction func )
 {
-	std::vector<sibr::ImageRGB*> imgsPtr;
+	std::vector<sibr::ImageRGB::Ptr> imgsPtr;
 	for( auto & img : imgs ){
-		imgsPtr.push_back(img.get());
+		imgsPtr.push_back(img);
 	}
 	display(imgsPtr,waitKeyDelay,_viewingMode,dim_interface,interface_name,func);
 }
@@ -92,7 +92,7 @@ void DebugInterface::display(std::vector<std::shared_ptr<sibr::ImageRGB32F> > & 
 	display(imgsPtr, waitKeyDelay, viewingMode, dimInterface, interface_name, func);
 }
 
-void DebugInterface::setInterfaceImg(  std::vector<sibr::ImageRGB*> & imgs , const  sibr::Vector2i & dimInterface )
+void DebugInterface::setInterfaceImg(  std::vector<sibr::ImageRGB::Ptr> & imgs , const  sibr::Vector2i & dimInterface )
 {
 	inputImgsPtrs = imgs;
 	computeFullResImgs( inputImgsPtrs );
@@ -128,11 +128,11 @@ void DebugInterface::computeInterfaceImgFromFullRes( const  sibr::Vector2i & new
 			LocalPos lpos(toLocalRescaled(sibr::Vector2i(x,y)));
 
 			if( lpos.isDefined ) {
-				newInterfaceImg->pixel(x,y) = filterPos(lpos, imgsRescaled.at(lpos.imgId)->pixel(lpos.pos.x(), lpos.pos.y()), scaleFactor);
+				newInterfaceImg(x,y) = filterPos(lpos, imgsRescaled.at(lpos.imgId)(lpos.pos.x(), lpos.pos.y()), scaleFactor);
 			} else {
 				//checkers texture
 				unsigned char c = (unsigned char) std::floor(255* (0.75+0.25*((x/10+y/10)%2) ) );
-				newInterfaceImg->pixel(x,y) = sibr::Vector3ub(c,c,c);
+				newInterfaceImg(x,y) = sibr::Vector3ub(c,c,c);
 			}
 			
 		}		
@@ -143,7 +143,7 @@ void DebugInterface::computeInterfaceImgFromFullRes( const  sibr::Vector2i & new
 
 }
 
-void DebugInterface::computeFullResImgs( std::vector<sibr::ImageRGB*> & imgs )
+void DebugInterface::computeFullResImgs( std::vector<sibr::ImageRGB::Ptr> & imgs )
 {
 	//numImages = (int)imgs.size();
 
@@ -171,7 +171,7 @@ void DebugInterface::computeFullResImgs( std::vector<sibr::ImageRGB*> & imgs )
 
 		for(int j=0; j<(int)img.h(); ++j){
 			for(int i=0; i<(int)img.w(); ++i){
-				fullResImg->pixel(topLeft.x()+i,topLeft.y()+j) = img.pixel(i,j);
+				fullResImg(topLeft.x()+i,topLeft.y()+j) = img(i,j);
 			}
 		}
 	}
@@ -232,7 +232,7 @@ Img DebugInterface::concatImgs(  std::vector<sibr::ImageRGB*> & imgs )
 
 		for(int j=0; j<(int)img.h(); ++j){
 			for(int i=0; i<(int)img.w(); ++i){
-				fullResImg->pixel(topLeft.x()+i,topLeft.y()+j) = img.pixel(i,j);
+				fullResImg(topLeft.x()+i,topLeft.y()+j) = img(i,j);
 			}
 		}
 	}
@@ -243,10 +243,10 @@ Img DebugInterface::concatImgs(  std::vector<sibr::ImageRGB*> & imgs )
 			LocalPos lpos(toLocalRescaled(sibr::Vector2i(x,y)));
 
 			if( lpos.isDefined ) {
-				output->pixel(x,y) = imgsRescaled.at(lpos.imgId)->pixel(lpos.pos.x(), lpos.pos.y());
+				output(x,y) = imgsRescaled.at(lpos.imgId)(lpos.pos.x(), lpos.pos.y());
 			} else {
 				unsigned char c = (unsigned char) std::floor(255* (0.75+0.25*((x/10+y/10)%2) ) );
-				output->pixel(x,y) = sibr::Vector3ub(c,c,c);
+				output(x,y) = sibr::Vector3ub(c,c,c);
 			}
 			
 		}		
@@ -696,7 +696,7 @@ void DebugInterface::clampPos( sibr::ImageRGB & img , sibr::Vector2i & position 
 void DebugInterface::clearImgChanges(void)
 {
 	for( auto & pos : draw.getPosPainted() ){
-		interfaceImgActive->pixel(pos.x(),pos.y()) = interfaceImg->pixel(pos.x(),pos.y());
+		interfaceImgActive(pos.x(),pos.y()) = interfaceImg(pos.x(),pos.y());
 	}
 	draw.resetPosPainted();
 }
@@ -758,7 +758,7 @@ void DebugInterface::printPixelInfo(LocalPos & lPos, sibr::Vector3ub color)
 		std::cout << "clicked pixel infos : " << std::endl;
 		std::cout << "\t image : " << lPos.imgId << std::endl;
 		std::cout << "\t pixel : " << lPos.pos.transpose() << std::endl;
-		std::cout << "\t color : " << inputImgsPtrs.at(lPos.imgId )->pixel(lPos.pos.x(),lPos.pos.y()).cast<int>().transpose() << std::endl;
+		std::cout << "\t color : " << inputImgsPtrs.at(lPos.imgId )(lPos.pos.x(),lPos.pos.y()).cast<int>().transpose() << std::endl;
 	} else {
 		std::cout << "no pixel info" << std::endl;
 	}
@@ -793,7 +793,7 @@ void DebugInterface::updateSelection( LocalPos & lpos )
 		std::cout << "td" << std::endl;
 		selectionData.selectedViewMapping = std::vector<int>(selectionData.numImgsToSelect);
 		selectionData.selectedViewInverseMapping = std::vector<int>(selectionData.numImgs,-1);
-		std::vector<sibr::ImageRGB*> selectedImgsPtrs;
+		std::vector<sibr::ImageRGB::Ptr> selectedImgsPtrs;
 
 		std::cout << " imgs selected : ";
 		int selectionId = 0;

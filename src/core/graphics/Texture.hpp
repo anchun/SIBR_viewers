@@ -60,6 +60,11 @@ namespace sibr
 		enum {type=GL_FLOAT};
 	};
 
+	template <> class GLType<int> {
+	public:
+		enum {type=GL_INT};
+	};
+
 	//template <> class GLType<depth32> {
 	//public:
 	//	enum {type=GL_FLOAT};
@@ -139,6 +144,16 @@ namespace sibr
 			isdepth             = 0};
 	};
 
+	template <> class GLFormat<int,1> {
+	public:
+		enum {
+			internal_format     = GL_R32I,
+			format              = GL_RED_INTEGER,
+			int_internal_format = GL_R32I,
+			int_format          = GL_RED_INTEGER,
+			isdepth             = 0};
+	};
+
 	template <> class GLFormat<float,1> {
 	public:
 		enum {
@@ -168,6 +183,8 @@ namespace sibr
 			int_format          = -1,
 			isdepth             =  0};
 	};
+
+
 
 	//// depth texture format
 
@@ -534,6 +551,7 @@ namespace sibr
 	typedef RenderTarget<float,4>          RenderTargetRGBA32F;
 	typedef RenderTarget<float,1>          RenderTargetLum32F;
 
+	typedef RenderTarget<int,1>			   RenderTargetInt1;
 	//////////////////////////////////////////////////////////////////////////////
 	// IMPORTANT NOTE CONCERNING DEPTH BUFFER:
 	//
@@ -878,8 +896,6 @@ namespace sibr
 		int maxRenterTargets = 0;
 		glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, &maxRenterTargets);
 
-		CHECK_GL_ERROR; //juju
-
 		SIBR_ASSERT(num < uint(maxRenterTargets) && num > 0);
 		SIBR_ASSERT(!is_depth || num == 1);
 
@@ -891,16 +907,12 @@ namespace sibr
 
 		glGenFramebuffers(1, &m_fbo);
 
-		CHECK_GL_ERROR; //juju
-
 		if (!is_depth) {
 			glGenRenderbuffers(1, &m_depth_rb); // depth buffer for color rt
 			//glGenRenderbuffers(1, &m_stencil_rb); // stencil buffer for color rt
 		}
 		else
 			m_depth_rb = 0;
-
-		CHECK_GL_ERROR; //juju
 
 		m_numtargets = num;
 		m_autoMIPMAP = ((flags & SIBR_GPU_AUTOGEN_MIPMAP) != 0);
@@ -910,11 +922,9 @@ namespace sibr
 
 		if( m_msaa && (m_numtargets != 1))
 			throw std::runtime_error("Only one MSAA render target can be attached.");
-
 		for (uint n=0; n<m_numtargets; n++) {
 			if (m_msaa)
 				break;
-
 
 			glGenTextures(1, &m_textures[n]);
 
@@ -1224,7 +1234,7 @@ namespace sibr
 		sibr::Image<T_IType, N_INumComp>	out(buffer.w(), buffer.h());
 		for (uint y = 0; y < buffer.h(); ++y)
 			for (uint x = 0; x < buffer.w(); ++x)
-				out.color(x, y, sibr::ColorRGBA(1, 1, 1, 1.f) * buffer.pixel(x, y)[0]);
+				out.color(x, y, sibr::ColorRGBA(1, 1, 1, 1.f) * buffer(x, y)[0]);
 		image = std::move(out);
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);

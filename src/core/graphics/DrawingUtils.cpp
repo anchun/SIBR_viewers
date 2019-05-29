@@ -8,8 +8,8 @@ void DrawingUtils::pixel(sibr::ImageRGB & img, const sibr::Vector2i & pos, const
 
 void DrawingUtils::updatePixel(sibr::ImageRGB & img, const sibr::Vector2i & pos, const sibr::Vector3ub & color, float alpha)
 {
-	img.pixel(pos.x(), pos.y()) = (alpha == 0 ? color :
-		(alpha*img.pixel(pos.x(), pos.y()).cast<float>() + (1.0f - alpha)*color.cast<float>()).cast<unsigned char>());
+	img(pos.x(), pos.y()) = (alpha == 0 ? color :
+		(alpha*img(pos.x(), pos.y()).cast<float>() + (1.0f - alpha)*color.cast<float>()).cast<unsigned char>());
 }
 
 void DrawingUtils::rectangle(sibr::ImageRGB & img, const sibr::Vector2i & cornerA, const sibr::Vector2i & cornerB, const sibr::Vector3ub & color, int thickness)

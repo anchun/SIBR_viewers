@@ -398,7 +398,8 @@ namespace sibr
 	}
 
 	bool	Mesh::hasTexCoords( void ) const {
-		return !_texcoords.empty();
+		return (_vertices.size() > 0 && _vertices.size() == _texcoords.size());
+		//return !_texcoords.empty();
 	}
 
 	const float* Mesh::texCoordArray( void ) const {

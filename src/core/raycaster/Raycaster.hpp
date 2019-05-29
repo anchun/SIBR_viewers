@@ -83,7 +83,7 @@ namespace sibr
 		/// to walk through the ray, collecting even occluded triangles).
 		RayHit	intersect( const Ray& ray, float minDist=0.f  );
 
-		std::array<RayHit, 8>	intersect8(const std::array<Ray, 8>& inray, float minDist = 0.f);
+		std::array<RayHit, 8>	intersect8(const std::array<Ray, 8>& inray,const std::vector<int> & valid8=std::vector<int>(8,-1), float minDist = 0.f );
 
 		/// Optimized ray-cast that only informs you either the ray
 		/// hit something or not. Return TRUE if the ray hit something.

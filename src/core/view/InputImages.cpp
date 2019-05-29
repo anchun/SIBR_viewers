@@ -60,9 +60,9 @@ namespace sibr
 				alphas[i] = alphas[i].resized(_inputImages[i].w(), _inputImages[i].h());
 			for (uint x = 0; x<_inputImages[i].w(); x++)
 				for (uint y = 0; y<_inputImages[i].h(); y++) {
-					ImageRGB::Pixel p = _inputImages[i].pixel(x, y);
-					ImageRGB::Pixel bp = back[i].pixel(x, y);
-					ImageRGB::Pixel a = alphas[i].pixel(x, y);
+					ImageRGB::Pixel p = _inputImages[i](x, y);
+					ImageRGB::Pixel bp = back[i](x, y);
+					ImageRGB::Pixel a = alphas[i](x, y);
 					Vector3f alpha(float(a[0] / 255.), float(a[1] / 255.), float(a[2] / 255.));
 					float al = alpha[0]; // assume grey for now
 					Vector3f val = Vector3f(float(p[0]), float(p[1]), float(p[2]));
@@ -81,7 +81,7 @@ namespace sibr
 					else
 						out = Vector3f(0, 0, 0);
 
-					_inputImages[i].pixel(x, y) = ImageRGB::Pixel((uint)out[0], (uint)out[1], (uint)out[2]);
+					_inputImages[i](x, y) = ImageRGB::Pixel((uint)out[0], (uint)out[1], (uint)out[2]);
 				}
 		}
 	}

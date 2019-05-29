@@ -104,15 +104,15 @@ namespace sibr
 
 	// ------------------------------------------------------------------------
 
-	
+
 	void InputCamera::size(uint w, uint h) { _w = w; _h = h; }
 	uint InputCamera::w(void)  const { return _w; }
 	uint InputCamera::h(void)  const { return _h; }
 	bool InputCamera::isActive(void)  const { return _active; }
-	
+
 	/* compatibility for preprocess (depth) */
 
-	
+
 	Vector3f InputCamera::projectScreen(const Vector3f& pt) const {
 		Vector3f proj_pt = project(pt);
 		Vector3f screen_pt((proj_pt[0] + 1.f)*_w / 2.0f, (1.f - proj_pt[1])*_h / 2.0f, proj_pt[2] * 0.5f + 0.5f);
@@ -124,7 +124,7 @@ namespace sibr
 	float InputCamera::k1() const { return _k1; };
 	float InputCamera::k2() const { return _k2; };
 
-	std::vector<InputCamera> InputCamera::load(const std::string& datasetPath, float zNear, float zFar, const std::string & bundleName, const std::string & listName )
+	std::vector<InputCamera> InputCamera::load(const std::string& datasetPath, float zNear, float zFar, const std::string & bundleName, const std::string & listName)
 	{
 		const std::string bundlerFile = datasetPath + "/cameras/" + bundleName;
 		const std::string listFile = datasetPath + "/images/" + listName;
@@ -245,7 +245,7 @@ namespace sibr
 			currentIdZnearZfar = std::min(currentIdZnearZfar + 1, (int)nearsFars.size() - 1);
 		}
 
-		
+
 		// Load active images
 		ActiveImageFile activeImageFile;
 		activeImageFile.setNumImages((int)cameras.size());
@@ -392,7 +392,7 @@ namespace sibr
 				//camera_data[i].SetNormalizedMeasurementDistortion(d[0]);
 				cameras[i].name(token);
 			}
-		std::cout << ncam << " cameras; " << npoint << " 3D points; " << nproj << " projections\n";		
+			std::cout << ncam << " cameras; " << npoint << " 3D points; " << nproj << " projections\n";
 		}
 		else {
 			SIBR_WRG << "Cannot open '" << nvmPath << std::endl;
@@ -410,24 +410,24 @@ namespace sibr
 		if (in.is_open())
 		{
 			int i = 0;
-			for (std::string line; std::getline(in, line); i++ )
+			for (std::string line; std::getline(in, line); i++)
 			{
 				int w = 1920, h = 1280;
-				if (wh.size()>0) {
+				if (wh.size() > 0) {
 					int whI = std::min(i, (int)wh.size() - 1);
 					w = wh[whI].x();
 					h = wh[whI].y();
 				}
 
 				std::string camName = line.substr(0, line.find(" "));
-				size_t originPos = line.find("-D origin=")+10;
-				size_t targetPos = line.find("-D target=")+10;
-				size_t upPos = line.find("-D up=")+6;
-				size_t fovPos = line.find("-D fov=")+7;
-				size_t clipPos = line.find("-D clip=")+8;
+				size_t originPos = line.find("-D origin=") + 10;
+				size_t targetPos = line.find("-D target=") + 10;
+				size_t upPos = line.find("-D up=") + 6;
+				size_t fovPos = line.find("-D fov=") + 7;
+				size_t clipPos = line.find("-D clip=") + 8;
 				size_t endPos = line.size();
 
-				std::string originStr = line.substr(originPos, targetPos-originPos-11);
+				std::string originStr = line.substr(originPos, targetPos - originPos - 11);
 				std::string targetStr = line.substr(targetPos, upPos - targetPos - 7);
 				std::string upStr = line.substr(upPos, fovPos - upPos - 8);
 				std::string fovStr = line.substr(fovPos, clipPos - fovPos - 9);
@@ -435,8 +435,7 @@ namespace sibr
 
 				std::vector<std::string> vecVal;
 				boost::split(vecVal, originStr, [](char c) {return c == ','; });
-				Vector3f Eye(std::strtof(vecVal[0].c_str(),0), std::strtof(vecVal[1].c_str(), 0), std::strtof(vecVal[2].c_str(), 0));
-
+				Vector3f Eye(std::strtof(vecVal[0].c_str(), 0), std::strtof(vecVal[1].c_str(), 0), std::strtof(vecVal[2].c_str(), 0));
 				boost::split(vecVal, targetStr, [](char c) {return c == ','; });
 				Vector3f At(std::strtof(vecVal[0].c_str(), 0), std::strtof(vecVal[1].c_str(), 0), std::strtof(vecVal[2].c_str(), 0));
 
@@ -475,11 +474,19 @@ namespace sibr
 					r(2,0),r(2,1),r(2,2),
 					r(0,3),r(1,3),r(2,3)
 				};
-*/
+				*/
+				Eigen::Matrix4f m;
+				m(0) = sibr_focal;  m(1) = 0; m(2) = 0;
+				m(3) = r(0, 0); m(4) = r(0, 1); m(5) = r(0, 2);
+				m(6) = r(1, 0); m(7) = r(1, 1); m(8) = r(1, 2);
+				m(9) = r(2, 0); m(10) = r(2, 1); m(11) = r(2, 2);
+				m(12) = r(0, 3); m(13) = r(1, 3); m(14) = r(2, 3);
+
+
 				bool isActive = true;
 
+				cameras.push_back(InputCamera((int)cameras.size(), w, h, m, isActive));
 
-				cameras.push_back(InputCamera((int)cameras.size(), w, h, r, isActive));
 				cameras[i].znear(clip.x());
 				cameras[i].zfar(clip.y());
 				cameras[i].name(camName);
@@ -498,19 +505,19 @@ namespace sibr
 	{
 		const std::string camerasListing = colmapSparsePath + "/cameras.txt";
 		const std::string imagesListing = colmapSparsePath + "/images.txt";
-		
+
 
 		std::ifstream camerasFile(camerasListing);
 		std::ifstream imagesFile(imagesListing);
-		if(!camerasFile.is_open()) {
+		if (!camerasFile.is_open()) {
 			SIBR_ERR << "Unable to load camera colmap file" << std::endl;
 		}
-		if(!imagesFile.is_open()) {
+		if (!imagesFile.is_open()) {
 			SIBR_WRG << "Unable to load images colmap file" << std::endl;
 		}
 
 		std::vector<sibr::InputCamera> cameras;
-	
+
 		std::string line;
 
 		struct CameraParametersColmap {
@@ -525,17 +532,17 @@ namespace sibr
 
 		std::map<size_t, CameraParametersColmap> cameraParameters;
 
-		while(std::getline(camerasFile, line)) {
-			if(line.empty() || line[0] == '#') {
+		while (std::getline(camerasFile, line)) {
+			if (line.empty() || line[0] == '#') {
 				continue;
 			}
 
 			std::vector<std::string> tokens = sibr::split(line, ' ');
-			if(tokens.size() < 8) {
+			if (tokens.size() < 8) {
 				SIBR_WRG << "Unknown line." << std::endl;
 				continue;
 			}
-			if(tokens[1] != "PINHOLE" && tokens[1] != "OPENCV") {
+			if (tokens[1] != "PINHOLE" && tokens[1] != "OPENCV") {
 				SIBR_WRG << "Unknown camera type." << std::endl;
 				continue;
 			}
@@ -559,12 +566,12 @@ namespace sibr
 			0, -1, 0,
 			0, 0, -1;
 
-		while(std::getline(imagesFile, line)) {
-			if(line.empty() || line[0] == '#') {
+		while (std::getline(imagesFile, line)) {
+			if (line.empty() || line[0] == '#') {
 				continue;
 			}
 			std::vector<std::string> tokens = sibr::split(line, ' ');
-			if(tokens.size() < 10) {
+			if (tokens.size() < 10) {
 				SIBR_WRG << "Unknown line." << std::endl;
 				continue;
 			}
@@ -581,7 +588,7 @@ namespace sibr
 			const std::string::size_type dotPos = imageName.find_last_of(".");
 			imageName = imageName.substr(0, dotPos);
 
-			if(cameraParameters.find(id) == cameraParameters.end())
+			if (cameraParameters.find(id) == cameraParameters.end())
 			{
 				SIBR_ERR << "Could not find intrinsics for image: "
 					<< tokens[9] << std::endl;
@@ -600,7 +607,7 @@ namespace sibr
 			camera.znear(zNear);
 			camera.zfar(zFar);
 			cameras.push_back(camera);
-			
+
 
 			// Skip the observations.
 			std::getline(imagesFile, line);
@@ -738,7 +745,7 @@ namespace sibr
 		outfile << q.x() << " " << q.y() << " " << q.z() << " " << q.w();
 	}
 
-	std::string InputCamera::toBundleString() const {
+	std::string InputCamera::toBundleString(bool negativeZ) const {
 
 		std::stringstream ss;
 		ss << std::setprecision(16);
@@ -748,12 +755,34 @@ namespace sibr
 		sibr::Vector3f t = -transform().rotation().toRotationMatrix().transpose()*position();
 
 		ss << focal << " " << k1() << " " << k2() << "\n"; // The focal is set to zero in the loading module we use fov=2.0f * atan( 0.5f*h / focal) here
-		ss << r(0) << " " << r(1) << " " << r(2) << "\n";
-		ss << r(3) << " " << r(4) << " " << r(5) << "\n";
-		ss << r(6) << " " << r(7) << " " << r(8) << "\n";
-		ss << t(0) << " " << t(1) << " " << t(2) << "\n";
+		if (!negativeZ) {
+			ss << r(0) << " " << r(1) << " " << r(2) << "\n";
+			ss << r(3) << " " << r(4) << " " << r(5) << "\n";
+			ss << r(6) << " " << r(7) << " " << r(8) << "\n";
+			ss << t(0) << " " << t(1) << " " << t(2) << "\n";
+		}
+		else {
+			ss << r(0) << " " << -r(2) << " " << r(1) << "\n";
+			ss << r(3) << " " << -r(5) << " " << r(4) << "\n";
+			ss << r(6) << " " << -r(8) << " " << r(7) << "\n";
+			ss << t(0) << " " << t(1) << " " << t(2) << "\n";
+		}
 
 		return ss.str();
 	}
 
+	void InputCamera::saveAsBundle(std::vector<sibr::InputCamera> cams, std::string fileName, bool negativeZ) {
+
+		std::ofstream outputBundleCam;
+		outputBundleCam.open(fileName);
+		outputBundleCam << "# Bundle file v0.3" << std::endl;
+		outputBundleCam << cams.size() << " " << 0 << std::endl;
+
+		for (int c = 0; c < cams.size(); c++) {
+			auto & camIm = cams[c];
+			outputBundleCam << camIm.toBundleString(negativeZ);
+		}
+
+		outputBundleCam.close();
+	}
 } // namespace sibr

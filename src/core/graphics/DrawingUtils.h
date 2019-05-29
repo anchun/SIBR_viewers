@@ -82,10 +82,10 @@ public :
 
 		for (int i = 0; i < 4; ++i) {
 			vs[i] <<
-				img.pixel(sibr::clamp(cornerPixel[0] + offsets[i][0][0], 0, (int)img.w() - 1), sibr::clamp(cornerPixel[1] + offsets[i][0][1], 0, (int)img.h() - 1)).cast<float>(),
-				img.pixel(sibr::clamp(cornerPixel[0] + offsets[i][1][0], 0, (int)img.w() - 1), sibr::clamp(cornerPixel[1] + offsets[i][1][1], 0, (int)img.h() - 1)).cast<float>(),
-				img.pixel(sibr::clamp(cornerPixel[0] + offsets[i][2][0], 0, (int)img.w() - 1), sibr::clamp(cornerPixel[1] + offsets[i][2][1], 0, (int)img.h() - 1)).cast<float>(),
-				img.pixel(sibr::clamp(cornerPixel[0] + offsets[i][3][0], 0, (int)img.w() - 1), sibr::clamp(cornerPixel[1] + offsets[i][3][1], 0, (int)img.h() - 1)).cast<float>();
+				img(sibr::clamp(cornerPixel[0] + offsets[i][0][0], 0, (int)img.w() - 1), sibr::clamp(cornerPixel[1] + offsets[i][0][1], 0, (int)img.h() - 1)).cast<float>(),
+				img(sibr::clamp(cornerPixel[0] + offsets[i][1][0], 0, (int)img.w() - 1), sibr::clamp(cornerPixel[1] + offsets[i][1][1], 0, (int)img.h() - 1)).cast<float>(),
+				img(sibr::clamp(cornerPixel[0] + offsets[i][2][0], 0, (int)img.w() - 1), sibr::clamp(cornerPixel[1] + offsets[i][2][1], 0, (int)img.h() - 1)).cast<float>(),
+				img(sibr::clamp(cornerPixel[0] + offsets[i][3][0], 0, (int)img.w() - 1), sibr::clamp(cornerPixel[1] + offsets[i][3][1], 0, (int)img.h() - 1)).cast<float>();
 		}
 
 		Pxls bs;

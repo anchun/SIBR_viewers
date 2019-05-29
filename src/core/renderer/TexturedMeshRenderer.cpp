@@ -2,8 +2,13 @@
 #include <core/renderer/TexturedMeshRenderer.hpp>
 
 namespace sibr { 
-	TexturedMeshRenderer::TexturedMeshRenderer( void )
-	{
+	TexturedMeshRenderer::TexturedMeshRenderer( bool flipY )
+	{	
+		if(flipY)
+		_shader.init("TexturedMesh",
+			sibr::loadFile("./shaders_rsc/textured_mesh_flipY.vert"),
+			sibr::loadFile("./shaders_rsc/textured_mesh.frag"));
+		else
 		_shader.init("TexturedMesh",
 			sibr::loadFile("./shaders_rsc/textured_mesh.vert"),
 			sibr::loadFile("./shaders_rsc/textured_mesh.frag"));

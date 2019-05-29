@@ -180,7 +180,7 @@ namespace sibr {
 				bool breakLoop = false;
 				for (int j = 0; j < (int)(rtLum->h()); j++) {
 					for (int i = 0; i < (int)(rtLum->w()); i++) {
-						if (imLum.pixel(i, j).x() != 0) {
+						if (imLum(i, j).x() != 0) {
 							nonBlack = true;
 							breakLoop = true;
 							break;

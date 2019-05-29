@@ -262,7 +262,7 @@ namespace sibr
 		return RayHit(inray, ray.tfar, coord, normal, prim);
 	}
 
-	std::array<RayHit, 8>	Raycaster::intersect8(const std::array<Ray, 8>& inray, float minDist)
+	std::array<RayHit, 8>	Raycaster::intersect8(const std::array<Ray, 8>& inray,const std::vector<int> & valid8, float minDist)
 	{
 		assert(minDist >= 0.f);
 
@@ -280,25 +280,16 @@ namespace sibr
 			ray.geomID[r] = RTC_INVALID_GEOMETRY_ID;
 		}
 
-		int valid8[8] = { -1,-1,-1,-1, -1, -1, -1, -1 };
 		if (init() == false)
 			SIBR_ERR << "cannot initialize embree, failed cast rays." << std::endl;
 		else
-			rtcIntersect8(valid8, _scene.get(), ray);
+			rtcIntersect8(valid8.data(), _scene.get(), ray);
 
-
-
-		std::array<RayHit, 8> res = { {
-		{ inray[0],ray.tfar[0],RayHit::BCCoord{ ray.u[0],ray.v[0] },sibr::Vector3f(ray.Ngx[0],ray.Ngy[0],ray.Ngz[0]),RayHit::Primitive{ (uint)ray.primID[0] ,(uint)ray.geomID[0],(uint)ray.instID[0] } },
-		{ inray[1],ray.tfar[1],RayHit::BCCoord{ ray.u[1],ray.v[1] },sibr::Vector3f(ray.Ngx[1],ray.Ngy[1],ray.Ngz[1]),RayHit::Primitive{ (uint)ray.primID[1] ,(uint)ray.geomID[1],(uint)ray.instID[1] } },
-		{ inray[2],ray.tfar[2],RayHit::BCCoord{ ray.u[2],ray.v[2] },sibr::Vector3f(ray.Ngx[2],ray.Ngy[2],ray.Ngz[2]),RayHit::Primitive{ (uint)ray.primID[2] ,(uint)ray.geomID[2],(uint)ray.instID[2] } },
-		{ inray[3],ray.tfar[3],RayHit::BCCoord{ ray.u[3],ray.v[3] },sibr::Vector3f(ray.Ngx[3],ray.Ngy[3],ray.Ngz[3]),RayHit::Primitive{ (uint)ray.primID[3] ,(uint)ray.geomID[3],(uint)ray.instID[3] } },
-		{ inray[4],ray.tfar[4],RayHit::BCCoord{ ray.u[4],ray.v[4] },sibr::Vector3f(ray.Ngx[4],ray.Ngy[4],ray.Ngz[4]),RayHit::Primitive{ (uint)ray.primID[4] ,(uint)ray.geomID[4],(uint)ray.instID[4] } },
-		{ inray[5],ray.tfar[5],RayHit::BCCoord{ ray.u[5],ray.v[5] },sibr::Vector3f(ray.Ngx[5],ray.Ngy[5],ray.Ngz[5]),RayHit::Primitive{ (uint)ray.primID[5] ,(uint)ray.geomID[5],(uint)ray.instID[5] } },
-		{ inray[6],ray.tfar[6],RayHit::BCCoord{ ray.u[6],ray.v[6] },sibr::Vector3f(ray.Ngx[6],ray.Ngy[6],ray.Ngz[6]),RayHit::Primitive{ (uint)ray.primID[6] ,(uint)ray.geomID[6],(uint)ray.instID[6] } },
-		{ inray[7],ray.tfar[7],RayHit::BCCoord{ ray.u[7],ray.v[7] },sibr::Vector3f(ray.Ngx[7],ray.Ngy[7],ray.Ngz[7]),RayHit::Primitive{ (uint)ray.primID[7] ,(uint)ray.geomID[7],(uint)ray.instID[7] } },
-			} };
-
+		std::array<RayHit, 8> res;
+		for (int r = 0; r < 8; r++) {
+			if (valid8[r])
+				res[r] = { inray[r], ray.tfar[r], RayHit::BCCoord{ ray.u[r],ray.v[r] }, sibr::Vector3f(ray.Ngx[r], ray.Ngy[r], ray.Ngz[r]), RayHit::Primitive{ (uint)ray.primID[r] ,(uint)ray.geomID[r],(uint)ray.instID[r] } };
+		}
 		return res;
 	}
 

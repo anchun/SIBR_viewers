@@ -16,7 +16,7 @@ sibr_assets
 
 if(WIN32)
 	target_link_libraries(${PROJECT_NAME}
-	lexers simd sys
+	
 	)
 endif()
 

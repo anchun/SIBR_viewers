@@ -60,9 +60,9 @@ namespace sibr
 		sibr::ImageRGBA out(imgF.w(), imgF.h());
 		for (uint y = 0; y < out.h(); ++y) {
 			for (uint x = 0; x < out.w(); ++x) {
-				unsigned char const * p = reinterpret_cast<unsigned char const *>(&imgF.pixel(x, y).x());
+				unsigned char const * p = reinterpret_cast<unsigned char const *>(&imgF(x, y).x());
 				for (std::size_t i = 0; i != sizeof(float); ++i) {
-					out.pixel(x, y)[i] = p[i];
+					out(x, y)[i] = p[i];
 				}
 			}
 		}
@@ -74,9 +74,9 @@ namespace sibr
 		sibr::ImageL32F out(imgRGBA.w(), imgRGBA.h());
 		for (uint y = 0; y < out.h(); ++y) {
 			for (uint x = 0; x < out.w(); ++x) {
-				unsigned char * p = reinterpret_cast<unsigned char *>(&out.pixel(x, y).x());
+				unsigned char * p = reinterpret_cast<unsigned char *>(&out(x, y).x());
 				for (std::size_t i = 0; i != sizeof(float); ++i) {
-					p[i] = imgRGBA.pixel(x, y)[i];
+					p[i] = imgRGBA(x, y)[i];
 				}
 			}
 		}
@@ -89,9 +89,9 @@ namespace sibr
 		for (uint y = 0; y < imgF.h(); ++y) {
 			for (uint x = 0; x < imgF.w(); ++x) {
 				for (int k = 0; k < 3; k++) {
-					unsigned char const * p = reinterpret_cast<unsigned char const *>(&imgF.pixel(x, y)[k]);
+					unsigned char const * p = reinterpret_cast<unsigned char const *>(&imgF(x, y)[k]);
 					for (std::size_t i = 0; i != sizeof(float); ++i) {
-						out.pixel(k*imgF.w() + x, y)[i] = p[i];
+						out(k*imgF.w() + x, y)[i] = p[i];
 					}
 				}
 			}
@@ -105,9 +105,9 @@ namespace sibr
 	//	for (uint y = 0; y < imgF.h(); ++y) {
 	//		for (uint x = 0; x < imgF.w(); ++x) {
 	//			for (int k = 0; k < 3; k++) {
-	//				unsigned char const * p = reinterpret_cast<unsigned char const *>(&imgF.pixel(x, y)[k]);
+	//				unsigned char const * p = reinterpret_cast<unsigned char const *>(&imgF(x, y)[k]);
 	//				for (std::size_t i = 0; i != sizeof(float); ++i) {
-	//					out.pixel(x, k*imgF.h() + y)[i] = p[i];
+	//					out(x, k*imgF.h() + y)[i] = p[i];
 	//				}
 	//			}
 	//		}
@@ -121,9 +121,9 @@ namespace sibr
 		for (uint y = 0; y < out.h(); ++y) {
 			for (uint x = 0; x < out.w(); ++x) {
 				for (int k = 0; k < 3; k++) {
-					unsigned char * p = reinterpret_cast<unsigned char *>(&out.pixel(x, y)[k]);
+					unsigned char * p = reinterpret_cast<unsigned char *>(&out(x, y)[k]);
 					for (std::size_t i = 0; i != sizeof(float); ++i) {
-						p[i] = imgRGBA.pixel(k*out.w() + x, y)[i];
+						p[i] = imgRGBA(k*out.w() + x, y)[i];
 					}
 				}
 			}
@@ -142,12 +142,12 @@ namespace sibr
 
 		for (uint i = 0; i < out.h(); ++i) {
 			for (uint j = 0; j < out.w(); ++j) {		
-				const double phi = std::acos((double)imgF.pixel(j, i)[2]);
-				const double theta = std::atan2((double)imgF.pixel(j, i)[1], (double)imgF.pixel(j, i)[0]);
+				const double phi = std::acos((double)imgF(j, i)[2]);
+				const double theta = std::atan2((double)imgF(j, i)[1], (double)imgF(j, i)[0]);
 				phi_uint = (uint)((phi / M_PI) * (1 << 16));
 				theta_uint = (uint)((0.5*(theta / M_PI + 1.0)) * (1 << 16));
 
-				unsigned char * out_ptr = reinterpret_cast<unsigned char *>(&out.pixel(j, i)[0]);
+				unsigned char * out_ptr = reinterpret_cast<unsigned char *>(&out(j, i)[0]);
 				out_ptr[0] = phi_ptr[0];
 				out_ptr[1] = phi_ptr[1];
 				out_ptr[2] = theta_ptr[0];
@@ -169,7 +169,7 @@ namespace sibr
 
 		for (uint i = 0; i < out.h(); ++i) {
 			for (uint j = 0; j < out.w(); ++j) {	
-				unsigned char const * out_ptr = reinterpret_cast<unsigned char const *>(&imgRGBA.pixel(j, i)[0]);
+				unsigned char const * out_ptr = reinterpret_cast<unsigned char const *>(&imgRGBA(j, i)[0]);
 				phi_ptr[0] = out_ptr[0];
 				phi_ptr[1] = out_ptr[1];
 				theta_ptr[2] = out_ptr[0];
@@ -181,7 +181,7 @@ namespace sibr
 				float cos_t = std::cos(theta);
 				float sin_p = std::sin(phi);
 				float cos_p = std::cos(phi);
-				out.pixel(j, i) = sibr::Vector3f(sin_t*cos_p, sin_t*sin_p, cos_t);
+				out(j, i) = sibr::Vector3f(sin_t*cos_p, sin_t*sin_p, cos_t);
 			}
 		}
 
@@ -206,7 +206,7 @@ namespace sibr
 
 		for (unsigned int i = 0; i < imClass->w(); i++) {
 			for (unsigned int j = 0; j < imClass->h(); j++) {
-				imClassColor.pixel(i, j) = colors[imClass->pixel(i, j).x() % 256];
+				imClassColor(i, j) = colors[imClass(i, j).x() % 256];
 			}
 		}
 		return imClassColor;
@@ -232,12 +232,12 @@ namespace sibr
 			for (unsigned int i = 0; i < imClass->w(); i++) {
 
 				Vector3ub color;
-				if (imClass->pixel(i, j).x() < 0)
+				if (imClass(i, j).x() < 0)
 					color = colors[255];
 				else
-					color = colors[imClass->pixel(i, j).x() % 256];
+					color = colors[imClass(i, j).x() % 256];
 
-				imClassColor.pixel(i, j) = color;
+				imClassColor(i, j) = color;
 			}
 		}
 		return imClassColor;
@@ -269,9 +269,9 @@ namespace sibr
 		for (unsigned int j = 0; j < im.h(); j++) {
 			for (unsigned int i = 0; i < im.w(); i++) {
 				if (logScale)
-					imIntensity.pixel(i, j).x() = static_cast<unsigned char>(std::max(0.0, std::min((log(im.pixel(i, j).x()) - min) * 255 / (max - min), 255.0)));
+					imIntensity(i, j).x() = static_cast<unsigned char>(std::max(0.0, std::min((log(im(i, j).x()) - min) * 255 / (max - min), 255.0)));
 				else
-					imIntensity.pixel(i, j).x() = static_cast<unsigned char>(std::max(0.0, std::min((im.pixel(i, j).x() - min) * 255 / (max - min), 255.0)));
+					imIntensity(i, j).x() = static_cast<unsigned char>(std::max(0.0, std::min((im(i, j).x() - min) * 255 / (max - min), 255.0)));
 			}
 		}
 		cv::Mat colorMat;

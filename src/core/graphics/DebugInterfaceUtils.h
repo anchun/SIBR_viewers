@@ -3,7 +3,7 @@
 
 #include <core/graphics/DrawingUtils.h>
 
-typedef std::shared_ptr<sibr::ImageRGB> Img;
+typedef sibr::ImageRGB::Ptr Img;
 
 struct LocalPos
 {
