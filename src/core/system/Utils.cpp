@@ -214,7 +214,7 @@ namespace sibr
 				destination = destination / source.filename();
 			}
 
-			if (fs::exists(destination))
+			if (fs::exists(destination) && !overwrite)
 			{
 				std::cerr << "Destination file " << destination.string()
 					<< " already exists." << '\n'
