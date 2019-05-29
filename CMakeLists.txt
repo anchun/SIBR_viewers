@@ -1,4 +1,5 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.9)
+set (CMAKE_SYSTEM_VERSION 10.0.15063.0 CACHE TYPE INTERNAL FORCE)
 PROJECT(sibr_projects)
 
 ## Lastest version of cmake doesn't work.
