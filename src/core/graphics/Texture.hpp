@@ -1234,7 +1234,7 @@ namespace sibr
 		sibr::Image<T_IType, N_INumComp>	out(buffer.w(), buffer.h());
 		for (uint y = 0; y < buffer.h(); ++y)
 			for (uint x = 0; x < buffer.w(); ++x)
-				out.color(x, y, sibr::ColorRGBA(1, 1, 1, 1.f) * buffer.pixel(x, y)[0]);
+				out.color(x, y, sibr::ColorRGBA(1, 1, 1, 1.f) * buffer(x, y)[0]);
 		image = std::move(out);
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);

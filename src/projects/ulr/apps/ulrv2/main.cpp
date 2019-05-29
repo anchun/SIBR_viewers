@@ -210,8 +210,8 @@ int legacyV2main(ULRAppArgs & myArgs)
 				for (int i = 0; i < w; i++) {
 					for (int j = 0; j < h; j++) {
 						sibr::Vector2i pixelPos(i, j);
-						sibr::Vector3f pos3dMesh(cam.unprojectImgSpaceInvertY(pixelPos, depthMapSIBR.pixel(i, j).x()));
-						depths3D[imId].pixel(i, j).x() = (camPos - pos3dMesh).norm();
+						sibr::Vector3f pos3dMesh(cam.unprojectImgSpaceInvertY(pixelPos, depthMapSIBR(i, j).x()));
+						depths3D[imId](i, j).x() = (camPos - pos3dMesh).norm();
 					}
 				}
 				//showFloat(depthMapSIBR);

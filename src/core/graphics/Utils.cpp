@@ -71,7 +71,7 @@ namespace sibr
 		for (int j = 0; j < img.h(); j++) {
 			for (int i = 0; i < img.w(); i++) {
 				for (int c = 0; c < 3; c++) {
-					img.pixel(i, j)[c] = sRGB2LinF(img.pixel(i, j)[c]);
+					img(i, j)[c] = sRGB2LinF(img(i, j)[c]);
 				}
 			}
 		}
@@ -83,7 +83,7 @@ namespace sibr
 		for (int j = 0; j < img.h(); j++) {
 			for (int i = 0; i < img.w(); i++) {
 				for (int c = 0; c < 3; c++) {
-					img.pixel(i, j)[c] = lin2sRGBF(img.pixel(i, j)[c]);
+					img(i, j)[c] = lin2sRGBF(img(i, j)[c]);
 				}
 			}
 		}

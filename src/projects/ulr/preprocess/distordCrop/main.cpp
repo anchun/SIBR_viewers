@@ -118,7 +118,7 @@ bool is_number(const std::string& s)
  * pd: they are not marked as visited if they are not black. why? a) because it is only used to avoid adding black pixels multiple times
  */
 void addPixelToQueue(const sibr::Vector2i & pixel, const sibr::ImageRGB & img, std::priority_queue<sibr::Vector2i> & queue, sibr::Array2d<bool> & arrayVisited) {
-	if (!arrayVisited(pixel.x(), pixel.y()) && isBlack(img.pixel(pixel.x(), pixel.y()))) {
+	if (!arrayVisited(pixel.x(), pixel.y()) && isBlack(img(pixel.x(), pixel.y()))) {
 		queue.push(pixel);
 		arrayVisited(pixel.x(), pixel.y()) = true;
 	}
@@ -199,7 +199,7 @@ Bounds getBounds(const sibr::ImageRGB & img) {
 	sibr::ImageRGB viz(w,h);
 	for(int y=0; y<h; y++){
 	for(int x=0; x<w; ++x){
-	viz.pixel(x,y) = ( isBlack(x,y) ? sibr::Vector3ub(255,255,255)  : sibr::Vector3ub(0,0,0)  );
+	viz(x,y) = ( isBlack(x,y) ? sibr::Vector3ub(255,255,255)  : sibr::Vector3ub(0,0,0)  );
 	}
 	}
 
@@ -631,7 +631,7 @@ for (int id = 0; id<(int)inputImgs.size(); ++id) {
 sibr::ImageRGB img(inputImgs.at(id).w(), inputImgs.at(id).h());
 for (int y = 0; y<(int)inputImgs.at(id).h(); y++) {
 for (int x = 0; x<(int)inputImgs.at(id).w(); x++) {
-img.pixel(x, y) = inputImgs.at(id).pixel(x, y);
+img(x, y) = inputImgs.at(id)(x, y);
 }
 }
 cv::Scalar red(255, 0, 0);

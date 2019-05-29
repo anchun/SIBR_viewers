@@ -94,8 +94,13 @@ namespace sibr
 		virtual cv::Mat			toOpenCVBGR(void) const = 0;
 		virtual void			fromOpenCVBGR(const cv::Mat& img) = 0;
 
-		
+
 	};
+
+
+
+	template<typename T_Type, unsigned int T_NumComp>
+	class ImagePtr;
 
 	/**
 	* This class is used to store images. Internally, a cv::Mat
@@ -113,7 +118,10 @@ namespace sibr
 	class /*SIBR_GRAPHICS_EXPORT*/ Image : public IImage {
 	public:
 		typedef T_Type						Type;
-		SIBR_CLASS_PTR(Image);
+		//SIBR_CLASS_PTR(Image);
+		typedef ImagePtr<T_Type, T_NumComp> Ptr;
+
+		//typedef std::unique_ptr<classname>	UPtr;
 		typedef Eigen::Matrix<T_Type, T_NumComp, 1, Eigen::DontAlign>	Pixel; // RGB
 		enum { e_NumComp = T_NumComp };
 
@@ -128,7 +136,7 @@ namespace sibr
 		Image(Image&& other);
 		Image& operator=(Image&& other);
 
-		bool		load( const std::string& filename, bool verbose = true, bool warning_if_not_found = true);
+		bool		load(const std::string& filename, bool verbose = true, bool warning_if_not_found = true);
 		bool		loadByteStream(const std::string& filename, bool verbose = true);
 		/// ATTENTION: if you try to save an image with a channel depth
 		/// that is not managed by a file format (e.g. saving 32F to .jpeg),
@@ -137,10 +145,15 @@ namespace sibr
 		void		save(const std::string& filename, bool verbose = true) const;
 		void		saveByteStream(const std::string& filename, bool verbose = true) const;
 
-		const Pixel&	pixel(uint x, uint y) const;
+		/*const Pixel&	pixel(uint x, uint y) const;
 		Pixel&			pixel(uint x, uint y);
 		const Pixel&	pixel(const sibr::Vector2i & xy) const;
-		Pixel&			pixel(const sibr::Vector2i & xy);
+		Pixel&			pixel(const sibr::Vector2i & xy);*/
+
+		const Pixel&	operator()(uint x, uint y) const;
+		Pixel&			operator()(uint x, uint y);
+		const Pixel&	operator()(const sibr::Vector2i & xy) const;
+		Pixel&			operator()(const sibr::Vector2i & xy);
 
 		virtual std::string		pixelStr(const sibr::Vector2i & xy)  const;
 
@@ -210,7 +223,7 @@ namespace sibr
 
 		/// bicubic interpolation color from a floating 2d position
 		/// \param pixelPosition query position in [0,w[x[0,h[
-		Pixel bicubic(const sibr::Vector2f & pixelPosition ) const;
+		Pixel bicubic(const sibr::Vector2f & pixelPosition) const;
 
 	private:
 		//Image&		operator =( const cv::Mat& img ); // deprecated, use fromOpenCV() instead
@@ -231,8 +244,36 @@ namespace sibr
 		cv::Mat			_pixels;	///< pixels stored in RGB format
 	};
 
+	template<typename T_Type, unsigned int T_NumComp>
+	class ImagePtr {
+	public:
+		
+		std::shared_ptr<Image<T_Type, T_NumComp>> imPtr;
+		
+		ImagePtr() { imPtr = std::shared_ptr<Image<T_Type, T_NumComp>>(); };
+		ImagePtr(Image<T_Type, T_NumComp>* imgPtr) { imPtr = std::shared_ptr<Image<T_Type, T_NumComp>>(imgPtr); };
+		ImagePtr(std::shared_ptr<Image<T_Type, T_NumComp>>& imgPtr)  {imPtr = std::shared_ptr<Image<T_Type, T_NumComp>>(imgPtr); };
+		typename Image<T_Type, T_NumComp>*	get() { return imPtr.get(); };
+		const typename Image<T_Type, T_NumComp>::Pixel&			operator()(uint x, uint y) const;
+		typename Image<T_Type, T_NumComp>::Pixel&				operator()(uint x, uint y);
+		const typename Image<T_Type, T_NumComp>::Pixel&			operator()(const sibr::Vector2i & xy) const;
+		typename Image<T_Type, T_NumComp>::Pixel&				operator()(const sibr::Vector2i & xy);
+
+		typename Image<T_Type, T_NumComp>&						operator * () { return imPtr.operator*(); };
+		const typename Image<T_Type, T_NumComp>&				operator * () const { return imPtr.operator*(); };
+		typename Image<T_Type, T_NumComp>*						operator -> () { return imPtr.operator->(); };
+		const typename Image<T_Type, T_NumComp>*				operator -> () const { return imPtr.operator->(); };
+		//void													operator = (const std::shared_ptr<Image<T_Type, T_NumComp>> imgShPtr) const { (*this) = imgShPtr; };
+		//typename std::shared_ptr<Image<T_Type, T_NumComp>> & 		operator = (const std::shared_ptr<Image<T_Type, T_NumComp>> & imgShPtr) const { imPtr = imgShPtr; return &imPtr; };
+		typename std::shared_ptr<Image<T_Type, T_NumComp>> & 			operator = (std::shared_ptr<Image<T_Type, T_NumComp>> & imgShPtr) { imPtr = imgShPtr; return &imPtr; };
+		operator bool() { return imPtr.get() != nullptr; };
+		operator bool() const { return imPtr.get() != nullptr; };
+
+	};
+
+
 	template <typename T_Type, unsigned T_NumComp>
-	static void		show( const Image<T_Type, T_NumComp> & img, const std::string& windowTitle="sibr::show()" , bool closeWindow = true ) {
+	static void		show(const Image<T_Type, T_NumComp> & img, const std::string& windowTitle = "sibr::show()", bool closeWindow = true) {
 		cv::namedWindow(windowTitle, CV_WINDOW_AUTOSIZE | CV_WINDOW_KEEPRATIO | CV_GUI_EXPANDED);
 		// Note: CV_GUI_EXPANDED does only work with Qt :s
 		//SIBR_ASSERT(img.w() > 1 || img.h() > 1);
@@ -246,7 +287,7 @@ namespace sibr
 
 	SIBR_GRAPHICS_EXPORT Image<unsigned char, 3> coloredClass(const Image<unsigned char, 1>::Ptr imClass);
 	SIBR_GRAPHICS_EXPORT Image<unsigned char, 3> coloredClass(const Image<int, 1>::Ptr imClass);
-	SIBR_GRAPHICS_EXPORT void showFloat(const Image<float, 1> & im, bool logScale = false, double min=-DBL_MAX, double max=DBL_MAX);
+	SIBR_GRAPHICS_EXPORT void showFloat(const Image<float, 1> & im, bool logScale = false, double min = -DBL_MAX, double max = DBL_MAX);
 
 	template<typename T_Type, unsigned int T_NumComp>
 	Image<T_Type, T_NumComp>::Image(void) :
@@ -350,7 +391,7 @@ namespace sibr
 	}
 
 	template<typename T_Type, unsigned int T_NumComp>
-	bool		Image<T_Type, T_NumComp>::load( const std::string& filename, bool verbose, bool warning_if_not_found) {
+	bool		Image<T_Type, T_NumComp>::load(const std::string& filename, bool verbose, bool warning_if_not_found) {
 		if (verbose)
 			SIBR_LOG << "Loading image file '" << filename << "'." << std::endl;
 		else
@@ -363,7 +404,7 @@ namespace sibr
 			if (warning_if_not_found) {
 				SIBR_WRG << "Image file not found '" << filename << "'." << std::endl;
 			}
-			
+
 			return false;
 		}
 		opencv::convertBGR2RGB(img);
@@ -382,7 +423,7 @@ namespace sibr
 		cv::Vec<T_Type, T_NumComp> p;
 
 		sibr::ByteStream bs;
-		if(!bs.load(filename))
+		if (!bs.load(filename))
 			SIBR_WRG << "Image file not found '" << filename << "'." << std::endl;
 
 		int wIm;
@@ -396,7 +437,7 @@ namespace sibr
 			{
 				uint i;
 				for (i = 0; i < T_NumComp; ++i)
-					bs >> p[i] ;
+					bs >> p[i];
 
 				_pixels.at<cv::Vec<T_Type, T_NumComp>>(y, x) = p;
 			}
@@ -422,7 +463,7 @@ namespace sibr
 
 		if (verbose)
 			SIBR_LOG << "Saving image file '" << filename << "'." << std::endl;
-		
+
 		cv::Mat img;
 		if (T_NumComp == 1) {
 			cv::cvtColor(toOpenCVBGR(), img, CV_GRAY2BGR);
@@ -440,12 +481,12 @@ namespace sibr
 			finalImage = imageF_8UC4;
 		}
 		else {
-		cv::Mat3b imageF_8UC3;
-		double scale = 255.0 / (double)opencv::imageTypeRange<T_Type>();
-		img.convertTo(imageF_8UC3, CV_8UC3, scale);
+			cv::Mat3b imageF_8UC3;
+			double scale = 255.0 / (double)opencv::imageTypeRange<T_Type>();
+			img.convertTo(imageF_8UC3, CV_8UC3, scale);
 			finalImage = imageF_8UC3;
 		}
-		
+
 		if (img.cols > 0 && img.rows > 0)
 		{
 			if (cv::imwrite(filename, finalImage) == false)
@@ -472,7 +513,7 @@ namespace sibr
 		int wIm = w();
 		int hIm = h();
 
-		if (wIm > 0 && hIm  > 0) {
+		if (wIm > 0 && hIm > 0) {
 			bs << wIm << hIm;
 			for (int j = 0; j < hIm; j++) {
 				for (int i = 0; i < wIm; i++) {
@@ -488,17 +529,24 @@ namespace sibr
 	}
 
 	template<typename T_Type, unsigned int T_NumComp>
-	const typename Image<T_Type, T_NumComp>::Pixel&		Image<T_Type, T_NumComp>::pixel(uint x, uint y) const {
+	inline const typename Image<T_Type, T_NumComp>::Pixel&		Image<T_Type, T_NumComp>::operator()(uint x, uint y) const {
 #ifndef NDEBUG
 		if (!(x < w() && y < h())) {
 			std::cout << " access (" << x << " , " << y << ") while size is " << w() << " x " << h() << std::endl;
-		}
+}
 #endif
 		SIBR_ASSERT(x < w() && y < h());
 		return _pixels.at<typename Image<T_Type, T_NumComp>::Pixel>(y, x);
 	}
+
 	template<typename T_Type, unsigned int T_NumComp>
-	typename Image<T_Type, T_NumComp>::Pixel&		Image<T_Type, T_NumComp>::pixel(uint x, uint y) {
+	inline const typename Image<T_Type, T_NumComp>::Pixel & ImagePtr<T_Type, T_NumComp>::operator()(uint x, uint y) const
+	{
+		return (*imPtr)(x, y);
+	}
+
+	template<typename T_Type, unsigned int T_NumComp>
+	inline typename Image<T_Type, T_NumComp>::Pixel&		Image<T_Type, T_NumComp>::operator()(uint x, uint y) {
 #ifndef NDEBUG
 		if (!(x < w() && y < h())) {
 			std::cout << " access (" << x << " , " << y << ") while size is " << w() << " x " << h() << std::endl;
@@ -509,6 +557,15 @@ namespace sibr
 		//return reinterpret_cast<Image<T_Type, T_NumComp>::Pixel>(_pixels.at<cv::Vec<T_Type, T_NumComp>>(y, x));
 		// return _pixels.at<typename T_Type>(y, x);
 	}
+
+	template<typename T_Type, unsigned int T_NumComp>
+	inline typename Image<T_Type, T_NumComp>::Pixel & ImagePtr<T_Type, T_NumComp>::operator()(uint x, uint y)
+	{
+		return (*imPtr)(x, y);
+	}
+
+
+
 	template<typename T_Type, unsigned int T_NumComp>
 	void		Image<T_Type, T_NumComp>::pixel(uint x, uint y, const Pixel& p) {
 		SIBR_ASSERT(x < w() && y < h());
@@ -518,13 +575,23 @@ namespace sibr
 	}
 
 	template<typename T_Type, unsigned int T_NumComp>
-	const typename Image<T_Type, T_NumComp>::Pixel& Image<T_Type, T_NumComp>::pixel(const sibr::Vector2i & xy) const {
-		return pixel(xy[0], xy[1]);
+	inline const typename Image<T_Type, T_NumComp>::Pixel& Image<T_Type, T_NumComp>::operator()(const sibr::Vector2i & xy) const {
+		return operator()(xy[0], xy[1]);
+	}
+	template<typename T_Type, unsigned int T_NumComp>
+	inline const typename Image<T_Type, T_NumComp>::Pixel & ImagePtr<T_Type, T_NumComp>::operator()(const sibr::Vector2i & xy) const
+	{
+		return (*imPtr)(xy[0], xy[1]);
 	}
 
 	template<typename T_Type, unsigned int T_NumComp>
-	typename Image<T_Type, T_NumComp>::Pixel& Image<T_Type, T_NumComp>::pixel(const sibr::Vector2i & xy) {
-		return pixel(xy[0], xy[1]);
+	inline typename Image<T_Type, T_NumComp>::Pixel& Image<T_Type, T_NumComp>::operator()(const sibr::Vector2i & xy) {
+		return operator()(xy[0], xy[1]);
+	}
+	template<typename T_Type, unsigned int T_NumComp>
+	inline typename Image<T_Type, T_NumComp>::Pixel & ImagePtr<T_Type, T_NumComp>::operator()(const sibr::Vector2i & xy)
+	{
+		return (*imPtr)(xy[0], xy[1]);
 	}
 
 	template<typename T_Type, unsigned int T_NumComp>
@@ -558,8 +625,8 @@ namespace sibr
 	template<typename T_Type, unsigned int T_NumComp>
 	Image<T_Type, T_NumComp>		Image<T_Type, T_NumComp>::resizedMax(int maxlen) const
 	{
-		float newWidth = (w() >= h()) ? maxlen : maxlen*((float)w() / (float)h());
-		float newHeight = (h() >= w()) ? maxlen : maxlen*((float)h() / (float)w());
+		float newWidth = (w() >= h()) ? maxlen : maxlen * ((float)w() / (float)h());
+		float newHeight = (h() >= w()) ? maxlen : maxlen * ((float)h() / (float)w());
 
 		return resized((int)newWidth, (int)newHeight);
 	}
@@ -576,7 +643,7 @@ namespace sibr
 	std::string Image<T_Type, T_NumComp>::pixelStr(const sibr::Vector2i & xy)  const {
 		if (isInRange(xy)) {
 			std::stringstream ss;
-			ss << "( " <<  pixel(xy).cast<std::conditional<std::is_same_v<T_Type,uchar>,int,T_Type>::type>().transpose() << " )";
+			ss << "( " << operator()(xy).cast<std::conditional<std::is_same_v<T_Type, uchar>, int, T_Type>::type>().transpose() << " )";
 			return  ss.str();
 		}
 		return "";
@@ -594,7 +661,7 @@ namespace sibr
 
 	template<typename T_Type, unsigned int T_NumComp>
 	sibr::Vector2u	Image<T_Type, T_NumComp>::size(void) const {
-		return sibr::Vector2u(w(),h());
+		return sibr::Vector2u(w(), h());
 	}
 
 	template<typename T_Type, unsigned int T_NumComp>
@@ -688,11 +755,11 @@ namespace sibr
 			pixel(sibr::clamp<int, 2>(cornerPixel + sibr::Vector2i(1, 0), topLeft, bottomRight)).cast<float>() * ts[0] * (1.0f - ts[1]) +
 			pixel(sibr::clamp<int, 2>(cornerPixel + sibr::Vector2i(0, 1), topLeft, bottomRight)).cast<float>() * (1.0f - ts[0]) * ts[1] +
 			pixel(sibr::clamp<int, 2>(cornerPixel + sibr::Vector2i(1, 1), topLeft, bottomRight)).cast<float>() * ts[0] * ts[1]
-		).cast<T_Type>();
+			).cast<T_Type>();
 	}
 
 	template<typename T_Type, unsigned int T_NumComp>
-	Eigen::Matrix<float, T_NumComp, 1, Eigen::DontAlign> Image<T_Type, T_NumComp>::monoCubic(float t, const Eigen::Matrix<float, T_NumComp, 4, Eigen::DontAlign> & colors )
+	Eigen::Matrix<float, T_NumComp, 1, Eigen::DontAlign> Image<T_Type, T_NumComp>::monoCubic(float t, const Eigen::Matrix<float, T_NumComp, 4, Eigen::DontAlign> & colors)
 	{
 		static const Eigen::Matrix<float, 4, 4> M = 0.5f* (Eigen::Matrix<float, 4, 4>() <<
 			0, 2, 0, 0,
@@ -701,7 +768,7 @@ namespace sibr
 			-1, 3, -3, 1
 			).finished().transpose();
 
-		return colors*(M*Eigen::Matrix<float, 4, 1>(1, t, t*t, t*t*t));
+		return colors * (M*Eigen::Matrix<float, 4, 1>(1, t, t*t, t*t*t));
 	}
 
 	template<typename T_Type, unsigned int T_NumComp>
@@ -731,7 +798,7 @@ namespace sibr
 				colorsGrid[i].col(j) = pixel(sibr::clamp(pixelPosition, topLeft, bottomRight)).cast<float>();
 			}
 		}
-		
+
 		ColorStack bs;
 		for (int i = 0; i < 4; ++i) {
 			bs.col(i) = monoCubic(ts[0], colorsGrid[i]);

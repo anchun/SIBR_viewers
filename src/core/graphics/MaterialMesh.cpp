@@ -1108,7 +1108,7 @@ namespace sibr
 				++it)
 			{
 				sibr::ImageRGB::Ptr texturePtr = diffuseMap(*it);
-				if (texturePtr != nullptr) {
+				if (texturePtr) {
 					//sibr::Texture2DRGB diffuseTexture(*texturePtr);
 					_albedoTextures[i] = std::shared_ptr<sibr::Texture2DRGB>(
 						new sibr::Texture2DRGB(*texturePtr));
@@ -1121,7 +1121,7 @@ namespace sibr
 				}
 
 				sibr::ImageRGB::Ptr texturePtrOpacity = opacityMap(*it);
-				if (texturePtrOpacity != nullptr && texturePtr != nullptr) {
+				if (texturePtrOpacity && texturePtr) {
 					//sibr::Texture2DRGB diffuseTexture(*texturePtr);
 					_opacityTextures[i] = std::shared_ptr<sibr::Texture2DRGB>(
 						new sibr::Texture2DRGB(*texturePtrOpacity));
