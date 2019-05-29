@@ -264,7 +264,7 @@ sibr_addlibrary(
 sibr_addlibrary(
     NAME embree2
     MSVC11 "https://gforge.inria.fr/frs/download.php/file/35964/embree2.7.0.x64.windows.7z"
-    MSVC14 "https://gforge.inria.fr/frs/download.php/file/35964/embree2.7.0.x64.windows.7z"     # TODO SV: provide a valid version if required
+    MSVC14 "https://gforge.inria.fr/frs/download.php/file/38041/embree-2.17.7.x64.windows.zip"     # TODO SV: provide a valid version if required
     REQUIREDFOR BUILD_SIBR
 )
 
