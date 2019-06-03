@@ -175,6 +175,7 @@ scene_metadata = "Scene Metadata File\n\n"
 path_list_images = os.path.join(path_in_imgs, "list_images.txt")
 list_images = []
 
+print(path_list_images)
 if os.path.exists(path_list_images):
     list_image_file = open(path_list_images, "r")
 
@@ -191,6 +192,7 @@ if os.path.exists(path_clipping_planes):
     clipping_planes_file = open(path_clipping_planes, "r")
 
     for line in clipping_planes_file:
+        line = line.strip('\n')
         clipping_planes.append(line)
 
     clipping_planes_file.close()
@@ -206,8 +208,8 @@ scene_metadata = scene_metadata + "[list_images]\n<filename> <image_width> <imag
 for im in list_images:
     print("copying: "+im.split(' ', 1)[0])
     shutil.copy(
-        Path(path_data,im.split(' ', 1)[0]),
-        Path(path_dest,"images",im.split(' ', 1)[0])
+        os.path.join(path_data,im.split(' ', 1)[0]),
+        os.path.join(path_dest,"images",im.split(' ', 1)[0])
         )
 
     if len(clipping_planes) is not 0:
@@ -216,18 +218,18 @@ for im in list_images:
         scene_metadata = scene_metadata + im[:-1] + " 0.01 100\n"
 
 shutil.copy(
-        Path(path_data,"list_images.txt"),
-        Path(path_dest,"images","list_images.txt")
+        os.path.join(path_data,"list_images.txt"),
+        os.path.join(path_dest,"images","list_images.txt")
         )
 
 shutil.copy(
-        Path(path_data,"bundle.out"),
-        Path(path_dest,"cameras","bundle.out")
+        os.path.join(path_data,"bundle.out"),
+        os.path.join(path_dest,"cameras","bundle.out")
         )
 
 shutil.copy(
-        Path(path_data,"pmvs/models/pmvs_recon.ply"),
-        Path(path_dest,"meshes/recon.ply")
+        os.path.join(path_data,"pmvs/models/pmvs_recon.ply"),
+        os.path.join(path_dest,"meshes/recon.ply")
         )
 
 scene_metadata = scene_metadata + "\n\n// Always specify active/exclude images after list images\n\n[exclude_images]\n<image1_idx> <image2_idx> ... <image3_idx>\n"
