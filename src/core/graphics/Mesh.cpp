@@ -785,13 +785,25 @@ namespace sibr
 				}
 			}
 
-			//#pragma omp parallel for
+			float maxLength = 0.0f;
 			for (int i = 0; i < _normals.size(); ++i)
 			{
 				Vector3f n = std::accumulate(vertexNormalsIter[i].begin(), vertexNormalsIter[i].end(), Vector3f(0.f, 0.f, 0.f));
 				if (it + 1 == numIter)//last iteration
 					n = normalizeNormal(n);
 				_normals[i] = n;
+				maxLength = std::max(maxLength, _normals[i].norm());
+			}
+
+			// To avoid float overflow after multiple iterations, we need to normalize.
+			// But we can't just normalize each normal separately because we want to
+			// preserve the relative triangle area weighting.
+			// So instead we just send everything in [0,1] each time apart from the last iteration.
+			if (maxLength > 0.0f && (it + 1 < numIter)) {
+				for (int i = 0; i < _normals.size(); ++i)
+				{
+					_normals[i] /= maxLength;
+				}
 			}
 
 		}
@@ -942,7 +954,6 @@ namespace sibr
 		}
 
 		/// Smooth by averaging.
-		/// \todo TODO: option to do cotangent weighting.
 		const size_t verticesSize = _vertices.size();
 
 		for (int it = 0; it < numIter; ++it) {
