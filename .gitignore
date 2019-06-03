@@ -7,10 +7,11 @@ src/submodules/
 Projet1/
 x64/
 old_docs/
-src/projects/
+src/projects/*
 cmake-gui.exe.stackdump
 
 docs/doxygen/CompiledDocs/
+
 
 # emacs garbage
 \#*
@@ -29,3 +30,6 @@ hs_err_*
 utils/insideout/__pycache__
 utils/insideout/*.bin
 *.TMP
+
+# re include common public projects
+!src/projects/ulr/
