@@ -11,7 +11,7 @@
 namespace sibr
 {
 	InputCamera::InputCamera(float f, float k1, float k2, int w, int h, int id) :
-		_focal(f), _k1(k1), _k2(k2), _w(w), _h(h), _id(id), _active(true)
+		_focal(f), _k1(k1), _k2(k2), _w(w), _h(h), _id(id), _active(true), _name("")
 	{
 		// Update fov and aspect ratio.
 		float fov = 2.0f * atan(0.5f*h / f);
@@ -61,6 +61,7 @@ namespace sibr
 		Camera::rotation(Quaternionf(matRotation));
 
 		_id = id;
+		_name = "";
 	}
 
 
@@ -528,6 +529,7 @@ namespace sibr
 			0, -1, 0,
 			0, 0, -1;
 
+		int camid = 0;
 		while (std::getline(imagesFile, line)) {
 			if (line.empty() || line[0] == '#') {
 				continue;
@@ -562,7 +564,7 @@ namespace sibr
 			sibr::Vector3f position(tx, ty, tz);
 			position = -(orientation * converter.transpose() * position);
 
-			sibr::InputCamera camera(camParams.fy, 0.0f, 0.0f, camParams.width, camParams.height, camParams.id);
+			sibr::InputCamera camera(camParams.fy, 0.0f, 0.0f, camParams.width, camParams.height, camid);
 			camera.name(imageName);
 			camera.position(position);
 			camera.rotation(sibr::Quaternionf(orientation));
@@ -570,7 +572,7 @@ namespace sibr
 			camera.zfar(zFar);
 			cameras.push_back(camera);
 
-
+			++camid;
 			// Skip the observations.
 			std::getline(imagesFile, line);
 		}
