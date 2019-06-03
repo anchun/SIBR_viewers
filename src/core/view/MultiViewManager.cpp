@@ -100,10 +100,16 @@ namespace sibr
 				{
 					ImGui::MenuItem("Pause", "", &_onPause);
 					if (ImGui::BeginMenu("Display")) {
-						const bool currentScreenState = win.isFullscreen();if (ImGui::MenuItem("Fullscreen", "", currentScreenState)) {
+						const bool currentScreenState = win.isFullscreen();
+						if (ImGui::MenuItem("Fullscreen", "", currentScreenState)) {
 							win.setFullscreen(!currentScreenState);
 						}
-						
+
+						const bool currentSyncState = win.isVsynced();
+						if (ImGui::MenuItem("V-sync", "", currentSyncState)) {
+							win.setVsynced(!currentSyncState);
+						}
+
 						const bool isHiDPI = ImGui::GetIO().FontGlobalScale > 1.0f;
 						if (ImGui::MenuItem("HiDPI", "", isHiDPI)) {
 							if(isHiDPI) {
@@ -268,7 +274,7 @@ namespace sibr
 		// We have to shift vertically to avoid an overlap with the menu bar.
 		const Viewport viewport(0.0f, ImGui::GetTitleBarHeight(),
 			res.x() > 0 ? res.x() : (float)_defaultViewResolution.x(),
-			res.y() > 0 ? res.y() : (float)_defaultViewResolution.y());
+			res.y() > 0 ? res.y() : (float)_defaultViewResolution.y() + ImGui::GetTitleBarHeight());
 		RenderTargetRGB::Ptr rtPtr(new RenderTargetRGB((uint)viewport.finalWidth(), (uint)viewport.finalHeight(), SIBR_CLAMP_UVS));
 		_subViews.insert({ title, {view, rtPtr, viewport, title, flags, !res.isNull(), updateFunc } });
 
@@ -279,7 +285,7 @@ namespace sibr
 		// We have to shift vertically to avoid an overlap with the menu bar.
 		const Viewport viewport(0.0f, ImGui::GetTitleBarHeight(),
 			res.x() > 0 ? res.x() : (float)_defaultViewResolution.x(),
-			res.y() > 0 ? res.y() : (float)_defaultViewResolution.y());
+			res.y() > 0 ? res.y() : (float)_defaultViewResolution.y() + ImGui::GetTitleBarHeight());
 		RenderTargetRGB::Ptr rtPtr(new RenderTargetRGB((uint)viewport.finalWidth(), (uint)viewport.finalHeight(), SIBR_CLAMP_UVS));
 		_ibrSubViews.insert({ title, { view, rtPtr, viewport, title, flags, !res.isNull(), updateFunc, defaultFuncUsed } });
 
