@@ -32,6 +32,9 @@ namespace sibr {
 		 */
 		ULRV3View(const sibr::BasicIBRScene::Ptr& ibrScene, uint render_w, uint render_h);
 
+		/** Replace the current scene. */
+		void setScene(const sibr::BasicIBRScene::Ptr & newScene);
+
 		/**
 		 * Perform rendering. Called by the view manager or rendering mode.
 		 * \param dst The destination rendertarget.

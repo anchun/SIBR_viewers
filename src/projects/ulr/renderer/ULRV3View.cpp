@@ -28,6 +28,23 @@ sibr::ULRV3View::ULRV3View(const sibr::BasicIBRScene::Ptr & ibrScene, uint rende
 	_scene->cameras()->debugFlagCameraAsUsed(imgs_ulr);
 }
 
+void sibr::ULRV3View::setScene(const sibr::BasicIBRScene::Ptr & newScene) {
+	_scene = newScene;
+	const uint w = getResolution().x();
+	const uint h = getResolution().y();
+
+	_ulrRenderer.reset(new ULRV3Renderer(newScene->cameras()->inputCameras(), w, h));
+	// Tell the scene we are a priori using all active cameras.
+	std::vector<uint> imgs_ulr;
+	const auto & cams = newScene->cameras()->inputCameras();
+	for (size_t cid = 0; cid < cams.size(); ++cid) {
+		if (cams[cid].isActive()) {
+			imgs_ulr.push_back(cid);
+		}
+	}
+	_scene->cameras()->debugFlagCameraAsUsed(imgs_ulr);
+}
+
 void sibr::ULRV3View::onRenderIBR(sibr::IRenderTarget & dst, const sibr::Camera & eye)
 {
 	// Perform ULR rendering, either directly to the destination RT, or to the intermediate RT when poisson blending is enabled.
