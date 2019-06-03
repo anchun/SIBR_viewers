@@ -15,25 +15,25 @@ namespace sibr {
 		_paramMVP.init(_shader,"MVP");
 	}
 
-	void	TexturedMeshRenderer::process( const Mesh& mesh, const Camera& eye, uint textureID, IRenderTarget& dst )
+	void	TexturedMeshRenderer::process( const Mesh& mesh, const Camera& eye, uint textureID, IRenderTarget& dst, bool backfaceCull)
 	{
 		dst.bind();
 		_shader.begin();
 		_paramMVP.set(eye.viewproj());
 		glActiveTexture(GL_TEXTURE0); glBindTexture(GL_TEXTURE_2D, textureID );
-		mesh.render(true, true);
+		mesh.render(true, backfaceCull);
 		_shader.end();
 		dst.unbind();
 
 	}
 
-	void	TexturedMeshRenderer::process(const Mesh& mesh, const Camera& eye, const sibr::Matrix4f & model, uint textureID, IRenderTarget& dst)
+	void	TexturedMeshRenderer::process(const Mesh& mesh, const Camera& eye, const sibr::Matrix4f & model, uint textureID, IRenderTarget& dst, bool backfaceCull)
 	{
 		dst.bind();
 		_shader.begin();
 		_paramMVP.set(sibr::Matrix4f(eye.viewproj() * model));
 		glActiveTexture(GL_TEXTURE0); glBindTexture(GL_TEXTURE_2D, textureID);
-		mesh.render(true, true);
+		mesh.render(true, backfaceCull);
 		_shader.end();
 		dst.unbind();
 
