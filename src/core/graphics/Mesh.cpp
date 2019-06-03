@@ -984,6 +984,7 @@ namespace sibr
 
 		sibr::Mesh::Colors newColors;
 		sibr::Mesh::Normals newNormals;
+		sibr::Mesh::UVs newUVs;
 
 		std::map<int, int> mapIdVert;
 
@@ -994,9 +995,13 @@ namespace sibr
 		if (hasColors())
 			oldColors = colors();
 
-		sibr::Mesh::Colors oldNormals;
+		sibr::Mesh::Normals oldNormals;
 		if (hasNormals())
 			oldNormals = normals();
+
+		sibr::Mesh::UVs oldUVs;
+		if (hasTexCoords())
+			oldUVs = texCoords();
 
 		for (int v = 0; v < vertices().size(); v++) {
 
@@ -1008,6 +1013,8 @@ namespace sibr
 					newColors.push_back(oldColors[cmptVert]);
 				if (hasNormals())
 					newNormals.push_back(oldNormals[cmptVert]);
+				if (hasTexCoords())
+					newUVs.push_back(oldUVs[cmptVert]);
 
 				mapIdVert[cmptVert] = cmptValidVert;
 				cmptValidVert++;
@@ -1038,6 +1045,8 @@ namespace sibr
 			newMesh.colors(newColors);
 		if (hasNormals())
 			newMesh.normals(newNormals);
+		if (hasTexCoords())
+			newMesh.texCoords(newUVs);
 
 		return newMesh;
 	}
@@ -1232,12 +1241,16 @@ namespace sibr
 
 		sibr::Mesh::Colors newColors;
 		sibr::Mesh::Normals newNormals;
+		sibr::Mesh::UVs newUVs;
 
 		if (hasColors()) {
 			newColors.resize(numValidNewVertices);
 		}
 		if (hasNormals()) {
 			newNormals.resize(numValidNewVertices);
+		}
+		if (hasTexCoords()) {
+			newUVs.resize(numValidNewVertices);
 		}
 
 		int new_vertex_id = 0;
@@ -1252,7 +1265,9 @@ namespace sibr
 				if (hasNormals()) {
 					newNormals[new_vertex_id] = normals()[id];
 				}
-
+				if (hasTexCoords()) {
+					newUVs[new_vertex_id] = texCoords()[id];
+				}
 				++new_vertex_id;
 			}
 		}
@@ -1283,6 +1298,9 @@ namespace sibr
 		}
 		if (hasNormals()) {
 			mesh.normals(newNormals);
+		}
+		if (hasTexCoords()) {
+			mesh.texCoords(newUVs);
 		}
 
 		for (int id = 0; id < numOldVertices; ++id) {
