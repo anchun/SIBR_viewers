@@ -404,8 +404,10 @@ namespace sibr
 
 	void SceneDebugView::renderCameraImages(const sibr::InputCamera & eye, const std::vector<CameraInfos> & cameras, const sibr::Viewport & viewport, const std::vector<GLuint> & textureIds)
 	{
-		CHECK_GL_ERROR;
-
+		
+		if (textureIds.empty()) {
+			return;
+		}
 		static const sibr::Mesh::Triangles quadTriangles = {
 			{ 0,1,2 },{ 0,2,3 }
 		};
@@ -545,9 +547,16 @@ namespace sibr
 	}
 
 
-	void SceneDebugView::setScene(const std::shared_ptr<sibr::BasicIBRScene> & scene) {
-		_scene = scene; 
+	void SceneDebugView::setScene(const std::shared_ptr<sibr::BasicIBRScene> & scene, const bool preserveCamera) {
+		_scene = scene;
+		const sibr::InputCamera cameraBack = _topViewCamera.getCamera();
 		setup();
+		_topViewCamera.setup(_scene->cameras()->inputCameras(), _topViewCamera.viewport(), _topViewCamera.getRaycaster());
+		_topViewCamera.setupInterpolationPath(_scene->cameras()->inputCameras());
+		// Optionally restore the camera pose.
+		if (preserveCamera) {
+			_topViewCamera.fromCamera(cameraBack, false);
+		}
 	}
 
 

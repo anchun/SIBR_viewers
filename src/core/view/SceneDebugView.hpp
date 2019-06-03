@@ -55,7 +55,7 @@ namespace sibr
 		const sibr::InteractiveCameraHandler & getCamera() const { return _topViewCamera; }
 		sibr::InteractiveCameraHandler & getCamera() { return _topViewCamera; }
 
-		void setScene(const std::shared_ptr<sibr::BasicIBRScene> & scene);
+		void setScene(const std::shared_ptr<sibr::BasicIBRScene> & scene, const bool preserveCamera = false);
 
 	protected:
 
