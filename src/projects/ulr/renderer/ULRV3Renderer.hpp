@@ -54,13 +54,15 @@ namespace sibr {
 		 * \param dst The destination rendertarget.
 		 * \param inputRGBs A texture array containing the input RGB images.
 		 * \param inputDepths A texture array containing the input depth maps.
+		 * \param passthroughDepth If true, depth from the position map will be output to the depth buffer for ulterior passes.
 		 */
 		void process(
 			const sibr::Mesh & mesh,
 			const sibr::Camera& eye,
 			IRenderTarget& dst,
 			const sibr::Texture2DArrayRGB::Ptr & inputRGBs,
-			const sibr::Texture2DArrayLum32F::Ptr & inputDepths
+			const sibr::Texture2DArrayLum32F::Ptr & inputDepths,
+			bool passthroughDepth = false
 			);
 
 		/** 
@@ -78,7 +80,20 @@ namespace sibr {
 		/// Flip the RGB images before using them.
 		bool & flipRGBs() { return _flipRGBs.get(); }
 
+		/// Show debug weights.
 		bool & showWeights() { return _showWeights.get(); }
+
+		/** Resize the internal rendertargets.
+		 *\param w the new width
+		 *\param h the new height
+		 **/
+		void resize(const unsigned int w, const unsigned int h);
+
+		/// Should the final RT be cleared or not.
+		bool & clearDst() { return _clearDst; }
+
+		/// \return The ID of the first pass position map texture.
+		uint depthHandle() { return _depthRT->texture(); }
 
 	protected:
 
@@ -95,12 +110,14 @@ namespace sibr {
 		* \param dst The destination rendertarget.
 		* \param inputRGBs A texture array containing the input RGB images.
 		* \param inputDepths A texture array containing the input depth maps.
+		* \param passthroughDepth If true, depth from the position map will be output to the depth buffer for ulterior passes.
 		*/
 		void renderBlending(
 			const sibr::Camera& eye,
 			IRenderTarget& dst,
 			const sibr::Texture2DArrayRGB::Ptr & inputRGBs,
-			const sibr::Texture2DArrayLum32F::Ptr & inputDepths
+			const sibr::Texture2DArrayLum32F::Ptr & inputDepths,
+			bool passthroughDepth
 		);
 
 		/// Shader names.
@@ -127,6 +144,7 @@ namespace sibr {
 
 		GLuniform<float>					_epsilonOcclusion = 0.01f;
 		bool								_backFaceCulling = true;
+		bool								_clearDst = true;
 
 		/// Camera infos data structure shared between the CPU and GPU.
 		/// We have to be careful about alignment if we want to send those struct directly into the UBO.
@@ -140,6 +158,7 @@ namespace sibr {
 
 		std::vector<CameraUBOInfos> _cameraInfos;
 		GLuint _uboIndex;
+		
 	};
 
 

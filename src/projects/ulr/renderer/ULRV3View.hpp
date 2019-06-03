@@ -22,7 +22,7 @@ namespace sibr {
 		enum RenderMode { ALL_CAMS, ONE_CAM, LEAVE_ONE_OUT, EVERY_N_CAM };
 
 		/// Blending mode: keep the four best values per pixel, or aggregate them all.
-		enum WeightsMode { ULR_W , VARIANCE_BASED_W };
+		enum WeightsMode { ULR_W , VARIANCE_BASED_W, ULR_FAST};
 
 	public:
 

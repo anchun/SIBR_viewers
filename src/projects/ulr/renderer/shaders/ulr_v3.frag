@@ -142,10 +142,7 @@ void main(void){
 		
 		vec4 color = getRGBD(xy_camid);
 
-		// Support output weights as random colors for debug.
-		if(showWeights){
-			color.xyz = getRandomColor(i);
-		}
+		
 
 		if(doMasking){        
 			float masked = getMask(xy_camid);
@@ -174,6 +171,11 @@ void main(void){
 			if(abs(uvd.z-color.w) >= epsilonOcclusion) {	  
 				continue;
 			}
+		}
+
+		// Support output weights as random colors for debug.
+		if(showWeights){
+			color.xyz = getRandomColor(i);
 		}
 
 		float penaltyValue = 0;
@@ -308,6 +310,8 @@ uint baseHash(uint p) {
 	\return a random vec3
 */
 vec3 getRandomColor(int x) {
+	// Color 0 is black, so we shift everything.
+	x = x+1;
 	uint n = baseHash(uint(x));
 	uvec3 rz = uvec3(n, n*16807U, n*48271U);
 	return vec3(rz & uvec3(0x7fffffffU))/float(0x7fffffff);
