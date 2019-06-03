@@ -62,6 +62,9 @@ namespace sibr
 		bool				isFullscreen(void) const;
 		void				setFullscreen(const bool fullscreen);
 
+		bool				isVsynced(void) const;
+		void				setVsynced(const bool vsync);
+
 		const Viewport&	viewport(void) const;
 		void			viewport(const Viewport& view);
 
