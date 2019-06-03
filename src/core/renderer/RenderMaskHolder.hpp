@@ -37,6 +37,7 @@ namespace sibr {
 		using MaskArrayPtr = MaskArray::Ptr;
 
 	public:
+		void							setMasks(const MaskArrayPtr& masks);
 		const MaskArrayPtr &				getMasks(void) const;
 		void 							loadMasks(
 			const sibr::BasicIBRScene::Ptr& ibrScene,
