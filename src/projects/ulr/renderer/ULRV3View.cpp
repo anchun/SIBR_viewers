@@ -42,6 +42,7 @@ void sibr::ULRV3View::setScene(const sibr::BasicIBRScene::Ptr & newScene) {
 	}
 
 	_ulrRenderer.reset(new ULRV3Renderer(newScene->cameras()->inputCameras(), w, h, shaderName));
+
 	// Tell the scene we are a priori using all active cameras.
 	std::vector<uint> imgs_ulr;
 	const auto & cams = newScene->cameras()->inputCameras();
@@ -51,6 +52,19 @@ void sibr::ULRV3View::setScene(const sibr::BasicIBRScene::Ptr & newScene) {
 		}
 	}
 	_scene->cameras()->debugFlagCameraAsUsed(imgs_ulr);
+}
+
+void sibr::ULRV3View::setMode(const WeightsMode mode) {
+	_weightsMode = mode;
+	if (_weightsMode == VARIANCE_BASED_W) {
+		_ulrRenderer->setupShaders("ulr_v3_alt");
+	}
+	else if (_weightsMode == ULR_FAST) {
+		_ulrRenderer->setupShaders("ulr_v3_fast");
+	}
+	else {
+		_ulrRenderer->setupShaders();
+	}
 }
 
 void sibr::ULRV3View::onRenderIBR(sibr::IRenderTarget & dst, const sibr::Camera & eye)
@@ -114,13 +128,7 @@ void sibr::ULRV3View::onGUI()
 		ImGui::Separator();
 		// Switch the shaders for ULR rendering.
 		if (ImGui::Combo("Weights mode", (int*)(&_weightsMode), "Standard ULR\0Variance based\0Fast ULR\0\0")) {
-			if (_weightsMode == VARIANCE_BASED_W) {
-				_ulrRenderer->setupShaders("ulr_v3_alt");
-			} else if (_weightsMode == ULR_FAST) {
-				_ulrRenderer->setupShaders("ulr_v3_fast");
-			} else {
-				_ulrRenderer->setupShaders();
-			}
+			setMode(_weightsMode);
 		}
 		
 		ImGui::Checkbox("Debug weights", &_ulrRenderer->showWeights());

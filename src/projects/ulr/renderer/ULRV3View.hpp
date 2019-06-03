@@ -56,6 +56,9 @@ namespace sibr {
 		/// Obtain a reference to the renderer.
 		const ULRV3Renderer::Ptr & getULRrenderer() const { return _ulrRenderer; }
 
+		/// Set the renderer blending weights mode.
+		void setMode(const WeightsMode mode);
+
 	protected:
 
 		/**
