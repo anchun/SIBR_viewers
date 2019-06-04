@@ -9,6 +9,7 @@ x64/
 old_docs/
 src/projects/*
 cmake-gui.exe.stackdump
+__pycache__/
 
 docs/doxygen/CompiledDocs/
 
