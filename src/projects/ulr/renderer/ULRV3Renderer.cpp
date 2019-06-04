@@ -82,12 +82,13 @@ void sibr::ULRV3Renderer::process(
 	const sibr::Camera & eye,
 	IRenderTarget & dst,
 	const sibr::Texture2DArrayRGB::Ptr & inputRGBs,
-	const sibr::Texture2DArrayLum32F::Ptr & inputDepths
+	const sibr::Texture2DArrayLum32F::Ptr & inputDepths,
+	bool passthroughDepth
 ) {
 	// Render the proxy positions in world space.
 	renderProxyDepth(mesh, eye);
 	// Perform ULR blending.
-	renderBlending(eye, dst, inputRGBs, inputDepths);
+	renderBlending(eye, dst, inputRGBs, inputDepths, passthroughDepth);
 }
 
 void sibr::ULRV3Renderer::updateCameras(const std::vector<uint> & camIds) {
@@ -129,11 +130,14 @@ void sibr::ULRV3Renderer::renderBlending(
 	const sibr::Camera & eye,
 	IRenderTarget & dst,
 	const sibr::Texture2DArrayRGB::Ptr & inputRGBs,
-	const sibr::Texture2DArrayLum32F::Ptr & inputDepths
+	const sibr::Texture2DArrayLum32F::Ptr & inputDepths,
+	bool passthroughDepth
 ){
 	// Bind and clear destination rendertarget.
 	glViewport(0, 0, dst.w(), dst.h());
-	dst.clear();
+	if (_clearDst) {
+		dst.clear();
+	}
 	dst.bind();
 
 	_ulrShader.begin();
@@ -171,9 +175,21 @@ void sibr::ULRV3Renderer::renderBlending(
 	glBindBufferBase(GL_UNIFORM_BUFFER, 0, _uboIndex);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
+	if (passthroughDepth) {
+		glEnable(GL_DEPTH_TEST);
+	}
+	else {
+		glDisable(GL_DEPTH_TEST);
+	}
+
 	// Perform ULR rendering.
 	RenderUtility::renderScreenQuad();
+	glDisable(GL_DEPTH_TEST);
 
 	_ulrShader.end();
 	dst.unbind();
+}
+
+void sibr::ULRV3Renderer::resize(const unsigned w, const unsigned h) {
+	_depthRT.reset(new sibr::RenderTargetRGBA32F(w, h));
 }

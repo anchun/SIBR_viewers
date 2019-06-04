@@ -145,6 +145,7 @@ namespace sibr {
 		_trackball.fromCamera(idealCam, _viewport, _radius);
 
 		_currentCamera = idealCam;
+		_cameraFovDeg = _currentCamera.fovy() * 180.0f / M_PI;
 
 		if (!interpolate) {
 			_previousCamera = _currentCamera;
@@ -254,7 +255,8 @@ namespace sibr {
 
 	void InteractiveCameraHandler::snapToCamera(const int i) {
 		if (!_interpPath.empty()) {
-			const unsigned int nearestCam = (i == -1 ? findNearestCamera(_interpPath) : std::min(i, int(_interpPath.size()) - 1));
+			unsigned int nearestCam = (i == -1 ? findNearestCamera(_interpPath) : i);
+			nearestCam = sibr::clamp(nearestCam, unsigned int(0), unsigned int(_interpPath.size() - 1));
 			InputCamera camCopy = getCamera();
 			camCopy.transform(_interpPath[nearestCam].transform());
 			fromCamera(camCopy, true);
@@ -347,6 +349,10 @@ namespace sibr {
 				std::getline(std::cin, filename);
 				_cameraRecorder.save(filename);
 				_cameraRecorder.saveAsBundle(filename + ".out", _currentCamera.h());
+				if (_fribrExport) {
+					const int height = std::floor(1920.0f * (float(_currentCamera.h()) / float(_currentCamera.w())));
+					_cameraRecorder.saveAsFRIBRBundle(filename + "_fribr/", 1920, height);
+				}
 				_cameraRecorder.stop();
 			}
 			else if (input.key().isActivated(Key::LeftAlt) && input.key().isReleased(Key::C))
@@ -361,6 +367,10 @@ namespace sibr {
 				std::getline(std::cin, filename);
 				_cameraRecorder.playback();
 				_cameraRecorder.saveAsBundle(filename + ".out", _currentCamera.h());
+				if (_fribrExport) {
+					const int height = std::floor(1920.0f * (float(_currentCamera.h()) / float(_currentCamera.w())));
+					_cameraRecorder.saveAsFRIBRBundle(filename + "_fribr/", 1920, height);
+				}
 			}
 			else if (input.key().isReleased(Key::C)) {
 				_cameraRecorder.playback();
@@ -450,16 +460,25 @@ namespace sibr {
 			
 			ImGui::Separator();
 			if (ImGui::Button("Snap to closest")) {
-				snapToCamera(-1);
+				_currentCamId = findNearestCamera(_interpPath);
+				snapToCamera(_currentCamId);
 			}
 			if (ImGui::InputInt("Snap to", &_currentCamId, 1, 10)) {
-				snapToCamera(std::max(0, _currentCamId));
+				_currentCamId = sibr::clamp(_currentCamId, 0, int(_interpPath.size()) - 1);
+				snapToCamera(_currentCamId);
 			}
 			ImGui::Separator();
 			if (_currentMode == TRACKBALL) {
 				ImGui::Checkbox("Show trackball", &_trackball.drawThis);
-				ImGui::Separator();
 			}
+
+			if (ImGui::InputFloat("Fov Y", &_cameraFovDeg, 1.0f, 5.0f)) {
+				_cameraFovDeg = sibr::clamp(_cameraFovDeg, 1.0f, 180.0f);
+				_currentCamera.fovy(_cameraFovDeg * M_PI / 180.0f);
+				// Synchronize internal cameras.
+				fromCamera(_currentCamera, _shouldSmooth);
+			}
+			ImGui::Separator();
 
 		}
 		ImGui::End();
@@ -505,7 +524,10 @@ namespace sibr {
 							SIBR_LOG << "Saving" << std::endl;
 							_cameraRecorder.save(selectedFile + ".path");
 							_cameraRecorder.saveAsBundle(selectedFile + ".out", _currentCamera.h());
-
+							if (_fribrExport) {
+								const int height = std::floor(1920.0f * (float(_currentCamera.h()) / float(_currentCamera.w())));
+								_cameraRecorder.saveAsFRIBRBundle(selectedFile + "_fribr/", 1920, height);
+							}
 						}
 					}
 				}
@@ -526,8 +548,7 @@ namespace sibr {
 					_cameraRecorder.stopSaving();
 				}
 
-
-
+				ImGui::Checkbox("Fribr export", &_fribrExport);
 				ImGui::Separator();
 			}
 			ImGui::End();

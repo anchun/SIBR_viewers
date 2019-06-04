@@ -88,6 +88,11 @@ namespace sibr {
 		SIBR_ERR << "[RenderMaskHolder] Cant find directory " << maskDir << std::endl;
 	}
 
+	void	RenderMaskHolderArray::setMasks(const MaskArrayPtr& masks)
+	{
+		_masks = masks;
+	}
+
 	const RenderMaskHolderArray::MaskArrayPtr & RenderMaskHolderArray::getMasks(void) const {
 		return _masks;
 	}

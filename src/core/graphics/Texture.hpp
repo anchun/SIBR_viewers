@@ -795,63 +795,26 @@ namespace sibr
 		return img;
 	}
 
-	//template<typename T_Type, unsigned int T_NumComp>
-	//void Texture2D<T_Type, T_NumComp>::update(const PixelImage& img) {
-	//	if (img.w() == w() && img.h() == h())
-	//	{
-	//		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-	//		glPixelStorei(GL_PACK_ALIGNMENT, 1);
-	//		glBindTexture(GL_TEXTURE_2D, handle());
-	//		glTexSubImage2D(GL_TEXTURE_2D, 0,
-	//			0, 0, img.w(), img.h(),
-	//			GLFormat<typename PixelFormat::Type, PixelFormat::NumComp>::format,
-	//			GLType<typename PixelFormat::Type>::type,
-	//			img.data());
-	//		if (m_autoMIPMAP)
-	//			glGenerateMipmap(GL_TEXTURE_2D);
-	//	}
-	//	else {
-	//		m_W = img.w();
-	//		m_H = img.h();
-	//		send2D(m_Handle, img, m_Flags);
-	//	}
-	//		
-	//}
-
-	//template<typename T_Type, unsigned int T_NumComp>
-	//void Texture2D<T_Type, T_NumComp>::update(const cv::Mat& img) {
-	//	if (img.cols == w() && img.rows == h())
-	//	{
-	//		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-	//		glPixelStorei(GL_PACK_ALIGNMENT, 1);
-	//		glBindTexture(GL_TEXTURE_2D, handle());
-	//		glTexSubImage2D(GL_TEXTURE_2D, 0,
-	//			0, 0, img.cols, img.rows,
-	//			GL_BGR,
-	//			GL_UNSIGNED_BYTE,
-	//			img.ptr());
-	//		if (m_autoMIPMAP)
-	//			glGenerateMipmap(GL_TEXTURE_2D);
-	//	} else {
-	//		m_W = img.cols;
-	//		m_H = img.rows;
-	//		send2D(m_Handle, img, m_Flags);
-	//	}
-	//}
-
 	template<typename T_Type, unsigned int T_NumComp> template<typename ImageType>
 	void Texture2D<T_Type, T_NumComp>::update(const ImageType& img) {
 		using FormatInfos = GLTexFormat<ImageType, T_Type, T_NumComp>;
 		if (FormatInfos::width(img) == w() && FormatInfos::height(img) == h())
 		{
+			bool flip = m_Flags & SIBR_FLIP_TEXTURE;
+			ImageType flippedImg;
+			if (flip) {
+				flippedImg = FormatInfos::flip(img);
+			}
+			const ImageType & sendedImg = flip ? flippedImg : img;
+
 			glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 			glPixelStorei(GL_PACK_ALIGNMENT, 1);
 			glBindTexture(GL_TEXTURE_2D, handle());
 			glTexSubImage2D(GL_TEXTURE_2D, 0,
-				0, 0, FormatInfos::width(img), FormatInfos::height(img),
+				0, 0, FormatInfos::width(sendedImg), FormatInfos::height(sendedImg),
 				FormatInfos::format,
 				FormatInfos::type,
-				FormatInfos::data(img)
+				FormatInfos::data(sendedImg)
 			);
 			if (m_autoMIPMAP)
 				glGenerateMipmap(GL_TEXTURE_2D);
@@ -1416,7 +1379,8 @@ namespace sibr
 		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-		const int numMipMap = 1;
+		const bool autoMIPMAP = ((m_Flags & SIBR_GPU_AUTOGEN_MIPMAP) != 0);
+		const int numMipMap = autoMIPMAP ? std::floor(std::log2(std::max(m_W, m_H))) : 1;
 
 		glTexStorage3D(GL_TEXTURE_2D_ARRAY, numMipMap,
 			GLFormat<T_Type, T_NumComp>::internal_format,
@@ -1451,6 +1415,10 @@ namespace sibr
 				ImgTypeInfo::data(*imagesPtrToSend[im])
 			);
 			//CHECK_GL_ERROR;
+		}
+		bool autoMIPMAP = ((m_Flags & SIBR_GPU_AUTOGEN_MIPMAP) != 0);
+		if (autoMIPMAP) {
+			glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
 		}
 		CHECK_GL_ERROR;
 	}
@@ -1603,7 +1571,6 @@ namespace sibr
 
 	template<typename T_Type, unsigned int T_NumComp>
 	void Texture2DArray<T_Type, T_NumComp>::createFromRTs(const std::vector<typename PixelRT::Ptr> & RTs, uint flags) {
-		const int numMipMap = 1;
 		m_W = 0;
 		m_H = 0;
 		for (const auto & RT : RTs) {

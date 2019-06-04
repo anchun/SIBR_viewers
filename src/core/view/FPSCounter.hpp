@@ -45,6 +45,8 @@ namespace sibr
 		float								_frameTimeSum;
 		int									_flags;
 		bool								_hidden;
+		std::string							_name;
+		static int							_count;
 	};
 
 } // namespace sibr

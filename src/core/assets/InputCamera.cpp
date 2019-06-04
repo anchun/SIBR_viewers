@@ -11,7 +11,7 @@
 namespace sibr
 {
 	InputCamera::InputCamera(float f, float k1, float k2, int w, int h, int id) :
-		_focal(f), _k1(k1), _k2(k2), _w(w), _h(h), _id(id), _active(true)
+		_focal(f), _k1(k1), _k2(k2), _w(w), _h(h), _id(id), _active(true), _name("")
 	{
 		// Update fov and aspect ratio.
 		float fov = 2.0f * atan(0.5f*h / f);
@@ -23,44 +23,6 @@ namespace sibr
 		_id = id;
 	}
 
-	//InputCamera::InputCamera(int id, int w, int h, float m[15], bool active) :
-	//	_active(active)
-	//{
-	//	Vector3f t;
-	//	float r[9];
-
-	//	for (int i = 0; i < 9; i++)  r[i] = m[3 + i];
-	//	for (int i = 0; i < 3; i++)  t[i] = m[12 + i];
-
-	//	_w = w;
-	//	_h = h;
-
-	//	_focal = m[0];
-	//	_k1 = m[1];
-	//	_k2 = m[2];
-
-	//	float fov = 2.0f * atan(0.5f*h / m[0]);
-	//	float aspect = float(w) / float(h);
-
-	//	Eigen::Matrix3f		matRotation;
-	//	matRotation <<
-	//		r[0], r[1], r[2],
-	//		r[3], r[4], r[5],
-	//		r[6], r[7], r[8]
-	//		;
-
-	//	Camera::aspect(aspect);
-	//	Camera::fovy(fov);
-
-	//	// http://www.cs.cornell.edu/~snavely/bundler/bundler-v0.4-manual.html#S6
-	//	// Do pos = -R' * t
-	//	matRotation.transposeInPlace();
-	//	Camera::position(-matRotation * t);
-	//	
-	//	Camera::rotation(Quaternionf(matRotation));
-
-	//	_id = id;
-	//}
 
 	InputCamera::InputCamera(int id, int w, int h, sibr::Matrix4f m, bool active) :
 		_active(active)
@@ -99,6 +61,7 @@ namespace sibr
 		Camera::rotation(Quaternionf(matRotation));
 
 		_id = id;
+		_name = "";
 	}
 
 
@@ -566,6 +529,7 @@ namespace sibr
 			0, -1, 0,
 			0, 0, -1;
 
+		int camid = 0;
 		while (std::getline(imagesFile, line)) {
 			if (line.empty() || line[0] == '#') {
 				continue;
@@ -600,7 +564,7 @@ namespace sibr
 			sibr::Vector3f position(tx, ty, tz);
 			position = -(orientation * converter.transpose() * position);
 
-			sibr::InputCamera camera(camParams.fy, 0.0f, 0.0f, camParams.width, camParams.height, camParams.id);
+			sibr::InputCamera camera(camParams.fy, 0.0f, 0.0f, camParams.width, camParams.height, camid);
 			camera.name(imageName);
 			camera.position(position);
 			camera.rotation(sibr::Quaternionf(orientation));
@@ -608,7 +572,7 @@ namespace sibr
 			camera.zfar(zFar);
 			cameras.push_back(camera);
 
-
+			++camid;
 			// Skip the observations.
 			std::getline(imagesFile, line);
 		}
@@ -771,7 +735,7 @@ namespace sibr
 		return ss.str();
 	}
 
-	void InputCamera::saveAsBundle(std::vector<sibr::InputCamera> cams, std::string fileName, bool negativeZ) {
+	void InputCamera::saveAsBundle(const std::vector<sibr::InputCamera> & cams, const std::string & fileName, bool negativeZ, const bool exportImages) {
 
 		std::ofstream outputBundleCam;
 		outputBundleCam.open(fileName);
@@ -784,5 +748,27 @@ namespace sibr
 		}
 
 		outputBundleCam.close();
+
+		// Export the images list and empty images (useful for fribr).
+		if (exportImages) {
+			std::ofstream outList;
+			const std::string listpath = fileName + "/../list_images.txt";
+			const std::string imagesDir = fileName + "/../visualize/";
+			sibr::makeDirectory(imagesDir);
+
+			outList.open(listpath);
+			if (outList.good()) {
+				for (int i = 0; i < cams.size(); ++i) {
+					const sibr::InputCamera & cam = cams[i];
+					const std::string imageName = cam.name().empty() ? sibr::intToString<8>(i) + ".jpg" : cam.name();
+					outList << "visualize/" << imageName << " " << cam.w() << " " << cam.h() << std::endl;
+					cv::Mat3b dummy(cam.h(), cam.w());
+					cv::imwrite(imagesDir + imageName, dummy);
+				}
+				outList.close();
+			} else {
+				SIBR_WRG << "Unable to export images list to path \"" << listpath << "\"." << std::endl;
+			}
+		}
 	}
 } // namespace sibr

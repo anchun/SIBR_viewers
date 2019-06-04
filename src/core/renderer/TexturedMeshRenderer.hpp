@@ -22,9 +22,10 @@ namespace sibr {
 			/*input*/	const Mesh& mesh,
 			/*input*/	const Camera& eye,
 			/*input*/	uint textureID,
-			/*output*/	IRenderTarget& dst );
+			/*output*/	IRenderTarget& dst,
+			bool backfaceCull = true);
 
-		void process(const Mesh & mesh, const Camera & eye, const sibr::Matrix4f & model, uint textureID, IRenderTarget & dst);
+		void process(const Mesh & mesh, const Camera & eye, const sibr::Matrix4f & model, uint textureID, IRenderTarget & dst, bool backfaceCull = true);
 
 	private:
 		GLShader			_shader;

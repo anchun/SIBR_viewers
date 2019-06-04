@@ -1,6 +1,7 @@
 #include <fstream>
 #include "core/assets/CameraRecorder.hpp"
 #include "core/assets/InputCamera.hpp"
+#include <opencv2/opencv.hpp>
 
 namespace sibr
 {
@@ -181,6 +182,66 @@ namespace sibr
 
 		SIBR_LOG << "[CameraRecorder] - Saved " << _cameras.size() << " cameras to " << filePath << " (using fovy " <<_cameras[0].fovy() << ")." << std::endl;
 		
+	}
+
+	void CameraRecorder::saveAsFRIBRBundle(const std::string & dirPath, const int width, const int height)
+	{
+		const std::string bundlepath = dirPath + "/path.rd.out";
+		const std::string listpath = dirPath + "/list.txt";
+		const std::string imagesDir = dirPath + "/visualize/";
+		sibr::makeDirectory(dirPath);
+		sibr::makeDirectory(imagesDir);
+		std::ofstream out(bundlepath);
+		std::ofstream outList(listpath);
+		if (out.good() && outList.good()) {
+			const int size = static_cast<int>(_cameras.size() / 1);
+			out << "# Bundle file v0.3\n";
+			out << size << " " << 0 << "\n";
+			sibr::Matrix3f converter;
+			converter << 1, 0, 0,
+				0, -1, 0,
+				0, 0, -1;
+			sibr::Matrix3f from_cv;
+			from_cv << 1, 0, 0,
+				0, -1, 0,
+				0, 0, -1;
+			for (int i = 0; i < _cameras.size(); ++i) {
+
+				const sibr::Camera cam = _cameras[i];
+
+				sibr::Matrix3f orientation = cam.rotation().toRotationMatrix();
+				sibr::Vector3f position = cam.position();
+				sibr::Matrix3f rotation_cv = converter.transpose() * orientation.transpose() * converter;
+				sibr::Matrix3f rotation_bundler = from_cv * rotation_cv;
+				sibr::Vector3f position_cv = converter.transpose() * position;
+				sibr::Vector3f translation_cv = -(rotation_cv * position_cv);
+				sibr::Vector3f pos = from_cv * translation_cv;
+
+				sibr::Matrix3f m1 = rotation_bundler.transpose();
+				float m[15];
+				m[0] = 0.5f*height / tan(cam.fovy() / 2.f); m[1] = 0.0f; m[2] = 0.0f;
+				m[3] = m1(0, 0), m[4] = m1(1, 0), m[5] = m1(2, 0);
+				m[6] = m1(0, 1), m[7] = m1(1, 1), m[8] = m1(2, 1);
+				m[9] = m1(0, 2), m[10] = m1(1, 2), m[11] = m1(2, 2);
+				m[12] = pos.x(), m[13] = pos.y(), m[14] = pos.z();
+				out << m[0] << " " << m[1] << " " << m[2] << std::endl;
+				out << m[3] << " " << m[4] << " " << m[5] << std::endl;
+				out << m[6] << " " << m[7] << " " << m[8] << std::endl;
+				out << m[9] << " " << m[10] << " " << m[11] << std::endl;
+				out << m[12] << " " << m[13] << " " << m[14] << std::endl;
+
+				const std::string imageName = sibr::intToString<8>(i) + ".jpg";
+				outList << "visualize/" + imageName << " 0 " << m[0] << std::endl;
+
+				cv::Mat3b dummy(height, width);
+				cv::imwrite(imagesDir + imageName, dummy);
+			}
+			out << std::endl;
+			out.close();
+			outList.close();
+
+			SIBR_LOG << "[CameraRecorder] - Saved " << _cameras.size() << " cameras to " << dirPath << "." << std::endl;
+		}
 	}
 
 } // namespace sibr

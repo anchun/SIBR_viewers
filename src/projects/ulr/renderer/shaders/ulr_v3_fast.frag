@@ -33,13 +33,9 @@ uniform bool discard_black_pixels = true;
 uniform bool doMasking = false;
 uniform bool flipRGBs = false;
 uniform bool showWeights = false;
-uniform float epsilonOcclusion = 1e-2;
+uniform bool gammaCorrection = false;
+uniform float epsilonOcclusion = 1e-3;
 
-// for uv derivatives blending
-uniform bool useUVDerivatives;
-uniform float uvDerivativesAlphaBlending = 0.5f;
-uniform float uvDerivativesScaleFactor = 1.0f;
-uniform vec2 rtResolution;
 
 #define INFTY_W 100000.0
 #define BETA 	1e-1  	/* Relative importance of resolution penalty */
@@ -48,49 +44,15 @@ uniform vec2 rtResolution;
 // To support both the regular version (using texture arrays) and the streaming version (using 2D RTs),
 // we wrap the texture accesses in two helpers that hide the difference.
 
-#if ULR_STREAMING
-
-uniform sampler2D input_rgbds[NUM_CAMS];
-uniform sampler2D input_masks[NUM_CAMS];
-
-vec4 getRGBD(vec3 xy_camid){
-	if(flipRGBs){
-		xy_camid.y = 1.0 - xy_camid.y;
-	}
-	vec4 rgbd = texture(input_rgbds[int(xy_camid.z)], xy_camid.xy);
-	if(flipRGBs){
-		xy_camid.y = 1.0 - xy_camid.y;
-	}
-	return rgbd;
-}
-
-float getMask(vec3 xy_camid){
-	return texture(input_masks[int(xy_camid.z)], xy_camid.xy).r;
-}
-
-#else
-
 layout(binding=1) uniform sampler2DArray input_rgbs;
 layout(binding=2) uniform sampler2DArray input_depths;
 layout(binding=3) uniform sampler2DArray input_masks;
 
-vec4 getRGBD(vec3 xy_camid){
-	if(flipRGBs){
-		xy_camid.y = 1.0 - xy_camid.y;
-	}
-	vec3 rgb = texture(input_rgbs, xy_camid).rgb;
-	if(flipRGBs){
-		xy_camid.y = 1.0 - xy_camid.y;
-	}
-	float depth = texture(input_depths, xy_camid).r;
-    return vec4(rgb,depth);
-}
 
 float getMask(vec3 xy_camid){
 	return texture(input_masks, xy_camid).r;
 }
 
-#endif
 
 // Helpers.
 
@@ -120,7 +82,7 @@ void main(void){
   vec4  color1 = vec4(0.0,0.0,0.0,INFTY_W);
   vec4  color2 = vec4(0.0,0.0,0.0,INFTY_W);
   vec4  color3 = vec4(0.0,0.0,0.0,INFTY_W);
-
+  vec4 masks = vec4(1.0);
   for(int i = 0; i < NUM_CAMS; i++){
 	if(i>=camsCount){
 		continue;
@@ -132,20 +94,22 @@ void main(void){
 	vec3 uvd = project(point.xyz, cameras[i].vp);
 	vec2 ndc = abs(2.0*uvd.xy-1.0);
 
-	vec2 uv_ddx = dFdx(uvd.xy * rtResolution); 
-	vec2 uv_ddy = dFdy(uvd.xy * rtResolution);
-
-
 	if (frustumTest(point.xyz, ndc, i)){
 		vec3 xy_camid = vec3(uvd.xy,i);
 		
-		
-		vec4 color = getRGBD(xy_camid);
+		float inputDepth = texture(input_depths, xy_camid).r;
+
+		if (occ_test){
+			if(abs(uvd.z-inputDepth) >= epsilonOcclusion) {	  
+				continue;
+			}
+		}
 
 		
 
+		float masked = 1.0;
 		if(doMasking){        
-			float masked = getMask(xy_camid);
+			masked = getMask(xy_camid);
              
             if( invert_mask ){
                 masked = 1.0 - masked;
@@ -155,55 +119,34 @@ void main(void){
                 if( masked < 0.5) {
                     continue;
                 }
-			} else {
-                color.xyz = masked*color.xyz;
-            }
-			
+			}
 		}
 		
-		if (discard_black_pixels){
-			if(all(equal(color.xyz, vec3(0.0)))){
-				continue;
-			}
-		}
- 		
-		if (occ_test){
-			if(abs(uvd.z-color.w) >= epsilonOcclusion) {	  
-				continue;
-			}
-		}
-
-		// Support output weights as random colors for debug.
-		if(showWeights){
-			color.xyz = getRandomColor(i);
-		}
-
 		float penaltyValue = 0;
 
-		if (!useUVDerivatives) {
-			// classic ulr
-			vec3 v1 = (point.xyz - cameras[i].pos);
-			vec3 v2 = (point.xyz - ncam_pos);
-			float dist_i2p 	= length(v1);
-			float dist_n2p 	= length(v2);
+		
+		// classic ulr
+		vec3 v1 = (point.xyz - cameras[i].pos);
+		vec3 v2 = (point.xyz - ncam_pos);
+		float dist_i2p 	= length(v1);
+		float dist_n2p 	= length(v2);
 
-			float penalty_ang = float(occ_test) * max(0.0001, acos(dot(v1,v2)/(dist_i2p*dist_n2p)));
+		float penalty_ang = float(occ_test) * max(0.0001, acos(dot(v1,v2)/(dist_i2p*dist_n2p)));
 
-			float penalty_res = max(0.0001, (dist_i2p - dist_n2p)/dist_i2p );
+		float penalty_res = max(0.0001, (dist_i2p - dist_n2p)/dist_i2p );
 		 
-			penaltyValue = penalty_ang + BETA*penalty_res;
-		} else {
-			/// use uv derivatives
-			/// \todo TODO: check if uv needs to be scale by screen size as needed in unity hlsl
+		vec2 fc = vec2(1.0) - smoothstep(vec2(0.7), vec2(1.0), abs(2.0*uvd.xy-1.0));
+    	float penalty_uv = 1.0 - fc.x * fc.y; 
 
-			vec3 crossProduct = cross(vec3(uv_ddx, 0), vec3(uv_ddy, 0));
-			float transformScale = length (crossProduct);
-			float weight = 1.0f / transformScale;
-			penaltyValue = weight;
+		penaltyValue = penalty_ang + BETA*penalty_res + BETA*penalty_uv;
+		
+
+
+		vec4 color = vec4(xy_camid, penaltyValue);
+		if(flipRGBs){
+			color.y = 1.0 - color.y;
 		}
-
-		color.w = penaltyValue;
-		  
+		 
 		// compare with best four candiates and insert at the
 		// appropriate rank
 		if (color.w<color3.w) {    // better than fourth best candidate
@@ -214,19 +157,29 @@ void main(void){
 					if (color.w<color0.w) {    // better than best candidate
 						color1 = color0;
 						color0 = color;
+						masks.x = masked;
 					} else {
 						color1 = color;
+						masks.y = masked;
 					}
 				} else {
 					color2 = color;
+					masks.z = masked;
 				}
 			} else {
 				color3 = color;
+				masks.w = masked;
 			}
 		}
 	 }  
    }
    
+
+
+	if(color0.w == INFTY_W){
+		discard;
+	}
+
 	float thresh = 1.0000001 * color3.w;
     color0.w = max(0, 1.0 - color0.w/thresh);
     color1.w = max(0, 1.0 - color1.w/thresh);
@@ -234,12 +187,25 @@ void main(void){
     color3.w = 1.0 - 1.0/1.0000001;
 
     // ignore any candidate which is uninit
-	if (color0.w == INFTY_W) color0.w = 0;
-    if (color1.w == INFTY_W) color1.w = 0;
-    if (color2.w == INFTY_W) color2.w = 0;
+	//if (color0.w == INFTY_W) color0.w = 0;
+   // if (color1.w == INFTY_W) color1.w = 0;
+    //if (color2.w == INFTY_W) color2.w = 0;
     //if (color3.w == INFTY_W) color3.w = 0; uneeded, color3.w = 1.0 - 1.0/1.0000001
 	
-	
+	// Support output weights as random colors for debug.
+	if(showWeights){
+		color0.rgb = getRandomColor(int(color0.z));
+		color1.rgb = getRandomColor(int(color1.z));
+		color2.rgb = getRandomColor(int(color2.z));
+		color3.rgb = getRandomColor(int(color3.z));
+	} else {
+		// Read from textures and apply masking.
+		color0.rgb = masks.x*texture(input_rgbs, color0.rgb).rgb;
+		color1.rgb = masks.y*texture(input_rgbs, color1.rgb).rgb;
+		color2.rgb = masks.z*texture(input_rgbs, color2.rgb).rgb;
+		color3.rgb = masks.w*texture(input_rgbs, color3.rgb).rgb;
+	}
+
     // blending
     out_color.w = 1.0;
     out_color.xyz = (color0.w*color0.xyz +
@@ -248,45 +214,13 @@ void main(void){
              color3.w*color3.xyz
             ) / (color0.w + color1.w + color2.w + color3.w);
     gl_FragDepth = point.w;
+
+	if(gammaCorrection){
+		out_color.xyz = pow(out_color.xyz, vec3(1.0/2.2));
+	}
 	
 }
 
-
-
-
-
-
-/*
-float getPenalizeStretch(vec2 uv)
-{
-	//uv = uv * reso;
-      // Source:
-      // - Hyperlapse papers [Kopf et al. 2014]
-      // - http://www.lucidarme.me/?p=4624
-
-      mat2 jacobian = mat2(
-        dFdx(uv),
-        dFdy(uv)
-        );
-
-      float a = jacobian[0][0];
-      float b = jacobian[1][0];
-      float c = jacobian[0][1];
-      float d = jacobian[1][1];
-      float aa = a*a;
-      float bb = b*b;
-      float cc = c*c;
-      float dd = d*d;
-
-      float S1 = aa + bb + cc + dd;
-      float S1a = (aa+bb-cc-dd);
-      float S1b = (a*c + b*d);
-      float S2 = sqrt(S1a*S1a + 4*S1b*S1b);
-
-      vec2  sigma = vec2(sqrt((S1+S2)/2.0), sqrt((S1-S2)/2.0));
-      return 1.0 - min(sigma.x, sigma.y)/max(sigma.x, sigma.y);
-}
-*/
 
 
 // Random number generation:

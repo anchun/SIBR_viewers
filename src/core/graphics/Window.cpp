@@ -23,6 +23,8 @@ namespace sibr
 			} else if (action == GLFW_RELEASE) {
 				sibr::Input::global().key().release((sibr::Key::Code)key);
 			}
+		} else {
+			sibr::Input::global() = sibr::Input();
 		}
 		ImGui_ImplGlfw_KeyCallback(window, key, scancode, action, mods);
 	}
@@ -41,7 +43,8 @@ namespace sibr
 		// We  pass the mouse position to our code iff the interface doesn't need it.
 		if (!ImGui::GetIO().WantCaptureMouse) {
 			sibr::Input::global().mousePosition(Vector2i((int)x, (int)y));
-			
+		} else {
+			sibr::Input::global() = sibr::Input();
 		}
 		
 	}
@@ -307,6 +310,16 @@ namespace sibr
 		} else if (fps == 15) {
 			glfwSwapInterval(3);
 		}
+	}
+
+	bool Window::isVsynced(void) const
+	{
+		return _useVSync;
+	}
+
+	void Window::setVsynced(const bool vsync) {
+		_useVSync = vsync;
+		glfwSwapInterval(_useVSync ? 1 : 0);
 	}
 
 	void				Window::enableCursor( bool enable )

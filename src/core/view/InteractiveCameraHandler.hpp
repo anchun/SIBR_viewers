@@ -40,7 +40,7 @@ namespace sibr {
 
 		InteractiveCameraHandler(const bool supportRecording = true);
 
-		/// resolution is deprecated and will be removed in the near future.
+		/// Resolution is deprecated and will be removed in the near future.
 		void setup(const std::vector<sibr::InputCamera> & cams, const sibr::Vector2u & resolution, const sibr::Viewport & viewport, const std::shared_ptr<sibr::Raycaster> raycaster);
 
 		void setup(const sibr::InputCamera & cam, const sibr::Viewport & viewport, const std::shared_ptr<sibr::Raycaster> raycaster);
@@ -129,6 +129,8 @@ namespace sibr {
 		bool _saveFrame;
 		bool _triggerCameraUpdate;
 		bool _isSetup;
+		float _cameraFovDeg;
+		bool _fribrExport = false;
 
 		void interpolate();
 

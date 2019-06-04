@@ -23,24 +23,6 @@ namespace sibr
 		setup();
 	}
 
-	/*SceneDebugView::SceneDebugView(const std::shared_ptr<sibr::AssetStreamer> & streamer, const sibr::Viewport & viewport)
-	{
-		_streamer = streamer;
-		const auto & mesh = _streamer->getGlobalMesh();
-		_meshInitialized = false;
-		if (mesh.vertices().empty()) {
-			_topViewCamera.setup(streamer->getStartCamera(), viewport, nullptr);
-		}
-		else {
-			_topViewCamera.setup(mesh.clone(), viewport);
-			_meshInitialized = true;
-		}
-		_topViewCamera.updateView(_streamer->getStartCamera());
-		_showImages = false;
-		_showMesh = true;
-
-		setup();
-	}*/
 
 	void SceneDebugView::onUpdate(Input & input)
 	{
@@ -62,10 +44,7 @@ namespace sibr
 		_snapToImage = 0;
 		_showLabels = false;
 		std::string filename;
-		/*if (_streamer) {
-			filename = _streamer->getStreamFolder() + "/topview.txt";
-		}
-		else*/
+		
 		filename = camera_path + "/topview.txt";
 
 		// check if topview.txt exists
@@ -116,10 +95,7 @@ namespace sibr
 
 		setupCameraImageShader();
 
-		//if (_streamer) {
-		//	// Labels are updated in onUpdate to support streaming.
-		//}
-		//else 
+		
 		if (_scene) {
 
 			for (const auto & cam : _scene->cameras()->inputCameras()) {
@@ -207,30 +183,6 @@ namespace sibr
 			save();
 		}
 
-		//if (_streamer) {
-		//	if (!_meshInitialized) {
-		//		const auto & mesh = _streamer->getGlobalMesh();
-		//		if (!mesh.vertices().empty()) {
-		//			_meshInitialized = true;
-		//			const sibr::InputCamera tempCam(_topViewCamera.getCamera());
-		//			_topViewCamera.setup(mesh.clone(), viewport);
-		//			_topViewCamera.fromCamera(tempCam, false);
-		//		}
-		//	}
-		//	if (_showLabels) {
-		//		for (const auto & streamCam : _streamer->getCameras()) {
-		//			if (_labelMeshes.count(streamCam->getUID()) == 0) {
-		//				// Create the missing mesh.
-		//				const StreamCamera::UID uid = streamCam->getUID();
-		//				unsigned int sepIndex = 0;
-		//				_labelMeshes[uid] = {};
-		//				_labelMeshes[uid].mesh = sibr::generateMeshForText(std::to_string(uid), sepIndex);
-		//				_labelMeshes[uid].splitIndex = sepIndex;
-		//			}
-		//		}
-		//	}
-
-		//}
 
 	}
 
@@ -327,18 +279,6 @@ namespace sibr
 		const sibr::Mesh * globalMesh = nullptr;
 		const InputCamera * userCamera = nullptr;
 
-		//if (_streamer) {
-		//	// If we have a AssetStreamer use it.
-		//	globalMesh = &(_streamer->getGlobalMesh());
-		//	//We have no guarantee of the ordering/presence of cameras from a frame to another due to the streaming.
-		//	_cameras.clear();
-		//	for (const auto & streamCam : _streamer->getCameras()) {
-		//		_cameras.emplace_back(streamCam->getInputCamera(), streamCam->getUID(), streamCam->isUsedForRendering());
-		//	}
-		//	userCamera = &(_streamer->getUserCamera());
-
-		//}
-		//else
 		if (_scene) {
 			//Fallback on BasicIBRScene.
 			globalMesh = &(_scene->proxies()->proxy());
@@ -347,7 +287,6 @@ namespace sibr
 			for (const auto & inputCam : _scene->cameras()->inputCameras()) {
 				_cameras.emplace_back(inputCam, inputCam.id(), _scene->cameras()->isCameraUsedForRendering(inputCam.id()));
 			}
-			//userCamera = &(_scene->userCamera());
 			userCamera = &(_userCurrentCam->getCamera());
 
 		}
@@ -465,8 +404,10 @@ namespace sibr
 
 	void SceneDebugView::renderCameraImages(const sibr::InputCamera & eye, const std::vector<CameraInfos> & cameras, const sibr::Viewport & viewport, const std::vector<GLuint> & textureIds)
 	{
-		CHECK_GL_ERROR;
-
+		
+		if (textureIds.empty()) {
+			return;
+		}
 		static const sibr::Mesh::Triangles quadTriangles = {
 			{ 0,1,2 },{ 0,2,3 }
 		};
@@ -603,6 +544,19 @@ namespace sibr
 		}
 
 		glDisable(GL_BLEND);
+	}
+
+
+	void SceneDebugView::setScene(const std::shared_ptr<sibr::BasicIBRScene> & scene, const bool preserveCamera) {
+		_scene = scene;
+		const sibr::InputCamera cameraBack = _topViewCamera.getCamera();
+		setup();
+		_topViewCamera.setup(_scene->cameras()->inputCameras(), _topViewCamera.viewport(), _topViewCamera.getRaycaster());
+		_topViewCamera.setupInterpolationPath(_scene->cameras()->inputCameras());
+		// Optionally restore the camera pose.
+		if (preserveCamera) {
+			_topViewCamera.fromCamera(cameraBack, false);
+		}
 	}
 
 

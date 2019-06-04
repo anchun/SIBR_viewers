@@ -10,8 +10,12 @@
 
 #define SIBR_FPS_SMOOTHING 60
 
+
 namespace sibr
 {
+
+	int FPSCounter::_count = 0;
+
 	FPSCounter::FPSCounter(const bool overlayed){
 		_frameTimes = std::vector<float>(SIBR_FPS_SMOOTHING, 0.0f);
 		_frameIndex = 0;
@@ -24,6 +28,8 @@ namespace sibr
 			_flags = 0;
 		}
 		_hidden = false;
+		_name = "Metrics##" + std::to_string(_count);
+		++_count;
 	}
 
 	void FPSCounter::init(const sibr::Vector2f & position){
@@ -36,17 +42,13 @@ namespace sibr
 			return;
 		}
 
-		if(_flags == 0 && ImGui::FindWindowByName("Metrics")) {
-			return;
-		}
-		
 		if (_position.x() != -1) {
 			ImGui::SetNextWindowPos(ImVec2(_position.x(), _position.y()));
 			ImGui::SetNextWindowSize(ImVec2(0, ImGui::GetTitleBarHeight()), ImGuiCond_FirstUseEver);
 		}
 		
 		ImGui::SetNextWindowBgAlpha(0.5f);
-		if (ImGui::Begin("Metrics", NULL, _flags))
+		if (ImGui::Begin(_name.c_str(), nullptr, _flags))
 		{
 			const float frameTime = _frameTimeSum / float(SIBR_FPS_SMOOTHING);
 			ImGui::Text("%.2f (%.2f ms)", 1.0f/ frameTime, frameTime*1000.0f);

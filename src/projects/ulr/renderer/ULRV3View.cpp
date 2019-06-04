@@ -28,6 +28,45 @@ sibr::ULRV3View::ULRV3View(const sibr::BasicIBRScene::Ptr & ibrScene, uint rende
 	_scene->cameras()->debugFlagCameraAsUsed(imgs_ulr);
 }
 
+void sibr::ULRV3View::setScene(const sibr::BasicIBRScene::Ptr & newScene) {
+	_scene = newScene;
+	const uint w = getResolution().x();
+	const uint h = getResolution().y();
+
+	std::string shaderName = "ulr_v3";
+	if (_weightsMode == VARIANCE_BASED_W) {
+		shaderName = "ulr_v3_alt";
+	}
+	else if (_weightsMode == ULR_FAST) {
+		shaderName = "ulr_v3_fast";
+	}
+
+	_ulrRenderer.reset(new ULRV3Renderer(newScene->cameras()->inputCameras(), w, h, shaderName));
+
+	// Tell the scene we are a priori using all active cameras.
+	std::vector<uint> imgs_ulr;
+	const auto & cams = newScene->cameras()->inputCameras();
+	for (size_t cid = 0; cid < cams.size(); ++cid) {
+		if (cams[cid].isActive()) {
+			imgs_ulr.push_back(cid);
+		}
+	}
+	_scene->cameras()->debugFlagCameraAsUsed(imgs_ulr);
+}
+
+void sibr::ULRV3View::setMode(const WeightsMode mode) {
+	_weightsMode = mode;
+	if (_weightsMode == VARIANCE_BASED_W) {
+		_ulrRenderer->setupShaders("ulr_v3_alt");
+	}
+	else if (_weightsMode == ULR_FAST) {
+		_ulrRenderer->setupShaders("ulr_v3_fast");
+	}
+	else {
+		_ulrRenderer->setupShaders();
+	}
+}
+
 void sibr::ULRV3View::onRenderIBR(sibr::IRenderTarget & dst, const sibr::Camera & eye)
 {
 	// Perform ULR rendering, either directly to the destination RT, or to the intermediate RT when poisson blending is enabled.
@@ -88,12 +127,8 @@ void sibr::ULRV3View::onGUI()
 		}
 		ImGui::Separator();
 		// Switch the shaders for ULR rendering.
-		if (ImGui::Combo("Weights mode", (int*)(&_weightsMode), "Standard ULR\0Variance based\0\0")) {
-			if (_weightsMode == VARIANCE_BASED_W) {
-				_ulrRenderer->setupShaders("ulr_v3_alt");
-			} else {
-				_ulrRenderer->setupShaders();
-			}
+		if (ImGui::Combo("Weights mode", (int*)(&_weightsMode), "Standard ULR\0Variance based\0Fast ULR\0\0")) {
+			setMode(_weightsMode);
 		}
 		
 		ImGui::Checkbox("Debug weights", &_ulrRenderer->showWeights());

@@ -22,7 +22,7 @@ namespace sibr {
 		enum RenderMode { ALL_CAMS, ONE_CAM, LEAVE_ONE_OUT, EVERY_N_CAM };
 
 		/// Blending mode: keep the four best values per pixel, or aggregate them all.
-		enum WeightsMode { ULR_W , VARIANCE_BASED_W };
+		enum WeightsMode { ULR_W , VARIANCE_BASED_W, ULR_FAST};
 
 	public:
 
@@ -31,6 +31,9 @@ namespace sibr {
 		 * \param ibrScene The scene to use for rendering.
 		 */
 		ULRV3View(const sibr::BasicIBRScene::Ptr& ibrScene, uint render_w, uint render_h);
+
+		/** Replace the current scene. */
+		void setScene(const sibr::BasicIBRScene::Ptr & newScene);
 
 		/**
 		 * Perform rendering. Called by the view manager or rendering mode.
@@ -52,6 +55,9 @@ namespace sibr {
 
 		/// Obtain a reference to the renderer.
 		const ULRV3Renderer::Ptr & getULRrenderer() const { return _ulrRenderer; }
+
+		/// Set the renderer blending weights mode.
+		void setMode(const WeightsMode mode);
 
 	protected:
 

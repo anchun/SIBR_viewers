@@ -157,7 +157,7 @@ namespace sibr {
 		setCameraAttributes(viewport);
 		tempCamera = fixedCamera;
 		tempCenter = fixedCenter = cam.position() + cam.dir().normalized() * radius;
-		std::cout << radius << std::endl;
+		
 		hasBeenInitialized = true;
 	}
 

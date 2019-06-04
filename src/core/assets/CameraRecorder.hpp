@@ -91,13 +91,22 @@ namespace sibr
 		\param filePath Path to the bundle file to write to.
 		*/
 		void	loadBundle(const std::string & filePath, int w = 1920, int h = 1080);
+
 		/**
-		Save the current recording stream as a bundle file (useful for FRIBR).
+		Save the current recording stream as a bundle file.
 		\param filePath Path to the bundle file to write to. 
 		\param height the height in pixels of the camera. Used to compute focal length in mm as expected by bundle.
 		\param step set to a value greater than 1 to save every "step" camera in the recording stream. 
 		*/
 		void	saveAsBundle(const std::string & filePath, const int height, const int step = 1);
+
+		/**
+		Save the current recording stream as a bundle file and a series of emlpty images for FRIBR compatibility.
+		\param dirPath Path to the directory to export to.
+		\param width the width in pixels of the camera. 
+		\param height the height in pixels of the camera.
+		*/
+		void	saveAsFRIBRBundle(const std::string & dirPath, const int width, const int height);
 
 		/**
 		\return a boolean denoting if the recorder is currently playing.
