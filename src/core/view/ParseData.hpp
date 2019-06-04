@@ -72,6 +72,12 @@ namespace sibr{
 		const std::vector<bool>&						excludeImages(void) const;
 
 		/**
+		* \brief Setter for the list of in-active cameras/images.
+		*
+		*/
+		void										excludeImages(std::vector<bool> & excImg);
+
+		/**
 		* \brief Getter for the base path name where the dataset is located.
 		*
 		*/
@@ -127,6 +133,11 @@ namespace sibr{
 	inline const std::vector<bool>& ParseData::excludeImages(void) const {
 		return _excludeImages;
 	}
+
+	inline void ParseData::excludeImages(std::vector<bool> & excImg) {
+		_excludeImages = excImg;
+	}
+
 	inline const std::string & ParseData::basePathName(void) const
 	{
 		return _basePathName;
