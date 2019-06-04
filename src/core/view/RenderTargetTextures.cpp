@@ -28,10 +28,10 @@ namespace sibr {
 
 		_imageFitParams = Vector4f(1.f, 1.f, 0.f, 0.f);
 
-		sibr::GLShader textureShader;
+		GLShader textureShader;
 		textureShader.init("Texture",
-			sibr::loadFile(sibr::Resources::Instance()->getResourceFilePathName("texture.vp")),
-			sibr::loadFile(sibr::Resources::Instance()->getResourceFilePathName("texture.fp")));
+			loadFile(Resources::Instance()->getResourceFilePathName("texture.vp")),
+			loadFile(Resources::Instance()->getResourceFilePathName("texture.fp")));
 		uint interpFlag = (SIBR_SCENE_LINEAR_SAMPLING & SIBR_SCENE_LINEAR_SAMPLING) ? SIBR_GPU_LINEAR_SAMPLING : 0; // LINEAR_SAMPLING Set to default
 
 		for (uint i = 0; i<imgs->inputImages().size(); i++) {
@@ -51,7 +51,7 @@ namespace sibr {
 
 				glDisable(GL_DEPTH_TEST);
 				textureShader.begin();
-				sibr::RenderUtility::renderScreenQuad();
+				RenderUtility::renderScreenQuad();
 				textureShader.end();
 				_inputRGBARenderTextures[i]->unbind();
 			}
@@ -60,13 +60,13 @@ namespace sibr {
 
 	void RenderTargetTextures::initializeDepthRenderTargets(CalibratedCameras::Ptr cams, InputImages::Ptr imgs, ProxyMesh::Ptr proxies, bool facecull)
 	{
-		sibr::GLParameter size;
-		sibr::GLParameter proj;
+		GLParameter size;
+		GLParameter proj;
 
-		sibr::GLShader depthShader;
+		GLShader depthShader;
 		depthShader.init("Depth",
-			sibr::loadFile(sibr::Resources::Instance()->getResourceFilePathName("depth.vp")),
-			sibr::loadFile(sibr::Resources::Instance()->getResourceFilePathName("depth.fp")));
+			loadFile(Resources::Instance()->getResourceFilePathName("depth.vp")),
+			loadFile(Resources::Instance()->getResourceFilePathName("depth.fp")));
 
 		proj.init(depthShader, "proj"); // [SP]: ??
 		size.init(depthShader, "size"); // [SP]: ??
@@ -104,9 +104,24 @@ namespace sibr {
 		initDepthTextureArrays(cams, imgs, proxies);
 	}
 
+	const std::vector<RenderTargetRGBA32F::Ptr>& RenderTargetTextures::inputImagesRT() const
+	{
+		return _inputRGBARenderTextures;
+	}
+
+	const Texture2DArrayRGB::Ptr & RenderTargetTextures::getInputRGBTextureArrayPtr() const
+	{
+		return _inputRGBArrayPtr;
+	}
+
+	const Texture2DArrayLum32F::Ptr & RenderTargetTextures::getInputDepthMapArrayPtr() const
+	{
+		return _inputDepthMapArrayPtr;
+	}
+
 	void RenderTargetTextures::initRGBTextureArrays(InputImages::Ptr imgs, int flags)
 	{
-		_inputRGBArrayPtr.reset(new sibr::Texture2DArrayRGB(imgs->inputImages(), _width, _height, flags));
+		_inputRGBArrayPtr.reset(new Texture2DArrayRGB(imgs->inputImages(), _width, _height, flags));
 	}
 
 	void RenderTargetTextures::initDepthTextureArrays(CalibratedCameras::Ptr cams, InputImages::Ptr imgs, ProxyMesh::Ptr proxies)
@@ -116,19 +131,19 @@ namespace sibr {
 			return;
 		}
 
-		sibr::GLShader depthOnlyShader;
+		GLShader depthOnlyShader;
 		depthOnlyShader.init("DepthOnly",
-			sibr::loadFile(sibr::Resources::Instance()->getResourceFilePathName("depthonly.vp")),
-			sibr::loadFile(sibr::Resources::Instance()->getResourceFilePathName("depthonly.fp")));
+			loadFile(Resources::Instance()->getResourceFilePathName("depthonly.vp")),
+			loadFile(Resources::Instance()->getResourceFilePathName("depthonly.fp")));
 
 		const uint interpFlag = (SIBR_SCENE_LINEAR_SAMPLING & SIBR_SCENE_LINEAR_SAMPLING) ? SIBR_GPU_LINEAR_SAMPLING : 0;
 
-		sibr::RenderTargetLum32F depthRT(_width, _height, interpFlag);
+		RenderTargetLum32F depthRT(_width, _height, interpFlag);
 
-		sibr::GLParameter proj;
+		GLParameter proj;
 		proj.init(depthOnlyShader, "proj");
 
-		_inputDepthMapArrayPtr.reset(new sibr::Texture2DArrayLum32F(_width, _height, (uint)imgs->inputImages().size(), SIBR_GPU_LINEAR_SAMPLING));
+		_inputDepthMapArrayPtr.reset(new Texture2DArrayLum32F(_width, _height, (uint)imgs->inputImages().size(), SIBR_GPU_LINEAR_SAMPLING));
 
 		for (uint i = 0; i<imgs->inputImages().size(); i++) {
 			glViewport(0, 0, _width, _height);

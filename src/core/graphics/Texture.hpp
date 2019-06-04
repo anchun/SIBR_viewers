@@ -1380,7 +1380,7 @@ namespace sibr
 		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
 		const bool autoMIPMAP = ((m_Flags & SIBR_GPU_AUTOGEN_MIPMAP) != 0);
-		const int numMipMap = autoMIPMAP ? std::floor(std::log2(std::max(m_W, m_H))) : 1;
+		const int numMipMap = autoMIPMAP ? (int)std::floor(std::log2(std::max(m_W, m_H))) : 1;
 
 		glTexStorage3D(GL_TEXTURE_2D_ARRAY, numMipMap,
 			GLFormat<T_Type, T_NumComp>::internal_format,
