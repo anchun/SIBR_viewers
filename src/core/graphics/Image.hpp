@@ -851,7 +851,6 @@ namespace sibr
 	//}
 
 	/// Standard image types
-
 	typedef Image<unsigned char, 3> ImageRGB;
 	typedef Image<unsigned char, 4> ImageRGBA;
 	typedef Image<unsigned char, 1> ImageL8;

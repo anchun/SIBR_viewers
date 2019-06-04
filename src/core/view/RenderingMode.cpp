@@ -121,7 +121,8 @@ std::cerr <<"End of render pass 1" << std::endl;
 		if (!_rightRT || _rightRT->w() != w || _rightRT->h() != h)
 			_rightRT.reset( new RenderTarget(w, h) );
 
-		InputCamera leye = eye, reye = eye;
+		InputCamera leye(eye, w, h);
+		InputCamera reye(eye, w, h);
 		leye.size(w, h); reye.size(w, h);
 		leye.position(eye.position()-_eyeDist*eye.right());
 

@@ -635,7 +635,7 @@ namespace sibr {
 		} else {
 			list_meshes.push_back(data);
 			
-			Camera cam = camera_handler.getCamera();
+			InputCamera cam = camera_handler.getCamera();
 			cam.zfar(std::max(cam.zfar(), 5.0f*data.meshPtr->getBoundingBox().diagonal().norm()));
 			camera_handler.fromCamera(cam);
 
