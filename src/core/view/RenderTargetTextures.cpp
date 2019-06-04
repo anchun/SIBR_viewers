@@ -10,7 +10,6 @@ namespace sibr {
 	void RenderTargetTextures::initializeImageRenderTargets(CalibratedCameras::Ptr cams, InputImages::Ptr imgs)
 	{
 		SIBR_LOG << "Initializing input image RTs " << std::endl;
-		/// \todo in the case of ULR this can happens twice -- TODO fix this
 
 		_inputRGBARenderTextures.resize(imgs->inputImages().size());
 
@@ -54,13 +53,13 @@ namespace sibr {
 		sibr::GLParameter size;
 		sibr::GLParameter proj;
 
-		_depthShader = new sibr::GLShader;
-		_depthShader->init("Depth",
+		sibr::GLShader depthShader;
+		depthShader.init("Depth",
 			sibr::loadFile(sibr::Resources::Instance()->getResourceFilePathName("depth.vp")),
 			sibr::loadFile(sibr::Resources::Instance()->getResourceFilePathName("depth.fp")));
 
-		proj.init(*_depthShader, "proj"); // [SP]: ??
-		size.init(*_depthShader, "size"); // [SP]: ??
+		proj.init(depthShader, "proj"); // [SP]: ??
+		size.init(depthShader, "size"); // [SP]: ??
 		for (uint i = 0; i < imgs->inputImages().size(); i++) {
 			if (cams->inputCameras()[i].isActive()) {
 				_inputRGBARenderTextures[i]->bind();
@@ -69,18 +68,18 @@ namespace sibr {
 				glDepthMask(GL_TRUE);
 				glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_TRUE);
 				
-				if (proxies->proxy().triangles().size())
+				if (!proxies->proxy().triangles().empty())
 				{
 					
 					uint w = _inputRGBARenderTextures[i]->w();
 					uint h = _inputRGBARenderTextures[i]->h();
 
-					_depthShader->begin();
+					depthShader.begin();
 					size.set((float)w, (float)h);
 					proj.set(cams->inputCameras()[i].viewproj());
 					proxies->proxy().render(true, facecull);
 
-					_depthShader->end();
+					depthShader.end();
 				}
 				_inputRGBARenderTextures[i]->unbind();
 			}
@@ -114,7 +113,7 @@ namespace sibr {
 			sibr::loadFile(sibr::Resources::Instance()->getResourceFilePathName("depthonly.vp")),
 			sibr::loadFile(sibr::Resources::Instance()->getResourceFilePathName("depthonly.fp")));
 
-		const uint interpFlag = (SIBR_SCENE_LINEAR_SAMPLING & true) ? SIBR_GPU_LINEAR_SAMPLING : 0;
+		const uint interpFlag = (SIBR_SCENE_LINEAR_SAMPLING & SIBR_SCENE_LINEAR_SAMPLING) ? SIBR_GPU_LINEAR_SAMPLING : 0;
 
 		sibr::RenderTargetLum32F depthRT(w, h, interpFlag);
 

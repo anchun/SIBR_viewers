@@ -41,7 +41,6 @@ namespace sibr{
 		sibr::Texture2DArrayRGB::Ptr										_inputRGBArrayPtr;
 		sibr::Texture2DArrayLum32F::Ptr										_inputDepthMapArrayPtr;
 		Vector4f															_imageFitParams;
-		sibr::GLShader														*_depthShader;
 		
 	};
 
