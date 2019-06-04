@@ -1,8 +1,21 @@
 #include "RenderTargetTextures.hpp"
 
 namespace sibr {
+
+	void RenderTargetTextures::initializeRenderTargetSize(CalibratedCameras::Ptr cams) {
+
+		if (_width == 0) { // use full resolution
+			_width = cams->inputCameras()[0].w();
+			_height = cams->inputCameras()[0].h();
+		}
+		else { // use constrained resolution
+			_height = floor(_width / cams->inputCameras()[0].aspect());
+		}
+	}
+
 	void RenderTargetTextures::initializeDefaultRenderTargets(CalibratedCameras::Ptr cams, InputImages::Ptr imgs, ProxyMesh::Ptr proxies)
 	{
+		initializeRenderTargetSize(cams);
 		initializeImageRenderTargets(cams, imgs);
 		initializeDepthRenderTargets(cams, imgs, proxies, true);
 	}
@@ -28,11 +41,8 @@ namespace sibr {
 
 				std::shared_ptr<Texture2DRGB> rawInputImage(new Texture2DRGB(img, interpFlag));
 
-				uint w = (uint)(cams->inputCameras()[i].w()*_imageFitParams[0]);			
-				uint h = (uint)(cams->inputCameras()[i].h()*_imageFitParams[1]);			
-
-				glViewport(0, 0, w, h);
-				_inputRGBARenderTextures[i].reset(new RenderTargetRGBA32F(w, h, interpFlag));
+				glViewport(0, 0, _width, _height);
+				_inputRGBARenderTextures[i].reset(new RenderTargetRGBA32F(_width, _height, interpFlag));
 				_inputRGBARenderTextures[i]->clear();
 				_inputRGBARenderTextures[i]->bind();
 
@@ -71,8 +81,8 @@ namespace sibr {
 				if (!proxies->proxy().triangles().empty())
 				{
 					
-					uint w = _inputRGBARenderTextures[i]->w();
-					uint h = _inputRGBARenderTextures[i]->h();
+					const uint w = _inputRGBARenderTextures[i]->w();
+					const uint h = _inputRGBARenderTextures[i]->h();
 
 					depthShader.begin();
 					size.set((float)w, (float)h);
@@ -87,15 +97,16 @@ namespace sibr {
 		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 	}
 
-	void RenderTargetTextures::initRGBandDepthTextureArrays(CalibratedCameras::Ptr cams, InputImages::Ptr imgs, ProxyMesh::Ptr proxies, uint width, uint height, int flags)
+	void RenderTargetTextures::initRGBandDepthTextureArrays(CalibratedCameras::Ptr cams, InputImages::Ptr imgs, ProxyMesh::Ptr proxies, int flags)
 	{
-		initRGBTextureArrays(imgs, width, height, flags);
+		initializeRenderTargetSize(cams);
+		initRGBTextureArrays(imgs, flags);
 		initDepthTextureArrays(cams, imgs, proxies);
 	}
 
-	void RenderTargetTextures::initRGBTextureArrays(InputImages::Ptr imgs, uint width, uint height, int flags)
+	void RenderTargetTextures::initRGBTextureArrays(InputImages::Ptr imgs, int flags)
 	{
-		_inputRGBArrayPtr.reset(new sibr::Texture2DArrayRGB(imgs->inputImages(), width, height, flags));
+		_inputRGBArrayPtr.reset(new sibr::Texture2DArrayRGB(imgs->inputImages(), _width, _height, flags));
 	}
 
 	void RenderTargetTextures::initDepthTextureArrays(CalibratedCameras::Ptr cams, InputImages::Ptr imgs, ProxyMesh::Ptr proxies)
@@ -105,9 +116,6 @@ namespace sibr {
 			return;
 		}
 
-		const uint w = (uint)cams->inputCameras()[0].w();
-		const uint h = (uint)cams->inputCameras()[0].h();
-
 		sibr::GLShader depthOnlyShader;
 		depthOnlyShader.init("DepthOnly",
 			sibr::loadFile(sibr::Resources::Instance()->getResourceFilePathName("depthonly.vp")),
@@ -115,15 +123,15 @@ namespace sibr {
 
 		const uint interpFlag = (SIBR_SCENE_LINEAR_SAMPLING & SIBR_SCENE_LINEAR_SAMPLING) ? SIBR_GPU_LINEAR_SAMPLING : 0;
 
-		sibr::RenderTargetLum32F depthRT(w, h, interpFlag);
+		sibr::RenderTargetLum32F depthRT(_width, _height, interpFlag);
 
 		sibr::GLParameter proj;
 		proj.init(depthOnlyShader, "proj");
 
-		_inputDepthMapArrayPtr.reset(new sibr::Texture2DArrayLum32F(w, h, (uint)imgs->inputImages().size(), SIBR_GPU_LINEAR_SAMPLING));
+		_inputDepthMapArrayPtr.reset(new sibr::Texture2DArrayLum32F(_width, _height, (uint)imgs->inputImages().size(), SIBR_GPU_LINEAR_SAMPLING));
 
 		for (uint i = 0; i<imgs->inputImages().size(); i++) {
-			glViewport(0, 0, w, h);
+			glViewport(0, 0, _width, _height);
 
 			depthRT.bind();
 			glEnable(GL_DEPTH_TEST);
@@ -140,7 +148,7 @@ namespace sibr {
 			glCopyImageSubData(
 				depthRT.handle(), GL_TEXTURE_2D, 0, 0, 0, 0,
 				_inputDepthMapArrayPtr->handle(), GL_TEXTURE_2D_ARRAY, 0, 0, 0, i,
-				w, h, 1);
+				_width, _height, 1);
 			CHECK_GL_ERROR;
 		}
 		CHECK_GL_ERROR;

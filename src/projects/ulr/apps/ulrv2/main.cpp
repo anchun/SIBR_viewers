@@ -62,7 +62,7 @@ int main(int ac, char** av) {
 	// Window setup
 	sibr::Window		window(PROGRAM_NAME, sibr::Vector2i(50, 50), false, doVSync);
 
-	BasicIBRScene::Ptr		scene(new BasicIBRScene(myArgs));
+	BasicIBRScene::Ptr		scene(new BasicIBRScene(myArgs, true));
 
 	// Setup the scene: load the proxy, create the texture arrays.
 	const uint flags = SIBR_GPU_LINEAR_SAMPLING | SIBR_FLIP_TEXTURE;
@@ -74,7 +74,7 @@ int main(int ac, char** av) {
 
 	const unsigned int sceneResWidth = usedResolution.x();
 	const unsigned int sceneResHeight = usedResolution.y();
-	scene->renderTargets()->initRGBandDepthTextureArrays(scene->cameras(), scene->images(), scene->proxies(), sceneResWidth, sceneResHeight, flags);
+	scene->renderTargets()->initRGBandDepthTextureArrays(scene->cameras(), scene->images(), scene->proxies(), flags);
 
 	// Create the ULR view.
 	ULRV3View::Ptr	ulrView(new ULRV3View(scene, sceneResWidth, sceneResHeight));

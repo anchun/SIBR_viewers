@@ -14,34 +14,42 @@
 
 namespace sibr{
 	class SIBR_VIEW_EXPORT RenderTargetTextures {
-		SIBR_DISALLOW_COPY(RenderTargetTextures);
+		
 	public:
 
 		typedef std::shared_ptr<RenderTargetTextures>						Ptr;
 
-		RenderTargetTextures() {};
-		//void test(void);
-		void initializeDefaultRenderTargets(CalibratedCameras::Ptr cams, InputImages::Ptr imgs, ProxyMesh::Ptr proxies);
-		void initializeImageRenderTargets(CalibratedCameras::Ptr cams, InputImages::Ptr imgs);
-		void initializeDepthRenderTargets(CalibratedCameras::Ptr cams, InputImages::Ptr imgs, ProxyMesh::Ptr proxies, bool facecull);
+		RenderTargetTextures() = default;
 
-		// void initRGBandDepthTextureArrays(int flags = 0); 
-		void initRGBandDepthTextureArrays(CalibratedCameras::Ptr cams, InputImages::Ptr imgs, ProxyMesh::Ptr proxies, uint width, uint height, int flags = 0);
-		void initRGBTextureArrays(InputImages::Ptr imgs, uint width, uint height, int flags = 0);
-		void initDepthTextureArrays(CalibratedCameras::Ptr cams, InputImages::Ptr imgs, ProxyMesh::Ptr proxies);
+		RenderTargetTextures(const uint w) : _width(w) {}
+
+		void initializeDefaultRenderTargets(CalibratedCameras::Ptr cams, InputImages::Ptr imgs, ProxyMesh::Ptr proxies);
+		
+
+		void initRGBandDepthTextureArrays(CalibratedCameras::Ptr cams, InputImages::Ptr imgs, ProxyMesh::Ptr proxies, int flags = 0);
+	
 
 		const std::vector<std::shared_ptr<RenderTargetRGBA32F>>											inputImagesRT(void) const;
 		const sibr::Texture2DArrayRGB::Ptr & getInputRGBTextureArrayPtr() const { return _inputRGBArrayPtr; }
 		const sibr::Texture2DArrayLum32F::Ptr &  getInputDepthMapArrayPtr() const { return _inputDepthMapArrayPtr; }
-		~RenderTargetTextures() {};
+		
 
 	protected:
+
+		void initializeRenderTargetSize(CalibratedCameras::Ptr cams);
+
+		void initializeImageRenderTargets(CalibratedCameras::Ptr cams, InputImages::Ptr imgs);
+		void initializeDepthRenderTargets(CalibratedCameras::Ptr cams, InputImages::Ptr imgs, ProxyMesh::Ptr proxies, bool facecull);
+
+		void initRGBTextureArrays(InputImages::Ptr imgs, int flags = 0);
+		void initDepthTextureArrays(CalibratedCameras::Ptr cams, InputImages::Ptr imgs, ProxyMesh::Ptr proxies);
 
 		std::vector<std::shared_ptr<RenderTargetRGBA32F>>					_inputRGBARenderTextures;
 		sibr::Texture2DArrayRGB::Ptr										_inputRGBArrayPtr;
 		sibr::Texture2DArrayLum32F::Ptr										_inputDepthMapArrayPtr;
 		Vector4f															_imageFitParams;
-		
+		uint																_width = 0; //constrained width provided by the command line args, defaults to 0
+		uint																_height = 0; //associated height, computed in initializeRenderTargetSize
 	};
 
 	inline const std::vector<std::shared_ptr<RenderTargetRGBA32F>> RenderTargetTextures::inputImagesRT(void) const
