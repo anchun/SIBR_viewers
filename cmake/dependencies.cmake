@@ -223,7 +223,7 @@ include_directories(${ASSIMP_INCLUDE_DIR})
 ################
 ## Find FFMPEG
 ################
-if(BUILD_VBR OR BUILD_IBR_DYNAMIC) ## ffmpeg only needed with vbr projects
+if(BUILD_VIDEO OR BUILD_IBR_DYNAMIC) ## ffmpeg only needed with vbr projects
 	win3rdParty(FFMPEG
 		MSVC11 "win3rdParty/MSVC11/ffmpeg" "https://gforge.inria.fr/frs/download.php/file/34916/ffmpeg.zip"
         MSVC12 "win3rdParty/MSVC12/ffmpeg" "https://gforge.inria.fr/frs/download.php/file/34916/ffmpeg.zip"
@@ -457,8 +457,8 @@ if (BUILD_MVIIR)
 endif()
 
 ##############
-if (BUILD_PREPROCESS)
 
+if (BUILD_PREPROCESS OR BUILD_IBR_VIDEO_BLENDING)
 	# libigl
     # message("libigl win3rdparty dir: ${Libigl_WIN3RDPARTY_DIR}")
     # set(Libigl_WIN3RDPARTY_DIR "libigl-master")
@@ -473,6 +473,9 @@ if (BUILD_PREPROCESS)
 
 	include_directories(${Libigl_INCLUDE_DIR})
     message("libigl was found in : ${Libigl_INCLUDE_DIR}")
+endif()
+
+if (BUILD_PREPROCESS)
 
 	## Find gflags
 	## Levmar only needed with vbr projects
