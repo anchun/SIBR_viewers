@@ -5,6 +5,13 @@
 namespace sibr
 {
 	
+	BasicIBRScene::BasicIBRScene() {
+		_cams.reset(new CalibratedCameras());
+		_imgs.reset(new InputImages());
+		_proxies.reset(new ProxyMesh());
+		_renderTargets.reset(new RenderTargetTextures());
+	}
+
 	BasicIBRScene::BasicIBRScene(BasicIBRAppArgs & myArgs, bool noRTs)
 	{
 
