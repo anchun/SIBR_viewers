@@ -73,6 +73,33 @@ namespace sibr
 		Raycaster									_raycaster;
 	};
 
+
+	class SIBR_RAYCASTER_EXPORT RaycastingCamera : public sibr::InputCamera {
+		SIBR_CLASS_PTR(RaycastingCamera);
+	public:
+		using HPlane = Eigen::Hyperplane<float, 3>;
+		using Line3 = Eigen::ParametrizedLine<float, 3>;
+
+		RaycastingCamera(const sibr::InputCamera & cam);
+
+		sibr::Vector3f rayDirNotNormalized(const sibr::Vector2f & pixel) const;
+
+		//return the ray direction from the camera position to the center of the input pixel (input pixel in [0,w-1]x[0,h-1])
+		sibr::Vector3f rayDir(const sibr::Vector2f & pixel) const;
+
+		Ray getRay(const sibr::Vector2f & pixel) const;
+
+		sibr::Vector2f rayProjection(const Line3 & line) const;
+
+		bool isInsideFrustum(const sibr::Vector3f & pt, float eps = 0.0001) const;
+
+		sibr::Vector2f projectImg_outside_frustum_correction(const Vector3f& pt3d) const;
+
+		sibr::Vector3f dx, dy, upLeftOffsetMinusPos;
+
+		std::vector<HPlane> frustum_planes; // !<near>, far, top, bottom, left, right	
+	};
+
 	///// DEFINITIONS /////
 
 } // namespace sibr

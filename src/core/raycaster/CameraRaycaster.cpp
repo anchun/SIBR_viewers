@@ -148,4 +148,106 @@ namespace sibr
 
 	}
 
+	RaycastingCamera::RaycastingCamera(const sibr::InputCamera & cam) : sibr::InputCamera(cam) {
+		CameraRaycaster::computePixelDerivatives(*this, dx, dy, upLeftOffsetMinusPos);
+		upLeftOffsetMinusPos -= position();
+
+		std::vector<sibr::Vector2f> corners = {
+			{-1,-1}, {-1, 1}, {1, 1}, {1, -1}
+		};
+		std::vector<sibr::Vector3f> pts_near, pts_far;
+		for (const auto & c : corners) {
+			pts_near.push_back(unproject({ c[0], c[1], -1 }));
+			pts_far.push_back(unproject({ c[0], c[1], +1 }));
+		}
+
+		frustum_planes = {
+			//HPlane::Through(pts_near[0], pts_near[3], pts_near[2]), // near_plane,
+			HPlane::Through(pts_far[0], pts_far[2], pts_far[3]),	// far_plane
+			HPlane::Through(pts_near[2], pts_far[2], pts_far[1]),	// top_plane, 
+			HPlane::Through(pts_near[3], pts_near[0], pts_far[3]),	// bottom_plane, 
+			HPlane::Through(pts_far[0], pts_near[0], pts_far[1]),	// left_plane
+			HPlane::Through(pts_near[3], pts_far[3], pts_far[2])	// right_plane;
+		};
+
+		//sibr::Vector3f pt = unproject({ 0, 0, 0 });
+		//std::cout << " debug planes : ";
+		//for (uint i = 0; i < frustum_planes.size(); ++i) {
+		//	std::cout << sibr::Vector4f(pt[0], pt[1], pt[2], 1).dot(frustum_planes[i].coeffs()) << " ";
+		//}
+		//std::cout << std::endl;
+
+	}
+
+	sibr::Vector3f RaycastingCamera::rayDirNotNormalized(const sibr::Vector2f & pixel) const
+	{
+		return pixel.x()*dx + pixel.y()*dy + upLeftOffsetMinusPos;
+	}
+
+	sibr::Vector3f RaycastingCamera::rayDir(const sibr::Vector2f & pixel) const
+	{
+		return rayDirNotNormalized(pixel).normalized();
+	}
+
+	Ray RaycastingCamera::getRay(const sibr::Vector2f & pixel) const
+	{
+		return Ray(position(), rayDir(pixel));
+	}
+
+	sibr::Vector2f RaycastingCamera::rayProjection(const Line3 & line) const
+	{
+		sibr::Vector2f out(-1, -1);
+		uint id = 0;
+		if (isInsideFrustum(line.origin())) {
+			out[id] = 0;
+			++id;
+		}
+
+		std::vector<float> intersection_params;
+		intersection_params.reserve(frustum_planes.size());
+
+		for (uint i = 0; i < frustum_planes.size(); ++i) {
+			float param = line.intersectionParameter(frustum_planes[i]);
+			if (param >= 0) {
+				intersection_params.push_back(param);
+			}
+		}
+
+		std::sort(intersection_params.begin(), intersection_params.end());
+		for (float t : intersection_params) {
+			if (isInsideFrustum(line.pointAt(t))) {
+				out[id] = t;
+				if (id == 1) {
+					return out;
+				}
+				++id;
+			}
+		}
+
+		return out;
+	}
+
+	bool RaycastingCamera::isInsideFrustum(const sibr::Vector3f & pt, float eps) const
+	{
+		for (uint i = 0; i < frustum_planes.size(); ++i) {
+			if (sibr::Vector4f(pt[0], pt[1], pt[2], 1).dot(frustum_planes[i].coeffs()) < -eps) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	sibr::Vector2f RaycastingCamera::projectImg_outside_frustum_correction(const Vector3f & pt3d) const
+	{
+		sibr::Vector3f pos2dGL = project(pt3d);
+
+		if ((pt3d - position()).dot(dir()) < 0) {
+			pos2dGL.x() = -pos2dGL.x();
+		} else {
+			pos2dGL.y() = -pos2dGL.y();
+		}
+		return 0.5f*(pos2dGL.xy() + sibr::Vector2f(1, 1)).cwiseProduct(sibr::Vector2f(w(), h()));
+
+	}
+
 } // namespace sibr
