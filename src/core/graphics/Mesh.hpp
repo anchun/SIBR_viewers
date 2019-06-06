@@ -243,7 +243,7 @@ namespace sibr
 		sibr::Vector3f centroid() const;
 
 		/** IMPORTANT NOTE: This function has not been strongly tested! */
-		void						getBoundingSphere(Vector3f& outCenter, float& outRadius, bool referencedOnly=false);
+		void						getBoundingSphere(Vector3f& outCenter, float& outRadius, bool referencedOnly=false) const;
 
 		sibr::Vector2f getZnearZfar() const;
 

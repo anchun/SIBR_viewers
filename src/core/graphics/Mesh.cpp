@@ -1401,7 +1401,7 @@ namespace sibr
 		return _meshPath;
 	}
 
-	void					Mesh::getBoundingSphere(Vector3f& outCenter, float& outRadius, bool referencedOnly)
+	void					Mesh::getBoundingSphere(Vector3f& outCenter, float& outRadius, bool referencedOnly) const
 	{
 		// Get the center of mass
 
