@@ -7,6 +7,7 @@
 
 include(CMakeDependentOption)
 option(BUILD_SIBR "Build core libs of SIBR (sibr_system, sibr_graphics, sibr_view and sibr_assets)" ON)
+option(BUILD_VIDEO "Build vbr lib in core of SIBR" OFF)
 set(USE_RENDERER_API_GLUT ON)
 
 if (BUILD_IBR_TFGL_INTEROP)
@@ -72,6 +73,10 @@ if (BUILD_SIBR)
   add_subdirectory(core/raycaster)
   add_subdirectory(core/view)
   add_subdirectory(core/assets)
+endif()
+
+if (BUILD_SIBR AND BUILD_VIDEO)
+  add_subdirectory(core/video)
 endif()
 
 set(SIBR_PROJECTS_FOLDER           "${CMAKE_CURRENT_SOURCE_DIR}/projects/")
