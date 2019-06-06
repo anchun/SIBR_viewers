@@ -12,7 +12,7 @@ namespace sibr
 		_renderTargets.reset(new RenderTargetTextures());
 	}
 
-	BasicIBRScene::BasicIBRScene(BasicIBRAppArgs & myArgs, bool noRTs)
+	BasicIBRScene::BasicIBRScene(const BasicIBRAppArgs & myArgs, bool noRTs)
 	{
 
 		// parse metadata file
