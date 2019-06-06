@@ -35,7 +35,7 @@ namespace sibr {
 		SIBR_CLASS_PTR(InteractiveCameraHandler);
 
 		enum InteractionMode {
-			FPS = 0, ORBIT = 1, INTERPOLATION = 2, TRACKBALL = 3
+			FPS = 0, ORBIT = 1, INTERPOLATION = 2, TRACKBALL = 3, NONE=4
 		};
 
 		InteractiveCameraHandler(const bool supportRecording = true);

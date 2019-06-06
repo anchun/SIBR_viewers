@@ -33,7 +33,7 @@ namespace sibr {
 		/**
 		 * \brief Default constructor to create a BasicIBRScene.
 		 */
-		BasicIBRScene() {};
+		BasicIBRScene();
 
 		/**
 		 * \brief Constructor to create a BasicIBRScene given command line arguments.
