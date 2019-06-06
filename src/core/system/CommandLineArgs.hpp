@@ -143,16 +143,16 @@ namespace sibr
 		using RequiredArgBase<T>::RequiredArgBase;
 	};
 
-	///specialization required for std::string as const string & key constructor and const T & constructor are ambiguous.
+	///specialization required for std::string as const string & key constructor and const T & constructor are ambiguous. TT : no const T & ctor anymore but operator const char*() const operator added
+	//
 	template<>
 	class RequiredArg<std::string> : public RequiredArgBase<std::string> {
-		RequiredArg(const RequiredArg &) = delete;
-		RequiredArg & operator=(const RequiredArg &) = delete;
+		//RequiredArg(const RequiredArg &) = delete;
+		//RequiredArg & operator=(const RequiredArg &) = delete;
 		
 		using RequiredArgBase<std::string>::RequiredArgBase;
 		
 	public:
-		RequiredArg & operator=(const std::string & t) { value = t; wasInit = true;  return *this; }
 		operator const char*() const { checkInit(); return value.c_str(); }
 	};
 

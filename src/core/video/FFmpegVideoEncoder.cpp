@@ -22,12 +22,10 @@ namespace sibr {
 
 	void FFVideoEncoder::close()
 	{
-		//Write file trailer
 		if (av_write_trailer(pFormatCtx) < 0) {
 			SIBR_WRG << " Can not av_write_trailer " << std::endl;
 		}
 
-		//Clean
 		if (video_st) {
 			avcodec_close(video_st->codec);
 			av_free(frameYUV);
@@ -57,7 +55,6 @@ namespace sibr {
 
 		pFormatCtx = avformat_alloc_context();
 
-		//Guess Format
 		fmt = av_guess_format(NULL, out_file, NULL);
 		pFormatCtx->oformat = fmt;
 
@@ -81,7 +78,6 @@ namespace sibr {
 			SIBR_WRG << " could not avformat_new_stream " << std::endl;
 		}
 
-		//Param that must set
 		pCodecCtx = video_st->codec;
 		pCodecCtx->codec_id = fmt->video_codec;
 		pCodecCtx->codec_type = AVMEDIA_TYPE_VIDEO;
@@ -99,10 +95,8 @@ namespace sibr {
 		if (pCodecCtx->codec_id == AV_CODEC_ID_H264) {
 			av_dict_set(&param, "preset", "slow", 0);
 			av_dict_set(&param, "tune", "zerolatency", 0);
-			//av_dict_set(&param, "profile", "main", 0);
 		}
 
-		//Show some Information
 		av_dump_format(pFormatCtx, 0, out_file, 1);
 
 		res = avcodec_open2(pCodecCtx, pCodec, &param);
@@ -156,7 +150,7 @@ namespace sibr {
 	bool FFVideoEncoder::encode(AVFrame * frame)
 	{
 		int got_picture = 0;
-		//Encode
+
 		int ret = avcodec_encode_video2(pCodecCtx, pkt, frameYUV, &got_picture);
 		if (ret < 0) {
 			SIBR_WRG << " Failed to encode " << std::endl;

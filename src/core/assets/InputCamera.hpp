@@ -134,6 +134,12 @@ namespace sibr
 		*/
 		std::string toBundleString(bool negativeZ = false) const;
 
+
+		/** Return std::vector or 4 Vector2i coresponding the pixel at the camera corners
+		*/
+		std::vector<sibr::Vector2i> getImageCorners() const;
+
+
 		/** Save a vector of cameras as a bundle file
 		*/
 		static void saveAsBundle(const std::vector<sibr::InputCamera> & cams, const std::string & fileName, bool negativeZ = false, bool exportImages = false);

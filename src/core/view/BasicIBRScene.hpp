@@ -26,7 +26,7 @@ namespace sibr {
 		/**
 		* \brief Pointer to the instance of class sibr::BasicIBRScene.
 		*/
-		typedef std::shared_ptr<BasicIBRScene>									Ptr;
+		using Ptr = std::shared_ptr<BasicIBRScene>;
 
 	public:
 
@@ -41,7 +41,7 @@ namespace sibr {
 		 * \param myArgs to provide all command line arguments containing path to specific components.
 		 * \param noRTs to specify whether to initialize render target textures or not.
 		 */
-		BasicIBRScene::BasicIBRScene(BasicIBRAppArgs & myArgs, bool noRTs = false);
+		BasicIBRScene(const BasicIBRAppArgs & myArgs, bool noRTs = false);
 
 		~BasicIBRScene() {};
 

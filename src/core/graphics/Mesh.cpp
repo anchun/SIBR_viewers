@@ -1648,6 +1648,51 @@ namespace sibr
 		return mesh;
 	}
 
+	Mesh::Ptr Mesh::getSphereMesh(const Vector3f & center, float radius, bool withGraphics, int precision) {
+		const int nTheta = precision;
+		const int nPhi = precision;
+		const int nPoints = nTheta * nPhi;
+		std::vector<Vector3f> vertices(nPoints), normals(nPoints);
+
+		for (int t = 0; t < nTheta; ++t) {
+			double theta = (t / (double)(nTheta - 1))* M_PI;
+			double cosT = std::cos(theta);
+			double sinT = std::sin(theta);
+			for (int p = 0; p < nPhi; ++p) {
+				double phi = 2.0*(p / (double)(nPhi - 1) - 0.5)* M_PI;
+				double cosP = std::cos(phi), sinP = std::sin(phi);
+				normals[p + nPhi * t] = Vector3d(sinT*cosP, sinT*sinP, cosT).cast<float>();
+				vertices[p + nPhi * t] = center + radius * normals[p + nPhi * t];
+			}
+		}
+
+		std::vector<uint> indices(6 * (nTheta - 1)*nPhi);
+		int triangle_id = 0;
+		for (int t = 0; t < nTheta - 1; ++t) {
+			for (int p = 0; p < nPhi; ++p) {
+				int current_id = p + nPhi * t;
+				int offset_row = 1 - (p == nPhi - 1 ? nPhi : 0);
+				int next_in_row = current_id + offset_row;
+				int next_in_col = current_id + nPhi;
+				int next_next = next_in_col + offset_row;
+				indices[3 * triangle_id + 0] = current_id;
+				indices[3 * triangle_id + 1] = next_in_col;
+				indices[3 * triangle_id + 2] = next_in_row;
+				indices[3 * triangle_id + 3] = next_in_row;
+				indices[3 * triangle_id + 4] = next_in_col;
+				indices[3 * triangle_id + 5] = next_next;
+				triangle_id += 2;
+			}
+		}
+
+		Mesh::Ptr sphereMesh = Mesh::Ptr(new Mesh(withGraphics));
+		sphereMesh->vertices(vertices);
+		sphereMesh->normals(normals);
+		sphereMesh->triangles(indices);
+
+		return sphereMesh;
+	}
+
 	sibr::Mesh::Ptr Mesh::subDivide(float limitSize) const
 	{
 		struct Less {

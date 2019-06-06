@@ -260,6 +260,8 @@ namespace sibr
 		/* compute a simple cube with normals */
 		static sibr::Mesh::Ptr getTestCube(bool withGraphics = true);
 
+		static Mesh::Ptr getSphereMesh(const Vector3f & center, float radius, bool withGraphics = true, int precision = 50);
+
 		sibr::Mesh::Ptr subDivide(float limitSize) const;
 		
 		float meanEdgeSize() const;
