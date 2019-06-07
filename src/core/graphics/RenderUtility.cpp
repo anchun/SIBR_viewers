@@ -305,6 +305,107 @@ namespace sibr
 		return m;
 	}
 
+	Mesh::Ptr RenderUtility::createAxisGizmoPtr()
+	{
+		const float arrowShift = 0.2f;
+		const float arrowSpread = 0.1f;
+
+		Mesh::Vertices v = {
+			// Axis X
+			{-1,0,0}, {1,0,0},
+			// Arrow X
+			{1.0f - arrowShift, -arrowSpread, 0.0f},
+			{1.0f - arrowShift, 0.0f, -arrowSpread},
+			{1.0f - arrowShift, arrowSpread, 0.0f},
+			{1.0f - arrowShift, 0.0f, arrowSpread},
+
+			// Axis Y
+			{0,-1,0}, {0,1,0},
+			// Arrow Y
+			{-arrowSpread, 1.0f - arrowShift, 0.0f},
+			{0.0f, 1.0f - arrowShift, -arrowSpread},
+			{arrowSpread, 1.0f - arrowShift, 0.0f},
+			{0.0f, 1.0f - arrowShift, arrowSpread},
+
+			// Axis Z
+			{0, 0, -1}, {0, 0, 1},
+			// Arrow Z
+			{-arrowSpread, 0.0f, 1.0f - arrowShift},
+			{0.0f, -arrowSpread, 1.0f - arrowShift},
+			{arrowSpread, 0.0f, 1.0f - arrowShift},
+			{0.0f, arrowSpread, 1.0f - arrowShift},
+
+			// Letter X
+			{1.0f + arrowShift - arrowSpread, -arrowSpread, 0.0f},
+			{1.0f + arrowShift + arrowSpread, arrowSpread, 0.0f},
+			{1.0f + arrowShift - arrowSpread, arrowSpread, 0.0f},
+			{1.0f + arrowShift + arrowSpread, -arrowSpread, 0.0f},
+			// Letter Y
+			{0.0f, 1.0f + arrowShift - arrowSpread, 0.0f},
+			{0.0f, 1.0f + arrowShift, 0.0f},
+			{-arrowSpread, 1.0f + arrowShift + arrowSpread, 0.0f},
+			{arrowSpread, 1.0f + arrowShift + arrowSpread, 0.0f},
+			// Letter Z
+			{0.0f, -arrowSpread, 1.0f + arrowShift - arrowSpread},
+			{0.0f, -arrowSpread, 1.0f + arrowShift + arrowSpread},
+			{0.0f, arrowSpread, 1.0f + arrowShift - arrowSpread},
+			{0.0f, arrowSpread, 1.0f + arrowShift + arrowSpread}
+		};
+
+		Mesh::Colors c = {
+			// Colors X
+			{1, 0, 0}, {1, 0, 0}, {1, 0, 0},
+			{1, 0, 0}, {1, 0, 0}, {1, 0, 0},
+			// Colors Y
+			{0, 1, 0}, {0, 1, 0}, {0, 1, 0},
+			{0, 1, 0}, {0, 1, 0}, {0, 1, 0},
+			// Colors Z
+			{0, 0, 1}, {0, 0, 1}, {0, 0, 1},
+			{0, 0, 1}, {0, 0, 1}, {0, 0, 1},
+			// Colors Letter X
+			{1, 0, 0}, {1, 0, 0},
+			{1, 0, 0}, {1, 0, 0},
+			// Colors Letter Y
+			{0, 1, 0}, {0, 1, 0},
+			{0, 1, 0}, {0, 1, 0},
+			// Colors Letter Z
+			{0, 0, 1}, {0, 0, 1},
+			{0, 0, 1}, {0, 0, 1}
+		};
+
+		Mesh::Triangles t = {
+			// Axis X
+			{0, 1, 0},
+			// Arrow X
+			{1, 2, 3}, {1, 3, 4}, {1, 4, 5},
+			{1, 5, 2}, {2, 3, 4}, {2, 3, 5},
+			// Axis Y
+			{6, 7, 6},
+			// Arrow Y
+			{7, 8, 9}, {7, 9, 10}, {7, 10, 11},
+			{7, 11, 8}, {8, 9, 10}, {8, 9, 11},
+			// Axis Z
+			{12, 13, 12},
+			// Arrow Z
+			{13, 14, 15}, {13, 15, 16}, {13, 16, 17},
+			{13, 17, 14}, {14, 15, 16}, {14, 15, 17},
+
+			// Letter X
+			{18, 19, 18}, {20, 21, 20},
+			//Letter Y
+			{22, 23, 22}, {24, 23, 24}, {25, 23, 25},
+			//Letter Z
+			{26, 28, 26}, {26, 29, 26}, {27, 29, 27}
+		};
+
+
+		auto out = std::make_shared<sibr::Mesh>();
+		out->vertices(v);
+		out->colors(c);
+		out->triangles(t);
+		return out;
+	}
+
 
 	/*static*/ void		RenderUtility::useDefaultVAO( void )
 	{

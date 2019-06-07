@@ -91,33 +91,47 @@ namespace sibr
 		std::string vp_code,
 		std::string fp_code,
 		std::string gp_code,
-		bool exitOnError )
+		bool exitOnError,
+		std::string tcs_code,
+		std::string tes_code)
 	{
 		terminate();
 
-		m_Name   = name;
+		m_Name = name;
 		m_Shader = glCreateProgram();
-		
+
 		CHECK_GL_ERROR;
 
-		GLint vp = 0, fp = 0, gp = 0;
+		GLint vp = 0, fp = 0, gp = 0, tcs = 0, tes = 0;
 
 		if (!vp_code.empty()) {
 			vp = compileShader(vp_code.c_str(), GL_VERTEX_SHADER);
 			if (!vp) return false;
-			glAttachShader(m_Shader,vp);
+			glAttachShader(m_Shader, vp);
 		}
 
 		if (!fp_code.empty()) {
 			fp = compileShader(fp_code.c_str(), GL_FRAGMENT_SHADER);
 			if (!fp) return false;
-			glAttachShader(m_Shader,fp);
+			glAttachShader(m_Shader, fp);
 		}
 
 		if (!gp_code.empty()) {
 			gp = compileShader(gp_code.c_str(), GL_GEOMETRY_SHADER);
 			if (!gp) return false;
-			glAttachShader(m_Shader,gp);
+			glAttachShader(m_Shader, gp);
+		}
+
+		if (!tcs_code.empty()) {
+			tcs = compileShader(tcs_code.c_str(), GL_TESS_CONTROL_SHADER);
+			if (!tcs) return false;
+			glAttachShader(m_Shader, tcs);
+		}
+
+		if (!tes_code.empty()) {
+			tes = compileShader(tes_code.c_str(), GL_TESS_EVALUATION_SHADER);
+			if (!tes) return false;
+			glAttachShader(m_Shader, tes);
 		}
 
 		CHECK_GL_ERROR;
@@ -127,33 +141,36 @@ namespace sibr
 		CHECK_GL_ERROR;
 
 		GLint shader_linked;
-		
+
 		CHECK_GL_ERROR;
 
 		glGetProgramiv(m_Shader, GL_LINK_STATUS, &shader_linked);
 		if (!shader_linked) {
 			GLint maxLength;
 			glGetProgramiv(m_Shader, GL_INFO_LOG_LENGTH, &maxLength);
-			char* infoLog = new char[maxLength+1];
+			char* infoLog = new char[maxLength + 1];
 			glGetProgramInfoLog(m_Shader, maxLength, NULL, infoLog);
 			SIBR_WRG << "GLSL program failed to link " << m_Name.c_str() << std::endl
 				<< "Shader linking log:" << std::endl
 				<< infoLog << std::endl;
-			delete [] infoLog;
+			delete[] infoLog;
 
 			if (exitOnError)
-				SIBR_ERR <<  "GLSL program failed to link" << std::endl;
+				SIBR_ERR << "GLSL program failed to link" << std::endl;
 		}
 
 		if (vp) glDeleteShader(vp);
 		if (fp) glDeleteShader(fp);
 		if (gp) glDeleteShader(gp);
+		if (tcs) glDeleteShader(tcs);
+		if (tes) glDeleteShader(tes);
 
 		glUseProgram(0);
 
 		CHECK_GL_ERROR;
 		return true;
 	}
+
 
 	bool GLShader::reload(
 		std::string vp_code,

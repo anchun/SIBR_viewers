@@ -2,31 +2,38 @@
 
 namespace sibr {
 
-	void RenderTargetTextures::initializeRenderTargetSize(CalibratedCameras::Ptr cams) {
-
-		if (_width == 0) { // use full resolution
-			_width = cams->inputCameras()[0].w();
-			_height = cams->inputCameras()[0].h();
-		}
-		else { // use constrained resolution
-			_height = floor(_width / cams->inputCameras()[0].aspect());
-		}
-	}
-
-	void RenderTargetTextures::initializeDefaultRenderTargets(CalibratedCameras::Ptr cams, InputImages::Ptr imgs, ProxyMesh::Ptr proxies)
+	void RTTextureSize::initSize(uint w, uint h)
 	{
-		initializeRenderTargetSize(cams);
-		initializeImageRenderTargets(cams, imgs);
-		initializeDepthRenderTargets(cams, imgs, proxies, true);
+		if (_width == 0) { // use full resolution
+			_width = w;
+			_height = h;
+		} else { // use constrained resolution
+			float aspect = w / (float)h;
+			_height = floor(_width / aspect);
+		}
+
+		_isInit = true;
 	}
 
-	void RenderTargetTextures::initializeImageRenderTargets(CalibratedCameras::Ptr cams, InputImages::Ptr imgs)
+	bool RTTextureSize::isInit() const
+	{
+		return _isInit;
+	}
+
+	const std::vector<RenderTargetRGBA32F::Ptr>& RGBDInputTextures::inputImagesRT() const
+	{
+		return _inputRGBARenderTextures;
+	}
+
+	void RGBDInputTextures::initializeImageRenderTargets(CalibratedCameras::Ptr cams, InputImages::Ptr imgs)
 	{
 		SIBR_LOG << "Initializing input image RTs " << std::endl;
 
+		if (!isInit()) {
+			initSize(cams->inputCameras()[0].w(), cams->inputCameras()[0].h());
+		}
+		
 		_inputRGBARenderTextures.resize(imgs->inputImages().size());
-
-		_imageFitParams = Vector4f(1.f, 1.f, 0.f, 0.f);
 
 		GLShader textureShader;
 		textureShader.init("Texture",
@@ -34,7 +41,7 @@ namespace sibr {
 			loadFile(Resources::Instance()->getResourceFilePathName("texture.fp")));
 		uint interpFlag = (SIBR_SCENE_LINEAR_SAMPLING & SIBR_SCENE_LINEAR_SAMPLING) ? SIBR_GPU_LINEAR_SAMPLING : 0; // LINEAR_SAMPLING Set to default
 
-		for (uint i = 0; i<imgs->inputImages().size(); i++) {
+		for (uint i = 0; i < imgs->inputImages().size(); i++) {
 			if (cams->inputCameras()[i].isActive()) {
 				ImageRGB img = std::move(imgs->inputImages()[i].clone());
 				img.flipH();
@@ -58,8 +65,12 @@ namespace sibr {
 		}
 	}
 
-	void RenderTargetTextures::initializeDepthRenderTargets(CalibratedCameras::Ptr cams, InputImages::Ptr imgs, ProxyMesh::Ptr proxies, bool facecull)
+	void RGBDInputTextures::initializeDepthRenderTargets(CalibratedCameras::Ptr cams, InputImages::Ptr imgs, ProxyMesh::Ptr proxies, bool facecull)
 	{
+		if (!isInit()) {
+			initSize(cams->inputCameras()[0].w(), cams->inputCameras()[0].h());
+		}
+
 		GLParameter size;
 		GLParameter proj;
 
@@ -77,10 +88,10 @@ namespace sibr {
 				glClear(GL_DEPTH_BUFFER_BIT);
 				glDepthMask(GL_TRUE);
 				glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_TRUE);
-				
+
 				if (!proxies->proxy().triangles().empty())
 				{
-					
+
 					const uint w = _inputRGBARenderTextures[i]->w();
 					const uint h = _inputRGBARenderTextures[i]->h();
 
@@ -97,35 +108,13 @@ namespace sibr {
 		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 	}
 
-	void RenderTargetTextures::initRGBandDepthTextureArrays(CalibratedCameras::Ptr cams, InputImages::Ptr imgs, ProxyMesh::Ptr proxies, int flags)
+	void DepthInputTextureArray::initDepthTextureArrays(CalibratedCameras::Ptr cams, ProxyMesh::Ptr proxies, bool facecull)
 	{
-		initializeRenderTargetSize(cams);
-		initRGBTextureArrays(imgs, flags);
-		initDepthTextureArrays(cams, imgs, proxies);
-	}
 
-	const std::vector<RenderTargetRGBA32F::Ptr>& RenderTargetTextures::inputImagesRT() const
-	{
-		return _inputRGBARenderTextures;
-	}
+		if (!isInit()) {
+			initSize(cams->inputCameras()[0].w(), cams->inputCameras()[0].h());
+		}
 
-	const Texture2DArrayRGB::Ptr & RenderTargetTextures::getInputRGBTextureArrayPtr() const
-	{
-		return _inputRGBArrayPtr;
-	}
-
-	const Texture2DArrayLum32F::Ptr & RenderTargetTextures::getInputDepthMapArrayPtr() const
-	{
-		return _inputDepthMapArrayPtr;
-	}
-
-	void RenderTargetTextures::initRGBTextureArrays(InputImages::Ptr imgs, int flags)
-	{
-		_inputRGBArrayPtr.reset(new Texture2DArrayRGB(imgs->inputImages(), _width, _height, flags));
-	}
-
-	void RenderTargetTextures::initDepthTextureArrays(CalibratedCameras::Ptr cams, InputImages::Ptr imgs, ProxyMesh::Ptr proxies)
-	{
 		if (!proxies->hasProxy()) {
 			SIBR_WRG << " Cannot init DepthTextureArrays without proxy." << std::endl;
 			return;
@@ -143,16 +132,18 @@ namespace sibr {
 		GLParameter proj;
 		proj.init(depthOnlyShader, "proj");
 
-		_inputDepthMapArrayPtr.reset(new Texture2DArrayLum32F(_width, _height, (uint)imgs->inputImages().size(), SIBR_GPU_LINEAR_SAMPLING));
 
-		for (uint i = 0; i<imgs->inputImages().size(); i++) {
+		const uint numCams = (uint)cams->inputCameras().size();
+		_inputDepthMapArrayPtr.reset(new Texture2DArrayLum32F(_width, _height, numCams, SIBR_GPU_LINEAR_SAMPLING));
+
+		for (uint i = 0; i < numCams; i++) {
 			glViewport(0, 0, _width, _height);
 
 			depthRT.bind();
 			glEnable(GL_DEPTH_TEST);
 			glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 			glDepthMask(GL_TRUE);
-			
+
 			depthOnlyShader.begin();
 			proj.set(cams->inputCameras()[i].viewproj());
 			proxies->proxy().render();
@@ -167,5 +158,36 @@ namespace sibr {
 			CHECK_GL_ERROR;
 		}
 		CHECK_GL_ERROR;
+	}
+
+	const Texture2DArrayLum32F::Ptr & DepthInputTextureArray::getInputDepthMapArrayPtr() const
+	{
+		return _inputDepthMapArrayPtr;
+	}
+
+	void RGBInputTextureArray::initRGBTextureArrays(InputImages::Ptr imgs, int flags)
+	{
+		if (!isInit()) {
+			initSize(imgs->inputImages()[0].w(), imgs->inputImages()[0].h());
+		}
+
+		_inputRGBArrayPtr.reset(new Texture2DArrayRGB(imgs->inputImages(), _width, _height, flags));
+	}
+
+	const Texture2DArrayRGB::Ptr & RGBInputTextureArray::getInputRGBTextureArrayPtr() const
+	{
+		return _inputRGBArrayPtr;
+	}
+
+	void RenderTargetTextures::initializeDefaultRenderTargets(CalibratedCameras::Ptr cams, InputImages::Ptr imgs, ProxyMesh::Ptr proxies)
+	{
+		initializeImageRenderTargets(cams, imgs);
+		initializeDepthRenderTargets(cams, imgs, proxies, true);
+	}
+
+	void RenderTargetTextures::initRGBandDepthTextureArrays(CalibratedCameras::Ptr cams, InputImages::Ptr imgs, ProxyMesh::Ptr proxies, int flags)
+	{
+		initRGBTextureArrays(imgs, flags);
+		initDepthTextureArrays(cams, proxies, true);
 	}
 }

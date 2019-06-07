@@ -14,6 +14,7 @@ namespace sibr {
 		ProxyMesh::ProxyMesh() {};
 		void												loadFromData(const ParseData::Ptr & data);
 		void												replaceProxy(std::shared_ptr<sibr::Mesh> newProxy);
+		void												replaceProxyPtr(Mesh::Ptr newProxy);
 		bool												hasProxy(void) const;
 		const Mesh&											proxy(void) const;
 		const Mesh::Ptr										proxyPtr(void) const;

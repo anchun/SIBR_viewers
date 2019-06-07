@@ -347,7 +347,7 @@ namespace sibr
 	const MaterialMesh::RenderCategory& MaterialMesh::typeOfRender(void) const {
 		return _typeOfRender;
 	}
-	
+
 
 	inline const MaterialMesh::AmbientOcclusion & MaterialMesh::ambientOcclusion(void)
 	{
@@ -364,6 +364,7 @@ namespace sibr
 	void MaterialMesh::typeOfRender(const RenderCategory& type) {
 		_typeOfRender = type;
 	}
+
 
 
 } // namespace sibr

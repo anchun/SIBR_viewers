@@ -154,6 +154,8 @@ namespace sibr
 		Pixel&			operator()(uint x, uint y);
 		const Pixel&	operator()(const sibr::Vector2i & xy) const;
 		Pixel&			operator()(const sibr::Vector2i & xy);
+		const Pixel&	operator()(const sibr::Vector2f & xy) const;
+		Pixel&			operator()(const sibr::Vector2f & xy);
 
 		virtual std::string		pixelStr(const sibr::Vector2i & xy)  const;
 
@@ -187,6 +189,7 @@ namespace sibr
 		template <typename T>
 		bool			inRange(T x, T y) const { return (x >= 0 && y >= 0 && x < (T)w() && y < (T)h()); }
 		bool			isInRange(const sibr::Vector2i & xy)  const { return (xy.x() >= 0 && xy.y() >= 0 && xy.x() < (int)w() && xy.y() < (int)h()); }
+		bool			isInRange(const sibr::Vector2f & xy)  const { return (xy.x() >= 0 && xy.y() >= 0 && xy.x() < (float)w() && xy.y() < (float)h()); }
 
 		uint		numComp(void) const;
 		uint		sizeOfComp(void) const;
@@ -592,6 +595,15 @@ namespace sibr
 	inline typename Image<T_Type, T_NumComp>::Pixel & ImagePtr<T_Type, T_NumComp>::operator()(const sibr::Vector2i & xy)
 	{
 		return (*imPtr)(xy[0], xy[1]);
+	}
+
+	template<typename T_Type, unsigned int T_NumComp>
+	inline typename Image<T_Type, T_NumComp>::Pixel& Image<T_Type, T_NumComp>::operator()(const sibr::Vector2f & xy) {
+		return operator()((int)xy[0], (int)xy[1]);
+	}
+	template<typename T_Type, unsigned int T_NumComp>
+	inline const typename Image<T_Type, T_NumComp>::Pixel& Image<T_Type, T_NumComp>::operator() (const sibr::Vector2f & xy) const {
+		return operator()((int)xy[0], (int)xy[1]);
 	}
 
 	template<typename T_Type, unsigned int T_NumComp>

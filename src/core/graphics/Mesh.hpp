@@ -243,7 +243,7 @@ namespace sibr
 		sibr::Vector3f centroid() const;
 
 		/** IMPORTANT NOTE: This function has not been strongly tested! */
-		void						getBoundingSphere(Vector3f& outCenter, float& outRadius, bool referencedOnly=false);
+		void						getBoundingSphere(Vector3f& outCenter, float& outRadius, bool referencedOnly=false) const;
 
 		sibr::Vector2f getZnearZfar() const;
 
@@ -259,6 +259,8 @@ namespace sibr
 
 		/* compute a simple cube with normals */
 		static sibr::Mesh::Ptr getTestCube(bool withGraphics = true);
+
+		static Mesh::Ptr getSphereMesh(const Vector3f & center, float radius, bool withGraphics = true, int precision = 50);
 
 		sibr::Mesh::Ptr subDivide(float limitSize) const;
 		
