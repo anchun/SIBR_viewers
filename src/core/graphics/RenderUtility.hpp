@@ -23,6 +23,8 @@ namespace sibr
 		static Mesh		createScreenQuad( void );
 		static Mesh		createAxisGizmo( void );
 
+		static Mesh::Ptr createAxisGizmoPtr();
+
 		static void  setCamStubDrawSize(float size) { _camStubSize = size; }
 		static float  camStubDrawSize() { return _camStubSize; }
 

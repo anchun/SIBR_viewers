@@ -20,14 +20,13 @@
 
 namespace sibr
 {
-
 	bool	MaterialMesh::load(const std::string& filename)
 	{
 		Assimp::Importer	importer;
-		importer.SetPropertyBool(AI_CONFIG_PP_FD_REMOVE, true); 
+		importer.SetPropertyBool(AI_CONFIG_PP_FD_REMOVE, true);
 		// cause Assimp to remove all degenerated faces as soon as they are detected
-		const aiScene* scene = importer.ReadFile(filename, 
-			aiProcess_Triangulate | aiProcess_JoinIdenticalVertices | 
+		const aiScene* scene = importer.ReadFile(filename,
+			aiProcess_Triangulate | aiProcess_JoinIdenticalVertices |
 			aiProcess_FindDegenerates);
 
 		if (!scene)
@@ -40,15 +39,15 @@ namespace sibr
 		if (scene->mNumMeshes == 0)
 		{
 			SIBR_LOG << "error: the loaded model file ('" << filename
-				<< "') contains zero or more than one mesh. Number of meshes : " << 
+				<< "') contains zero or more than one mesh. Number of meshes : " <<
 				scene->mNumMeshes << std::endl;
 			return false;
 		}
 
-		auto convertVec = [](const aiVector3D& v) { 
+		auto convertVec = [](const aiVector3D& v) {
 			return Vector3f(v.x, v.y, v.z); };
 		_triangles.clear();
-		
+
 		uint offsetVertices = 0;
 		uint offsetFaces = 0;
 		uint matId = 0; // Material
@@ -98,7 +97,7 @@ namespace sibr
 			{
 				_texcoords.resize(offsetVertices + mesh->mNumVertices);
 				for (uint i = 0; i < mesh->mNumVertices; ++i)
-					_texcoords[offsetVertices + i] = 
+					_texcoords[offsetVertices + i] =
 					convertVec(mesh->mTextureCoords[0][i]).xy();
 			}
 
@@ -107,14 +106,14 @@ namespace sibr
 					<< ", normals: " << mesh->HasNormals()
 					<< ", texcoords: " << mesh->HasTextureCoords(0) << std::endl;
 			}
-			
+
 			//----------------------------- FULL MATERIAL ------------------------
 			uint currentMatId = matId;
 			aiString aiMatName;
 
 			if (AI_SUCCESS != scene->mMaterials[mesh->mMaterialIndex]->
 				Get(AI_MATKEY_NAME, aiMatName)) {
-				std::cout << "material not found " << mesh->mMaterialIndex 
+				std::cout << "material not found " << mesh->mMaterialIndex
 					<< std::endl;
 			}
 
@@ -152,7 +151,7 @@ namespace sibr
 					else {
 						_triangles.push_back(tri);
 						_matIds.push_back(currentMatId);  //material
-							
+
 					}
 
 				}
@@ -176,6 +175,7 @@ namespace sibr
 
 	bool	MaterialMesh::loadMtsXML(const std::string & xmlFile)
 	{
+		srand(static_cast <unsigned> (time(0)));
 		bool allLoaded = true;
 		std::string pathFolder = boost::filesystem::path(xmlFile).parent_path()
 			.string();
@@ -191,7 +191,7 @@ namespace sibr
 			if (strcmp(node->first_attribute()->name(), "type") == 0 &&
 				strcmp(node->first_attribute()->value(), "shapegroup") == 0) {
 
-				std::cout << "Found : " << node->first_attribute("id")->value() 
+				std::cout << "Found : " << node->first_attribute("id")->value()
 					<< std::endl;
 
 				std::string id = node->first_attribute("id")->value();
@@ -207,116 +207,116 @@ namespace sibr
 			for (rapidxml::xml_attribute<> *browserAttributes = node->
 				first_attribute();
 				browserAttributes;
-				browserAttributes=browserAttributes->next_attribute()) {
+				browserAttributes = browserAttributes->next_attribute()) {
 
 				if (strcmp(browserAttributes->name(), "type") == 0 &&
 					strcmp(browserAttributes->value(), "instance") == 0
-				) {
-				rapidxml::xml_node<> *nodeRef = node->first_node("ref");
-				const std::string id = nodeRef->first_attribute("id")->value();
-				const std::string filename = idToFilename[id];
-				const std::string meshPath = pathFolder + "/" + filename;
+					) {
+					rapidxml::xml_node<> *nodeRef = node->first_node("ref");
+					const std::string id = nodeRef->first_attribute("id")->value();
+					const std::string filename = idToFilename[id];
+					const std::string meshPath = pathFolder + "/" + filename;
 
-				if (meshes.find(filename) == meshes.end()) {
-					meshes[filename] = sibr::MaterialMesh();
-					if (!meshes[filename].load(meshPath)) {
-						return false;
+					if (meshes.find(filename) == meshes.end()) {
+						meshes[filename] = sibr::MaterialMesh();
+						if (!meshes[filename].load(meshPath)) {
+							return false;
+						}
+
 					}
 
-				}
-
-					std::cout << "Adding one instance of : " << filename 
+					std::cout << "Adding one instance of : " << filename
 						<< std::endl;
 
-				rapidxml::xml_node<> *nodeTrans = node->first_node("transform");
-				if (nodeTrans) {
-					sibr::MaterialMesh toWorldMesh = meshes[filename];
-					rapidxml::xml_node<> *nodeM1 = nodeTrans->first_node("matrix");
-					std::string matrix1 = nodeM1->first_attribute("value")->value();
-					rapidxml::xml_node<> *nodeM2 = nodeM1->next_sibling("matrix");
-					std::string matrix2 = nodeM2->first_attribute("value")->value();
+					rapidxml::xml_node<> *nodeTrans = node->first_node("transform");
+					if (nodeTrans) {
+						sibr::MaterialMesh toWorldMesh = meshes[filename];
+						rapidxml::xml_node<> *nodeM1 = nodeTrans->first_node("matrix");
+						std::string matrix1 = nodeM1->first_attribute("value")->value();
+						rapidxml::xml_node<> *nodeM2 = nodeM1->next_sibling("matrix");
+						std::string matrix2 = nodeM2->first_attribute("value")->value();
 
 
-					std::istringstream issM1(matrix1);
+						std::istringstream issM1(matrix1);
 						std::vector<std::string> splitM1(std::istream_iterator
 							<std::string>{issM1},
-						std::istream_iterator<std::string>());
-					sibr::Matrix4f m1;
-					m1 <<
-						std::stof(splitM1[0]), std::stof(splitM1[1]), std::stof(splitM1[2]), std::stof(splitM1[3]),
-						std::stof(splitM1[4]), std::stof(splitM1[5]), std::stof(splitM1[6]), std::stof(splitM1[7]),
-						std::stof(splitM1[8]), std::stof(splitM1[9]), std::stof(splitM1[10]), std::stof(splitM1[11]),
-						std::stof(splitM1[12]), std::stof(splitM1[13]), std::stof(splitM1[14]), std::stof(splitM1[15]);
+							std::istream_iterator<std::string>());
+						sibr::Matrix4f m1;
+						m1 <<
+							std::stof(splitM1[0]), std::stof(splitM1[1]), std::stof(splitM1[2]), std::stof(splitM1[3]),
+							std::stof(splitM1[4]), std::stof(splitM1[5]), std::stof(splitM1[6]), std::stof(splitM1[7]),
+							std::stof(splitM1[8]), std::stof(splitM1[9]), std::stof(splitM1[10]), std::stof(splitM1[11]),
+							std::stof(splitM1[12]), std::stof(splitM1[13]), std::stof(splitM1[14]), std::stof(splitM1[15]);
 
-					std::istringstream issM2(matrix2);
+						std::istringstream issM2(matrix2);
 						std::vector<std::string> splitM2(
 							std::istream_iterator<std::string>{issM2},
-						std::istream_iterator<std::string>());
-					sibr::Matrix4f m2;
-					m2 <<
-						std::stof(splitM2[0]), std::stof(splitM2[1]), std::stof(splitM2[2]), std::stof(splitM2[3]),
-						std::stof(splitM2[4]), std::stof(splitM2[5]), std::stof(splitM2[6]), std::stof(splitM2[7]),
-						std::stof(splitM2[8]), std::stof(splitM2[9]), std::stof(splitM2[10]), std::stof(splitM2[11]),
-						std::stof(splitM2[12]), std::stof(splitM2[13]), std::stof(splitM2[14]), std::stof(splitM2[15]);
+							std::istream_iterator<std::string>());
+						sibr::Matrix4f m2;
+						m2 <<
+							std::stof(splitM2[0]), std::stof(splitM2[1]), std::stof(splitM2[2]), std::stof(splitM2[3]),
+							std::stof(splitM2[4]), std::stof(splitM2[5]), std::stof(splitM2[6]), std::stof(splitM2[7]),
+							std::stof(splitM2[8]), std::stof(splitM2[9]), std::stof(splitM2[10]), std::stof(splitM2[11]),
+							std::stof(splitM2[12]), std::stof(splitM2[13]), std::stof(splitM2[14]), std::stof(splitM2[15]);
 
-					sibr::MaterialMesh::Vertices vertices;
-					for (int v = 0; v < toWorldMesh.vertices().size(); v++) {
-							sibr::Vector4f v4(toWorldMesh.vertices()[v].x(), 
-								toWorldMesh.vertices()[v].y(), 
+						sibr::MaterialMesh::Vertices vertices;
+						for (int v = 0; v < toWorldMesh.vertices().size(); v++) {
+							sibr::Vector4f v4(toWorldMesh.vertices()[v].x(),
+								toWorldMesh.vertices()[v].y(),
 								toWorldMesh.vertices()[v].z(), 1.0);
-						vertices.push_back((m2*(m1*v4)).xyz());
+							vertices.push_back((m2*(m1*v4)).xyz());
+
+						}
+
+						toWorldMesh.vertices(vertices);
+						merge(toWorldMesh);
 
 					}
+					else {
+						merge(meshes[filename]);
+					}
 
-					toWorldMesh.vertices(vertices);
-					merge(toWorldMesh);
 
 				}
-				else {
-					merge(meshes[filename]);
-				}
-
-
-			}
 				else if (strcmp(browserAttributes->name(), "type") == 0 &&
 					(strcmp(browserAttributes->value(), "obj") == 0 ||
-					 strcmp(browserAttributes->value(), "ply") == 0 )) {
+						strcmp(browserAttributes->value(), "ply") == 0)) {
 					std::cout << "Obj or ply finded" << std::endl;
-				rapidxml::xml_node<> *nodeRef = node->first_node("string");
+					rapidxml::xml_node<> *nodeRef = node->first_node("string");
 					const std::string filename = nodeRef->first_attribute("value")
 						->value();
-				const std::string meshPath = pathFolder + "/" + filename;
+					const std::string meshPath = pathFolder + "/" + filename;
 
-				if (meshes.find(filename) == meshes.end()) {
-					meshes[filename] = sibr::MaterialMesh();
-					if (!meshes[filename].load(meshPath)) {
-						return false;
-					}
-					if (meshes[filename].matIds().size() == 0)
-					{
+					if (meshes.find(filename) == meshes.end()) {
+						meshes[filename] = sibr::MaterialMesh();
+						if (!meshes[filename].load(meshPath)) {
+							return false;
+						}
+						if (meshes[filename].matIds().size() == 0)
+						{
 							std::cout << "Material not present ..." << std::endl;
+						}
+
 					}
 
-				}
-
-					std::cout << "Here Adding one instance of : " << filename 
+					std::cout << "Here Adding one instance of : " << filename
 						<< std::endl;
 
-				rapidxml::xml_node<> *nodeRefMat = node->first_node("ref");
-				if (nodeRefMat) {
+					rapidxml::xml_node<> *nodeRefMat = node->first_node("ref");
+					if (nodeRefMat) {
 						const std::string matName = nodeRefMat
 							->first_attribute("id")->value();
 
-				MatId2Name newmatIdtoName;
-				newmatIdtoName.push_back(matName);
-				meshes[filename].matId2Name(newmatIdtoName);
-				}
+						MatId2Name newmatIdtoName;
+						newmatIdtoName.push_back(matName);
+						meshes[filename].matId2Name(newmatIdtoName);
+					}
 
 					rapidxml::xml_node<> *nodeTrans = node
 						->first_node("transform");
-				if (nodeTrans) {
+					if (nodeTrans) {
 						sibr::Matrix4f m1;
-					sibr::MaterialMesh toWorldMesh = meshes[filename];
+						sibr::MaterialMesh toWorldMesh = meshes[filename];
 						rapidxml::xml_node<> *nodeM1 = nodeTrans
 							->first_node("matrix");
 						rapidxml::xml_node<> *nodeT = nodeTrans->
@@ -330,15 +330,15 @@ namespace sibr
 							std::string matrix1 = nodeM1->
 								first_attribute("value")->value();
 
-					std::istringstream issM1(matrix1);
+							std::istringstream issM1(matrix1);
 							std::vector<std::string> splitM1(
 								std::istream_iterator<std::string>{issM1},
-						std::istream_iterator<std::string>());
-					m1 <<
-						std::stof(splitM1[0]), std::stof(splitM1[1]), std::stof(splitM1[2]), std::stof(splitM1[3]),
-						std::stof(splitM1[4]), std::stof(splitM1[5]), std::stof(splitM1[6]), std::stof(splitM1[7]),
-						std::stof(splitM1[8]), std::stof(splitM1[9]), std::stof(splitM1[10]), std::stof(splitM1[11]),
-						std::stof(splitM1[12]), std::stof(splitM1[13]), std::stof(splitM1[14]), std::stof(splitM1[15]);
+								std::istream_iterator<std::string>());
+							m1 <<
+								std::stof(splitM1[0]), std::stof(splitM1[1]), std::stof(splitM1[2]), std::stof(splitM1[3]),
+								std::stof(splitM1[4]), std::stof(splitM1[5]), std::stof(splitM1[6]), std::stof(splitM1[7]),
+								std::stof(splitM1[8]), std::stof(splitM1[9]), std::stof(splitM1[10]), std::stof(splitM1[11]),
+								std::stof(splitM1[12]), std::stof(splitM1[13]), std::stof(splitM1[14]), std::stof(splitM1[15]);
 						}
 						else { //separates transformations case
 
@@ -356,51 +356,51 @@ namespace sibr
 											->value());
 								}
 							};
-							float scaleX = 1.f, scaleY= 1.f, scaleZ= 1.f;
-							float rotateX= 0.f, rotateY= 0.f, rotateZ= 0.f;
-							float translateX= 0.f, translateY= 0.f, translateZ= 0.f;
-							getAxesValues(nodeS,scaleX, scaleY, scaleZ);
-							getAxesValues(nodeR,rotateX, rotateY, rotateZ);
-							getAxesValues(nodeT,translateX, translateY, translateZ);
+							float scaleX = 1.f, scaleY = 1.f, scaleZ = 1.f;
+							float rotateX = 0.f, rotateY = 0.f, rotateZ = 0.f;
+							float translateX = 0.f, translateY = 0.f, translateZ = 0.f;
+							getAxesValues(nodeS, scaleX, scaleY, scaleZ);
+							getAxesValues(nodeR, rotateX, rotateY, rotateZ);
+							getAxesValues(nodeT, translateX, translateY, translateZ);
 
 							sibr::Transform3<float> transform;
 							transform.rotate(sibr::Vector3f(
-													rotateX,
-													rotateY,
-													rotateZ ));
+								rotateX,
+								rotateY,
+								rotateZ));
 							transform.translate(sibr::Vector3f(
-													  translateX,
-								                      translateY,
-								                      translateZ));
-							m1 << 
+								translateX,
+								translateY,
+								translateZ));
+							m1 <<
 								scaleX, 0.f, 0.f, 0.f,
 								0.f, scaleY, 0.f, 0.f,
 								0.f, 0.f, scaleZ, 0.f,
-								0.f, 0.f, 0.f	, 1.f ;
+								0.f, 0.f, 0.f, 1.f;
 							m1 = transform.matrix() * m1;
 						}
-						
 
-					sibr::Mesh::Vertices vertices;
-					for (int v = 0; v < toWorldMesh.vertices().size(); v++) {
-							sibr::Vector4f v4(toWorldMesh.vertices()[v].x(), 
-								toWorldMesh.vertices()[v].y(), 
+
+						sibr::Mesh::Vertices vertices;
+						for (int v = 0; v < toWorldMesh.vertices().size(); v++) {
+							sibr::Vector4f v4(toWorldMesh.vertices()[v].x(),
+								toWorldMesh.vertices()[v].y(),
 								toWorldMesh.vertices()[v].z(), 1.0);
-						vertices.push_back((m1*v4).xyz());
+							vertices.push_back((m1*v4).xyz());
+
+						}
+
+						toWorldMesh.vertices(vertices);
+						merge(toWorldMesh);
 
 					}
+					else {
+						merge(meshes[filename]);
+					}
 
-					toWorldMesh.vertices(vertices);
-					merge(toWorldMesh);
 
 				}
-				else {
-					merge(meshes[filename]);
-				}
-
-
 			}
-		}
 		}
 
 		for (rapidxml::xml_node<> *node = nodeScene->first_node("bsdf");
@@ -435,12 +435,12 @@ namespace sibr
 						if (strcmp(nodeTexture->first_attribute("name")->value(),
 							"diffuseReflectance") == 0 ||
 							strcmp(nodeTexture->first_attribute("name")->value(),
-							"reflectance") == 0 ||  
+								"reflectance") == 0 ||
 							strcmp(nodeTexture->first_attribute("name")->value(),
-							"specularReflectance") == 0 
+								"specularReflectance") == 0
 							)
 						{
-							std::cout << "DiffuseReflectance Texture finded" 
+							std::cout << "DiffuseReflectance Texture finded"
 								<< std::endl;
 							rapidxml::xml_node<> *firstTexture = nodeTexture->
 								first_node("texture");
@@ -457,14 +457,14 @@ namespace sibr
 								sibr::ImageRGB::Ptr texture(new sibr::ImageRGB());
 								if (texture->load(pathFolder + "/" + textureName)) {
 									//show(*texture);
-									std::cout << "Diffuse " << pathFolder + "/" 
+									std::cout << "Diffuse " << pathFolder + "/"
 										+ textureName << std::endl;
 									_diffuseMaps[nameMat] = texture;
 									breakBool = true;
 									break;
 								}
 								else {
-									std::cout << "Diffuse layer for: " << 
+									std::cout << "Diffuse layer for: " <<
 										nameMat << " not found" << std::endl;
 									SIBR_ERR;
 								}
@@ -484,60 +484,79 @@ namespace sibr
 						colorsFormatList.push_back("rgb");
 						colorsFormatList.push_back("srgb");
 						for (std::string colorsFormat : colorsFormatList)
-						for (rapidxml::xml_node<> *nodeTexture =
-							queue.front()->first_node(colorsFormat.c_str());
-							nodeTexture;
-							nodeTexture = nodeTexture->next_sibling(
-								colorsFormat.c_str())) {
+							for (rapidxml::xml_node<> *nodeTexture =
+								queue.front()->first_node(colorsFormat.c_str());
+								nodeTexture;
+								nodeTexture = nodeTexture->next_sibling(
+									colorsFormat.c_str())) {
 
-							if (strcmp(nodeTexture->first_attribute("name")->value(),
-								"diffuseReflectance") == 0 ||
-								strcmp(nodeTexture->first_attribute("name")->value(),
-									"reflectance") == 0 ||
-								strcmp(nodeTexture->first_attribute("name")->value(),
-									"specularReflectance") == 0
-								)
-							{
-								std::cout << "DiffuseReflectance Color finded"
-									<< std::endl;
-								rapidxml::xml_node<> *firstTexture = nodeTexture->
-									first_node(colorsFormat.c_str());
-								if (firstTexture == nullptr) {
+								if (strcmp(nodeTexture->first_attribute("name")->value(),
+									"diffuseReflectance") == 0 ||
+									strcmp(nodeTexture->first_attribute("name")->value(),
+										"reflectance") == 0 ||
+									strcmp(nodeTexture->first_attribute("name")->value(),
+										"specularReflectance") == 0
+									)
+								{
+									std::cout << "DiffuseReflectance Color finded"
+										<< std::endl;
+									rapidxml::xml_node<> *firstTexture = nodeTexture->
+										first_node(colorsFormat.c_str());
+									if (firstTexture == nullptr) {
 										firstTexture = nodeTexture;
-								}
-								std::string colorString =
-									nodeTexture->first_attribute("value")->value();
-								sibr::Vector3f colorMaterial;
-								float redComponent, greenComponent, blueComponent;
-								sscanf_s(colorString.c_str(), "%f, %f, %f",
-									&redComponent, &greenComponent, &blueComponent);
-								const sibr::ImageRGB::Pixel color(
-									static_cast<const unsigned char>(redComponent * 255),
-									static_cast<const unsigned char>(greenComponent * 255),
-									static_cast<const unsigned char>(blueComponent * 255));
-								sibr::ImageRGB::Ptr texture(new sibr::ImageRGB(
-									1, 1, color));
-								if (texture) {
-									//show(*texture);
-									std::cout << "Diffuse color : " <<
-										redComponent << ", " << blueComponent <<
-										", " << greenComponent << ", " << std::endl;
-									_diffuseMaps[nameMat] = texture;
-									breakBool = true;
-									break;
-								}
-								else {
-									std::cout << "Diffuse layer for: " << nameMat 
-										<< " not found" << std::endl;
-									SIBR_ERR;
-								}
+									}
+									std::string colorString =
+										nodeTexture->first_attribute("value")->value();
+									sibr::Vector3f colorMaterial;
+									float redComponent, greenComponent, blueComponent;
+									sscanf_s(colorString.c_str(), "%f, %f, %f",
+										&redComponent, &greenComponent, &blueComponent);
+									const sibr::ImageRGB::Pixel color(
+										static_cast<const unsigned char>(redComponent * 255),
+										static_cast<const unsigned char>(greenComponent * 255),
+										static_cast<const unsigned char>(blueComponent * 255));
+									sibr::ImageRGB::Ptr texture(new sibr::ImageRGB(
+										1, 1, color));
+									if (texture) {
+										//show(*texture);
+										std::cout << "Diffuse color : " <<
+											redComponent << ", " << blueComponent <<
+											", " << greenComponent << ", " << std::endl;
+										_diffuseMaps[nameMat] = texture;
+										breakBool = true;
+										break;
+									}
+									else {
+										std::cout << "Diffuse layer for: " << nameMat
+											<< " not found" << std::endl;
+										SIBR_ERR;
+									}
 
-								if (breakBool)
-									break;
-								//breakBool = true;
+									if (breakBool)
+										break;
+									//breakBool = true;
+								}
 							}
-						}
 					}
+
+					if (_diffuseMaps[nameMat].get() == nullptr) {
+
+						float r = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+						float g = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+						float b = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+
+						const sibr::ImageRGB::Pixel color(
+							static_cast<const unsigned char>(r * 255),
+							static_cast<const unsigned char>(g * 255),
+							static_cast<const unsigned char>(b * 255)
+						);
+						sibr::ImageRGB::Ptr texture(new sibr::ImageRGB(
+							1, 1, color));
+						std::cout << "Warning: No color and no texture finded, " <<
+							"material will be choosen randomly " << std::endl;
+						_diffuseMaps[nameMat] = texture;
+					}
+
 					queue.erase(queue.begin());
 
 					for (rapidxml::xml_node<> *node = queue.front()->
@@ -549,65 +568,65 @@ namespace sibr
 
 				}
 
-				
+
 
 			}
 		}
 		bool breakBool = false;
 		for (rapidxml::xml_node<> *node = nodeScene->first_node("bsdf");
-					node; node = node->next_sibling("bsdf"))
-				{
-					if (node != nullptr && node->first_attribute("id") != nullptr)
-					{
-						std::string nameMat = node->first_attribute("id")->value();
+			node; node = node->next_sibling("bsdf"))
+		{
+			if (node != nullptr && node->first_attribute("id") != nullptr)
+			{
+				std::string nameMat = node->first_attribute("id")->value();
 
-						bool breakBool = false;
+				bool breakBool = false;
 				for (rapidxml::xml_node<> *nodeTexture = node->
 					first_node("texture");
 					nodeTexture; nodeTexture = nodeTexture->
 					next_sibling("texture")) {
 
-					if (strcmp(nodeTexture->first_attribute("name")->value(), 
+					if (strcmp(nodeTexture->first_attribute("name")->value(),
 						"opacity") == 0 &&
-								nodeTexture->first_attribute("type") &&
-						strcmp(nodeTexture->first_attribute("type")->value(), 
+						nodeTexture->first_attribute("type") &&
+						strcmp(nodeTexture->first_attribute("type")->value(),
 							"scale") == 0) {
-								std::cout << "Found opacity mask:" << nameMat << std::endl;
+						std::cout << "Found opacity mask:" << nameMat << std::endl;
 
 						for (rapidxml::xml_node<> *nodeString = nodeTexture->
 							first_node("texture")->first_node("string");
 							nodeString; nodeString = nodeString->
 							next_sibling("string"))
-								{
+						{
 							std::string textureName = nodeString->
 								first_attribute("value")->value();
-									sibr::ImageRGB::Ptr texture(new sibr::ImageRGB());
-									if (texture->load(pathFolder + "/" + textureName)) {
-										//show(*texture);
-										_opacityMaps[nameMat] = texture;
-										breakBool = true;
-										break;
-									}
-									else {
-								std::cout << "Opacity layer for: " << 
+							sibr::ImageRGB::Ptr texture(new sibr::ImageRGB());
+							if (texture->load(pathFolder + "/" + textureName)) {
+								//show(*texture);
+								_opacityMaps[nameMat] = texture;
+								breakBool = true;
+								break;
+							}
+							else {
+								std::cout << "Opacity layer for: " <<
 									nameMat << " not found" << std::endl;
-										SIBR_ERR;
-									}
-
-
-								}
-								if (breakBool)
-									break;
+								SIBR_ERR;
 							}
 
+
 						}
+						if (breakBool)
+							break;
+					}
+
+				}
 				if (!breakBool) {
 					const sibr::ImageRGB::Pixel color(255, 255, 255);
 					sibr::ImageRGB::Ptr texture(new sibr::ImageRGB(1, 1, color));
 					_opacityMaps[nameMat] = texture;
-				
+
+				}
 			}
-		}
 		}
 		createSubMeshes();
 		return true;
@@ -625,11 +644,11 @@ namespace sibr
 			float r = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
 			float g = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
 			float b = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-			
+
 			randomsColors.push_back(sibr::Vector3f(r, g, b));
 		}
 
-		for (unsigned int i=0; i < _matIds.size() ; i++)
+		for (unsigned int i = 0; i < _matIds.size(); i++)
 		{
 			colorsIdsMaterials.at(_triangles.at(i)[0]) = randomsColors.at(
 				_matIds.at(i));
@@ -642,7 +661,7 @@ namespace sibr
 		colors(colorsIdsMaterials);
 	}
 
-	Mesh MaterialMesh::generateSubMaterialMesh( int material ) const
+	Mesh MaterialMesh::generateSubMaterialMesh(int material) const
 	{
 
 		sibr::Mesh::Vertices newVertices;
@@ -672,7 +691,7 @@ namespace sibr
 		for (int i = 0; i < matIds().size(); i++)
 		{
 			if (matIds().at(i) == material) {
-				
+
 				int v1, v2, v3;
 				v1 = triangles().at(i)[0];
 				v2 = triangles().at(i)[1];
@@ -725,8 +744,8 @@ namespace sibr
 					mapIdVert[v3] = cmptValidVert;
 					cmptValidVert++;
 				}
-				newTriangles.push_back(sibr::Vector3u(mapIdVert[v1],mapIdVert[v2]
-					,mapIdVert[v3]));
+				newTriangles.push_back(sibr::Vector3u(mapIdVert[v1], mapIdVert[v2]
+					, mapIdVert[v3]));
 
 			}
 		}
@@ -786,14 +805,14 @@ namespace sibr
 				if (i < matIds().size())
 					tMatId = matIds().at(i);
 
-			sibr::Vector3f a = vertices().at(t.x());
-			sibr::Vector3f b = vertices().at(t.y());
-			sibr::Vector3f c = vertices().at(t.z());
+				sibr::Vector3f a = vertices().at(t.x());
+				sibr::Vector3f b = vertices().at(t.y());
+				sibr::Vector3f c = vertices().at(t.z());
 
-				if ( areaHeronsFormula(a,b,c) >= (_averageArea*threshold)) {
+				if (areaHeronsFormula(a, b, c) >= (_averageArea*threshold)) {
 					mustChange = true;
 
-					sibr::Vector3f aColor,bColor,cColor,aNormal,bNormal,cNormal;
+					sibr::Vector3f aColor, bColor, cColor, aNormal, bNormal, cNormal;
 					sibr::Vector2f aTexCoords, bTexCoords, cTexCoords;
 
 					sibr::Vector3f newColor, newNormal;
@@ -801,23 +820,23 @@ namespace sibr
 					sibr::Vector3f newVertex;
 
 					if (hasColors()) {
-					newColor = (colors().at(t.x())+colors().at(t.y())
-								+colors().at(t.z()))/ 3.f;
-		}
+						newColor = (colors().at(t.x()) + colors().at(t.y())
+							+ colors().at(t.z())) / 3.f;
+					}
 
 					if (hasNormals()) {
-					newNormal = (normals().at(t.x())+normals().at(t.y())
-								+normals().at(t.z()))/ 3.f;
+						newNormal = (normals().at(t.x()) + normals().at(t.y())
+							+ normals().at(t.z())) / 3.f;
 					}
 
 					if (hasTexCoords()) {
-					newTexCoord = (texCoords().at(t.x())+texCoords().at(t.y())
-								+texCoords().at(t.z()))/ 3.f;
+						newTexCoord = (texCoords().at(t.x()) + texCoords().at(t.y())
+							+ texCoords().at(t.z())) / 3.f;
 					}
 
 
-					newVertex = (vertices().at(t.x())+vertices().at(t.y())
-								+ vertices().at(t.z()))/ 3.f;
+					newVertex = (vertices().at(t.x()) + vertices().at(t.y())
+						+ vertices().at(t.z())) / 3.f;
 
 					newVertices.push_back(newVertex);
 
@@ -843,7 +862,7 @@ namespace sibr
 						t.x(),
 						newIndexVertex));
 					if (i < matIds().size()) {
-						for(unsigned int n=0; n < 3; ++n) 
+						for (unsigned int n = 0; n < 3; ++n)
 							newMatIds.push_back(tMatId);
 					}
 				}
@@ -861,7 +880,7 @@ namespace sibr
 			matIds(newMatIds);
 		}
 	}
-	
+
 	void	MaterialMesh::subdivideMesh(float threshold) {
 
 		bool mustChange = true;
@@ -906,11 +925,11 @@ namespace sibr
 				if (localMaximum >= (_averageSize*threshold)) {
 					mustChange = true;
 
-					sibr::Vector3f aColor, bColor, cColor, aNormal, bNormal, 
+					sibr::Vector3f aColor, bColor, cColor, aNormal, bNormal,
 						cNormal;
 					sibr::Vector2f aTexCoords, bTexCoords, cTexCoords;
 
-					sibr::Vector3f *v1Pos, *v2Pos, *v1Color, *v2Color, 
+					sibr::Vector3f *v1Pos, *v2Pos, *v1Color, *v2Color,
 						*v1Normal, *v2Normal;
 					sibr::Vector2f *v1TexCoords, *v2TexCoords;
 
@@ -962,7 +981,7 @@ namespace sibr
 					newNormal = sibr::Vector3f((v1Normal->x() + v2Normal->x()) / 2.f,
 						(v1Normal->y() + v2Normal->y()) / 2.f,
 						(v1Normal->z() + v2Normal->z()) / 2.f);
-					newTexCoord = sibr::Vector2f((v1TexCoords->x() + 
+					newTexCoord = sibr::Vector2f((v1TexCoords->x() +
 						v2TexCoords->x()) / 2.f,
 						(v1TexCoords->y() + v2TexCoords->y()) / 2.f);
 
@@ -1006,7 +1025,7 @@ namespace sibr
 							newIndexVertex));
 						newTriangles.push_back(sibr::Vector3u(newIndexVertex,
 							t.y(),
-							t.z() ));
+							t.z()));
 					}
 				}
 				else {
@@ -1030,7 +1049,7 @@ namespace sibr
 		if (!_aoInitialized) {
 
 			_ambientOcclusion = ao;
-			colors(_aoFunction(*this,64));
+			colors(_aoFunction(*this, 64));
 			createSubMeshes();
 			float averageDistance = 0.f;
 			for (sibr::Vector3u t : triangles()) {
@@ -1064,9 +1083,9 @@ namespace sibr
 			float averageArea = 0.f;
 			for (sibr::Vector3u t : triangles()) {
 
-				averageArea+= areaHeronsFormula(vertices().at(t.x()),
-												vertices().at(t.y()), 
-												vertices().at(t.z()));
+				averageArea += areaHeronsFormula(vertices().at(t.x()),
+					vertices().at(t.y()),
+					vertices().at(t.z()));
 			}
 
 
@@ -1078,25 +1097,25 @@ namespace sibr
 			std::cout << "Average distance SIZE = " << _averageSize << std::endl;
 			std::cout << "Average distance SIZE = " << _averageArea << std::endl;
 			_aoInitialized = true;
-				}
-		if (ao.AttenuationDistance != _ambientOcclusion.AttenuationDistance ) {
+		}
+		if (ao.AttenuationDistance != _ambientOcclusion.AttenuationDistance) {
 			_ambientOcclusion = ao;
-			colors(_aoFunction(*this,64));
+			colors(_aoFunction(*this, 64));
 			createSubMeshes();
-				}
+		}
 		if (ao.SubdivideThreshold < _ambientOcclusion.SubdivideThreshold) {
 			_ambientOcclusion = ao;
 			subdivideMesh(_ambientOcclusion.SubdivideThreshold);
-			colors(_aoFunction(*this,64));
+			colors(_aoFunction(*this, 64));
 			createSubMeshes();
-			}
+		}
 		_ambientOcclusion = ao;
 	}
 
 
 	void	MaterialMesh::initAlbedoTextures(void) {
 
-			//Creates textures for albedo
+		//Creates textures for albedo
 		if (!_albedoTexturesInitialized) {
 			_albedoTextures.resize(matId2Name().size());
 			_idTextures.resize(matId2Name().size());
@@ -1138,7 +1157,7 @@ namespace sibr
 		_albedoTexturesInitialized = true;
 	}
 
-	void	MaterialMesh::renderAlbedo(bool depthTest, bool backFaceCulling, 
+	void	MaterialMesh::renderAlbedo(bool depthTest, bool backFaceCulling,
 		RenderMode mode, bool frontFaceCulling, bool invertDepthTest) const
 	{
 
@@ -1155,7 +1174,7 @@ namespace sibr
 
 					glActiveTexture(GL_TEXTURE2);
 					glBindTexture(GL_TEXTURE_2D, _idTexturesOpacity[i]);
-					_subMeshes[i].render(depthTest, backFaceCulling, mode, 
+					_subMeshes[i].render(depthTest, backFaceCulling, mode,
 						frontFaceCulling, invertDepthTest);
 				}
 				i++;
@@ -1163,7 +1182,7 @@ namespace sibr
 		}
 	}
 
-	void	MaterialMesh::renderThreeSixty(bool depthTest, bool backFaceCulling, 
+	void	MaterialMesh::renderThreeSixty(bool depthTest, bool backFaceCulling,
 		RenderMode mode, bool frontFaceCulling, bool invertDepthTest) const
 	{
 
@@ -1172,25 +1191,25 @@ namespace sibr
 	}
 
 	void	MaterialMesh::render(bool depthTest, bool backFaceCulling,
-		RenderMode mode, bool frontFaceCulling, bool invertDepthTest, 
+		RenderMode mode, bool frontFaceCulling, bool invertDepthTest,
 		bool tessellation) const
 	{
 		if (_typeOfRender == RenderCategory::classic)
 		{
-			Mesh::render(depthTest, backFaceCulling, mode, frontFaceCulling, 
+			Mesh::render(depthTest, backFaceCulling, mode, frontFaceCulling,
 				invertDepthTest);
 		}
-		else if (_typeOfRender == RenderCategory::diffuseMaterials) 
+		else if (_typeOfRender == RenderCategory::diffuseMaterials)
 		{
-			renderAlbedo(depthTest, backFaceCulling, mode, frontFaceCulling, 
+			renderAlbedo(depthTest, backFaceCulling, mode, frontFaceCulling,
 				invertDepthTest);
 		}
 		else if (_typeOfRender == RenderCategory::threesixtyMaterials ||
-				 _typeOfRender == RenderCategory::threesixtyDepth)
+			_typeOfRender == RenderCategory::threesixtyDepth)
 		{
-			renderThreeSixty(depthTest, backFaceCulling, mode, frontFaceCulling, 
+			renderThreeSixty(depthTest, backFaceCulling, mode, frontFaceCulling,
 				invertDepthTest);
-	}
+		}
 	}
 
 	void	MaterialMesh::merge(const MaterialMesh& other)
@@ -1204,7 +1223,7 @@ namespace sibr
 		{
 			sibr::Mesh::merge(other);
 
-			uint		matIdsOffset = static_cast<unsigned int> ( _matId2Name.size());
+			uint		matIdsOffset = static_cast<unsigned int> (_matId2Name.size());
 			MatIds		matIds = other.matIds();
 			MatId2Name	matId2Name;
 
@@ -1212,10 +1231,10 @@ namespace sibr
 			for (unsigned int i = 0; i < other.matId2Name().size(); ++i) {
 				bool findedSimilarity = false;
 				unsigned int indexSimilarMaterial;
-				for (unsigned int j = 0; j < _matId2Name.size() 
+				for (unsigned int j = 0; j < _matId2Name.size()
 					&& !findedSimilarity; ++j) {
 
-					if(other.matId2Name().at(i).compare(_matId2Name.at(j))==0) {
+					if (other.matId2Name().at(i).compare(_matId2Name.at(j)) == 0) {
 						//We find a similar material present on the two meshes
 						//Now we modify all triangles ids corresponding to this 
 						// material	
@@ -1231,10 +1250,10 @@ namespace sibr
 					matId2Name.push_back(other.matId2Name().at(i));
 					//We substract the number of similarity to avoid
 					//the "gap" about the materials index
-					for (unsigned int j= 0; j < other.matIds().size();++j) {
+					for (unsigned int j = 0; j < other.matIds().size();++j) {
 						unsigned int id = other.matIds().at(j);
 						if (id == i) {
-							matIds[j]= id + matIdsOffset - nbOfSimilarity;
+							matIds[j] = id + matIdsOffset - nbOfSimilarity;
 						}
 					}
 				}
@@ -1248,8 +1267,8 @@ namespace sibr
 				}
 			}
 
-				_matIds.insert(_matIds.end(), matIds.begin(), matIds.end());
-			_matId2Name.insert(_matId2Name.end(), matId2Name.begin(), 
+			_matIds.insert(_matIds.end(), matIds.begin(), matIds.end());
+			_matId2Name.insert(_matId2Name.end(), matId2Name.begin(),
 				matId2Name.end());
 			_opacityMaps.insert(other.opacityMaps().begin(),
 				other.opacityMaps().end());
@@ -1273,7 +1292,7 @@ namespace sibr
 
 		_subMeshes.clear();
 
-		for (unsigned int i=0; i < _matId2Name.size(); i++)
+		for (unsigned int i = 0; i < _matId2Name.size(); i++)
 		{
 			_subMeshes.push_back(generateSubMaterialMesh(i));
 		}
@@ -1317,10 +1336,10 @@ namespace sibr
 		return invertedFacesMaterialMesh;
 	}
 
-	void MaterialMesh::addEnvironmentMap(float* forcedCenterX, 
-										 float* forcedCenterY,
-									 	 float* forcedCenterZ,
-										 float* forcedRadius)
+	void MaterialMesh::addEnvironmentMap(float* forcedCenterX,
+		float* forcedCenterY,
+		float* forcedCenterZ,
+		float* forcedRadius)
 	{
 		sibr::Vector3f center;
 		float radius;
@@ -1372,6 +1391,7 @@ namespace sibr
 		}
 
 	}
+
 
 
 } // namespace sibr

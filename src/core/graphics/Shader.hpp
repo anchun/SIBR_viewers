@@ -45,10 +45,12 @@ namespace sibr
 		GLShader( void );
 		~GLShader( void );
 
-		bool init( std::string name,
+		bool init(std::string name,
 			std::string vp_code, std::string fp_code,
 			std::string gp_code = std::string(),
-			bool exitOnError=true );
+			bool exitOnError = true,
+			std::string tcs_code = std::string(),
+			std::string tes_code = std::string());
 
 		bool reload(
 			std::string vp_code, std::string fp_code,

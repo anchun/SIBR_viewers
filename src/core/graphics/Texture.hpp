@@ -520,6 +520,9 @@ namespace sibr
 			void readBack( sibr::Image<TType, NNumComp>& image, uint target=0 ) const;
 
 		template <typename TType, uint NNumComp>
+			void readBackToCVmat(cv::Mat & image, uint target = 0) const;
+
+		template <typename TType, uint NNumComp>
 			void readBackDepth( sibr::Image<TType, NNumComp>& image, uint target=0 ) const;
 
 		uint   numTargets (void)  const;
@@ -1166,6 +1169,42 @@ namespace sibr
 		//}
 //*/
 	}
+
+
+	template<typename T_Type, unsigned int T_NumComp>
+	template <typename T_IType, uint N_INumComp>
+	void RenderTarget<T_Type, T_NumComp>::readBackToCVmat(cv::Mat & img, uint target) const {
+
+		using Infos = GLTexFormat<cv::Mat, T_IType, N_INumComp>;
+
+		if (target >= m_numtargets)
+			SIBR_ERR << "Reading back texture out of bounds" << std::endl;
+
+		cv::Mat tmp(m_H, m_W, Infos::cv_type());
+
+		glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
+		bool is_depth = (Infos::isdepth != 0);
+		if (!is_depth) {
+			if (m_numtargets > 0) {
+				GLenum drawbuffers = GL_COLOR_ATTACHMENT0 + target;
+				glDrawBuffers(1, &drawbuffers);
+				glReadBuffer(drawbuffers);
+
+				glReadPixels(0, 0, m_W, m_H,
+					Infos::format,
+					Infos::type,
+					Infos::data(tmp)
+				);
+			}
+		} else {
+			SIBR_ERR << "RenderTarget::readBack: This function should be specialized "
+				"for handling depth buffer." << std::endl; \
+		}
+		img = Infos::flip(tmp);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	}
+
+
 
 	//template<>
 	//template <typename T_IType, uint N_INumComp>

@@ -81,6 +81,8 @@ namespace sibr {
 	*/
 	class SIBR_VIEW_EXPORT MultiViewInterface {
 
+		SIBR_CLASS_PTR(MultiViewInterface);
+
 	public:
 
 		MultiViewInterface();

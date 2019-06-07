@@ -5,7 +5,14 @@
 namespace sibr
 {
 	
-	BasicIBRScene::BasicIBRScene(BasicIBRAppArgs & myArgs, bool noRTs)
+	BasicIBRScene::BasicIBRScene() {
+		_cams.reset(new CalibratedCameras());
+		_imgs.reset(new InputImages());
+		_proxies.reset(new ProxyMesh());
+		_renderTargets.reset(new RenderTargetTextures());
+	}
+
+	BasicIBRScene::BasicIBRScene(const BasicIBRAppArgs & myArgs, bool noRTs)
 	{
 
 		// parse metadata file

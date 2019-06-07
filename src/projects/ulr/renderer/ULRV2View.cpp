@@ -148,8 +148,9 @@ void ULRV2View::computeVisibilityMap(const sibr::ImageL32F & depthMap, sibr::Ima
 			sibr::Vector2i pos(j, i);
 			float currentDepth = depthMap(pos).x();
 			for (const auto & shift : shifts) {
-				if (!depthMap.isInRange(pos + shift)) { continue; }
-				if (std::abs(depthMap(pos + shift).x() - currentDepth) > threshold_3d) {
+				Vector2i npos = pos + shift;
+				if (!depthMap.isInRange(npos)) { continue; }
+				if (std::abs(depthMap(npos).x() - currentDepth) > threshold_3d) {
 					edgeMap(pos).x() = 0;
 					break;
 				}

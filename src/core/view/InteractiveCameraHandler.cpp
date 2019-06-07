@@ -181,6 +181,8 @@ namespace sibr {
 		case TRACKBALL:
 			std::cout << "trackball";
 			break;
+		case NONE:
+			std::cout << "none";
 		case FPS:
 		default:
 			std::cout << "fps&pan";
@@ -392,6 +394,9 @@ namespace sibr {
 				_trackball.update(input, _viewport, _raycaster);
 				_currentCamera = _trackball.getCamera();
 				break;
+			case NONE:
+				//do nothing
+				break;
 			case FPS:
 			default:
 				_fpsCamera.update(input, deltaTime);
@@ -429,7 +434,7 @@ namespace sibr {
 		const std::string fullName = (suffix);
 		// Saving camera.
 		if (ImGui::Begin(fullName.c_str())) {
-			ImGui::Combo("Mode", (int*)&_currentMode, "FPS\0Orbit\0Interp.\0Trackball\0\0");
+			ImGui::Combo("Mode", (int*)&_currentMode, "FPS\0Orbit\0Interp.\0Trackball\0None\0\0");
 			switchMode(_currentMode);
 
 			if (ImGui::Button("Load camera")) {
