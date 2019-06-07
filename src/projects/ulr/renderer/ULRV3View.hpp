@@ -59,6 +59,9 @@ namespace sibr {
 		/// Set the renderer blending weights mode.
 		void setMode(const WeightsMode mode);
 
+		/// Get a ref to the scene.
+		const std::shared_ptr<sibr::BasicIBRScene> getScene() const { return _scene; }
+
 	protected:
 
 		/**

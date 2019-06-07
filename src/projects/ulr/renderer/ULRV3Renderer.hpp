@@ -83,6 +83,9 @@ namespace sibr {
 		/// Show debug weights.
 		bool & showWeights() { return _showWeights.get(); }
 
+		/// Set winn takes all weights strategy
+		bool & winnerTakesAll() { return _winner_takes_all.get(); }
+
 		/** Resize the internal rendertargets.
 		 *\param w the new width
 		 *\param h the new height
@@ -94,8 +97,6 @@ namespace sibr {
 
 		/// \return The ID of the first pass position map texture.
 		uint depthHandle() { return _depthRT->texture(); }
-
-	protected:
 
 		/**
 		 * Render the world positions of the proxy points in an intermediate rendertarget.
@@ -120,6 +121,7 @@ namespace sibr {
 			bool passthroughDepth
 		);
 
+	protected:
 		/// Shader names.
 		std::string fragString, vertexString;
 
@@ -137,7 +139,8 @@ namespace sibr {
 			_areMasksBinary = true,
 			_invertMasks = false,
 			_flipRGBs = false,
-			_showWeights = false;
+			_showWeights = false,
+			_winner_takes_all = false;
 
 		size_t _maxNumCams = 0;
 		GLuniform<int> _camsCount = 0;

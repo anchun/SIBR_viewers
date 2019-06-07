@@ -189,6 +189,11 @@ namespace sibr {
 		return *this;
 	}
 
+	MeshData & MeshData::setAlpha(float _alpha) {
+		alpha = _alpha;
+		return *this;
+	}
+
 	void ShaderAlphaMVP::initShader(const std::string & name, const std::string & vert, const std::string & frag, const std::string & geom)
 	{
 		shader.init(name, vert, frag, geom);

@@ -251,11 +251,16 @@ namespace sibr
 	class ImagePtr {
 	public:
 		
+		using ImageType = Image<T_Type, T_NumComp>;
+
 		std::shared_ptr<Image<T_Type, T_NumComp>> imPtr;
 		
 		ImagePtr() { imPtr = std::shared_ptr<Image<T_Type, T_NumComp>>(); };
 		ImagePtr(Image<T_Type, T_NumComp>* imgPtr) { imPtr = std::shared_ptr<Image<T_Type, T_NumComp>>(imgPtr); };
 		ImagePtr(std::shared_ptr<Image<T_Type, T_NumComp>>& imgPtr)  {imPtr = std::shared_ptr<Image<T_Type, T_NumComp>>(imgPtr); };
+
+		void reset(ImageType * ptr) { imPtr.reset(ptr); }
+
 		typename Image<T_Type, T_NumComp>*	get() { return imPtr.get(); };
 		const typename Image<T_Type, T_NumComp>::Pixel&			operator()(uint x, uint y) const;
 		typename Image<T_Type, T_NumComp>::Pixel&				operator()(uint x, uint y);
@@ -908,6 +913,11 @@ namespace sibr
 	*/
 	SIBR_GRAPHICS_EXPORT sibr::ImageRGBA convertNormalMapToSphericalHalf(const sibr::ImageRGB32F & imgF);
 	SIBR_GRAPHICS_EXPORT sibr::ImageRGB32F convertSphericalHalfToNormalMap(const sibr::ImageRGBA & imgF);
+
+	/**
+	* create a 3 channel mat from a single channel mat
+	*/
+	SIBR_GRAPHICS_EXPORT cv::Mat duplicate3(cv::Mat c);
 
 } // namespace sibr
 

@@ -267,5 +267,11 @@ namespace sibr
 		show(imColor);
 	}
 
+	cv::Mat duplicate3(cv::Mat c) {
+		cv::Mat out;
+		cv::Mat in[] = { c, c, c };
+		cv::merge(in, 3, out);
+		return out;
+	}
 
 } // namespace sibr

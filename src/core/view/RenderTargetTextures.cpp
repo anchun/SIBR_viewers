@@ -108,7 +108,7 @@ namespace sibr {
 		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 	}
 
-	void DepthInputTextureArray::initDepthTextureArrays(CalibratedCameras::Ptr cams, ProxyMesh::Ptr proxies, bool facecull)
+	void DepthInputTextureArray::initDepthTextureArrays(CalibratedCameras::Ptr cams, ProxyMesh::Ptr proxies, bool facecull, int flags)
 	{
 
 		if (!isInit()) {
@@ -134,7 +134,7 @@ namespace sibr {
 
 
 		const uint numCams = (uint)cams->inputCameras().size();
-		_inputDepthMapArrayPtr.reset(new Texture2DArrayLum32F(_width, _height, numCams, SIBR_GPU_LINEAR_SAMPLING));
+		_inputDepthMapArrayPtr.reset(new Texture2DArrayLum32F(_width, _height, numCams, flags));
 
 		for (uint i = 0; i < numCams; i++) {
 			glViewport(0, 0, _width, _height);

@@ -70,6 +70,8 @@ namespace sibr {
 		virtual void	onUpdate(Input& /*input*/, const sibr::Viewport & viewport);
 		virtual void	onRender(const sibr::Viewport & viewport);
 		
+		PixPos currentActivePos;
+
 	protected:
 		MultiViewInterface * interfacePtr;
 		ViewType viewType;

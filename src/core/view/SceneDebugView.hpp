@@ -19,6 +19,8 @@
 # include "core/system/CommandLineArgs.hpp"
 #include "ViewUtils.hpp"
 
+#include <core/view/MultiMeshManager.hpp>
+
 namespace sibr
 {
 	/**
@@ -141,6 +143,95 @@ namespace sibr
 		std::string camera_path;
 
 		ViewUtils viewUtils;
+	};
+
+
+	//cam self near and far are used if parameters are < 0
+	sibr::Mesh::Ptr SIBR_VIEW_EXPORT generateCamFrustum(const InputCamera & cam, float znear = -1, float zfar = -1);
+
+	sibr::Mesh::Ptr SIBR_VIEW_EXPORT generateCamFrustumColored(const InputCamera & cam, const Vector3f & col, float znear = -1, float zfar = -1);
+
+	sibr::Mesh::Ptr SIBR_VIEW_EXPORT generateCamQuadWithUvs(const sibr::InputCamera & cam, float dist);
+
+	class SIBR_VIEW_EXPORT ShaderImageArraySlice : public ShaderAlphaMVP {
+	public:
+		virtual void initShader(const std::string & name, const std::string & vert, const std::string & frag);
+		virtual void render(const sibr::Camera & eye, const MeshData & data) {}
+		void render(const sibr::Camera & eye, const MeshData & data, GLuint textureArrayId, int image_id);
+	protected:
+		sibr::GLuniform<int> slice = 1;
+	};
+
+	class SIBR_VIEW_EXPORT ShaderImageSlice : public ShaderAlphaMVP {
+	public:
+		virtual void render(const sibr::Camera & eye, const MeshData & data) {}
+		void render(const sibr::Camera & eye, const MeshData & data, GLuint textureId);
+	};
+
+	struct SIBR_VIEW_EXPORT CameraInfos {
+		CameraInfos(const sibr::InputCamera& cam, uint id, bool highlight);
+
+		sibr::InputCamera cam;
+		uint id = 0;
+		bool highlight = false;
+	};
+
+	struct SIBR_VIEW_EXPORT LabelsManager {
+		struct LabelMesh {
+			Mesh::Ptr mesh;
+			unsigned int splitIndex = 0;
+		}; 
+		
+		void setupShader();
+
+		void renderLabels(const Camera & eye, const Viewport & vp, const std::vector<CameraInfos> & cams_info);
+
+		std::map<unsigned int, LabelMesh> 		_labelMeshes;
+		sibr::GLShader							_labelShader;
+		sibr::GLuniform<sibr::Vector3f>			_labelShaderPosition;
+		sibr::GLuniform<float>					_labelShaderScale;
+		sibr::GLuniform<sibr::Vector2f>			_labelShaderViewport;
+		float									_labelScale = 1.0f;
+
+	};
+
+	struct SIBR_VIEW_EXPORT ImageCamViewer {
+		void initImageCamShaders();
+
+		void renderImage(const Camera & eye, const InputCamera & cam, const std::vector<RenderTargetRGBA32F::Ptr> rts, int cam_id);
+		void renderImage(const Camera & eye, const InputCamera & cam, uint tex2Darray_handle, int cam_id);
+
+		ShaderImageArraySlice		_cameraImageShaderArray;
+		ShaderImageSlice			_cameraImageShader;
+		float						_alphaImage = 0.5f;
+		float						_cameraScaling = 0.8f;
+	};
+
+
+	class SIBR_VIEW_EXPORT TopView : public MultiMeshManager, public ImageCamViewer, public LabelsManager
+	{
+		SIBR_CLASS_PTR(TopView);
+
+	public:
+		TopView(BasicIBRScene::Ptr scene);
+
+		virtual void	onRender(const sibr::Viewport & viewport) override;
+
+		virtual void	onGUI() override;
+
+		void changeScene(BasicIBRScene::Ptr scene);
+
+		void updateActiveCams(const std::vector<int> & cams_id);
+
+	protected:
+		void setupMeshes();
+	
+		std::vector<CameraInfos> _cameras;
+
+		int					_snapToImage = 0;
+		bool				_showImages = true;
+		bool				_showLabels = false;
+
 	};
 
 } // namespace

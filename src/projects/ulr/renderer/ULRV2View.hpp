@@ -65,6 +65,8 @@ namespace sibr {
 
 		void computeVisibilityMap(const sibr::ImageL32F & depthMap, sibr::ImageRGBA & out);
 
+		const std::shared_ptr<sibr::BasicIBRScene> getScene() const { return _scene; }
+
 	public:
 		ULRV2Renderer::Ptr		_ulr;
 		PoissonRenderer::Ptr	_poisson;

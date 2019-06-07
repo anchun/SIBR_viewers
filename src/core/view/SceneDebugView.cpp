@@ -559,6 +559,180 @@ namespace sibr
 		}
 	}
 
+	sibr::Mesh::Ptr generateCamFrustum(const sibr::InputCamera & cam, float near, float far)
+	{
+		static const sibr::Mesh::Triangles tris = {
+			{0,0,1},{1,1,2},{2,2,3},{3,3,0},
+			{4,4,5},{5,5,6},{6,6,7},{7,7,4},
+			{0,0,4},{1,1,5},{2,2,6},{3,3,7},
+		};
+
+		std::vector<Vector3f> dirs;
+		for (const auto & c : cam.getImageCorners()) {
+			dirs.push_back(sibr::CameraRaycaster::computeRayDir(cam, c.cast<float>() + 0.5f*sibr::Vector2f(1, 1)));
+		}
+		float znear = (near >= 0 ? near : cam.znear());
+		float zfar = (far >= 0 ? far : cam.zfar());
+		sibr::Mesh::Vertices vertices;
+		for (int k = 0; k < 2; k++) {
+			float dist = (k == 0 ? znear : zfar);
+			for (const auto & d : dirs) {
+				vertices.push_back(cam.position() + dist * d);
+			}
+		}
+
+		auto out = std::make_shared<sibr::Mesh>();
+		out->vertices(vertices);
+		out->triangles(tris);
+		return out;
+	}
+
+	sibr::Mesh::Ptr generateCamFrustumColored(const InputCamera & cam, const Vector3f & col, float znear, float zfar)
+	{
+		auto out = generateCamFrustum(cam, znear, zfar);
+		Mesh::Colors cols(out->vertices().size(), col);
+		out->colors(cols);
+		return out;
+	}
+
+	sibr::Mesh::Ptr generateCamQuadWithUvs(const sibr::InputCamera & cam, float dist)
+	{
+		static const sibr::Mesh::Triangles quadTriangles = {
+			{ 0,1,2 },{ 0,2,3 }
+		};
+		static const sibr::Mesh::UVs quadUVs = {
+			{ 0,1 } ,{ 1,1 } ,{ 1,0 } ,{ 0,0 }
+		};
+
+		std::vector<Vector3f> dirs;
+		for (const auto & c : cam.getImageCorners()) {
+			dirs.push_back(sibr::CameraRaycaster::computeRayDir(cam, c.cast<float>() + 0.5f*sibr::Vector2f(1, 1)));
+		}
+		std::vector<Vector3f> vertices;
+		for (const auto & d : dirs) {
+			vertices.push_back(cam.position() + dist * d);
+		}
+
+		auto out = std::make_shared<sibr::Mesh>();
+		out->vertices(vertices);
+		out->triangles(quadTriangles);
+		out->texCoords(quadUVs);
+		return out;
+	}
+
+	void ShaderImageArraySlice::initShader(const std::string & name, const std::string & vert, const std::string & frag)
+	{
+		ShaderAlphaMVP::initShader(name, vert, frag);
+		slice.init(shader, "slice");
+	}
+
+	void ShaderImageArraySlice::render(const sibr::Camera & eye, const MeshData & data, GLuint textureArrayId, int image_id)
+	{
+		if (!data.meshPtr) {
+			return;
+		}
+		shader.begin();
+		ShaderAlphaMVP::setUniforms(eye, data);
+		slice.set(image_id);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D_ARRAY, textureArrayId);
+		data.renderGeometry();
+		shader.end();
+	}
+
+
+	void ShaderImageSlice::render(const sibr::Camera & eye, const MeshData & data, GLuint textureId)
+	{
+		if (!data.meshPtr) {
+			return;
+		}
+		shader.begin();
+		ShaderAlphaMVP::setUniforms(eye, data);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, textureId);
+		data.renderGeometry();
+		shader.end();
+	}
+
+	CameraInfos::CameraInfos(const sibr::InputCamera& cam, uint id, bool highlight)
+		: cam(cam), id(id), highlight(highlight) {
+	}
+
+	void LabelsManager::setupShader()
+	{
+		_labelShader.init("text-imgui",
+			sibr::loadFile(sibr::Resources::Instance()->getResourceFilePathName("text-imgui.vp")),
+			sibr::loadFile(sibr::Resources::Instance()->getResourceFilePathName("text-imgui.fp")));
+		_labelShaderPosition.init(_labelShader, "position");
+		_labelShaderScale.init(_labelShader, "scale");
+		_labelShaderViewport.init(_labelShader, "viewport");
+	}
+
+	void sibr::LabelsManager::renderLabels(const Camera & eye, const Viewport & vp, const std::vector<CameraInfos>& cams_info)
+	{
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		_labelShader.begin();
+		// Bind the ImGui font texture.
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, (GLuint)ImGui::GetFont()->ContainerAtlas->TexID);
+		_labelShaderViewport.set(sibr::Vector2f(vp.finalWidth(), vp.finalHeight()));
+
+		for (const auto & camInfos : cams_info) {
+			const auto & inputCam = camInfos.cam;
+			if (!inputCam.isActive()) { continue; }
+			const uint uid = camInfos.id;
+			if (_labelMeshes.count(uid) == 0) {
+				continue;
+			}
+			// Draw the label.
+			// TODO: we could try to use depth testing to have the labels overlap properly.
+			// As the label is put at the position of the camera, the label will intersect with the frustum mesh, causing artifacts.
+			// One way of solving this would be to just shift the label away a bit and enable depth testing (+ GL_LEQUAl for the text).
+			const sibr::Vector3f camProjPos = eye.project(inputCam.position());
+			if (!eye.frustumTest(inputCam.position(), camProjPos.xy())) {
+				continue;
+			}
+			_labelShaderPosition.set(camProjPos);
+			const auto & label = _labelMeshes[uid];
+			// Render the background label.
+			_labelShaderScale.set(0.8f*_labelScale);
+			label.mesh->renderSubMesh(0, label.splitIndex, false, false);
+			// Render the text label.
+			_labelShaderScale.set(1.0f*_labelScale);
+			label.mesh->renderSubMesh(label.splitIndex, label.mesh->triangles().size() * 3, false, false);
+
+		}
+		_labelShader.end();
+		glDisable(GL_BLEND);
+	}
+
+	void ImageCamViewer::initImageCamShaders()
+	{
+		const std::string vertex_str = sibr::loadFile(sibr::Resources::Instance()->getResourceFilePathName("uv_mesh.vert"));
+
+		_cameraImageShader.initShader("cameraImageShader",
+			vertex_str,
+			sibr::loadFile(sibr::Resources::Instance()->getResourceFilePathName("alpha_uv_tex.frag")));
+
+		_cameraImageShaderArray.initShader("cameraImageShaderArray",
+			vertex_str,
+			sibr::loadFile(sibr::Resources::Instance()->getResourceFilePathName("alpha_uv_tex_array.frag")));
+	}
+
+	void ImageCamViewer::renderImage(const Camera & eye, const InputCamera & cam, const std::vector<RenderTargetRGBA32F::Ptr> rts, int cam_id)
+	{
+		sibr::MeshData quad("", generateCamQuadWithUvs(cam, _cameraScaling));
+		quad.setBackFace(false).setAlpha(_alphaImage);
+		_cameraImageShader.render(eye, quad, rts[cam_id]->handle());
+	}
+
+	void ImageCamViewer::renderImage(const Camera & eye, const InputCamera & cam, uint tex2Darray_handle, int cam_id)
+	{
+		sibr::MeshData quad("", generateCamQuadWithUvs(cam, _cameraScaling));
+		quad.setBackFace(false).setAlpha(_alphaImage);
+		_cameraImageShaderArray.render(eye, quad, tex2Darray_handle, cam_id);
+	}
 
 } // namespace
 

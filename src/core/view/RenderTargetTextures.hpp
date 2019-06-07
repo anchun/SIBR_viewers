@@ -26,7 +26,7 @@ namespace sibr{
 
 	protected:
 		uint		_width = 0; //constrained width provided by the command line args, defaults to 0
-		uint		_height = 0; //associated height, computed in initializeRenderTargetSize
+		uint		_height = 0; //associated height, computed in initSize
 		bool		_isInit = false;
 
 	};
@@ -49,7 +49,7 @@ namespace sibr{
 	class SIBR_VIEW_EXPORT DepthInputTextureArray : public virtual RTTextureSize {
 
 	public:
-		void initDepthTextureArrays(CalibratedCameras::Ptr cams, ProxyMesh::Ptr proxies, bool facecull);
+		void initDepthTextureArrays(CalibratedCameras::Ptr cams, ProxyMesh::Ptr proxies, bool facecull, int flags = SIBR_GPU_LINEAR_SAMPLING);
 		const Texture2DArrayLum32F::Ptr &  getInputDepthMapArrayPtr() const;
 
 	protected:
