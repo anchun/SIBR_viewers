@@ -14,7 +14,9 @@ namespace sibr
 		_scene = scene;
 		_userCurrentCam = camHandler;
 		_topViewCamera.setup(_scene->proxies()->proxy().clone(), viewport);
-		_topViewCamera.updateView(_scene->cameras()->inputCameras()[0]);
+		if (!_scene->cameras()->inputCameras().empty()) {
+			_topViewCamera.updateView(_scene->cameras()->inputCameras()[0]);
+		}
 		_topViewCamera.setupInterpolationPath(_scene->cameras()->inputCameras());
 		_showImages = true;
 		_meshInitialized = true;
