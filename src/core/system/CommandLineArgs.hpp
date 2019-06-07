@@ -180,9 +180,10 @@ namespace sibr
 	struct SIBR_SYSTEM_EXPORT WindowArgs {
 		Arg<int> win_width = { "width", 720 };
 		Arg<int> win_height = { "height", 480 };
-		Arg<int> vsync = { "vsync", 0 };
+		Arg<int> vsync = { "vsync", 1 };
 		Arg<bool> fullscreen = { "fullscreen", false };
 		Arg<bool> hdpi = { "hd", false };
+		Arg<bool> no_gui = { "nogui", false };
 	};
 
 	struct WindowAppArgs : 

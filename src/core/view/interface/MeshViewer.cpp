@@ -283,7 +283,7 @@ sibr::MeshViewer::MeshViewer()
 
 sibr::MeshViewer::MeshViewer(const sibr::Vector2i & screenRes, const sibr::Mesh & mesh, bool launchRenderingLoop)
 {
-	window = std::make_shared<sibr::Window>(screenRes[0], screenRes[1], "MeshViewer" );
+	window.reset(new Window(screenRes[0], screenRes[1], "MeshViewer" ));
 	renderer = std::make_shared<MeshRenderer>();
 	interactCam = std::make_shared<sibr::InteractiveCameraHandler>(new sibr::InteractiveCameraHandler());
 	interactCam->setFPSCameraSpeed(1);

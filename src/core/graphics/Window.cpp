@@ -110,31 +110,35 @@ namespace sibr
 		}
 	}
 
-	Window::Window( int width, int height, const std::string& title, bool fullScreen, bool doVSync, bool useGUI): _useGUI(useGUI),
-		_shouldClose(false)
+	Window::Window(uint w, uint h, const std::string& title, const WindowArgs & args) 
+		: _useGUI(!args.no_gui), _shouldClose(false) 
 	{
+		setup(args.win_width, args.win_height, title, args);
 
-		setup(width, height, title, fullScreen, doVSync, useGUI);
-
-		if (!fullScreen) {
+		if (!(args.fullscreen)) {
 			glfwSetWindowPos(_glfwWin.get(), 200, 200);
 		}
 	}
 
-	Window::Window(const std::string& title, const sibr::Vector2i & margins, bool fullScreen, bool doVSync, bool useGUI) : _useGUI(useGUI),
-		_shouldClose(false)
+	Window::Window(const std::string& title, const WindowArgs & args)
+		: Window(args.win_width, args.win_height, title, args)
+	{
+	}
+
+	Window::Window(const std::string& title, const sibr::Vector2i & margins, const WindowArgs & args)
+		: _useGUI(!args.no_gui), _shouldClose(false)
 	{
 		const sibr::Vector2i winSize = desktopSize();
 		// Here autoInitializer is already initialized, thus glfwInit() has been called
-		setup(winSize.x() - 2*margins.x(), winSize.y() - 2*margins.y(), title, fullScreen, doVSync, useGUI);
+		setup(winSize.x() - 2*margins.x(), winSize.y() - 2*margins.y(), title, args);
 
-		if (!fullScreen) {
+		if (!(args.fullscreen)) {
 			glfwSetWindowPos(_glfwWin.get(), margins.x(), margins.y());
 		}
 
 	}
 
-	void Window::setup(int width, int height, const std::string& title, bool fullScreen, bool doVSync, bool useGUI) {
+	void Window::setup(int width, int height, const std::string& title, const WindowArgs & args) {
 		// IMPORTANT NOTE: if you got compatibility problem with old opengl function,
 		// try to load compat 3.2 instead of core 4.2
 
@@ -153,7 +157,13 @@ namespace sibr
 		glfwWindowHint(GLFW_DEPTH_BITS, 24);
 		glfwWindowHint(GLFW_STENCIL_BITS, 8);
 
-		_glfwWin = GLFWwindowptr(glfwCreateWindow(width, height, title.c_str(), fullScreen ? glfwGetPrimaryMonitor() : NULL, NULL), glfwDestroyWindow);
+		_glfwWin = GLFWwindowptr(
+			glfwCreateWindow(
+				width, height, title.c_str(),
+				args.fullscreen ? glfwGetPrimaryMonitor() : NULL
+				, NULL ), 
+			glfwDestroyWindow
+		);
 
 		if (_glfwWin == nullptr)
 			SIBR_ERR << "failed to create a glfw window (is your graphics driver updated ?)" << std::endl;
@@ -183,8 +193,8 @@ namespace sibr
 		/// \todo TODO: fix, width and height might be erroneous. SR
 		viewport(Viewport(0.f, 0.f, (float)width, (float)height));	/// \todo TODO: bind both
 
-		_useVSync = doVSync;
-		glfwSwapInterval(doVSync ? 1 : 0);
+		_useVSync = !args.vsync;
+		glfwSwapInterval(args.vsync);
 		glfwSetKeyCallback(_glfwWin.get(), glfwKeyboardCallback);
 		glfwSetScrollCallback(_glfwWin.get(), glfwMouseScrollCallback);
 		glfwSetMouseButtonCallback(_glfwWin.get(), glfwMouseButtonCallback);
@@ -216,6 +226,12 @@ namespace sibr
 		sibr::Vector2i dsize = desktopSize();
 		
 		_scaling = sibr::clamp(std::round(dsize.x() / (widthmm / 25.4f) / defaultDPI), 1.0f, 2.0f);
+
+		if (args.hdpi) {
+			ImGui::GetStyle().ScaleAllSizes(scaling());
+			ImGui::GetIO().FontGlobalScale = scaling();
+		}
+
 		/** \todo
 		TODO: fix issue on some HiDPI screens + interaction with GUI labels generation.
 		// If we have a screen in HiDPI mode, scale the interface accordingly.

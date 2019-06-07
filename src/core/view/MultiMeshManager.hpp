@@ -89,6 +89,7 @@ namespace sibr {
 		MeshData & setColorRandom();
 		MeshData & setRadiusPoint(int rad);
 		MeshData & setAlpha(float alpha);
+		MeshData & setColorMode(ColorMode mode);
 
 		std::string			name;
 

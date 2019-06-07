@@ -182,8 +182,8 @@ namespace sibr
 			unsigned int splitIndex = 0;
 		}; 
 		
-		void setupShader();
-
+		void setupLabelsManagerShader();
+		void setupLabelsManagerMeshes(const std::vector<InputCamera> & cams);
 		void renderLabels(const Camera & eye, const Viewport & vp, const std::vector<CameraInfos> & cams_info);
 
 		std::map<unsigned int, LabelMesh> 		_labelMeshes;
@@ -213,20 +213,44 @@ namespace sibr
 		SIBR_CLASS_PTR(TopView);
 
 	public:
-		TopView(BasicIBRScene::Ptr scene);
+		TopView(const std::shared_ptr<sibr::BasicIBRScene> & scene, const sibr::Viewport & viewport, const sibr::InteractiveCameraHandler::Ptr & camHandler, const sibr::BasicIBRAppArgs & myArgs);
+
+		virtual void onUpdate(const sibr::Input & input, const float deltaTime, const sibr::Viewport & viewport = Viewport(0.0f, 0.0f, 0.0f, 0.0f));
+
+		virtual void onUpdate(Input& input) override;
+
+		virtual void	onRender(Window& win) override;
 
 		virtual void	onRender(const sibr::Viewport & viewport) override;
 
-		virtual void	onGUI() override;
+		virtual void	onRenderIBR(IRenderTarget& /*dst*/, const sibr::Camera& /*eye*/) override {};
 
-		void changeScene(BasicIBRScene::Ptr scene);
+		virtual void onGUI() override;
 
-		void updateActiveCams(const std::vector<int> & cams_id);
+		void save();
+
+		const sibr::InteractiveCameraHandler & getCamera() const { return camera_handler; }
+		sibr::InteractiveCameraHandler & getCamera() { return camera_handler; }
+
+
+		void setScene(const BasicIBRScene::Ptr & scene, bool preserveCamera = false);
+
+	//	void updateActiveCams(const std::vector<int> & cams_id);
 
 	protected:
-		void setupMeshes();
 	
+		void gui_options();
+		void gui_cameras();
+
+		void setup();
+		void setupMeshes();
+
+		sibr::InteractiveCameraHandler::Ptr _userCurrentCam;
+
+		std::shared_ptr<sibr::BasicIBRScene> _scene;
 		std::vector<CameraInfos> _cameras;
+
+		std::string camera_path;
 
 		int					_snapToImage = 0;
 		bool				_showImages = true;

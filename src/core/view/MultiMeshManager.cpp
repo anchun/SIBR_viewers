@@ -194,6 +194,12 @@ namespace sibr {
 		return *this;
 	}
 
+	MeshData & MeshData::setColorMode(ColorMode mode)
+	{
+		colorMode = mode;
+		return *this;
+	}
+
 	void ShaderAlphaMVP::initShader(const std::string & name, const std::string & vert, const std::string & frag, const std::string & geom)
 	{
 		shader.init(name, vert, frag, geom);
@@ -426,10 +432,6 @@ namespace sibr {
 		Iterator swap_it_src, swap_it_dst;
 		bool do_swap = false;
 		static int num_swap = 1;
-
-		if (ImGui::CollapsingHeader(("OptionsMeshManager##MMM" + name).c_str())) {
-			
-		}
 		
 		if (ImGui::CollapsingHeader("Meshes list", ImGuiTreeNodeFlags_DefaultOpen)) {
 

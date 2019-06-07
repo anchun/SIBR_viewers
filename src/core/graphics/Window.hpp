@@ -12,9 +12,11 @@
 # include "core/system/Vector.hpp"
 # include "core/graphics/Viewport.hpp"
 # include "core/graphics/Texture.hpp"
+#include <core/system/CommandLineArgs.hpp>
 
 namespace sibr
 {
+
 	/**
 	* \ingroup sibr_graphics
 	*/
@@ -24,9 +26,11 @@ namespace sibr
 		typedef std::shared_ptr<Window>		Ptr;
 
 	public:
-		Window(int width, int height, const std::string& title, bool fullScreen = false, bool doVSync = true, bool useGUI = true);
+		Window(const std::string& title, const WindowArgs & args = {});
+		
+		Window(uint w, uint h, const std::string& title, const WindowArgs & args = {});
 
-		Window(const std::string & title, const sibr::Vector2i & margins, bool fullScreen = false, bool doVSync = true, bool useGUI = true);
+		Window(const std::string & title, const sibr::Vector2i & margins, const WindowArgs & args = {});
 
 
 		GLFWwindow *  GLFW(void);
@@ -81,7 +85,7 @@ namespace sibr
 
 	private:
 
-		void setup(int width, int height, const std::string & title, bool fullScreen, bool doVSync, bool useGUI);
+		void setup(int width, int height, const std::string & title, const WindowArgs & args);
 
 		typedef std::unique_ptr<GLFWwindow, std::function<void(GLFWwindow*)>> GLFWwindowptr;
 

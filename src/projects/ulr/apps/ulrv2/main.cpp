@@ -58,9 +58,8 @@ int main(int ac, char** av) {
 	uint win_width = myArgs.win_width;
 	uint win_height = myArgs.win_height;
 
-
 	// Window setup
-	sibr::Window		window(PROGRAM_NAME, sibr::Vector2i(50, 50), false, doVSync);
+	sibr::Window		window(PROGRAM_NAME, sibr::Vector2i(50, 50), myArgs);
 
 	BasicIBRScene::Ptr		scene(new BasicIBRScene(myArgs, true));
 
@@ -111,8 +110,10 @@ int main(int ac, char** av) {
 	multiViewManager.addCameraForView("ULR view", generalCamera);
 
 	// Top view
-	const std::shared_ptr<sibr::SceneDebugView>    topView(new sibr::SceneDebugView(scene, multiViewManager.getViewport(), generalCamera, myArgs));
-	multiViewManager.addSubView("Top view", topView);
+	//const std::shared_ptr<sibr::SceneDebugView>    topView(new sibr::SceneDebugView(scene, multiViewManager.getViewport(), generalCamera, myArgs));
+
+	const std::shared_ptr<sibr::TopView> topView(new sibr::TopView(scene, multiViewManager.getViewport(), generalCamera, myArgs));
+	multiViewManager.addSubView("Top view", topView, usedResolution);
 
 	CHECK_GL_ERROR;
 
@@ -150,7 +151,7 @@ int legacyV2main(ULRAppArgs & myArgs)
 		uint win_height = myArgs.win_height;
 
 		// Window setup
-		sibr::Window		window(PROGRAM_NAME, sibr::Vector2i(50, 50), false, doVSync);
+		sibr::Window		window(PROGRAM_NAME, sibr::Vector2i(50, 50), myArgs);
 
 		BasicIBRScene::Ptr		scene(new BasicIBRScene(myArgs));
 		
@@ -183,7 +184,7 @@ int legacyV2main(ULRAppArgs & myArgs)
 
 		// Top view
 		const std::shared_ptr<sibr::SceneDebugView>    topView(new sibr::SceneDebugView(scene, multiViewManager.getViewport(), generalCamera, myArgs));
-		multiViewManager.addSubView("Top view", topView);
+		multiViewManager.addSubView("Top view", topView, usedResolution);
 
 		// Soft Visibility masks
 		std::vector<sibr::ImageL32F>	depths3D(scene->cameras()->inputCameras().size());
@@ -312,7 +313,7 @@ int legacyV1main(ULRAppArgs & myArgs)
 		uint win_height = myArgs.win_height;
 
 		// Window setup
-		sibr::Window        window(PROGRAM_NAME, sibr::Vector2i(50, 50), false, doVSync);
+		sibr::Window        window(PROGRAM_NAME, sibr::Vector2i(50, 50), myArgs);
 
 		// Setup IBR
 		BasicIBRScene::Ptr		scene(new BasicIBRScene(myArgs));
