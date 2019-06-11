@@ -319,6 +319,20 @@ namespace sibr
 		return _subViews.begin()->second.view;
 	}
 
+	Viewport & MultiViewManager::getIBRSubViewport(const std::string & title)
+	{
+		if (_subViews.count(title) > 0) {
+			return _subViews.at(title).viewport;
+		}
+		else if (_ibrSubViews.count(title) > 0) {
+			return _ibrSubViews.at(title).viewport;
+		}
+
+		SIBR_ERR << " No subviewport with name <" << title << "> found." << std::endl;
+
+		return _subViews.begin()->second.viewport;
+	}
+
 	void MultiViewManager::renderSubView(SubView & subview) const
 	{
 		bool invalidTexture = false;
