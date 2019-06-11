@@ -5,6 +5,10 @@
 #include "ViewUtils.hpp"
 #include <core/raycaster/CameraRaycaster.hpp>
 
+#include <sstream>
+
+
+
 
 namespace sibr
 {
@@ -957,8 +961,9 @@ namespace sibr
 
 				ImGui::Checkbox(("##is_valid" + name).c_str(), &_cameras[i].highlight);
 				ImGui::NextColumn();
-
-				ImGui::Text((std::stringstream() << _cameras[i].cam.w() << " x " << _cameras[i].cam.h()).str().c_str());
+				std::stringstream temp;
+				temp << _cameras[i].cam.w() << " x " << _cameras[i].cam.h();
+				ImGui::Text(temp.str().c_str());
 				ImGui::NextColumn();
 			}
 			ImGui::Columns(1);
