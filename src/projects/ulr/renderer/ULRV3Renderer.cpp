@@ -172,9 +172,9 @@ void sibr::ULRV3Renderer::renderBlending(
 		glBindTexture(GL_TEXTURE_2D_ARRAY, _masks->handle());
 	}
 	
-	// Bind UBO to shader.
+	// Bind UBO to shader, after all possible textures.
 	glBindBuffer(GL_UNIFORM_BUFFER, _uboIndex);
-	glBindBufferBase(GL_UNIFORM_BUFFER, 0, _uboIndex);
+	glBindBufferBase(GL_UNIFORM_BUFFER, 4, _uboIndex);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
 	if (passthroughDepth) {
