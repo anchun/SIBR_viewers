@@ -55,6 +55,9 @@ namespace sibr {
 
 		void fromCamera(const sibr::InputCamera & cam, bool interpolate = true, bool updateResolution = true);
 
+		void fromTransform(const Transform3f & transform, bool interpolate = true, bool updateResolution = true);
+
+
 		void updateView(const sibr::InputCamera & cam);
 
 		int	findNearestCamera(const std::vector<sibr::InputCamera>& inputCameras) const;

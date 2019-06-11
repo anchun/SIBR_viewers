@@ -213,17 +213,19 @@ namespace sibr
 		SIBR_CLASS_PTR(TopView);
 
 	public:
-		TopView(const std::shared_ptr<sibr::BasicIBRScene> & scene, const sibr::Viewport & viewport, const sibr::InteractiveCameraHandler::Ptr & camHandler, const sibr::BasicIBRAppArgs & myArgs);
+		TopView(const std::shared_ptr<BasicIBRScene> & scene, const Viewport & viewport, const InteractiveCameraHandler::Ptr & camHandler, const BasicIBRAppArgs & myArgs);
 
-		virtual void onUpdate(const sibr::Input & input, const float deltaTime, const sibr::Viewport & viewport = Viewport(0.0f, 0.0f, 0.0f, 0.0f));
+		virtual void onUpdate(Input & input, const float deltaTime, const Viewport & viewport = Viewport(0.0f, 0.0f, 0.0f, 0.0f));
+
+		virtual void onUpdate(Input & input, const Viewport & viewport);
 
 		virtual void onUpdate(Input& input) override;
 
 		virtual void	onRender(Window& win) override;
 
-		virtual void	onRender(const sibr::Viewport & viewport) override;
+		virtual void	onRender(const Viewport & viewport) override;
 
-		virtual void	onRenderIBR(IRenderTarget& /*dst*/, const sibr::Camera& /*eye*/) override {};
+		virtual void	onRenderIBR(IRenderTarget& /*dst*/, const Camera& /*eye*/) override {};
 
 		virtual void onGUI() override;
 

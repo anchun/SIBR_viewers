@@ -755,24 +755,30 @@ namespace sibr
 	TopView::TopView(const BasicIBRScene::Ptr & scene, const Viewport & viewport,
 		const InteractiveCameraHandler::Ptr & camHandler, const BasicIBRAppArgs & myArgs)
 	{
+		initImageCamShaders();
+		setupLabelsManagerShader();
+
 		_scene = scene;
 		_userCurrentCam = camHandler;
-		camera_handler.setup(_scene->proxies()->proxy().clone(), viewport);
+		//camera_handler.setup(_scene->proxies()->proxy().clone(), viewport);
 
 		if (!_scene->cameras()->inputCameras().empty()) {
 			camera_handler.updateView(_scene->cameras()->inputCameras()[0]);
 			camera_handler.setupInterpolationPath(_scene->cameras()->inputCameras());
 		}
-	
+
 		_showImages = true;
 		camera_path = myArgs.dataset_path.get() + "/cameras";
 
 		setup();
+
+		//camera_handler.switchMode(InteractiveCameraHandler::InteractionMode::TRACKBALL);
+
 	}
 
-	void TopView::onUpdate(const Input & input, const float deltaTime, const Viewport & viewport)
+	void TopView::onUpdate(Input & input, const float deltaTime, const Viewport & viewport)
 	{
-		camera_handler.update(input, deltaTime, viewport);
+		MultiMeshManager::onUpdate(input, viewport);
 
 		//Camera stub size
 		if (input.key().isActivated(Key::LeftControl) && input.mouseScroll() != 0.0) {
@@ -795,6 +801,11 @@ namespace sibr
 		if (input.key().isReleased(Key::T)) {
 			save();
 		}
+	}
+
+	void TopView::onUpdate(Input & input, const sibr::Viewport & viewport)
+	{
+		onUpdate(input, 1.0f / 60.0f, viewport);
 	}
 
 	void TopView::onUpdate(Input & input)
@@ -841,7 +852,6 @@ namespace sibr
 			int cam_id = 0;
 			for (const auto & camInfos : _cameras) {
 				if (camInfos.cam.isActive()) {
-					MeshData quad("", generateCamQuadWithUvs(camInfos.cam, _cameraScaling));
 					const auto & scene_rts = _scene->renderTargets();
 					if (scene_rts->getInputRGBTextureArrayPtr()) {
 						renderImage(camera_handler.getCamera(), camInfos.cam, scene_rts->getInputRGBTextureArrayPtr()->handle(), cam_id);
@@ -951,7 +961,9 @@ namespace sibr
 				ImGui::NextColumn();
 
 				if (ImGui::Button(("SnapTo##" + name).c_str())) {
-					camera_handler.snapToCamera(i);
+					//camera_handler.snapToCamera(i);
+					//camera_handler.fromCamera(_cameras[i].cam, true, false);
+					camera_handler.fromTransform(_cameras[i].cam.transform(), true, false);
 				}
 				ImGui::NextColumn();
 
@@ -967,9 +979,6 @@ namespace sibr
 
 	void TopView::setup()
 	{
-		initImageCamShaders();
-		setupLabelsManagerShader();
-
 		if (_scene) {
 			setupLabelsManagerMeshes(_scene->cameras()->inputCameras());
 			setupMeshes();
@@ -994,7 +1003,9 @@ namespace sibr
 			InputCamera cam(camera_handler.getCamera());
 			cam.readFromFile(topViewFile);
 			// Apply it to the top view FPS camera.
-			camera_handler.fromCamera(cam);
+			//camera_handler.fromCamera(cam, false);
+			camera_handler.fromTransform(cam.transform(), false, true);
+			cam_is_init = true;
 		}
 
 	}

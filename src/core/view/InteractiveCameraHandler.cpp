@@ -152,6 +152,13 @@ namespace sibr {
 		}
 	}
 
+	void InteractiveCameraHandler::fromTransform(const Transform3f & transform, bool _interpolate, bool _updateResolution)
+	{
+		InputCamera camCopy = getCamera();
+		camCopy.transform(transform);
+		fromCamera(camCopy, _interpolate, _updateResolution);
+	}
+
 	void InteractiveCameraHandler::updateView(const sibr::InputCamera & cam)
 	{
 		sibr::InputCamera newCam = _currentCamera;
@@ -259,9 +266,7 @@ namespace sibr {
 		if (!_interpPath.empty()) {
 			unsigned int nearestCam = (i == -1 ? findNearestCamera(_interpPath) : i);
 			nearestCam = sibr::clamp(nearestCam, unsigned int(0), unsigned int(_interpPath.size() - 1));
-			InputCamera camCopy = getCamera();
-			camCopy.transform(_interpPath[nearestCam].transform());
-			fromCamera(camCopy, true);
+			fromTransform(_interpPath[nearestCam].transform());
 		}
 	}
 
