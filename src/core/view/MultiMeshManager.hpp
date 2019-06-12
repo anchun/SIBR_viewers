@@ -181,7 +181,6 @@ namespace sibr {
 		bool								selected_mesh_it_is_valid = false;
 		
 		InteractiveCameraHandler			camera_handler;
-		bool								cam_is_init = false;
 
 		PointShader							points_shader;
 		MeshShadingShader					colored_mesh_shader;

@@ -1010,7 +1010,6 @@ namespace sibr
 			// Apply it to the top view FPS camera.
 			//camera_handler.fromCamera(cam, false);
 			camera_handler.fromTransform(cam.transform(), false, true);
-			cam_is_init = true;
 		}
 
 	}
