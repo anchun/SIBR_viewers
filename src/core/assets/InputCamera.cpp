@@ -64,9 +64,18 @@ namespace sibr
 		_name = "";
 	}
 
+	InputCamera::InputCamera(const Camera& c, int w, int h) : Camera(c) {
+		_focal = 1.0f/(tan(0.5f*fovy()) * 2.0f / float(h));
+		_k1 = _k2 = 0;
+		_w = w;
+		_h = h;
+		_id = 0;
+		_name = "";
+		_active = true;
+		aspect(float(_w) / float(_h));
+	}
 
 	// ------------------------------------------------------------------------
-
 
 	void InputCamera::size(uint w, uint h) { _w = w; _h = h; }
 	uint InputCamera::w(void)  const { return _w; }

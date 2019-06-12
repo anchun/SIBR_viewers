@@ -655,6 +655,7 @@ namespace sibr {
 
 			list_meshes.push_back(data);
 
+
 			auto box = data.meshPtr->getBoundingBox();
 			if (!box.isEmpty()) {
 				InputCamera cam = camera_handler.getCamera();
