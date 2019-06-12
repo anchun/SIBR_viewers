@@ -190,6 +190,7 @@ namespace sibr {
 			break;
 		case NONE:
 			std::cout << "none";
+			break;
 		case FPS:
 		default:
 			std::cout << "fps&pan";
