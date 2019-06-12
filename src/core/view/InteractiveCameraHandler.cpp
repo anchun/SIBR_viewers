@@ -255,7 +255,8 @@ namespace sibr {
 
 		sibr::InputCamera & camStart = _interpPath[_startCam];
 		sibr::InputCamera & camNext = _interpPath[_startCam + 1];
-		_currentCamera = sibr::Camera::interpolate(camStart, camNext, k);
+		const sibr::Camera cam = sibr::Camera::interpolate(camStart, camNext, k);
+		_currentCamera = sibr::InputCamera(cam, camStart.w(), camStart.h());
 		_currentCamera.aspect(_viewport.finalWidth() / _viewport.finalHeight());
 
 
@@ -413,7 +414,8 @@ namespace sibr {
 			}
 
 			if (_shouldSmooth && _currentMode != INTERPOLATION) {
-				_currentCamera = sibr::Camera::interpolate(_previousCamera, _currentCamera, IBRVIEW_SMOOTHCAM_POWER);
+				const sibr::Camera newcam = sibr::Camera::interpolate(_previousCamera, _currentCamera, IBRVIEW_SMOOTHCAM_POWER);
+				_currentCamera = sibr::InputCamera(newcam, _currentCamera.w(), _currentCamera.h());
 			}
 
 		}

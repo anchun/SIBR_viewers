@@ -46,13 +46,9 @@ namespace sibr
 
 		InputCamera(const InputCamera&) = default;
 		InputCamera(InputCamera&&) = default;
-		InputCamera(const Camera& c) : Camera(c) { }
+		InputCamera(const Camera& c, int w, int h);
 		InputCamera&	operator =(const InputCamera&) = default;
 		InputCamera&	operator =(InputCamera&&) = default;
-		InputCamera&	operator =(const Camera& c) {
-			Camera::operator =(c);
-			return *this;
-		}
 
 
 
