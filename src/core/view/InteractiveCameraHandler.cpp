@@ -97,8 +97,8 @@ namespace sibr {
 			zFar = (zFar<0 || cam.zfar() > zFar ? cam.zfar() : zFar);
 			zNear = (zNear < 0 || cam.znear() < zNear ? cam.znear() : zNear);
 		}
-		idealCam.zfar(zFar*2.0f);
-		idealCam.znear(zNear*0.02f);
+		idealCam.zfar(zFar*1.1f);
+		idealCam.znear(zNear*0.9f);
 		SIBR_LOG << "Interactive camera using (" << zNear << "," << zFar << ") near/far planes." << std::endl;
 
 		setup(idealCam, viewport, raycaster);
