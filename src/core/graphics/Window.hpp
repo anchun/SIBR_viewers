@@ -27,7 +27,8 @@ namespace sibr
 
 	public:
 		Window(const std::string& title, const WindowArgs & args = {});
-		
+
+		/// Create a window, overidding the args size with a custom (w,h).
 		Window(uint w, uint h, const std::string& title, const WindowArgs & args = {});
 
 		Window(const std::string & title, const sibr::Vector2i & margins, const WindowArgs & args = {});
