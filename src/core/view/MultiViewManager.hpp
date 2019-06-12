@@ -135,6 +135,12 @@ namespace sibr
 		ViewBase::Ptr &	getIBRSubView(const std::string& title);
 
 		/**
+		* \param title
+		* \return the Viewport associated with title, will EXIT_ERROR if no viewport found
+		*/
+		Viewport & getIBRSubViewport(const std::string &title);
+
+		/**
 		* \brief Unregister a subview.
 		* \param title the title of the view to remove.
 		* \return the view removed from the MultiViewManager.

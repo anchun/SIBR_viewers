@@ -143,16 +143,16 @@ namespace sibr
 		using RequiredArgBase<T>::RequiredArgBase;
 	};
 
-	///specialization required for std::string as const string & key constructor and const T & constructor are ambiguous.
+	///specialization required for std::string as const string & key constructor and const T & constructor are ambiguous. TT : no const T & ctor anymore but operator const char*() const operator added
+	//
 	template<>
 	class RequiredArg<std::string> : public RequiredArgBase<std::string> {
-		RequiredArg(const RequiredArg &) = delete;
-		RequiredArg & operator=(const RequiredArg &) = delete;
+		//RequiredArg(const RequiredArg &) = delete;
+		//RequiredArg & operator=(const RequiredArg &) = delete;
 		
 		using RequiredArgBase<std::string>::RequiredArgBase;
 		
 	public:
-		RequiredArg & operator=(const std::string & t) { value = t; wasInit = true;  return *this; }
 		operator const char*() const { checkInit(); return value.c_str(); }
 	};
 
@@ -180,9 +180,10 @@ namespace sibr
 	struct SIBR_SYSTEM_EXPORT WindowArgs {
 		Arg<int> win_width = { "width", 720 };
 		Arg<int> win_height = { "height", 480 };
-		Arg<int> vsync = { "vsync", 0 };
+		Arg<int> vsync = { "vsync", 1 };
 		Arg<bool> fullscreen = { "fullscreen", false };
 		Arg<bool> hdpi = { "hd", false };
+		Arg<bool> no_gui = { "nogui", false };
 	};
 
 	struct WindowAppArgs : 
@@ -192,7 +193,7 @@ namespace sibr
 	struct SIBR_SYSTEM_EXPORT RenderingArgs {
 		Arg<std::string> scene_metadata_filename = { "scene", "scene_metadata.txt" };
 		Arg<std::array<int, 2>> rendering_size = { "rendering-size", { 720, 480 } };
-		Arg<std::array<int, 2>> texture_size = { "texture-size", {0,0} };
+		Arg<int> texture_width = { "texture-width", 0 };
 		Arg<float> texture_ratio = { "texture-ratio", 1.0f };
 		Arg<int> rendering_mode = { "rendering-mode", RENDERMODE_MONO };
 		Arg<sibr::Vector3f> focal_pt = { "focal-pt", {0.0f, 0.0f, 0.0f} };

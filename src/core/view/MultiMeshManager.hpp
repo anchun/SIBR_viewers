@@ -23,9 +23,9 @@ namespace sibr {
 		virtual void render(const Camera & eye, const MeshData & data);
 
 	protected:
-		GLShader						shader;
+		GLShader				shader;
 		GLuniform<Matrix4f>		mvp;
-		GLuniform<float>				alpha = 1.0;
+		GLuniform<float>		alpha = 1.0;
 	};
 
 	class SIBR_VIEW_EXPORT ColorMeshShader : public ShaderAlphaMVP {
@@ -52,8 +52,8 @@ namespace sibr {
 		virtual void setUniforms(const Camera & eye, const MeshData & data) override;
 
 	protected:
-		GLuniform<Vector3f> light_position;
-		GLuniform<bool> phong_shading, use_mesh_color;
+		GLuniform<Vector3f>		light_position;
+		GLuniform<bool>			phong_shading, use_mesh_color;
 	};
 
 	class SIBR_VIEW_EXPORT NormalRenderingShader : public ColorMeshShader {
@@ -87,6 +87,9 @@ namespace sibr {
 		MeshData & setBackFace(bool bf);
 		MeshData & setDepthTest(bool dt);	
 		MeshData & setColorRandom();
+		MeshData & setRadiusPoint(int rad);
+		MeshData & setAlpha(float alpha);
+		MeshData & setColorMode(ColorMode mode);
 
 		std::string			name;
 
@@ -103,6 +106,7 @@ namespace sibr {
 		bool				frontFaceCulling = false;
 		bool				invertDepthTest = false;
 		bool				active = true;
+		bool				phongShading = false;
 
 		//points
 		int					radius = 5;
@@ -121,7 +125,6 @@ namespace sibr {
 		NormalMode normalMode = PER_TRIANGLE;
 		bool normalsInverted = false;
 		bool showNormals = false;
-		bool phongShading = false;
 
 	protected:
 		
@@ -141,6 +144,9 @@ namespace sibr {
 		// if no collision, returns a ref to the newly created meshData 
 		// if collision, only the sibr::Mesh::Ptr is replaced, all options remains, and returns a ref to MeshData::dummy
 		MeshData & addMesh(const std::string & name, Mesh::Ptr mesh, bool use_raycaster = true);
+		//overload with user specified raycaster
+		MeshData & addMesh(const std::string & name, Mesh::Ptr mesh, Raycaster::Ptr raycaster, bool create_raycaster = false);
+
 		MeshData & addMeshAsLines(const std::string & name, Mesh::Ptr mesh);
 		MeshData & addLines(const std::string & name, const std::vector<Vector3f> & endPoints, const Vector3f & color = { 0,1,0 });
 		MeshData & addPoints(const std::string & name, const std::vector<Vector3f> & points, const Vector3f & color = { 1,0,0 });
@@ -160,7 +166,7 @@ namespace sibr {
 
 	protected:
 
-		MeshData & addMeshData(const MeshData & data);
+		MeshData & addMeshData(MeshData & data, bool update_raycaster = false);
 		void initShaders();
 		void renderMeshes();
 		void list_mesh_onGUI();

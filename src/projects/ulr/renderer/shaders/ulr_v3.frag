@@ -18,7 +18,7 @@ struct CameraInfos
   vec3 dir;
 };
 // They are stored in a contiguous buffer (UBO), lifting most limitations on the number of uniforms.
-layout(std140, binding=0) uniform InputCameras
+layout(std140, binding=4) uniform InputCameras
 {
   CameraInfos cameras[NUM_CAMS];
 };
@@ -34,6 +34,7 @@ uniform bool doMasking = false;
 uniform bool flipRGBs = false;
 uniform bool showWeights = false;
 uniform float epsilonOcclusion = 1e-2;
+uniform bool winner_takes_all = false;
 
 // for uv derivatives blending
 uniform bool useUVDerivatives;
@@ -227,6 +228,13 @@ void main(void){
 	 }  
    }
    
+   	if(winner_takes_all){
+		gl_FragDepth = point.w;
+		out_color.w = 1.0;
+		out_color.xyz = color0.xyz;
+		return;
+	}
+    
 	float thresh = 1.0000001 * color3.w;
     color0.w = max(0, 1.0 - color0.w/thresh);
     color1.w = max(0, 1.0 - color1.w/thresh);

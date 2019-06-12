@@ -182,6 +182,24 @@ namespace sibr {
 		 
 		 return *this;
 	}
+
+	MeshData & MeshData::setRadiusPoint(int rad)
+	{
+		radius = rad;
+		return *this;
+	}
+
+	MeshData & MeshData::setAlpha(float _alpha) {
+		alpha = _alpha;
+		return *this;
+	}
+
+	MeshData & MeshData::setColorMode(ColorMode mode)
+	{
+		colorMode = mode;
+		return *this;
+	}
+
 	void ShaderAlphaMVP::initShader(const std::string & name, const std::string & vert, const std::string & frag, const std::string & geom)
 	{
 		shader.init(name, vert, frag, geom);
@@ -414,10 +432,6 @@ namespace sibr {
 		Iterator swap_it_src, swap_it_dst;
 		bool do_swap = false;
 		static int num_swap = 1;
-
-		if (ImGui::CollapsingHeader(("OptionsMeshManager##MMM" + name).c_str())) {
-			
-		}
 		
 		if (ImGui::CollapsingHeader("Meshes list", ImGuiTreeNodeFlags_DefaultOpen)) {
 
@@ -544,19 +558,23 @@ namespace sibr {
 			return MeshData::dummy;
 		}
 
+		return addMesh(name, mesh, 0, use_raycaster);
+	}
+
+	MeshData & MultiMeshManager::addMesh(const std::string & name, Mesh::Ptr mesh, Raycaster::Ptr raycaster, bool create_raycaster)
+	{
+		if (!mesh) {
+			SIBR_WRG << "no mesh ptr in " << name;
+			return MeshData::dummy;
+		}
+
 		MeshData data(name, mesh, MeshData::TRIANGLES, Mesh::FillRenderMode);
 		data.colorMode = mesh->hasColors() ? MeshData::ColorMode::VERTEX : MeshData::ColorMode::USER_DEFINED;
 		data.normalMode = (mesh->hasNormals() ? MeshData::PER_VERTEX : MeshData::PER_TRIANGLE);
 		data.phongShading = mesh->hasNormals();
+		data.raycaster = raycaster;
 
-		if (use_raycaster) {
-			auto raycaster = std::make_shared<Raycaster>();
-			raycaster->init();
-			raycaster->addMesh(*mesh);
-			data.raycaster = raycaster;
-		}
-
-		return addMeshData(data).setColorRandom();
+		return addMeshData(data, create_raycaster).setColorRandom();
 	}
 
 	MeshData & MultiMeshManager::addMeshAsLines(const std::string & name, Mesh::Ptr mesh)
@@ -567,36 +585,30 @@ namespace sibr {
 		}
 
 		MeshData data(name, mesh, MeshData::LINES, Mesh::LineRenderMode);
-		data.setDepthTest(false);
-		return addMeshData(data).setColorRandom();
+		return addMeshData(data).setColorRandom().setDepthTest(false);
 	}
 
 	MeshData & MultiMeshManager::addLines(const std::string & name, const std::vector<Vector3f>& endPoints, const Vector3f & color)
 	{
-		Mesh::Vertices vertices(endPoints);
 		Mesh::Triangles tris(endPoints.size() / 2);
-		for (uint v = 0; v < vertices.size(); ++v) {
-			vertices[v] = endPoints[v];
-		}
 		for (uint t = 0; t < tris.size(); ++t) {
 			tris[t] = Vector3u(2 * t, 2 * t, 2 * t + 1);
 		}
 
 		Mesh::Ptr mesh = std::make_shared<Mesh>();
-		mesh->vertices(vertices);
+		mesh->vertices(endPoints);
 		mesh->triangles(tris);
 
 		MeshData data(name, mesh, MeshData::LINES, Mesh::LineRenderMode);
 		data.userColor = color;
 		data.depthTest = false;
-		
+
 		return addMeshData(data).setColorRandom();
 	}
 
 	MeshData & MultiMeshManager::addPoints(const std::string & name, const std::vector<Vector3f>& points, const Vector3f & color)
 	{
 		Mesh::Vertices vertices(points);
-		Mesh::Triangles tris(points.size());
 
 		Mesh::Ptr mesh = std::make_shared<Mesh>();
 		mesh->vertices(vertices);
@@ -604,7 +616,7 @@ namespace sibr {
 		MeshData data(name, mesh, MeshData::POINTS, Mesh::PointRenderMode);
 		data.userColor = color;
 		data.depthTest = false;
-		
+
 		return addMeshData(data);
 	}
 
@@ -618,11 +630,11 @@ namespace sibr {
 		return MeshData::dummy;
 	}
 
-	MeshData & MultiMeshManager::addMeshData(const MeshData & data)
+	MeshData & MultiMeshManager::addMeshData(MeshData & data, bool create_raycaster)
 	{
 		bool collision = false;
 		Iterator collision_it;
-		for (collision_it = list_meshes.begin(); collision_it != list_meshes.end(); ++ collision_it) {
+		for (collision_it = list_meshes.begin(); collision_it != list_meshes.end(); ++collision_it) {
 			if (collision_it->name == data.name) {
 				collision = true;
 				break;
@@ -633,11 +645,23 @@ namespace sibr {
 			collision_it->meshPtr = data.meshPtr;
 			return MeshData::dummy;
 		} else {
+			Raycaster::Ptr raycaster;
+			if (create_raycaster) {
+				raycaster = std::make_shared<Raycaster>();
+				raycaster->init();
+				raycaster->addMesh(*data.meshPtr);
+			}
+			data.raycaster = raycaster;
+
 			list_meshes.push_back(data);
-			
-			InputCamera cam = camera_handler.getCamera();
-			cam.zfar(std::max(cam.zfar(), 5.0f*data.meshPtr->getBoundingBox().diagonal().norm()));
-			camera_handler.fromCamera(cam);
+
+
+			auto box = data.meshPtr->getBoundingBox();
+			if (!box.isEmpty()) {
+				InputCamera cam = camera_handler.getCamera();
+				cam.zfar(std::max(cam.zfar(), 5.0f*box.diagonal().norm()));
+				camera_handler.fromCamera(cam);
+			}
 
 			return list_meshes.back();
 		}

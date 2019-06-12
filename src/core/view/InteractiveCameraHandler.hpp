@@ -35,7 +35,7 @@ namespace sibr {
 		SIBR_CLASS_PTR(InteractiveCameraHandler);
 
 		enum InteractionMode {
-			FPS = 0, ORBIT = 1, INTERPOLATION = 2, TRACKBALL = 3
+			FPS = 0, ORBIT = 1, INTERPOLATION = 2, TRACKBALL = 3, NONE=4
 		};
 
 		InteractiveCameraHandler(const bool supportRecording = true);
@@ -54,6 +54,9 @@ namespace sibr {
 		void setupInterpolationPath(const std::vector<sibr::InputCamera> & cameras);
 
 		void fromCamera(const sibr::InputCamera & cam, bool interpolate = true, bool updateResolution = true);
+
+		void fromTransform(const Transform3f & transform, bool interpolate = true, bool updateResolution = true);
+
 
 		void updateView(const sibr::InputCamera & cam);
 

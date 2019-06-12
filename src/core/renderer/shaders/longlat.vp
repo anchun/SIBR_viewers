@@ -1,0 +1,17 @@
+#version 450																																	
+layout(location = 0) in vec3 inPos;
+layout(location = 1) in vec3 inColors;
+layout(location = 2) in vec2 inCoordsTex;
+layout(location = 3) in vec3 inNormals; 
+
+layout(location = 1) out vec3 vs_colors;
+layout(location = 2) out vec2 vs_coordsTex;
+layout(location = 3) out vec3 vs_normals;
+
+void main()
+{																		
+	vs_colors= inColors;
+	vs_coordsTex = inCoordsTex;
+	vs_normals = inNormals;
+	gl_Position = vec4(inPos,1.0f);
+}																		

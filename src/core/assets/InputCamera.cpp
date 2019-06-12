@@ -744,6 +744,11 @@ namespace sibr
 		return ss.str();
 	}
 
+	std::vector<sibr::Vector2i> InputCamera::getImageCorners() const
+	{
+		return { {0,0}, {_w - 1, 0}, {_w - 1,_h - 1}, {0, _h - 1} };
+	}
+
 	void InputCamera::saveAsBundle(const std::vector<sibr::InputCamera> & cams, const std::string & fileName, bool negativeZ, const bool exportImages) {
 
 		std::ofstream outputBundleCam;

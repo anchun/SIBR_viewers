@@ -97,8 +97,8 @@ namespace sibr {
 			zFar = (zFar<0 || cam.zfar() > zFar ? cam.zfar() : zFar);
 			zNear = (zNear < 0 || cam.znear() < zNear ? cam.znear() : zNear);
 		}
-		idealCam.zfar(zFar*2.0f);
-		idealCam.znear(zNear*0.02f);
+		idealCam.zfar(zFar*1.1f);
+		idealCam.znear(zNear*0.9f);
 		SIBR_LOG << "Interactive camera using (" << zNear << "," << zFar << ") near/far planes." << std::endl;
 
 		setup(idealCam, viewport, raycaster);
@@ -152,6 +152,13 @@ namespace sibr {
 		}
 	}
 
+	void InteractiveCameraHandler::fromTransform(const Transform3f & transform, bool _interpolate, bool _updateResolution)
+	{
+		InputCamera camCopy = getCamera();
+		camCopy.transform(transform);
+		fromCamera(camCopy, _interpolate, _updateResolution);
+	}
+
 	void InteractiveCameraHandler::updateView(const sibr::InputCamera & cam)
 	{
 		sibr::InputCamera newCam = _currentCamera;
@@ -181,6 +188,8 @@ namespace sibr {
 		case TRACKBALL:
 			std::cout << "trackball";
 			break;
+		case NONE:
+			std::cout << "none";
 		case FPS:
 		default:
 			std::cout << "fps&pan";
@@ -258,9 +267,7 @@ namespace sibr {
 		if (!_interpPath.empty()) {
 			unsigned int nearestCam = (i == -1 ? findNearestCamera(_interpPath) : i);
 			nearestCam = sibr::clamp(nearestCam, unsigned int(0), unsigned int(_interpPath.size() - 1));
-			InputCamera camCopy = getCamera();
-			camCopy.transform(_interpPath[nearestCam].transform());
-			fromCamera(camCopy, true);
+			fromTransform(_interpPath[nearestCam].transform());
 		}
 	}
 
@@ -393,6 +400,9 @@ namespace sibr {
 				_trackball.update(input, _viewport, _raycaster);
 				_currentCamera = _trackball.getCamera();
 				break;
+			case NONE:
+				//do nothing
+				break;
 			case FPS:
 			default:
 				_fpsCamera.update(input, deltaTime);
@@ -431,7 +441,7 @@ namespace sibr {
 		const std::string fullName = (suffix);
 		// Saving camera.
 		if (ImGui::Begin(fullName.c_str())) {
-			ImGui::Combo("Mode", (int*)&_currentMode, "FPS\0Orbit\0Interp.\0Trackball\0\0");
+			ImGui::Combo("Mode", (int*)&_currentMode, "FPS\0Orbit\0Interp.\0Trackball\0None\0\0");
 			switchMode(_currentMode);
 
 			if (ImGui::Button("Load camera")) {

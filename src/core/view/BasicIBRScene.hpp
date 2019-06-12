@@ -26,14 +26,14 @@ namespace sibr {
 		/**
 		* \brief Pointer to the instance of class sibr::BasicIBRScene.
 		*/
-		typedef std::shared_ptr<BasicIBRScene>									Ptr;
+		using Ptr = std::shared_ptr<BasicIBRScene>;
 
 	public:
 
 		/**
 		 * \brief Default constructor to create a BasicIBRScene.
 		 */
-		BasicIBRScene() {};
+		BasicIBRScene();
 
 		/**
 		 * \brief Constructor to create a BasicIBRScene given command line arguments.
@@ -41,7 +41,7 @@ namespace sibr {
 		 * \param myArgs to provide all command line arguments containing path to specific components.
 		 * \param noRTs to specify whether to initialize render target textures or not.
 		 */
-		BasicIBRScene::BasicIBRScene(BasicIBRAppArgs & myArgs, bool noRTs = false);
+		BasicIBRScene(const BasicIBRAppArgs & myArgs, bool noRTs = false);
 
 		~BasicIBRScene() {};
 
@@ -50,15 +50,17 @@ namespace sibr {
 		* The scene will be created using the custom data (cameras/images/proxies/textures etc.) provided.
 		* \param data to provide data instance holding customized components.
 		* \param noRTs to specify whether to initialize render target textures or not.
+		* \param width the constrained width for GPU texture data.
 		*/
-		void createFromCustomData(const ParseData::Ptr & data, bool noRTs = false);
+		void createFromCustomData(const ParseData::Ptr & data, bool noRTs = false, const uint width = 0);
 
 		/**
 		* \brief Creates a BasicIBRScene from the internal stored data component in the scene.
 		* The data could be populated either from dataset path or customized by the user externally.
 		* \param noRTs to specify whether to initialize render target textures or not.
+		* \param width the constrained width for GPU texture data.
 		*/
-		void createFromData(bool noRTs = false);
+		void createFromData(bool noRTs = false, const uint width = 0);
 
 		/**
 		 * \brief Function to create a scene directly using the dataset path specified in command-line.

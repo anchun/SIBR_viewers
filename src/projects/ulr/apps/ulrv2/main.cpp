@@ -58,11 +58,10 @@ int main(int ac, char** av) {
 	uint win_width = myArgs.win_width;
 	uint win_height = myArgs.win_height;
 
-
 	// Window setup
-	sibr::Window		window(PROGRAM_NAME, sibr::Vector2i(50, 50), false, doVSync);
+	sibr::Window		window(PROGRAM_NAME, sibr::Vector2i(50, 50), myArgs);
 
-	BasicIBRScene::Ptr		scene(new BasicIBRScene(myArgs));
+	BasicIBRScene::Ptr		scene(new BasicIBRScene(myArgs, true));
 
 	// Setup the scene: load the proxy, create the texture arrays.
 	const uint flags = SIBR_GPU_LINEAR_SAMPLING | SIBR_FLIP_TEXTURE;
@@ -74,7 +73,7 @@ int main(int ac, char** av) {
 
 	const unsigned int sceneResWidth = usedResolution.x();
 	const unsigned int sceneResHeight = usedResolution.y();
-	scene->renderTargets()->initRGBandDepthTextureArrays(scene->cameras(), scene->images(), scene->proxies(), sceneResWidth, sceneResHeight, flags);
+	scene->renderTargets()->initRGBandDepthTextureArrays(scene->cameras(), scene->images(), scene->proxies(), flags);
 
 	// Create the ULR view.
 	ULRV3View::Ptr	ulrView(new ULRV3View(scene, sceneResWidth, sceneResHeight));
@@ -111,8 +110,10 @@ int main(int ac, char** av) {
 	multiViewManager.addCameraForView("ULR view", generalCamera);
 
 	// Top view
-	const std::shared_ptr<sibr::SceneDebugView>    topView(new sibr::SceneDebugView(scene, multiViewManager.getViewport(), generalCamera, myArgs));
-	multiViewManager.addSubView("Top view", topView);
+	//const std::shared_ptr<sibr::SceneDebugView>    topView(new sibr::SceneDebugView(scene, multiViewManager.getViewport(), generalCamera, myArgs));
+
+	const std::shared_ptr<sibr::TopView> topView(new sibr::TopView(scene, multiViewManager.getViewport(), generalCamera, myArgs));
+	multiViewManager.addSubView("Top view", topView, usedResolution);
 
 	CHECK_GL_ERROR;
 
@@ -150,7 +151,7 @@ int legacyV2main(ULRAppArgs & myArgs)
 		uint win_height = myArgs.win_height;
 
 		// Window setup
-		sibr::Window		window(PROGRAM_NAME, sibr::Vector2i(50, 50), false, doVSync);
+		sibr::Window		window(PROGRAM_NAME, sibr::Vector2i(50, 50), myArgs);
 
 		BasicIBRScene::Ptr		scene(new BasicIBRScene(myArgs));
 		
@@ -183,7 +184,7 @@ int legacyV2main(ULRAppArgs & myArgs)
 
 		// Top view
 		const std::shared_ptr<sibr::SceneDebugView>    topView(new sibr::SceneDebugView(scene, multiViewManager.getViewport(), generalCamera, myArgs));
-		multiViewManager.addSubView("Top view", topView);
+		multiViewManager.addSubView("Top view", topView, usedResolution);
 
 		// Soft Visibility masks
 		std::vector<sibr::ImageL32F>	depths3D(scene->cameras()->inputCameras().size());
@@ -312,7 +313,7 @@ int legacyV1main(ULRAppArgs & myArgs)
 		uint win_height = myArgs.win_height;
 
 		// Window setup
-		sibr::Window        window(PROGRAM_NAME, sibr::Vector2i(50, 50), false, doVSync);
+		sibr::Window        window(PROGRAM_NAME, sibr::Vector2i(50, 50), myArgs);
 
 		// Setup IBR
 		BasicIBRScene::Ptr		scene(new BasicIBRScene(myArgs));

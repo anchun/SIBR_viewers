@@ -154,6 +154,8 @@ namespace sibr
 		Pixel&			operator()(uint x, uint y);
 		const Pixel&	operator()(const sibr::Vector2i & xy) const;
 		Pixel&			operator()(const sibr::Vector2i & xy);
+		const Pixel&	operator()(const sibr::Vector2f & xy) const;
+		Pixel&			operator()(const sibr::Vector2f & xy);
 
 		virtual std::string		pixelStr(const sibr::Vector2i & xy)  const;
 
@@ -187,6 +189,7 @@ namespace sibr
 		template <typename T>
 		bool			inRange(T x, T y) const { return (x >= 0 && y >= 0 && x < (T)w() && y < (T)h()); }
 		bool			isInRange(const sibr::Vector2i & xy)  const { return (xy.x() >= 0 && xy.y() >= 0 && xy.x() < (int)w() && xy.y() < (int)h()); }
+		bool			isInRange(const sibr::Vector2f & xy)  const { return (xy.x() >= 0 && xy.y() >= 0 && xy.x() < (float)w() && xy.y() < (float)h()); }
 
 		uint		numComp(void) const;
 		uint		sizeOfComp(void) const;
@@ -248,11 +251,16 @@ namespace sibr
 	class ImagePtr {
 	public:
 		
+		using ImageType = Image<T_Type, T_NumComp>;
+
 		std::shared_ptr<Image<T_Type, T_NumComp>> imPtr;
 		
 		ImagePtr() { imPtr = std::shared_ptr<Image<T_Type, T_NumComp>>(); };
 		ImagePtr(Image<T_Type, T_NumComp>* imgPtr) { imPtr = std::shared_ptr<Image<T_Type, T_NumComp>>(imgPtr); };
 		ImagePtr(std::shared_ptr<Image<T_Type, T_NumComp>>& imgPtr)  {imPtr = std::shared_ptr<Image<T_Type, T_NumComp>>(imgPtr); };
+
+		void reset(ImageType * ptr) { imPtr.reset(ptr); }
+
 		typename Image<T_Type, T_NumComp>*	get() { return imPtr.get(); };
 		const typename Image<T_Type, T_NumComp>::Pixel&			operator()(uint x, uint y) const;
 		typename Image<T_Type, T_NumComp>::Pixel&				operator()(uint x, uint y);
@@ -595,6 +603,15 @@ namespace sibr
 	}
 
 	template<typename T_Type, unsigned int T_NumComp>
+	inline typename Image<T_Type, T_NumComp>::Pixel& Image<T_Type, T_NumComp>::operator()(const sibr::Vector2f & xy) {
+		return operator()((int)xy[0], (int)xy[1]);
+	}
+	template<typename T_Type, unsigned int T_NumComp>
+	inline const typename Image<T_Type, T_NumComp>::Pixel& Image<T_Type, T_NumComp>::operator() (const sibr::Vector2f & xy) const {
+		return operator()((int)xy[0], (int)xy[1]);
+	}
+
+	template<typename T_Type, unsigned int T_NumComp>
 	ColorRGBA	Image<T_Type, T_NumComp>::color(uint x, uint y) const {
 		SIBR_ASSERT(x < w() && y < h());
 		float scale = 1.f / opencv::imageTypeRange<T_Type>();
@@ -895,6 +912,11 @@ namespace sibr
 	*/
 	SIBR_GRAPHICS_EXPORT sibr::ImageRGBA convertNormalMapToSphericalHalf(const sibr::ImageRGB32F & imgF);
 	SIBR_GRAPHICS_EXPORT sibr::ImageRGB32F convertSphericalHalfToNormalMap(const sibr::ImageRGBA & imgF);
+
+	/**
+	* create a 3 channel mat from a single channel mat
+	*/
+	SIBR_GRAPHICS_EXPORT cv::Mat duplicate3(cv::Mat c);
 
 } // namespace sibr
 

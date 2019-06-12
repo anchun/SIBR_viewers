@@ -15,8 +15,10 @@ namespace sibr
 {
 	class SIBR_EXP_RENDERER_EXPORT DepthRenderer
 	{
-
+	
 	public:
+		using Ptr = std::shared_ptr<DepthRenderer>;
+
 		DepthRenderer(int w,int h)  ;
 		~DepthRenderer();
 

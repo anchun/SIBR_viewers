@@ -102,11 +102,18 @@ namespace sibr {
 	{
 		sibr::Vector2f winSize = viewport.finalSize();
 		currentActivePos = pixFromScreenPos(input.mousePosition(), winSize);
+		imagesViewBase->currentActivePos = currentActivePos;
+
 		imgPixelScreenSize = screenPosPixelsFloat({ 0,{ 1,1 } }, winSize) - screenPosPixelsFloat({ 0,{ 0,0 } }, winSize);
+
+		updateCurrentLayer(input);
+
+		if (input.key().isActivated(sibr::Key::LeftShift)) {
+			return;
+		}
 
 		updateZoomBox(input, winSize);
 		//updateCenter(imagesInput, imagesViewSize);
-		updateCurrentLayer(input);
 		updateZoomScroll(input);
 		updateDrag(input, winSize);
 	}
@@ -178,7 +185,11 @@ namespace sibr {
 			std::stringstream ss;
 			ss << "Image : " << currentActivePos.im << ", pixel : " << currentActivePos.pos << std::endl;
 			ImGui::Text(ss.str().c_str());
-			ImGui::Text(imagesPtr[currentLayer][currentActivePos.im]->pixelStr(currentActivePos.pos).c_str());
+			if (currentActivePos.isDefined) {
+				//std::cout << imagesPtr[currentLayer][currentActivePos.im] << std::endl;
+				//std::cout << imagesPtr[currentLayer][currentActivePos.im]->size() << std::endl;
+				ImGui::Text(imagesPtr[currentLayer][currentActivePos.im]->pixelStr(currentActivePos.pos).c_str());
+			}
 			ImGui::Separator();
 		}
 
