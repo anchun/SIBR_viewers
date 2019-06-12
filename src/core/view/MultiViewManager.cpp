@@ -276,7 +276,7 @@ namespace sibr
 			res.x() > 0 ? res.x() : (float)_defaultViewResolution.x(),
 			res.y() > 0 ? res.y() : (float)_defaultViewResolution.y() + ImGui::GetTitleBarHeight());
 		RenderTargetRGB::Ptr rtPtr(new RenderTargetRGB((uint)viewport.finalWidth(), (uint)viewport.finalHeight(), SIBR_CLAMP_UVS));
-		_subViews.insert({ title, {view, rtPtr, viewport, title, flags, !res.isNull(), updateFunc } });
+		_subViews.insert({ title, {view, rtPtr, viewport, title, flags, updateFunc } });
 
 	}
 
@@ -287,7 +287,7 @@ namespace sibr
 			res.x() > 0 ? res.x() : (float)_defaultViewResolution.x(),
 			res.y() > 0 ? res.y() : (float)_defaultViewResolution.y() + ImGui::GetTitleBarHeight());
 		RenderTargetRGB::Ptr rtPtr(new RenderTargetRGB((uint)viewport.finalWidth(), (uint)viewport.finalHeight(), SIBR_CLAMP_UVS));
-		_ibrSubViews.insert({ title, { view, rtPtr, viewport, title, flags, !res.isNull(), updateFunc, defaultFuncUsed } });
+		_ibrSubViews.insert({ title, { view, rtPtr, viewport, title, flags, updateFunc, defaultFuncUsed } });
 
 	}
 

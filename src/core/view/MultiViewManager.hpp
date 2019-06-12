@@ -104,7 +104,7 @@ namespace sibr
 		* \brief Register an IBR subview (for instance an ULRView). It will be rendered via a call to onRenderIBR(rt,cam).
 		* \param title the title of the view.
 		* \param view a pointer to the view.
-		* \param res a custom resolution used for the internal rendering and display. If null, the default value is used.
+		* \param res a custom resolution used for the internal rendering. If null, the default value is used.
 		* \param flags ImGui_WindowFlags to pass to the internal window manager.
 		*/
 		void	addIBRSubView(const std::string& title, ViewBase::Ptr view, 
@@ -120,7 +120,7 @@ namespace sibr
 		*					from 0,0 in the top left corner, key presses and mouse clicks
 		*					only if the cursor is over the view), and the Viewport in the
 		*					OS window. You should return the camera to use during rendering.
-		* \param res a custom resolution used for the internal rendering and display. If null, the default value is used.
+		* \param res a custom resolution used for the internal rendering. If null, the default value is used.
 		* \param flags ImGui_WindowFlags to pass to the internal window manager.
 		*/
 		void	addIBRSubView(const std::string& title, ViewBase::Ptr view,
@@ -206,11 +206,10 @@ namespace sibr
 			sibr::Viewport viewport;
 			std::string name;
 			ImGuiWindowFlags flags;
-			bool forceSizeAtLaunch;
 			bool shouldUpdateLayout;
 
-			SubView(ViewBase::Ptr view_, RenderTargetRGB::Ptr rt_, const sibr::Viewport viewport_, const std::string & name_, const ImGuiWindowFlags flags_, const bool forceSizeAtLaunch_) :
-				view(view_), rt(rt_), handler(), viewport(viewport_), name(name_), flags(flags_), shouldUpdateLayout(forceSizeAtLaunch_) {
+			SubView(ViewBase::Ptr view_, RenderTargetRGB::Ptr rt_, const sibr::Viewport viewport_, const std::string & name_, const ImGuiWindowFlags flags_) :
+				view(view_), rt(rt_), handler(), viewport(viewport_), name(name_), flags(flags_), shouldUpdateLayout(false) {
 				renderFunc = [](ViewBase::Ptr &, const Viewport&, const IRenderTarget::Ptr & ) {};
 			}
 
@@ -220,8 +219,8 @@ namespace sibr
 		struct BasicSubView : SubView {
 			ViewUpdateFonc updateFunc;
 
-			BasicSubView(ViewBase::Ptr view_, RenderTargetRGB::Ptr rt_, const sibr::Viewport viewport_, const std::string & name_, const ImGuiWindowFlags flags_, const bool forceSizeAtLaunch_, ViewUpdateFonc f_) :
-				SubView(view_, rt_, viewport_, name_, flags_, forceSizeAtLaunch_), updateFunc(f_) {
+			BasicSubView(ViewBase::Ptr view_, RenderTargetRGB::Ptr rt_, const sibr::Viewport viewport_, const std::string & name_, const ImGuiWindowFlags flags_, ViewUpdateFonc f_) :
+				SubView(view_, rt_, viewport_, name_, flags_), updateFunc(f_) {
 			}
 
 			virtual void render(const IRenderingMode::Ptr & rm, const Viewport & renderViewport) const override {
@@ -239,8 +238,8 @@ namespace sibr
 			sibr::InputCamera cam;
 			bool defaultUpdateFunc;
 
-			IBRSubView(ViewBase::Ptr view_, RenderTargetRGB::Ptr rt_, const sibr::Viewport viewport_, const std::string & name_, const ImGuiWindowFlags flags_, const bool forceSizeAtLaunch_, IBRViewUpdateFonc f_, const bool defaultUpdateFunc_) :
-				SubView(view_, rt_, viewport_, name_, flags_, forceSizeAtLaunch_), updateFunc(f_), defaultUpdateFunc(defaultUpdateFunc_){
+			IBRSubView(ViewBase::Ptr view_, RenderTargetRGB::Ptr rt_, const sibr::Viewport viewport_, const std::string & name_, const ImGuiWindowFlags flags_, IBRViewUpdateFonc f_, const bool defaultUpdateFunc_) :
+				SubView(view_, rt_, viewport_, name_, flags_), updateFunc(f_), defaultUpdateFunc(defaultUpdateFunc_){
 				cam = sibr::InputCamera();
 			}
 
