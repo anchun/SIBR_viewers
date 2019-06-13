@@ -123,10 +123,19 @@ namespace sibr {
 			}
 			const CameraParametersColmap & camParams = cameraParameters[id];
 
+			/// camPos = translationM * rotationM * worldPos
+			/// Since colmap data is exported in LHS and SIBR expects data in RHS, we need to apply a flip conversion to the coordinate system
+			/// The flip matrix is given by converter [1 0 0; 0 -1 0; 0 0 -1]
+			/// and the operation applied is:
+			/// camPos = (flipM * translationM) * (flipM * rotationM) * worldPos
+			/// Thus we store the camera matrix as: [orientation | translation]
+			/// where,
+			/// orientation = flipM * rotationM, and
+			/// translation = flipM * translationM
+
 			const sibr::Quaternionf quat(qw, qx, qy, qz);
-			const sibr::Matrix3f orientation = converter.transpose() * quat.toRotationMatrix().transpose() * converter;
+			const sibr::Matrix3f orientation = quat.toRotationMatrix().transpose() * converter;
 			sibr::Vector3f position(tx, ty, tz);
-			//position = -(orientation * converter.transpose() * position);
 
 			// populate image infos
 			infos.filename = imageName;
@@ -140,14 +149,14 @@ namespace sibr {
 			m(0) = camParams.fy;
 			m(1) = 0.0f;
 			m(2) = 0.0f;
-			sibr::Matrix3f finRotation = orientation.transpose();
+
 			for (int i = 0; i < 9; i++) {
-				m(3 + i) = finRotation(i);
+				m(3 + i) = orientation(i);
 			}
 			
-			sibr:Vector3f finTrans = converter.transpose() * position;
+			sibr:Vector3f finTrans = converter * position;
 			for (int i = 0; i < 3; i++) {
-				m(12 + i) = finTrans[i];
+				m(12 + i) = finTrans(i);
 			}
 
 			_outputCamsMatrix.push_back(m);

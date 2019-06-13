@@ -41,18 +41,8 @@ namespace sibr
 		// setup calibrated cameras
 		_cams.reset(new CalibratedCameras());
 
-
-#if false
 		_cams->sibr::CalibratedCameras::setupFromData(_data);
 
-#else
-		if (_data->datasetType() == "bundler") {
-			_cams->sibr::CalibratedCameras::setupFromData(_data);
-		}
-		else if (_data->datasetType() == "colmap") {
-			_cams->setupCamerasFromExisting(sibr::InputCamera::loadColmap(_data->basePathName()+"/sparse/"));
-		}
-#endif
 		std::cout << "Number of Cameras set up: " << _cams->inputCameras().size() << std::endl;
 
 		// load input images

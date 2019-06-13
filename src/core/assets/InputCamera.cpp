@@ -558,8 +558,6 @@ namespace sibr
 			float       tz = std::stof(tokens[7]);
 
 			std::string imageName = tokens[9];
-			/*const std::string::size_type dotPos = imageName.find_last_of(".");
-			imageName = imageName.substr(0, dotPos);*/
 
 			if (cameraParameters.find(id) == cameraParameters.end())
 			{
