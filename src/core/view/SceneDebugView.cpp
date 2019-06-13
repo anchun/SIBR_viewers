@@ -884,7 +884,7 @@ namespace sibr
 			gui_cameras();
 		}
 		ImGui::End();
-		camera_handler.fpsCamera().onGUI("Top view camera settings");
+		
 	}
 
 	void TopView::save()
@@ -912,7 +912,7 @@ namespace sibr
 	void TopView::gui_options()
 	{
 		if (ImGui::CollapsingHeader("OptionsTopView##", ImGuiTreeNodeFlags_DefaultOpen)) {
-			if (ImGui::Button("Save camera")) {
+			if (ImGui::Button("Save topview")) {
 				save();
 			}
 
@@ -933,16 +933,9 @@ namespace sibr
 				ImGui::SliderFloat("Alpha", &_alphaImage, 0, 1.0);
 			}
 
-			if (_scene && ImGui::InputInt("Snap To", &_snapToImage, 1, 10)) {
-				if (_snapToImage < 0) {
-					_snapToImage = 0;
-				}
-				if (_snapToImage >= _cameras.size()) {
-					_snapToImage = int(_cameras.size() - 1);
-				}
-				camera_handler.snapToCamera(_snapToImage);
-			}
+			
 
+			camera_handler.onGUI("Top view settings");
 			ImGui::PopItemWidth();
 			ImGui::Separator();
 		}
