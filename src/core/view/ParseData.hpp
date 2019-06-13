@@ -1,9 +1,10 @@
 #pragma once
 #include "core/view/Config.hpp"
+#include "core/system/CommandLineArgs.hpp"
 #include <vector>
-# include "core/system/Matrix.hpp"
-# include "core/assets/ImageListFile.hpp"
-# include "core/assets/InputCamera.hpp"
+#include "core/system/Matrix.hpp"
+#include "core/assets/ImageListFile.hpp"
+#include "core/assets/InputCamera.hpp"
 
 namespace sibr{
 
@@ -23,6 +24,19 @@ namespace sibr{
 	class SIBR_VIEW_EXPORT ParseData{
 		
 	public:
+
+
+		struct CameraParametersColmap {
+			size_t id;
+			size_t width;
+			size_t height;
+			float  fx;
+			float  fy;
+			float  dx;
+			float  dy;
+		};
+
+
 		/**
 		* \brief Pointer to the instance of class sibr::ParseData.
 		*/
@@ -33,7 +47,22 @@ namespace sibr{
 		* \param dataset_path Path to the folder containing data
 		* \param scene_metadata_filename Specify the filename of the Scene Metadata file to load specific scene
 		*/
-		void  getParsedData(const std::string & dataset_path, const std::string & scene_metadata_filename);
+		void  getParsedBundlerData(const std::string & dataset_path, const std::string & scene_metadata_filename);
+
+
+		/**
+		* \brief Function to parse data from a colmap dataset path.
+		* \param dataset_path Path to the folder containing data
+		* \param scene_metadata_filename Specify the filename of the Scene Metadata file to load specific scene
+		*/
+		void  getParsedColmapData(const std::string & dataset_path);
+
+		/**
+		* \brief Function to parse data from a colmap dataset path.
+		* \param dataset_path Path to the folder containing data
+		* \param scene_metadata_filename Specify the filename of the Scene Metadata file to load specific scene
+		*/
+		void  getParsedData(const BasicIBRAppArgs & myArgs);
 
 		/**
 		* \brief Getter for the information regarding the input images.
@@ -83,6 +112,17 @@ namespace sibr{
 		*/
 		const std::string&								basePathName(void) const;
 		
+		/**
+		* \brief Getter for the mesh path where the dataset is located.
+		*
+		*/
+		const std::string&								meshPath(void) const;
+
+		/**
+		* \brief Getter for the mesh path where the dataset is located.
+		*
+		*/
+		const std::string&								datasetType(void) const;
 
 
 	protected:
@@ -99,19 +139,28 @@ namespace sibr{
 		*/
 		bool parseBundlerFile(const std::string & bundler_file_path);
 
+		/**
+		* \brief Function to parse the colmap sparse data files to read camera and image data.
+		*
+		*/
+		bool parseColmapSparseData(const std::string & scene_sparse_path);
+
+
 		std::string									_basePathName;
+		std::string									_meshPath;
 		std::vector<sibr::ImageListFile::Infos>		_imgInfos;
 		std::vector<bool>							_activeImages;
 		std::vector<bool>							_excludeImages;
 		std::vector<Matrix4f>						_outputCamsMatrix;
 		int											_numCameras;
 		std::vector<InputCamera::Z>					_nearsFars;
+		std::string									_dataset_type;
 		
 	};
 
 
 	///// INLINE DEFINITIONS /////
-
+	
 	inline const std::vector<sibr::ImageListFile::Infos>&	ParseData::imgInfos(void) const {
 		return _imgInfos;
 	}
@@ -141,5 +190,15 @@ namespace sibr{
 	inline const std::string & ParseData::basePathName(void) const
 	{
 		return _basePathName;
+	}
+
+	inline const std::string & ParseData::meshPath(void) const
+	{
+		return _meshPath;
+	}
+
+	inline const std::string & ParseData::datasetType(void) const
+	{
+		return _dataset_type;
 	}
 }
