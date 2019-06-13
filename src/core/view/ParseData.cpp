@@ -135,7 +135,7 @@ namespace sibr {
 			infos.width = camParams.width;
 			infos.height = camParams.height;
 
-			_imgInfos[id] = infos;
+			_imgInfos[camid] = infos;
 
 			// populate output camera matrices
 			Matrix4f &m = _outputCamsMatrix[camParams.id];
@@ -153,6 +153,7 @@ namespace sibr {
 			}
 
 			// Skip the observations.
+			camid++;
 			std::getline(imagesFile, line);
 		}
 
