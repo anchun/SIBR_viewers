@@ -84,9 +84,7 @@ namespace sibr {
 
 		}
 
-		_numCameras = cameraParameters.size();
-		_outputCamsMatrix.resize(_numCameras);
-		_imgInfos.resize(_numCameras);
+
 		// Now load the individual images and their extrinsic parameters
 		sibr::Matrix3f converter;
 		converter << 1, 0, 0,
@@ -135,10 +133,10 @@ namespace sibr {
 			infos.width = camParams.width;
 			infos.height = camParams.height;
 
-			_imgInfos[camid] = infos;
+			_imgInfos.push_back(infos);
 
 			// populate output camera matrices
-			Matrix4f &m = _outputCamsMatrix[camParams.id];
+			Matrix4f m;
 			m(0) = camParams.fy;
 			m(1) = 0.0f;
 			m(2) = 0.0f;
@@ -152,10 +150,14 @@ namespace sibr {
 				m(12 + i) = finTrans[i];
 			}
 
+			_outputCamsMatrix.push_back(m);
+
 			// Skip the observations.
 			camid++;
 			std::getline(imagesFile, line);
 		}
+
+		_numCameras = camid;
 
 		if (_activeImages.size() == 0) {
 			_activeImages.resize(_imgInfos.size());
