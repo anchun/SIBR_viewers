@@ -113,7 +113,8 @@ namespace sibr
 	Window::Window(uint w, uint h, const std::string& title, const WindowArgs & args) 
 		: _useGUI(!args.no_gui), _shouldClose(false) 
 	{
-		setup(args.win_width, args.win_height, title, args);
+		
+		setup(w, h, title, args);
 
 		if (!(args.fullscreen)) {
 			glfwSetWindowPos(_glfwWin.get(), 200, 200);

@@ -18,7 +18,7 @@ struct CameraInfos
   vec3 dir;
 };
 // They are stored in a contiguous buffer (UBO), lifting most limitations on the number of uniforms.
-layout(std140, binding=0) uniform InputCameras
+layout(std140, binding=4) uniform InputCameras
 {
   CameraInfos cameras[NUM_CAMS];
 };

@@ -82,7 +82,7 @@ namespace sibr {
 		ImGui::NextColumn();
 
 		//rendering options
-		if (ImGui::Selectable(("##Options" + name).c_str())) {
+		if (ImGui::ArrowButton(("##OptionsArrow" + name).c_str(), ImGuiDir_Down)) {
 			ImGui::OpenPopup(("##Options_popup_" + name).c_str());
 		}	
 		if (ImGui::BeginPopup(("##Options_popup_" + name).c_str())) {
@@ -297,7 +297,7 @@ namespace sibr {
 
 	void MultiMeshManager::onUpdate(Input & input, const Viewport & vp)
 	{
-		if (!cam_is_init && list_meshes.size() > 0) {
+		if (!camera_handler.isSetup() && list_meshes.size() > 0) {
 			for (const auto & mesh_data : list_meshes) {
 				if (mesh_data.raycaster && mesh_data.meshPtr) {
 					auto bbox = mesh_data.meshPtr->getBoundingBox();
@@ -306,14 +306,13 @@ namespace sibr {
 						TrackBall tb;
 						tb.fromBoundingBox(bbox, vp);
 						camera_handler.fromCamera(tb.getCamera());
-						cam_is_init = true;
 						break;
 					}
 				}
 			}
 		}
 
-		if (cam_is_init && !camera_handler.getRaycaster()) {
+		if (camera_handler.isSetup() && !camera_handler.getRaycaster()) {
 			for (const auto & mesh : list_meshes) {
 				if (mesh.raycaster) {
 					camera_handler.getRaycaster() = mesh.raycaster;
@@ -453,6 +452,12 @@ namespace sibr {
 					mesh.active = !mesh.active;
 				}
 			}
+			ImGui::SameLine();
+			if (ImGui::Button("All##MeshesList")) {
+				for (auto & mesh : list_meshes) {
+					mesh.active = true;
+				}
+			}
 			ImGui::NextColumn();
 
 			ImGui::Text("Mode");
@@ -482,7 +487,7 @@ namespace sibr {
 			selected_mesh_it_is_valid = false;
 			for (auto mesh_it = list_meshes.begin(); mesh_it != list_meshes.end(); ++mesh_it) {
 				auto & mesh = *mesh_it;
-				if (ImGui::Selectable(mesh.name.c_str(), mesh_it == selected_mesh_it)) {
+				if (ImGui::Selectable(mesh.name.c_str(), (selected_mesh_it_is_valid && mesh_it == selected_mesh_it))) {
 					selected_mesh_it = mesh_it;
 					selected_mesh_it_is_valid = true;
 				}
@@ -654,6 +659,7 @@ namespace sibr {
 			data.raycaster = raycaster;
 
 			list_meshes.push_back(data);
+
 
 			auto box = data.meshPtr->getBoundingBox();
 			if (!box.isEmpty()) {

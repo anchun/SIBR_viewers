@@ -276,7 +276,7 @@ namespace sibr
 			res.x() > 0 ? res.x() : (float)_defaultViewResolution.x(),
 			res.y() > 0 ? res.y() : (float)_defaultViewResolution.y() + ImGui::GetTitleBarHeight());
 		RenderTargetRGB::Ptr rtPtr(new RenderTargetRGB((uint)viewport.finalWidth(), (uint)viewport.finalHeight(), SIBR_CLAMP_UVS));
-		_subViews.insert({ title, {view, rtPtr, viewport, title, flags, !res.isNull(), updateFunc } });
+		_subViews.insert({ title, {view, rtPtr, viewport, title, flags, updateFunc } });
 
 	}
 
@@ -287,7 +287,7 @@ namespace sibr
 			res.x() > 0 ? res.x() : (float)_defaultViewResolution.x(),
 			res.y() > 0 ? res.y() : (float)_defaultViewResolution.y() + ImGui::GetTitleBarHeight());
 		RenderTargetRGB::Ptr rtPtr(new RenderTargetRGB((uint)viewport.finalWidth(), (uint)viewport.finalHeight(), SIBR_CLAMP_UVS));
-		_ibrSubViews.insert({ title, { view, rtPtr, viewport, title, flags, !res.isNull(), updateFunc, defaultFuncUsed } });
+		_ibrSubViews.insert({ title, { view, rtPtr, viewport, title, flags, updateFunc, defaultFuncUsed } });
 
 	}
 
@@ -317,6 +317,20 @@ namespace sibr
 		SIBR_ERR << " No subview with name <" << title << "> found." << std::endl;
 
 		return _subViews.begin()->second.view;
+	}
+
+	Viewport & MultiViewManager::getIBRSubViewport(const std::string & title)
+	{
+		if (_subViews.count(title) > 0) {
+			return _subViews.at(title).viewport;
+		}
+		else if (_ibrSubViews.count(title) > 0) {
+			return _ibrSubViews.at(title).viewport;
+		}
+
+		SIBR_ERR << " No subviewport with name <" << title << "> found." << std::endl;
+
+		return _subViews.begin()->second.viewport;
 	}
 
 	void MultiViewManager::renderSubView(SubView & subview) const

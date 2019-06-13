@@ -177,7 +177,7 @@ namespace sibr {
 			_orbit.keepCamera = false;
 		}
 
-		_currentCamera = n;
+		_currentCamera = sibr::InputCamera(n, _currentCamera.w(), _currentCamera.h());
 	}
 
 	void Orbit::updateOrbitParameters(const sibr::Input& input, std::shared_ptr<sibr::Raycaster> raycaster)

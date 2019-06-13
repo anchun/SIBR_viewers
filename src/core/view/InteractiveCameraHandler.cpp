@@ -97,8 +97,8 @@ namespace sibr {
 			zFar = (zFar<0 || cam.zfar() > zFar ? cam.zfar() : zFar);
 			zNear = (zNear < 0 || cam.znear() < zNear ? cam.znear() : zNear);
 		}
-		idealCam.zfar(zFar*2.0f);
-		idealCam.znear(zNear*0.02f);
+		idealCam.zfar(zFar*1.1f);
+		idealCam.znear(zNear*0.9f);
 		SIBR_LOG << "Interactive camera using (" << zNear << "," << zFar << ") near/far planes." << std::endl;
 
 		setup(idealCam, viewport, raycaster);
@@ -255,7 +255,8 @@ namespace sibr {
 
 		sibr::InputCamera & camStart = _interpPath[_startCam];
 		sibr::InputCamera & camNext = _interpPath[_startCam + 1];
-		_currentCamera = sibr::Camera::interpolate(camStart, camNext, k);
+		const sibr::Camera cam = sibr::Camera::interpolate(camStart, camNext, k);
+		_currentCamera = sibr::InputCamera(cam, camStart.w(), camStart.h());
 		_currentCamera.aspect(_viewport.finalWidth() / _viewport.finalHeight());
 
 
@@ -413,7 +414,8 @@ namespace sibr {
 			}
 
 			if (_shouldSmooth && _currentMode != INTERPOLATION) {
-				_currentCamera = sibr::Camera::interpolate(_previousCamera, _currentCamera, IBRVIEW_SMOOTHCAM_POWER);
+				const sibr::Camera newcam = sibr::Camera::interpolate(_previousCamera, _currentCamera, IBRVIEW_SMOOTHCAM_POWER);
+				_currentCamera = sibr::InputCamera(newcam, _currentCamera.w(), _currentCamera.h());
 			}
 
 		}
