@@ -46,7 +46,7 @@ namespace sibr {
 	{
 		std::string selectedFile = datasetPath;
 
-		selectedFile.append("default_camera.bin");
+		selectedFile.append("/default_camera.bin");
 		_currentCamera.saveToBinary(selectedFile);
 		SIBR_LOG << "Saved camera (" << selectedFile << ")." << std::endl;
 	}
@@ -54,11 +54,11 @@ namespace sibr {
 	void InteractiveCameraHandler::loadDefaultCamera(const sibr::InputCamera& cam, const std::string& datasetPath)
 	{
 		sibr::InputCamera savedCam;
-		std::ifstream camFile(datasetPath + "default_camera.bin");
+		std::ifstream camFile(datasetPath + "/default_camera.bin");
 		fromCamera(cam, false);
 		if (camFile.good()) {
-			savedCam.loadFromBinary(datasetPath + "default_camera.bin");
-			SIBR_LOG << "Loaded  " << datasetPath << "default_camera.bin" << std::endl;
+			savedCam.loadFromBinary(datasetPath + "/default_camera.bin");
+			SIBR_LOG << "Loaded  " << datasetPath << "/default_camera.bin" << std::endl;
 			fromCamera(savedCam, false);
 		}
 	}
