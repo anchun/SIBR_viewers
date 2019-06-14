@@ -48,7 +48,7 @@ namespace sibr
 	struct SIBR_VIEW_EXPORT CameraInfos {
 		CameraInfos(const InputCamera& cam, uint id, bool highlight);
 
-		InputCamera cam;
+		const InputCamera & cam;
 		uint id = 0;
 		bool highlight = false;
 	};
