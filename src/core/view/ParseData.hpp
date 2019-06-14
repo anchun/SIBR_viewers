@@ -57,9 +57,8 @@ namespace sibr{
 		void  getParsedColmapData(const std::string & dataset_path);
 
 		/**
-		* \brief Function to parse data from a colmap dataset path.
-		* \param dataset_path Path to the folder containing data
-		* \param scene_metadata_filename Specify the filename of the Scene Metadata file to load specific scene
+		* \brief Function to parse data from a dataset path. Will automatically determine the type of dataset based on the files present.
+		* \param myArgs Arguments containing the dataset path and other infos
 		*/
 		void  getParsedData(const BasicIBRAppArgs & myArgs);
 
