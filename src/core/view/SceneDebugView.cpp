@@ -207,7 +207,6 @@ namespace sibr
 
 		_scene = scene;
 		_userCurrentCam = camHandler;
-		//camera_handler.setup(_scene->proxies()->proxy().clone(), viewport);
 
 		if (!_scene->cameras()->inputCameras().empty()) {
 			camera_handler.updateView(_scene->cameras()->inputCameras()[0]);
@@ -219,7 +218,6 @@ namespace sibr
 
 		setup();
 
-		//camera_handler.switchMode(InteractiveCameraHandler::InteractionMode::TRACKBALL);
 
 	}
 

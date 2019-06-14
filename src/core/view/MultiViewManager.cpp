@@ -70,13 +70,9 @@ namespace sibr
 				fView.cam = fView.updateFunc(fView.view, subInput, fView.viewport, _deltaTime);
 
 				/// If we use the default update func and the integrated handler, 
-				/// we have to use the handler's camera, and update the potentially existing scene accordingly.
-				/// \todo TODO: find a way to perform a similar update for streaming views.
+				/// we have to use the handler's camera.
 				if (fView.defaultUpdateFunc && fView.handler) {
 					fView.cam = fView.handler->getCamera();
-					/*if (fView.view->getScenePtr()) {
-						fView.view->scene().userCamera(fView.cam);
-					}*/
 				}
 
 			}
