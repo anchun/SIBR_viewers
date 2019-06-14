@@ -168,21 +168,21 @@ namespace sibr {
 
 		_numCameras = camid;
 
-		if (_activeImages.size() == 0) {
+		if (_activeImages.empty()) {
 			_activeImages.resize(_imgInfos.size());
 
 			for (int i = 0; i < _imgInfos.size(); i++)
 				_activeImages[i] = true;
 		}
 
-		if (_excludeImages.size() == 0) {
+		if (_excludeImages.empty()) {
 			_excludeImages.resize(_imgInfos.size());
 
 			for (int i = 0; i < _imgInfos.size(); i++)
 				_excludeImages[i] = false;
 		}
 
-		if (_nearsFars.size() == 0) {
+		if (_nearsFars.empty()) {
 			_nearsFars.resize(_numCameras);
 
 			for (int i = 0; i < _numCameras; i++) {
@@ -290,14 +290,14 @@ namespace sibr {
 			}
 		}
 		//std::cout << _imgInfos.size() << std::endl;
-		if (_activeImages.size() == 0) {
+		if (_activeImages.empty()) {
 			_activeImages.resize(_imgInfos.size());
 
 			for (int i = 0; i < _imgInfos.size(); i++)
 				_activeImages[i] = true;
 		}
 
-		if (_excludeImages.size() == 0) {
+		if (_excludeImages.empty()) {
 			_excludeImages.resize(_imgInfos.size());
 
 			for (int i = 0; i < _imgInfos.size(); i++)
@@ -342,15 +342,15 @@ namespace sibr {
 	void ParseData::getParsedData(const BasicIBRAppArgs & myArgs)
 	{
 		std::ifstream bundler(myArgs.dataset_path.get() + "/" + myArgs.scene_metadata_filename.get());
-		std::ifstream colmap(myArgs.dataset_path.get() + "/colmap/stereo/sparse/cameras.txt");
 		if (bundler.good()) {
 			getParsedBundlerData(myArgs.dataset_path, myArgs.scene_metadata_filename);
-			_dataset_type = "bundler";
+			_datasetType = Type::SIBR;
 		}
 
+		std::ifstream colmap(myArgs.dataset_path.get() + "/colmap/stereo/sparse/cameras.txt");
 		if (colmap.good()) {
 			getParsedColmapData(myArgs.dataset_path);
-			_dataset_type = "colmap";
+			_datasetType = Type::COLMAP;
 		}
 
 	}
