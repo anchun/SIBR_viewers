@@ -520,7 +520,7 @@ namespace sibr
 			}
 
 			CameraParametersColmap params;
-			params.id = std::stol(tokens[0]);
+			params.id = std::stol(tokens[0]) - 1;
 			params.width = std::stol(tokens[2]);
 			params.height = std::stol(tokens[3]);
 			params.fx = std::stof(tokens[4]);
@@ -548,7 +548,7 @@ namespace sibr
 				SIBR_WRG << "Unknown line." << std::endl;
 				continue;
 			}
-			size_t      id = std::stol(tokens[8]);
+			size_t      id = std::stol(tokens[8]) - 1;
 			float       qw = std::stof(tokens[1]);
 			float       qx = std::stof(tokens[2]);
 			float       qy = std::stof(tokens[3]);
@@ -558,8 +558,6 @@ namespace sibr
 			float       tz = std::stof(tokens[7]);
 
 			std::string imageName = tokens[9];
-			const std::string::size_type dotPos = imageName.find_last_of(".");
-			imageName = imageName.substr(0, dotPos);
 
 			if (cameraParameters.find(id) == cameraParameters.end())
 			{
@@ -569,14 +567,15 @@ namespace sibr
 			const CameraParametersColmap & camParams = cameraParameters[id];
 
 			const sibr::Quaternionf quat(qw, qx, qy, qz);
-			const sibr::Matrix3f orientation = converter.transpose() * quat.toRotationMatrix().transpose() * converter;
-			sibr::Vector3f position(tx, ty, tz);
-			position = -(orientation * converter.transpose() * position);
+			const sibr::Matrix3f orientation =  quat.toRotationMatrix().transpose() * converter;
+			sibr::Vector3f translation(tx, ty, tz);
+			
+			sibr::Vector3f position = -(orientation * converter * translation);
 
 			sibr::InputCamera camera(camParams.fy, 0.0f, 0.0f, camParams.width, camParams.height, camid);
 			camera.name(imageName);
 			camera.position(position);
-			camera.rotation(sibr::Quaternionf(orientation));
+			camera.rotation( sibr::Quaternionf(orientation));
 			camera.znear(zNear);
 			camera.zfar(zFar);
 			cameras.push_back(camera);

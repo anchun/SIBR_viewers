@@ -15,17 +15,24 @@ namespace sibr
 	BasicIBRScene::BasicIBRScene(const BasicIBRAppArgs & myArgs, bool noRTs)
 	{
 
+		_cams.reset(new CalibratedCameras());
+		_imgs.reset(new InputImages());
+		_proxies.reset(new ProxyMesh());
+		_renderTargets.reset(new RenderTargetTextures());
+
 		// parse metadata file
 		_data.reset(new ParseData());
 		
 
-		_data->ParseData::getParsedData(myArgs.dataset_path, myArgs.scene_metadata_filename);
+		_data->ParseData::getParsedData(myArgs);
 		std::cout << "Number of input Images to read: " << _data->imgInfos().size() << std::endl;
 
 		if (_data->imgInfos().size() != _data->numCameras())
 			SIBR_ERR << "List Image file size do not match number of input cameras in Bundle file!" << std::endl;
 
-		createFromData(noRTs, myArgs.texture_width);
+		if (!_data->datasetType().empty()) {
+			createFromData(noRTs, myArgs.texture_width);
+		}
 
 		_userCamera.aspect((float)myArgs.rendering_size.get()[0] / (float)myArgs.rendering_size.get()[1]);
 	}
@@ -40,7 +47,9 @@ namespace sibr
 	{
 		// setup calibrated cameras
 		_cams.reset(new CalibratedCameras());
+
 		_cams->sibr::CalibratedCameras::setupFromData(_data);
+
 		std::cout << "Number of Cameras set up: " << _cams->inputCameras().size() << std::endl;
 
 		// load input images

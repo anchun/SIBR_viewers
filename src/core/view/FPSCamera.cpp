@@ -87,9 +87,9 @@ namespace sibr {
 			ImGui::PushScaledItemWidth(100);
 			ImGui::Checkbox("Acceleration", &_useAcceleration);
 			if(!_useAcceleration) {
-				ImGui::InputFloat("Speed", &_speedFpsCam);
+				ImGui::InputFloat("Speed", &_speedFpsCam, 0.1f, 0.5f);
 			}
-			ImGui::InputFloat("Rot. speed", &_speedRotFpsCam);
+			ImGui::InputFloat("Rot. speed", &_speedRotFpsCam, 0.1f, 0.5f);
 			ImGui::PopItemWidth();
 		}
 		ImGui::End();

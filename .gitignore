@@ -23,7 +23,7 @@ docs/doxygen/CompiledDocs/
 *.swo
 *.ini
 *.idea/
-
+*.log
 
 hs_err_*
 
