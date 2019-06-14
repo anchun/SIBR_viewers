@@ -352,5 +352,6 @@ namespace sibr {
 			getParsedColmapData(myArgs.dataset_path);
 			_dataset_type = "colmap";
 		}
+
 	}
 }
