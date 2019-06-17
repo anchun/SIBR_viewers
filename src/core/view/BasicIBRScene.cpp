@@ -30,7 +30,7 @@ namespace sibr
 		if (_data->imgInfos().size() != _data->numCameras())
 			SIBR_ERR << "List Image file size do not match number of input cameras in Bundle file!" << std::endl;
 
-		if (!_data->datasetType().empty()) {
+		if (_data->datasetType() != ParseData::Type::EMPTY) {
 			createFromData(noRTs, myArgs.texture_width);
 		}
 

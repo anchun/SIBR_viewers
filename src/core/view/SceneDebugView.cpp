@@ -207,10 +207,9 @@ namespace sibr
 
 		_scene = scene;
 		_userCurrentCam = camHandler;
-		//camera_handler.setup(_scene->proxies()->proxy().clone(), viewport);
 
 		if (!_scene->cameras()->inputCameras().empty()) {
-			camera_handler.updateView(_scene->cameras()->inputCameras()[0]);
+			camera_handler.fromTransform(_scene->cameras()->inputCameras()[0].transform(), true, false);
 			camera_handler.setupInterpolationPath(_scene->cameras()->inputCameras());
 		}
 
@@ -218,9 +217,6 @@ namespace sibr
 		camera_path = myArgs.dataset_path.get() + "/cameras";
 
 		setup();
-
-		//camera_handler.switchMode(InteractiveCameraHandler::InteractionMode::TRACKBALL);
-
 	}
 
 	void SceneDebugView::onUpdate(Input & input, const float deltaTime, const Viewport & viewport)

@@ -83,8 +83,11 @@ namespace sibr {
 		/// Show debug weights.
 		bool & showWeights() { return _showWeights.get(); }
 
-		/// Set winn takes all weights strategy
-		bool & winnerTakesAll() { return _winner_takes_all.get(); }
+		/// Set winner takes all weights strategy
+		bool & winnerTakesAll() { return _winnerTakesAll.get(); }
+
+		/// Apply gamma correction to the output.
+		bool & gammaCorrection() { return _gammaCorrection.get(); }
 
 		/** Resize the internal rendertargets.
 		 *\param w the new width
@@ -140,7 +143,8 @@ namespace sibr {
 			_invertMasks = false,
 			_flipRGBs = false,
 			_showWeights = false,
-			_winner_takes_all = false;
+			_winnerTakesAll = false,
+			_gammaCorrection = false;
 
 		size_t _maxNumCams = 0;
 		GLuniform<int> _camsCount = 0;

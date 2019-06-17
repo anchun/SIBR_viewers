@@ -129,7 +129,6 @@ std::cerr <<"End of render pass 1" << std::endl;
 		// setup left eye
 		leye.setStereoCam(true, _focalDist, _eyeDist);
 		_leftRT->bind();
-		/*view.scene().userCamera(leye);*/
 		if( _clear )  {
 			viewport.clear();
 			view.preRender(*_leftRT);
@@ -148,7 +147,6 @@ std::cerr <<"End of render pass 1" << std::endl;
 
 		// render right eye
 		_rightRT->bind();
-		/*view.scene().userCamera(reye);*/
 		if( _clear ) {
 			viewport.clear();
 			view.preRender(*_rightRT);

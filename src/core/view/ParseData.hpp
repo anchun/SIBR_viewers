@@ -8,6 +8,10 @@
 
 namespace sibr{
 
+
+	
+
+
 	/**
 	* Class used to hold the data required for defining an IBR Scene
 	* 
@@ -25,17 +29,13 @@ namespace sibr{
 		
 	public:
 
-
-		struct CameraParametersColmap {
-			size_t id;
-			size_t width;
-			size_t height;
-			float  fx;
-			float  fy;
-			float  dx;
-			float  dy;
+		/**
+		 * \brief Denotes the type of dataset represented by a ParseData object.
+		* \ingroup sibr_view
+		*/
+		enum class Type {
+			EMPTY, SIBR, COLMAP
 		};
-
 
 		/**
 		* \brief Pointer to the instance of class sibr::ParseData.
@@ -61,13 +61,14 @@ namespace sibr{
 		* 
 		* For further compatibility with FrIBR, which enforces a Y-up RHS coordinate system, we need to apply an extra conversion to the rotation matrix, to 'flip back' from y-down to y-up.
 		* \note Note: when applying the above mentioned conversion, the mesh needs to be converted by the same converter matrix
+		* \brief Function to parse data from a colmap dataset path.
+		* \param dataset_path Path to the folder containing data
 		*/
 		void  getParsedColmapData(const std::string & dataset_path);
 
 		/**
-		* \brief Function to parse data from a colmap dataset path.
-		* \param dataset_path Path to the folder containing data
-		* \param scene_metadata_filename Specify the filename of the Scene Metadata file to load specific scene
+		* \brief Function to parse data from a dataset path. Will automatically determine the type of dataset based on the files present.
+		* \param myArgs Arguments containing the dataset path and other infos
 		*/
 		void  getParsedData(const BasicIBRAppArgs & myArgs);
 
@@ -129,10 +130,20 @@ namespace sibr{
 		* \brief Getter for the mesh path where the dataset is located.
 		*
 		*/
-		const std::string&								datasetType(void) const;
+		const ParseData::Type&								datasetType(void) const;
 
 
 	protected:
+
+		struct CameraParametersColmap {
+			size_t id;
+			size_t width;
+			size_t height;
+			float  fx;
+			float  fy;
+			float  dx;
+			float  dy;
+		};
 
 		/**
 		* \brief Function to parse the scene metadata file to read image data.
@@ -161,7 +172,7 @@ namespace sibr{
 		std::vector<Matrix4f>						_outputCamsMatrix;
 		int											_numCameras;
 		std::vector<InputCamera::Z>					_nearsFars;
-		std::string									_dataset_type;
+		Type										_datasetType = Type::EMPTY;
 		
 	};
 
@@ -204,8 +215,8 @@ namespace sibr{
 		return _meshPath;
 	}
 
-	inline const std::string & ParseData::datasetType(void) const
+	inline const ParseData::Type & ParseData::datasetType(void) const
 	{
-		return _dataset_type;
+		return _datasetType;
 	}
 }

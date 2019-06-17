@@ -46,7 +46,7 @@ namespace sibr {
 	{
 		std::string selectedFile = datasetPath;
 
-		selectedFile.append("default_camera.bin");
+		selectedFile.append("/default_camera.bin");
 		_currentCamera.saveToBinary(selectedFile);
 		SIBR_LOG << "Saved camera (" << selectedFile << ")." << std::endl;
 	}
@@ -54,11 +54,11 @@ namespace sibr {
 	void InteractiveCameraHandler::loadDefaultCamera(const sibr::InputCamera& cam, const std::string& datasetPath)
 	{
 		sibr::InputCamera savedCam;
-		std::ifstream camFile(datasetPath + "default_camera.bin");
+		std::ifstream camFile(datasetPath + "/default_camera.bin");
 		fromCamera(cam, false);
 		if (camFile.good()) {
-			savedCam.loadFromBinary(datasetPath + "default_camera.bin");
-			SIBR_LOG << "Loaded  " << datasetPath << "default_camera.bin" << std::endl;
+			savedCam.loadFromBinary(datasetPath + "/default_camera.bin");
+			SIBR_LOG << "Loaded  " << datasetPath << "/default_camera.bin" << std::endl;
 			fromCamera(savedCam, false);
 		}
 	}
@@ -152,18 +152,11 @@ namespace sibr {
 		}
 	}
 
-	void InteractiveCameraHandler::fromTransform(const Transform3f & transform, bool _interpolate, bool _updateResolution)
+	void InteractiveCameraHandler::fromTransform(const Transform3f & transform, bool interpolate, bool updateResolution)
 	{
 		InputCamera camCopy = getCamera();
 		camCopy.transform(transform);
-		fromCamera(camCopy, _interpolate, _updateResolution);
-	}
-
-	void InteractiveCameraHandler::updateView(const sibr::InputCamera & cam)
-	{
-		sibr::InputCamera newCam = _currentCamera;
-		newCam.transform(cam.transform());
-		fromCamera(newCam, true, false);
+		fromCamera(camCopy, interpolate, updateResolution);
 	}
 
 	void InteractiveCameraHandler::switchMode(const InteractionMode mode) {
@@ -190,6 +183,7 @@ namespace sibr {
 			break;
 		case NONE:
 			std::cout << "none";
+			break;
 		case FPS:
 		default:
 			std::cout << "fps&pan";

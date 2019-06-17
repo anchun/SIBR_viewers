@@ -6,8 +6,8 @@ namespace sibr {
 	void ProxyMesh::loadFromData(const ParseData::Ptr & data)
 	{
 		_proxy.reset(new Mesh());
-		if (1 && !_proxy->load(data->meshPath())) {
-			SIBR_ERR << "proxy model not found at " << data->basePathName() + "/meshes/" << std::endl;
+		if (!_proxy->load(data->meshPath())) {
+			SIBR_ERR << "proxy model not found at " << data->meshPath() << std::endl;
 		}
 		if (!_proxy->hasNormals()) {
 			SIBR_WRG << "generating normals for the proxy (no normals found in the proxy file)" << std::endl;
@@ -25,7 +25,7 @@ namespace sibr {
 		_proxy->texCoords(newProxy->texCoords());
 
 		// Used by inputImageRT init() and debug rendering
-		if (_proxy->hasNormals() == false)
+		if (!_proxy->hasNormals())
 		{
 			SIBR_WRG << "generating normals for the proxy (no normals found in the proxy file)" << std::endl;
 			_proxy->generateNormals();
