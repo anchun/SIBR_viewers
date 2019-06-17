@@ -152,18 +152,11 @@ namespace sibr {
 		}
 	}
 
-	void InteractiveCameraHandler::fromTransform(const Transform3f & transform, bool _interpolate, bool _updateResolution)
+	void InteractiveCameraHandler::fromTransform(const Transform3f & transform, bool interpolate, bool updateResolution)
 	{
 		InputCamera camCopy = getCamera();
 		camCopy.transform(transform);
-		fromCamera(camCopy, _interpolate, _updateResolution);
-	}
-
-	void InteractiveCameraHandler::updateView(const sibr::InputCamera & cam)
-	{
-		sibr::InputCamera newCam = _currentCamera;
-		newCam.transform(cam.transform());
-		fromCamera(newCam, true, false);
+		fromCamera(camCopy, interpolate, updateResolution);
 	}
 
 	void InteractiveCameraHandler::switchMode(const InteractionMode mode) {

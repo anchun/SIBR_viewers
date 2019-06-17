@@ -209,7 +209,7 @@ namespace sibr
 		_userCurrentCam = camHandler;
 
 		if (!_scene->cameras()->inputCameras().empty()) {
-			camera_handler.updateView(_scene->cameras()->inputCameras()[0]);
+			camera_handler.fromTransform(_scene->cameras()->inputCameras()[0].transform(), true, false);
 			camera_handler.setupInterpolationPath(_scene->cameras()->inputCameras());
 		}
 
@@ -217,8 +217,6 @@ namespace sibr
 		camera_path = myArgs.dataset_path.get() + "/cameras";
 
 		setup();
-
-
 	}
 
 	void SceneDebugView::onUpdate(Input & input, const float deltaTime, const Viewport & viewport)
