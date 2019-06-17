@@ -132,6 +132,9 @@ namespace sibr {
 			/// where,
 			/// orientation = flipM * rotationM, and
 			/// translation = flipM * translationM
+			///
+			/// For compatibility with FRIBR:
+			/// orientation = flipM' * rotationM * flipM
 
 			const sibr::Quaternionf quat(qw, qx, qy, qz);
 			const sibr::Matrix3f orientation = quat.toRotationMatrix().transpose() * converter;
@@ -347,7 +350,7 @@ namespace sibr {
 			getParsedBundlerData(myArgs.dataset_path, myArgs.scene_metadata_filename);
 			_dataset_type = "bundler";
 		}
-
+		// What happens if both are present
 		if (colmap.good()) {
 			getParsedColmapData(myArgs.dataset_path);
 			_dataset_type = "colmap";
