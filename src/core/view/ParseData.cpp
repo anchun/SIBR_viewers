@@ -231,7 +231,8 @@ namespace sibr {
 						}
 						else {
 							_nearsFars[id].near = 0.1f;
-							_nearsFars[id].far = 1.0f;
+							_nearsFars[id].far = 100.0f;
+							std::cout << "Warning: using dummy znear and zfar" << std::endl;
 						}
 						_imgInfos.push_back(infos);
 

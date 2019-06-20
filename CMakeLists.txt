@@ -4,7 +4,7 @@ PROJECT(sibr_projects)
 
 ## Lastest version of cmake doesn't work.
 ## So check the cmake version
-set(CHECKED_VERSION "3.12.4")
+set(CHECKED_VERSION "3.15.4")
 if (CMAKE_VERSION VERSION_GREATER CHECKED_VERSION)
     message(FATAL_ERROR "Current CMakeLists are not compatible with newest versions of cmake. Please use a version less than ${CHECKED_VERSION}. If you know it's actually working with a greater version. Please update CHECKED_VERSION in the current CMakeLists.txt with the version you tested.")
 endif()

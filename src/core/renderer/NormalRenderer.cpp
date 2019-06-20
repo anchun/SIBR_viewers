@@ -83,7 +83,7 @@ namespace sibr
 			_normalShader_projInv.set(MVPinv);
 		}
 
-		//std::cout << cam.znear() << " " << cam.zfar() << " " << cam.viewproj() << std::endl;
+	//	std::cout << cam.znear() << " " << cam.zfar() << " " << cam.viewproj() << std::endl;
 		mesh.render(true, true, sibr::Mesh::FillRenderMode);
 
 		_normalShader.end();
