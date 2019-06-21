@@ -42,7 +42,7 @@ struct DistordCropAppArgs :
 	sibr::Arg<float> minRatioThresholdArg = { "ratio", threshold_ratio_bounding_box_size };
 	sibr::Arg<float> toleranceArg = { "tolerance", toleranceFactor };
 	sibr::Arg<bool> vizArg = { "debug" };
-	sibr::SwitchArg modeArg = { "modesame", true };
+	sibr::ArgSwitch modeArg = { "modesame", true };
 	sibr::Arg<int> avgWidthArg = { "avg_width", 0 };
 	sibr::Arg<int> avgHeightArg = { "avg_height", 0 };
 };
