@@ -114,6 +114,7 @@ namespace sibr
 		Arg(const std::string & key, const T & default_value) {
 			value = getCommandLineArgs().get<T>(key, default_value);
 		}
+		using ArgBase<T>::operator=;
 	};
 
 	///specialization of Arg for Switch, default value get flipped if arg is present
