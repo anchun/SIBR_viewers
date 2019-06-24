@@ -137,7 +137,7 @@ namespace sibr {
 			/// orientation = flipM' * rotationM * flipM
 
 			const sibr::Quaternionf quat(qw, qx, qy, qz);
-			const sibr::Matrix3f orientation = quat.toRotationMatrix().transpose() * converter;
+			const sibr::Matrix3f orientation = /*converter.transpose() **/ quat.toRotationMatrix().transpose() * converter;
 			sibr::Vector3f position(tx, ty, tz);
 
 			// populate image infos
