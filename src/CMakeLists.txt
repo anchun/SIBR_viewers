@@ -73,6 +73,7 @@ if (BUILD_SIBR)
   add_subdirectory(core/raycaster)
   add_subdirectory(core/view)
   add_subdirectory(core/assets)
+  add_subdirectory(core/imgproc)
 endif()
 
 if (BUILD_SIBR AND BUILD_VIDEO)

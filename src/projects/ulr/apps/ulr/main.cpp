@@ -16,7 +16,6 @@ const char* usage = ""
 
 struct ULRAppArgs :
 	virtual BasicIBRAppArgs {
-	Arg<bool> whatever = { "whatever", true };
 };
 
 int main( int ac, char** av )
