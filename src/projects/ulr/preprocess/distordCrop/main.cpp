@@ -37,13 +37,12 @@ bool debug_viz = false;
 
 struct DistordCropAppArgs :
 	virtual sibr::BasicIBRAppArgs {
-	sibr::Arg<bool> whatever = { "whatever", true };
 	sibr::Arg<int> black_threshold = { "black", threshold_black_color };
 	sibr::Arg<int> minSizeThresholdArg = { "min", threshold_bounding_box_size};
 	sibr::Arg<float> minRatioThresholdArg = { "ratio", threshold_ratio_bounding_box_size };
 	sibr::Arg<float> toleranceArg = { "tolerance", toleranceFactor };
-	sibr::Arg<bool> vizArg = { "debug", false };
-	sibr::Arg<bool> modeArg = { "modesame", true };
+	sibr::Arg<bool> vizArg = { "debug" };
+	sibr::ArgSwitch modeArg = { "modesame", true };
 	sibr::Arg<int> avgWidthArg = { "avg_width", 0 };
 	sibr::Arg<int> avgHeightArg = { "avg_height", 0 };
 };

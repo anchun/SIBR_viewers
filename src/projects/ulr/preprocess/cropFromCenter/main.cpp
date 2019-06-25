@@ -149,7 +149,6 @@ int main(const int argc, const char** argv)
 
 struct CropAppArgs :
 	virtual sibr::BasicIBRAppArgs {
-	sibr::Arg<bool> whatever = { "whatever", true };
 	sibr::Arg<std::string> inputFileArg = { "inputFile", "" };
 	sibr::Arg<std::string> outputFolderArg = { "outputPath", "" };
 	sibr::Arg<sibr::Vector2i> avgResolutionArg = { "avgResolution", {0, 0} };

@@ -42,7 +42,7 @@ namespace sibr {
 		 * \param fShader The name of the fragment shader to use.
 		 * \param vShader The name of the vertex shader to use.
 		 */
-		void setupShaders(
+		virtual void setupShaders(
 			const std::string & fShader = "ulr_v3",
 			const std::string & vShader = "ulr_v3"
 		);
@@ -56,7 +56,7 @@ namespace sibr {
 		 * \param inputDepths A texture array containing the input depth maps.
 		 * \param passthroughDepth If true, depth from the position map will be output to the depth buffer for ulterior passes.
 		 */
-		void process(
+		virtual void process(
 			const sibr::Mesh & mesh,
 			const sibr::Camera& eye,
 			IRenderTarget& dst,

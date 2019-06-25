@@ -22,13 +22,13 @@ const char* usage = ""
 struct ULRAppArgs :
 	virtual BasicIBRAppArgs {
 	Arg<int> version = { "v", 3 };
-	Arg<bool> softVisibility = { "soft-visibility", true };
-	Arg<bool> masks = { "masks", false };
+	ArgSwitch softVisibility = { "soft-visibility", true };
+	Arg<bool> masks = { "masks" };
 	Arg<std::string> maskParams = { "masks-param" , "" };
 	Arg<std::string> maskParamsExtra = { "masks-param-extra" , "" };
-	Arg<bool> invert = { "invert", false };
-	Arg<bool> alphas = { "alphas", false };
-	Arg<bool> poisson = { "poisson-blend", false };
+	Arg<bool> invert = { "invert" };
+	Arg<bool> alphas = { "alphas" };
+	Arg<bool> poisson = { "poisson-blend" };
 
 };
 
@@ -362,4 +362,3 @@ int legacyV1main(ULRAppArgs & myArgs)
 	}
 	return EXIT_SUCCESS;
 }
-

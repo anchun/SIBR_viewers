@@ -49,7 +49,7 @@ namespace sibr{
 		*/
 		void  getParsedBundlerData(const std::string & dataset_path, const std::string & scene_metadata_filename);
 
-
+		
 		/**
 		* \brief Function to parse data from a colmap sparse dataset path.
 		* \param dataset_path Path to the colmap dataset sparse folder containing data
