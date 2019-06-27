@@ -336,6 +336,12 @@ namespace sibr
 		static const void* data(const cv::Mat & img) {
 			return img.ptr();
 		}
+		static void* data(cv::Mat & img) {
+			return img.ptr();
+		}
+		static uint cv_type() {
+			return CV_MAKE_TYPE(cv::DataType<ScalarType>::depth, N);
+		}
 
 		static const uint internal_format = GLFormatCVmat<ScalarType, N>::internal_format;
 		static const uint format = GLFormatCVmat<ScalarType, N>::format;

@@ -12,6 +12,15 @@ namespace sibr
 			mask, filter);
 	}
 
+	void			blit_and_flip(const IRenderTarget& src, const IRenderTarget& dst, GLbitfield mask, GLenum filter)
+	{
+		glBlitNamedFramebuffer(
+			src.fbo(), dst.fbo(),
+			0, 0, src.w(), src.h(),
+			0, dst.h(), dst.w(), 0,
+			mask, filter);
+	}
+
 	void			blit(const ITexture2D& src, const IRenderTarget& dst, GLbitfield mask, GLenum filter)
 	{
 		GLuint sourceFrameBuffer = 0;
@@ -25,6 +34,23 @@ namespace sibr
 			sourceFrameBuffer, dst.fbo(),
 			0, 0, src.w(), src.h(),
 			0, 0, dst.w(), dst.h(),
+			mask, filter);
+		glDeleteFramebuffers(1, &sourceFrameBuffer);
+	}
+
+	void			blit_and_flip(const ITexture2D& src, const IRenderTarget& dst, GLbitfield mask, GLenum filter)
+	{
+		GLuint sourceFrameBuffer = 0;
+		glGenFramebuffers(1, &sourceFrameBuffer);
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, sourceFrameBuffer);
+		glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, src.handle(), 0);
+
+		SIBR_ASSERT(glCheckFramebufferStatus(GL_READ_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
+
+		glBlitNamedFramebuffer(
+			sourceFrameBuffer, dst.fbo(),
+			0, 0, src.w(), src.h(),
+			0, dst.h(), dst.w(), 0,
 			mask, filter);
 		glDeleteFramebuffers(1, &sourceFrameBuffer);
 	}

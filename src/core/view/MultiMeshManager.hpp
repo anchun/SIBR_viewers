@@ -159,10 +159,11 @@ namespace sibr {
 		//ViewBase interface
 		virtual void	onUpdate(Input& input, const Viewport & vp) override;
 		virtual void	onRender(const Viewport & viewport) override;
-		void			onRender(IRenderTarget & dst);
+		virtual void	onRender(IRenderTarget & dst);
 		virtual void	onGUI() override;
 
 		InteractiveCameraHandler & getCameraHandler() { return camera_handler; }
+		MeshShadingShader & getMeshShadingShader() { return colored_mesh_shader; }
 
 	protected:
 

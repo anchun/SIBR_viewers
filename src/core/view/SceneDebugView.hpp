@@ -102,6 +102,8 @@ namespace sibr
 
 		virtual void	onRender(const Viewport & viewport) override;
 
+		using MultiMeshManager::onRender;
+
 		virtual void	onRenderIBR(IRenderTarget& /*dst*/, const Camera& /*eye*/) override {};
 
 		virtual void onGUI() override;

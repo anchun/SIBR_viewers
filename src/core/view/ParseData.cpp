@@ -159,7 +159,7 @@ namespace sibr {
 				m(3 + i) = orientation(i);
 			}
 			
-			sibr:Vector3f finTrans = converter * position;
+			Vector3f finTrans = converter * position;
 			for (int i = 0; i < 3; i++) {
 				m(12 + i) = finTrans(i);
 			}
@@ -332,11 +332,11 @@ namespace sibr {
 		_basePathName = dataset_path;
 		/*std::cout << scene_metadata_filename << std::endl;*/
 		if (!parseSceneMetadata(dataset_path + "/" + scene_metadata_filename)) {
-			SIBR_ERR << "Scene Metadata file does not exist at \"" + dataset_path + "\"." << std::endl;
+			SIBR_ERR << "Scene Metadata file does not exist at /" + dataset_path + "/." << std::endl;
 		}
 
 		if (!parseBundlerFile(dataset_path + "/cameras/bundle.out")) {
-			SIBR_ERR << "Bundle file does not exist at \"" + dataset_path + "\cameras\"." << std::endl;
+			SIBR_ERR << "Bundle file does not exist at /" + dataset_path + "/cameras/." << std::endl;
 		}
 
 		_meshPath = _basePathName + "/meshes/recon.ply";
@@ -349,7 +349,7 @@ namespace sibr {
 		_basePathName = dataset_path + "/colmap/stereo";
 
 		if (!parseColmapSparseData(_basePathName + "/sparse")) {
-			SIBR_ERR << "Colmap Sparse Data text file does not exist at \"" + dataset_path + "\sparse\"." << std::endl;
+			SIBR_ERR << "Colmap Sparse Data text file does not exist at /" + dataset_path + "/sparse/." << std::endl;
 		}
 
 		_meshPath = _basePathName + "/../../capreal/mesh.ply";

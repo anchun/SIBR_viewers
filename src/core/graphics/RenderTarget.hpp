@@ -28,10 +28,22 @@ namespace sibr
 	* \ingroup sibr_graphics
 	*/
 	SIBR_GRAPHICS_EXPORT void			blit(const IRenderTarget& src, const IRenderTarget& dst, GLbitfield mask = GL_COLOR_BUFFER_BIT, GLenum filter = GL_LINEAR);
+
+	/**
+	* \ingroup sibr_graphics
+	*/
+	SIBR_GRAPHICS_EXPORT void			blit_and_flip(const IRenderTarget& src, const IRenderTarget& dst, GLbitfield mask = GL_COLOR_BUFFER_BIT, GLenum filter = GL_LINEAR);
+
 	/**
 	* \ingroup sibr_graphics
 	*/
 	SIBR_GRAPHICS_EXPORT void			blit(const ITexture2D& src, const IRenderTarget& dst, GLbitfield mask = GL_COLOR_BUFFER_BIT, GLenum filter = GL_LINEAR);
+
+	/**
+	* \ingroup sibr_graphics
+	*/
+	SIBR_GRAPHICS_EXPORT void			blit_and_flip(const ITexture2D& src, const IRenderTarget& dst, GLbitfield mask = GL_COLOR_BUFFER_BIT, GLenum filter = GL_LINEAR);
+
 	/**
 	* \ingroup sibr_graphics
 	*/
