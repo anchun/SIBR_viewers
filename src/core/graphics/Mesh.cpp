@@ -375,7 +375,7 @@ namespace sibr
 			{
 				_normals.resize(offsetVertices + mesh->mNumVertices);
 				for (uint i = 0; i < mesh->mNumVertices; ++i) {
-					_normals[offsetVertices + i] = convertVec(mesh->mNormals[i]);
+					_normals[offsetVertices + i] = converter * convertVec(mesh->mNormals[i]);
 				}
 
 			}

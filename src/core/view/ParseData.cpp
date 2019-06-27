@@ -41,10 +41,12 @@ namespace sibr {
 	{
 		const std::string camerasListing = scene_sparse_path + "/cameras.txt";
 		const std::string imagesListing = scene_sparse_path + "/images.txt";
+		const std::string clippingPlanes = scene_sparse_path + "/../../../clipping_planes.txt";
 
 
 		std::ifstream camerasFile(camerasListing);
 		std::ifstream imagesFile(imagesListing);
+		std::ifstream clippingPlanesFile(clippingPlanes);
 		if (!camerasFile.is_open()) {
 			SIBR_ERR << "Unable to load camera colmap file" << std::endl;
 		}
@@ -188,10 +190,22 @@ namespace sibr {
 		if (_nearsFars.empty()) {
 			_nearsFars.resize(_numCameras);
 
-			for (int i = 0; i < _numCameras; i++) {
-				_nearsFars[i].near = 0.01f;
-				_nearsFars[i].far = 1000.0f;
+			if (!clippingPlanesFile.is_open()) {
+				for (int i = 0; i < _numCameras; i++) {
+					_nearsFars[i].near = 0.01f;
+					_nearsFars[i].far = 1000.0f;
+				}
 			}
+			else {
+				int i = 0;
+				while(std::getline(clippingPlanesFile, line)){
+					std::vector<std::string> tokens = sibr::split(line, ' ');
+					_nearsFars[i].near = stof(tokens[0]);
+					_nearsFars[i].far = stof(tokens[1]);
+					++i;
+				}
+			}
+
 		}
 
 		return true;
