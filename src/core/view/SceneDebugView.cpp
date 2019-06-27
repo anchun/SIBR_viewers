@@ -340,7 +340,7 @@ namespace sibr
 		_scene = scene;
 		const InputCamera cameraBack = camera_handler.getCamera();
 		setup();
-		camera_handler.setup(_scene->cameras()->inputCameras(), camera_handler.viewport(), camera_handler.getRaycaster());
+		camera_handler.setup(_scene->cameras()->inputCameras(), camera_handler.getViewport(), camera_handler.getRaycaster());
 		camera_handler.setupInterpolationPath(_scene->cameras()->inputCameras());
 		// Optionally restore the camera pose.
 		if (preserveCamera) {
