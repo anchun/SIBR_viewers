@@ -118,6 +118,13 @@ namespace sibr {
 					ImGui::PopItemWidth();
 					ImGui::ColorEdit3(("NormalsColor##color_picker_" + name).c_str(), &normalsColor[0], ImGuiColorEditFlags_NoInputs);
 				}
+				if (!meshPtr->hasNormals()) {
+					if (ImGui::Button(("Compute Normals##" + name).c_str()) ){
+						meshPtr->generateNormals();
+					}
+				} else {
+					ImGui::Checkbox(("Phong shading##" + name).c_str(), &phongShading);
+				}
 				ImGui::Separator();
 			}
 			ImGui::EndPopup();
@@ -434,20 +441,47 @@ namespace sibr {
 		
 		if (ImGui::CollapsingHeader("Meshes list", ImGuiTreeNodeFlags_DefaultOpen)) {
 
+			static char loaded_mesh_str[128] = "";
+			static std::string loaded_mesh_path;
+			static int loaded_mesh_counter = 0;
+
+			if(ImGui::Button("load Mesh##MeshesList") && showFilePicker(loaded_mesh_path, FilePickerMode::Default, "", "obj,ply")) {
+				Mesh::Ptr mesh = std::make_shared<Mesh>();			
+
+				if (mesh->load(loaded_mesh_path)) {			
+					Path mesh_path = loaded_mesh_path;			
+					std::string mesh_name = loaded_mesh_str;
+					mesh_name = (mesh_name == "") ? mesh_path.stem().string() : loaded_mesh_str;
+
+					for (const auto & mesh_it : list_meshes) {
+						if (mesh_name == mesh_it.name) {
+							mesh_name += std::to_string(loaded_mesh_counter);
+							break;
+						}
+					}
+
+					addMesh(mesh_name, mesh);
+					++loaded_mesh_counter;
+				}
+			}
+
+			ImGui::SameLine();
+			ImGui::InputText("mesh name##MeshesList", loaded_mesh_str, IM_ARRAYSIZE(loaded_mesh_str));
+
 			// 0 name | 1 snapto delete | 2 active | 3 rendering mode | 4 alpha | 5 color | 6 Options
 			ImGui::Columns(7, "mesh options");
 
 			//ImGui::SetColumnWidth(4, 50);
 
 			ImGui::Separator();
-			if (ImGui::Button("Mesh")) {
+			if (ImGui::Button("Mesh##MeshesList")) {
 				list_meshes.reverse();
 			}
 			ImGui::NextColumn();
 
 			ImGui::NextColumn();
 
-			if (ImGui::Button("Active")) {
+			if (ImGui::Button("Active##MeshesList")) {
 				for (auto & mesh : list_meshes) {
 					mesh.active = !mesh.active;
 				}
@@ -464,7 +498,7 @@ namespace sibr {
 			ImGui::NextColumn();
 
 			static bool full_alpha = false;
-			if (ImGui::Button("Alpha")) {
+			if (ImGui::Button("Alpha##MeshesList")) {
 				for (auto & mesh : list_meshes) {
 					if (mesh.active) {
 						mesh.alpha = full_alpha ? 1.0f : 0.0f;

@@ -351,7 +351,7 @@ namespace sibr
 	void SceneDebugView::gui_options()
 	{
 
-		if (ImGui::CollapsingHeader("OptionsSceneDebugView##", ImGuiTreeNodeFlags_DefaultOpen)) {
+		if (ImGui::CollapsingHeader("OptionsSceneDebugView##")) {
 			if (ImGui::Button("Save topview")) {
 				save();
 			}
