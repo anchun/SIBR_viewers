@@ -16,12 +16,14 @@ namespace sibr {
 
 	  class LightSphere {
 	  public:
-		  LightSphere();
-		  LightSphere(const sibr::Vector3f position, const sibr::Vector3f radius) :
+		  LightSphere(const sibr::Vector3f position, const float radius
+		  , const float radiance) :
 			  _position(position),
+			  _radiance(radiance),
 			  _radius(radius) {};
 		  sibr::Vector3f _position;
-		  sibr::Vector3f _radius;
+		  float _radius;
+		  float _radiance;
 	  };
 
 	  CamEditMeshViewer();
@@ -152,6 +154,8 @@ namespace sibr {
 	  //! @return void
 	  //!
 	  void writeCameras();
+
+	  void writeLights();
 
 	  //!
 	  //! Allows to listen the keyboard and do actions

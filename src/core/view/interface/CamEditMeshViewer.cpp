@@ -563,120 +563,62 @@ void sibr::CamEditMeshViewer::onGUI() {
 	if ( _typeOfApp == CamEditMeshViewer::TypeOfApp::CamEditor)
 	if (ImGui::Begin("Lights Editor")) {
 		if (ImGui::Button("Save lights")) {
-			//writeCameras();
+			writeLights();
 		}
-		ImGui::SameLine();
 		/*if (ImGui::Button("Load cameras")) {
 			//load();
 			SIBR_WRG << "Uninmplemented for now." << std::endl;
 		}*/
+		static float currentRadius = 1.f;
+		static float currentRadiance = 1.f;
 		if (ImGui::CollapsingHeader("Parameters")) {
-			static int e = 2;
-			ImGui::RadioButton("Sphere", &e, 0); ImGui::SameLine();
-			ImGui::RadioButton("Spot", &e, 1);
-			static float currentRadius = 1.f;
-			ImGui::InputFloat("Radius", &_scaleCam, 0.4f, 128.f);
+			static int e = 0;
+			ImGui::RadioButton("Sphere", &e, 0);
+			//ImGui::RadioButton("Spot", &e, 1);
+			ImGui::InputFloat("Radius", &currentRadius, 0.4f, 128.f);
 
-
-			if (e == 0) _setCategory = cameraCategory::reconstruction;
-			else if (e == 1) _setCategory = cameraCategory::render;
-			else if (e == 2) _setCategory = cameraCategory::both;
+			ImGui::InputFloat("Radiance", &currentRadiance, 0.4f, 128.f);
 
 			ImGui::Separator();
 		}
 		if (ImGui::CollapsingHeader("Current set")) {
-			if (ImGui::Button("Place camera")) {
-				InputCamera camToAdd = interactCam->getCamera();
-				InputCamera& refToCam = camToAdd;
-				addCamera(refToCam);
-				//lightToAdd.interactCam->getCamera().position();
+			if (ImGui::Button("Place light")) {
+				InputCamera camera = interactCam->getCamera();
+				_currentLightSpheres.push_back(
+					LightSphere(camera.position(), currentRadius, currentRadiance)
+				);
 			}
 			if (ImGui::Button("Validate")) {
-				/*validateSpline();
-				showInformationsList(_controlCameras);*/
+				_lightSpheresValidated.insert(
+					_lightSpheresValidated.end(),
+					_currentLightSpheres.begin(),
+					_currentLightSpheres.end());
+				_currentLightSpheres.clear();
 			}
 			ImGui::SameLine();
 			if (ImGui::Button("Clear")) {
-				//_currentList.clear();
-				//_interpolatedCameras.clear();
+				_currentLightSpheres.clear();
 			}
 			ImGui::SameLine();
 			if (ImGui::Button("Remove last")) {
-				/*if (!_interpolatedCameras.empty()) _interpolatedCameras.pop_back();
-				else if (!_currentList.empty()) _currentList.pop_back();
-				_interpolatedCameras.clear();*/
+				if (!_currentLightSpheres.empty()) _currentLightSpheres.pop_back();
 			}
 		}
 
-		static unsigned int currentSetToSnapping = 0;
-		static unsigned int currentCamToSnapping = 0;
+		//static unsigned int currentSetToSnapping = 0;
+		//static unsigned int currentCamToSnapping = 0;
 
-		auto itSet = _setsOfCameras.begin();
+		auto itSet = _lightSpheresValidated.begin();
 		unsigned int currentIndexCamera = 0;
-		for (unsigned int i = 0; i < _setsOfCameras.size(); i++)
+		for (unsigned int i = 0; i < _lightSpheresValidated.size(); i++)
 		{
-			std::vector<InputCamera>& camerasCurrentSet = itSet->second;
 
-			std::string nameSet = std::string(std::string("Set") + std::to_string(i));
+			std::string nameSet = std::string(std::string("Light") + std::to_string(i));
 			if (ImGui::CollapsingHeader(nameSet.c_str())) {
-				std::string deleteButton = std::string("Delete##") + nameSet;
+				std::string deleteButton = std::string("Delete Light##") + nameSet;
 				if (ImGui::Button(deleteButton.c_str())) {
-					_setsOfCameras.erase(itSet);
+					_lightSpheresValidated.erase(itSet);
 					break;
-				}
-
-				ImGui::SameLine();
-				std::string snapButton = std::string("Snap##") + nameSet;
-				if (ImGui::Button(snapButton.c_str())) {
-					if (i == currentSetToSnapping) {
-						currentCamToSnapping = (currentCamToSnapping + 1)
-							% camerasCurrentSet.size();
-					}
-					else {
-						currentSetToSnapping = i;
-						currentCamToSnapping = 0;
-					}
-					InputCamera& camToSnapping = camerasCurrentSet
-						[currentCamToSnapping];
-					InputCamera currentTrackBallCamera(interactCam->getCamera());
-					currentTrackBallCamera.setLookAt(camToSnapping.position(),
-						camToSnapping.position() + camToSnapping.dir(),
-						camToSnapping.up());
-					interactCam->fromCamera(currentTrackBallCamera);
-				}
-
-				//for (InputCamera&camera : noValidated )
-				for (unsigned int j = 0; j < camerasCurrentSet.size(); j++)
-				{
-					InputCamera& cam = camerasCurrentSet[j];
-					std::string nameCam = std::string(std::string("Cam") +
-						std::to_string(currentIndexCamera));
-					if (ImGui::CollapsingHeader(nameCam.c_str())) {
-						std::string snapButton = std::string("Snap##Direct")
-							+ nameCam;
-						if (ImGui::Button(snapButton.c_str())) {
-							InputCamera currentTrackBallCamera(
-								interactCam->getCamera());
-							currentTrackBallCamera.setLookAt(cam.position(),
-								cam.position() + cam.dir(), cam.up());
-							interactCam->fromCamera(currentTrackBallCamera);
-						}
-						ImGui::SameLine();
-						std::string deleteButton = std::string("Delete Cam##")
-							+ nameCam;
-
-						if (ImGui::Button(deleteButton.c_str())) {
-							auto itCam = camerasCurrentSet.begin();
-							unsigned int index = 0;
-							while (index < j) { itCam++; index++; }
-							camerasCurrentSet.erase(itCam);
-							if (camerasCurrentSet.empty())
-								_setsOfCameras.erase(itSet);
-							break;
-						}
-
-					}
-					currentIndexCamera++;
 				}
 			}
 			itSet++;
@@ -806,19 +748,19 @@ void sibr::CamEditMeshViewer::renderLights()
 		-> std::vector<std::pair<sibr::Vector3f, sibr::Vector3f> > {
 
 		std::vector<std::pair<sibr::Vector3f, sibr::Vector3f> > lines;
-		for (int lat = -90; lat < 90; lat++) {
-			for (int lgt = 0; lgt < 360; lgt++) {
+		for (int lat = -90; lat < 90; lat+=5) {
+			for (int lgt = 0; lgt < 360; lgt+=30) {
 
 				sibr::Vector3f pointA = cos(0.5* M_PI * lat / 90.0f)*
-					(cos(2 * M_PI * lgt / 360.0f)*Vector3f(0, 0, 1)
-						+ sin(2 * M_PI * lgt / 360.0f)*Vector3f(0, 0, 1)
-						+ sin(0.5* M_PI * lat / 90.0f)*Vector3f(0, 1, 0));
-
-				sibr::Vector3f pointB = cos(0.5* M_PI * lat + 1 / 90.0f)*
-					(cos(2 * M_PI * lgt + 1 / 360.0f)*Vector3f(0, 0, 1)
-						+ sin(2 * M_PI * lgt + 1 / 360.0f)*Vector3f(0, 0, 1)
-						+ sin(0.5* M_PI * lat + 1 / 90.0f)*Vector3f(0, 1, 0));
-
+					(cos(2 * M_PI * lgt / 360.0f)*
+						sibr::Vector3f(1.0f, 0.f, 0.f) + sin(2 * M_PI * lgt / 360.0f)*
+						sibr::Vector3f(0.f, 1.f, 0.f))
+					+ sin(0.5* M_PI * lat / 90.0f)*sibr::Vector3f(0.0f, 0.f, 1.f);
+				sibr::Vector3f pointB = cos(0.5* M_PI * lat / 90.0f)*
+					(cos(2 * M_PI * (lgt+30) / 360.0f)*
+						sibr::Vector3f(1.0f, 0.f, 0.f) + sin(2 * M_PI * (lgt+30) / 360.0f)*
+						sibr::Vector3f(0.f, 1.f, 0.f))
+					+ sin(0.5* M_PI * lat / 90.0f)*sibr::Vector3f(0.0f, 0.f, 1.f);
 				lines.push_back(std::pair<sibr::Vector3f, sibr::Vector3f>(
 					radius*pointA + center,
 					radius*pointB + center));
@@ -829,10 +771,24 @@ void sibr::CamEditMeshViewer::renderLights()
 		return lines;
 	};
 
-	std::vector<std::pair<sibr::Vector3f, sibr::Vector3f> > linesSphere;
-	for (std::pair<sibr::Vector3f, sibr::Vector3f> line : linesSphere) {
-		this->renderer->addLines({ line.first, line.second },
-			sibr::Vector3f(1.0f, 1.0f, 0.0f));
+	for (LightSphere s : _currentLightSpheres)
+	{
+		std::vector<std::pair<sibr::Vector3f, sibr::Vector3f> > linesSphere
+			= getSphere(s._position,s._radius);
+		for (std::pair<sibr::Vector3f, sibr::Vector3f> line : linesSphere) {
+			this->renderer->addLines({ line.first, line.second },
+				sibr::Vector3f(0.5f, 0.5f, 0.5f));
+		}
+	}
+
+	for (LightSphere s : _lightSpheresValidated)
+	{
+		std::vector<std::pair<sibr::Vector3f, sibr::Vector3f> > linesSphere
+			= getSphere(s._position,s._radius);
+		for (std::pair<sibr::Vector3f, sibr::Vector3f> line : linesSphere) {
+			this->renderer->addLines({ line.first, line.second },
+				sibr::Vector3f(1.0f, 1.0f, 0.0f));
+		}
 	}
 }
 
@@ -1188,6 +1144,56 @@ void sibr::CamEditMeshViewer::writeCameras() {
 		}
 		fileRender.close();
 		fileReconstruction.close();
+	}
+	else
+		std::cerr << "Impossible to open this file !" << std::endl;
+
+}
+
+void sibr::CamEditMeshViewer::writeLights() {
+
+	std::ofstream fileLights(_outputPath + "/outLights.xml",
+		std::ios::out | std::ios::trunc);
+
+
+	unsigned int offsetLight = 0;
+
+	// Safety: if validate was not press, the cameras won't be saved.
+	// So if there are no cameras to save, try to validate.
+	if (_lightSpheresValidated.empty()) {
+		SIBR_WRG << "There were no validated sets, trying to validate any available camera list..."
+			<< std::endl;
+		validateSpline();
+	}
+
+	if (fileLights) {
+
+		std::string data;
+		data.append("<scene version=\"0.6.0\">\n");
+		for (auto light : _lightSpheresValidated)
+		{
+
+			data.append("\t<shape type=\"sphere\">\n");
+			data.append("\t\t<point name=\"center\" x=\"");
+			data.append(std::to_string(light._position.x()));
+			data.append("\" y=\"");
+			data.append(std::to_string(light._position.y()));
+			data.append("\" z=\"");
+			data.append(std::to_string(light._position.z()));
+			data.append("\"/>\n");
+			data.append("\t\t<float name=\"radius\" value=\"");
+			data.append(std::to_string(light._radius));
+			data.append("\"/>\n\n");
+			data.append("\t\t<emitter type=\"area\">\n");
+			data.append("\t\t\t<spectrum name=\"radiance\" value=\"");
+			data.append(std::to_string(light._radiance));
+			data.append("\"/>\n");
+			data.append("\t\t</emitter>\n");
+			data.append("\t</shape>\n");
+		}
+		data.append("</scene>");
+		fileLights << data;
+		fileLights.close();
 	}
 	else
 		std::cerr << "Impossible to open this file !" << std::endl;
