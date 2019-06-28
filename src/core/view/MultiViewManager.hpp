@@ -208,6 +208,8 @@ namespace sibr
 			ImGuiWindowFlags flags;
 			bool shouldUpdateLayout;
 
+			SubView() {};
+
 			SubView(ViewBase::Ptr view_, RenderTargetRGB::Ptr rt_, const sibr::Viewport viewport_, const std::string & name_, const ImGuiWindowFlags flags_) :
 				view(view_), rt(rt_), handler(), viewport(viewport_), name(name_), flags(flags_), shouldUpdateLayout(false) {
 				renderFunc = [](ViewBase::Ptr &, const Viewport&, const IRenderTarget::Ptr & ) {};
@@ -218,6 +220,8 @@ namespace sibr
 
 		struct BasicSubView : SubView {
 			ViewUpdateFonc updateFunc;
+
+			BasicSubView() : SubView() {};
 
 			BasicSubView(ViewBase::Ptr view_, RenderTargetRGB::Ptr rt_, const sibr::Viewport viewport_, const std::string & name_, const ImGuiWindowFlags flags_, ViewUpdateFonc f_) :
 				SubView(view_, rt_, viewport_, name_, flags_), updateFunc(f_) {
@@ -237,6 +241,8 @@ namespace sibr
 			IBRViewUpdateFonc updateFunc;
 			sibr::InputCamera cam;
 			bool defaultUpdateFunc;
+
+			IBRSubView() : SubView() {};
 
 			IBRSubView(ViewBase::Ptr view_, RenderTargetRGB::Ptr rt_, const sibr::Viewport viewport_, const std::string & name_, const ImGuiWindowFlags flags_, IBRViewUpdateFonc f_, const bool defaultUpdateFunc_) :
 				SubView(view_, rt_, viewport_, name_, flags_), updateFunc(f_), defaultUpdateFunc(defaultUpdateFunc_){

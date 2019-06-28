@@ -272,7 +272,7 @@ namespace sibr
 			res.x() > 0 ? res.x() : (float)_defaultViewResolution.x(),
 			(res.y() > 0 ? res.y() : (float)_defaultViewResolution.y()) + ImGui::GetTitleBarHeight());
 		RenderTargetRGB::Ptr rtPtr(new RenderTargetRGB((uint)viewport.finalWidth(), (uint)viewport.finalHeight(), SIBR_CLAMP_UVS));
-		_subViews.insert({ title, {view, rtPtr, viewport, title, flags, updateFunc } });
+		_subViews[title] = {view, rtPtr, viewport, title, flags, updateFunc };
 
 	}
 
@@ -283,7 +283,15 @@ namespace sibr
 			res.x() > 0 ? res.x() : (float)_defaultViewResolution.x(),
 			(res.y() > 0 ? res.y() : (float)_defaultViewResolution.y()) + ImGui::GetTitleBarHeight());
 		RenderTargetRGB::Ptr rtPtr(new RenderTargetRGB((uint)viewport.finalWidth(), (uint)viewport.finalHeight(), SIBR_CLAMP_UVS));
-		_ibrSubViews.insert({ title, { view, rtPtr, viewport, title, flags, updateFunc, defaultFuncUsed } });
+		if (_ibrSubViews.count(title) > 0){
+			const auto handler = _ibrSubViews[title].handler;
+			_ibrSubViews[title] = { view, rtPtr, viewport, title, flags, updateFunc, defaultFuncUsed };
+			_ibrSubViews[title].handler = handler;
+		}
+		else {
+			_ibrSubViews[title] = { view, rtPtr, viewport, title, flags, updateFunc, defaultFuncUsed };
+		}
+		
 
 	}
 
