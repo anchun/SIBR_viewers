@@ -11,10 +11,10 @@ namespace sibr {
 			//if (i != infos.id)
 			//	continue;
 
-			_inputCameras[infosId] = InputCamera(infosId, infos.width, infos.height, data->outputCamsMatrix()[infosId], true);
+			_inputCameras[infosId] = InputCamera(infos.camId, infos.width, infos.height, data->outputCamsMatrix()[infosId], true);
 			
 			_inputCameras[infosId].name(infos.filename);
-
+			
 			const InputCamera::Z & current_Z = data->nearsFars()[currentIdZnearZfar];
 			_inputCameras[infosId].znear(current_Z.near);
 			_inputCameras[infosId].zfar(current_Z.far);

@@ -193,19 +193,6 @@ Bounds getBounds(const sibr::ImageRGB & img) {
 
 	}
 
-	/*
-	if( debug_viz ){
-	sibr::ImageRGB viz(w,h);
-	for(int y=0; y<h; y++){
-	for(int x=0; x<w; ++x){
-	viz(x,y) = ( isBlack(x,y) ? sibr::Vector3ub(255,255,255)  : sibr::Vector3ub(0,0,0)  );
-	}
-	}
-
-	sibr::show( viz.resized(1200,800) );
-	}
-	*/
-
 	//find maximal bounding box not containing black pixels
 	Bounds bounds(img);
 	findBounds(isBlack, bounds);
@@ -218,10 +205,6 @@ Bounds getBounds(const sibr::ImageRGB & img) {
 
 	bounds.width = (img.w() - proposedWidth) * toleranceFactor + proposedWidth;
 	bounds.height = (img.h() - proposedHeight) * toleranceFactor + proposedHeight;
-
-	if (debug_viz) {
-		//std::cout << bounds.xMin << " " << bounds.xMax << " " <<  bounds.yMin << " " << bounds.yMax << std::endl;
-	}
 
 	return bounds;
 }
@@ -240,8 +223,6 @@ sibr::Vector2i calculateAvgResolution(const std::vector< Path > & imagePaths)
 
 		std::vector<sibr::ImageRGB> chunkOfInputImages(nrItems);
 
-		//std::cout << "batch id=" << batchId << " size=" << nrItems << "\n";
-		// load images in parallel (OpenMP 2.0 doesn't allow unsigned int as index. must be signed integral type)
 		#pragma omp parallel for
 		for (int localImgIndex = 0; localImgIndex < nrItems; localImgIndex++) {
 			unsigned globalImgIndex = (batchId * PROCESSING_BATCH_SIZE) + localImgIndex;
@@ -318,10 +299,7 @@ sibr::Vector2i findBiggestImageCenteredBox(const Path & root, const std::vector<
 				// only now load the img
 				chunkOfInputImages.at(localImgIndex).load(imagePaths.at(globalImgIndex).string(), false);
 				allBounds.at(globalImgIndex) = getBounds(chunkOfInputImages.at(localImgIndex));
-				//#pragma omp critical
-				//{
-				//	std::cout << globalImgIndex << " " << allBounds[globalImgIndex].xMin << " " << allBounds[globalImgIndex].xMax << " " << allBounds[globalImgIndex].yMin << " " << allBounds[globalImgIndex].yMax << std::endl;
-				//}
+				
 			}
 		}
 	}
@@ -351,10 +329,6 @@ sibr::Vector2i findBiggestImageCenteredBox(const Path & root, const std::vector<
 				finalBounds.yRatio = bounds.yRatio;
 				check = true;
 			}
-			if (check) {
-				//std::cout << "\t" << im_id << " : " << bounds.xRatio << " " << bounds.yRatio  << " " << finalBounds.xRatio << " " << finalBounds.yRatio 
-				//	<< " : " << allBounds[im_id].display() << " : " << finalBounds.display() << std::endl;
-			}
 
 			minWidth = (minWidth < 0 || bounds.width < minWidth) ? bounds.width : minWidth;
 			minHeight = (minHeight < 0 || bounds.height < minHeight) ? bounds.height : minHeight;
@@ -373,67 +347,6 @@ sibr::Vector2i findBiggestImageCenteredBox(const Path & root, const std::vector<
 	std::cout << std::endl;
 
 	return sibr::Vector2i(minWidth, minHeight);
-
-//	// load input images and get avg resolution
-//	std::vector<sibr::ImageRGB> inputImgs(imagePaths.size());
-//	//int avgWidth = 0;
-//	//int avgHeight = 0;
-//	std::cout << "[distordCrop] loading input images : " << std::flush;
-//
-//	std::chrono::time_point <std::chrono::system_clock> start, end;
-//	start = std::chrono::system_clock::now();
-//
-//#pragma omp parallel for
-//	for (int id = 0; id<(int)inputImgs.size(); ++id) {
-//		inputImgs.at(id).load(imagePaths.at(id).string(), false);
-//#pragma omp critical
-//		{
-//			avgWidth += inputImgs[id].w();
-//			avgHeight += inputImgs[id].h();
-//		}
-//		//std::cerr << id << " ";
-//	}
-//
-//	avgWidth = (int)((float)(avgWidth) / inputImgs.size());
-//	avgHeight = (int)((float)(avgHeight) / inputImgs.size());
-//
-//	end = std::chrono::system_clock::now();
-//
-//	std::cout << "[distordCrop] average resolution " << avgWidth << "x" << avgHeight << " elapsed time=" << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms.\n";
-
-	
-
-	//// discard images with different resolution
-	//for (int id = 0; id<(int)inputImgs.size(); ++id) {
-	//	bool shrinkHorizontally = ((inputImgs[id].w() < avgWidth) && ((avgWidth - inputImgs[id].w()) > avgWidth * resolutionThreshold)) ? true : false;
-	//	bool shrinkVertically = ((inputImgs[id].h() < avgHeight) && ((avgHeight - inputImgs[id].h()) > avgHeight * resolutionThreshold)) ? true : false;
-	//	if (shrinkHorizontally || shrinkVertically) {
-	//		preExcludedCams.push_back(id);
-	//		std::cout << "[distordCrop] excluding input image " << id << " resolution=" << inputImgs[id].w() << "x" << inputImgs[id].h() << "\n";
-	//	}
-	//}
-
-
-	//// compute bounding boxes for all non-discarded images
-	//std::vector<Bounds> allBounds(imagePaths.size());
-	//std::cout << "[distordCrop] computing bounding boxes : " << std::flush;
-//
-//#pragma omp parallel for
-//	for (int id = 0; id<(int)inputImgs.size(); ++id) {
-//		if (std::find(preExcludedCams.begin(), preExcludedCams.end(), id) == preExcludedCams.end()) {
-//			allBounds.at(id) = getBounds(inputImgs.at(id));
-//#pragma omp critical
-//			{
-//				std::cout << id << " " << allBounds[id].xMin << " " << allBounds[id].xMax << " " << allBounds[id].yMin << " " << allBounds[id].yMax << std::endl;
-//			}
-//			
-//		}
-//		//std::cerr << id << " ";
-//	}
-//	std::cerr << " done " << std::endl;
-//
-//
-//	Bounds finalBounds(inputImgs.at(0));
 
 }
 
@@ -501,8 +414,7 @@ int main(const int argc, const char* const* argv)
 			imagePaths.push_back(p);
 		}
 		else if (is_regular_file(p) && p.extension() == ".txt" && p.stem().string() == "resolutions") {
-			//std::cout << "there is a resolution file at " << p.string() << "\n";
-
+			
 			// read resolutions file
 			ifstream inputFile(p.string());
 
@@ -521,7 +433,6 @@ int main(const int argc, const char* const* argv)
 
 				resolutions.push_back(res);
 
-				//std::cout << "paht to img=" << pathToImg << " " << widthStr << "x" << heightStr << "\n";
 			}
 
 			inputFile.close();
@@ -579,63 +490,3 @@ int main(const int argc, const char* const* argv)
 
 	return 0;
 }
-
-
-//for( auto & bounds : allBounds ){
-
-//	bool checkBB = false;
-//	if (
-//		finalBounds.xMax > bounds.xMax ||
-//		finalBounds.xMin < bounds.xMin ||
-//		finalBounds.yMax > bounds.yMax ||
-//		finalBounds.xMin < bounds.xMin
-//		) {
-//		checkBB = true;
-//		//std::cout << " !!! " << std::endl;
-//	}
-
-//	finalBounds.xMax = std::min( finalBounds.xMax , bounds.xMax);
-//	finalBounds.yMax = std::min( finalBounds.yMax , bounds.yMax);
-//	finalBounds.xMin = std::max( finalBounds.xMin , bounds.xMin);
-//	finalBounds.yMin = std::max( finalBounds.yMin , bounds.yMin);
-
-//	if (checkBB) {
-//		std::cout << "\t" << im_id << " : " << (bounds.xMax - bounds.xMin) * (bounds.yMax - bounds.yMin) << " : " << (bounds.xMax - bounds.xMin)  << " : " << (bounds.yMax - bounds.yMin) << 
-//			" : " << allBounds[im_id].display() << " : " << finalBounds.display() << std::endl;
-//	}
-
-//	++im_id;
-//}
-
-
-// NOTE: not all input images have the same width and height. We are only using the first one as reference
-/*
-theo's code
-
-int center_x = (int)inputImgs.at(0).w() / 2;
-int center_y = (int)inputImgs.at(0).h() / 2;
-
-finalBounds.xMax = center_x + (int)(finalBounds.xRatio*inputImgs.at(0).w());
-finalBounds.xMin = center_x - (int)(finalBounds.xRatio*inputImgs.at(0).w());
-finalBounds.yMax = center_y + (int)(finalBounds.yRatio*inputImgs.at(0).h());
-finalBounds.yMin = center_y - (int)(finalBounds.yRatio*inputImgs.at(0).h());
-
-int new_half_w = std::min(finalBounds.xMax - center_x, center_x - finalBounds.xMin);
-int new_half_h = std::min(finalBounds.yMax - center_y, center_y - finalBounds.yMin);
-while ((new_half_w % 2) != 0) { --new_half_w; }
-while ((new_half_h % 2) != 0) { --new_half_h; }
-
-if (debug_viz) {
-for (int id = 0; id<(int)inputImgs.size(); ++id) {
-sibr::ImageRGB img(inputImgs.at(id).w(), inputImgs.at(id).h());
-for (int y = 0; y<(int)inputImgs.at(id).h(); y++) {
-for (int x = 0; x<(int)inputImgs.at(id).w(); x++) {
-img(x, y) = inputImgs.at(id)(x, y);
-}
-}
-cv::Scalar red(255, 0, 0);
-cv::rectangle(img.toOpenCVnonConst(), cv::Rect(finalBounds.xMin, finalBounds.yMin, finalBounds.xMax - finalBounds.xMin, finalBounds.yMax - finalBounds.yMin), red, 3);
-show(img.resized(1200, 800));
-}
-}
-*/

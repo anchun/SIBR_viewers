@@ -257,6 +257,7 @@ namespace sibr
 					wIm = wh[i].x();
 					hIm = wh[i].y();
 				}
+
 				//camera_data[i].SetFocalLength(f);
 				cameras.push_back(InputCamera((float)f, (float)d[0], (float)d[1], wIm, hIm, i));
 
@@ -461,7 +462,7 @@ namespace sibr
 			}
 
 			CameraParametersColmap params;
-			params.id = std::stol(tokens[0]) - 1;
+			params.id = std::stol(tokens[0]);
 			params.width = std::stol(tokens[2]);
 			params.height = std::stol(tokens[3]);
 			params.fx = std::stof(tokens[4]);
@@ -489,7 +490,8 @@ namespace sibr
 				SIBR_WRG << "Unknown line." << std::endl;
 				continue;
 			}
-			size_t      id = std::stol(tokens[8]) - 1;
+
+			uint		cId = std::stoi(tokens[0]) - 1;
 			float       qw = std::stof(tokens[1]);
 			float       qx = std::stof(tokens[2]);
 			float       qy = std::stof(tokens[3]);
@@ -497,6 +499,7 @@ namespace sibr
 			float       tx = std::stof(tokens[5]);
 			float       ty = std::stof(tokens[6]);
 			float       tz = std::stof(tokens[7]);
+			size_t      id = std::stol(tokens[8]);
 
 			std::string imageName = tokens[9];
 
@@ -513,7 +516,7 @@ namespace sibr
 			
 			sibr::Vector3f position = -(orientation * converter * translation);
 
-			sibr::InputCamera camera(camParams.fy, 0.0f, 0.0f, camParams.width, camParams.height, camid);
+			sibr::InputCamera camera(camParams.fy, 0.0f, 0.0f, camParams.width, camParams.height, cId);
 			camera.name(imageName);
 			camera.position(position);
 			camera.rotation( sibr::Quaternionf(orientation));

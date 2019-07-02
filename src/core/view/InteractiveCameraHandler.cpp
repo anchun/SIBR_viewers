@@ -228,10 +228,28 @@ namespace sibr {
 	}
 
 	void InteractiveCameraHandler::setupInterpolationPath(const std::vector<sibr::InputCamera> & cameras) {
-		_interpPath.clear();
+		_interpPath.resize(cameras.size());
+
+		bool defaultPath = false;
 		for (int i = 0; i < cameras.size(); i++) {
 			if (cameras[i].isActive()) {
-				_interpPath.push_back(cameras[i]);
+				if (cameras[i].id() < cameras.size()) {
+					_interpPath[cameras[i].id()] = cameras[i];
+				}
+				else {
+					std::cout << "Cameras ID inconsistent. Setting default interpolation path." << std::endl;
+					defaultPath = true;
+					break;
+				}
+			}
+		}
+
+		if (defaultPath) {
+			_interpPath.clear();
+			for (int i = 0; i < cameras.size(); i++) {
+				if (cameras[i].isActive()) {
+					_interpPath.push_back(cameras[i]);
+				}
 			}
 		}
 	}

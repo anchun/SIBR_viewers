@@ -74,7 +74,7 @@ namespace sibr {
 			}
 
 			CameraParametersColmap params;
-			params.id = std::stol(tokens[0]) - 1;
+			params.id = std::stol(tokens[0]);
 			params.width = std::stol(tokens[2]);
 			params.height = std::stol(tokens[3]);
 			params.fx = std::stof(tokens[4]);
@@ -107,7 +107,7 @@ namespace sibr {
 				continue;
 			}
 
-			size_t      id = std::stol(tokens[8]) - 1;
+			uint		cId = std::stoi(tokens[0]) - 1;
 			float       qw = std::stof(tokens[1]);
 			float       qx = std::stof(tokens[2]);
 			float       qy = std::stof(tokens[3]);
@@ -115,6 +115,7 @@ namespace sibr {
 			float       tx = std::stof(tokens[5]);
 			float       ty = std::stof(tokens[6]);
 			float       tz = std::stof(tokens[7]);
+			size_t      id = std::stol(tokens[8]);
 
 			std::string imageName = tokens[9];
 
@@ -146,6 +147,8 @@ namespace sibr {
 			infos.filename = imageName;
 			infos.width = camParams.width;
 			infos.height = camParams.height;
+			infos.camId = cId;
+
 
 			_imgInfos.push_back(infos);
 
@@ -221,6 +224,7 @@ namespace sibr {
 			return false;
 		}
 
+		uint camId = 0;
 		while (getline(scene_metadata, line))
 		{
 			//std::cout << line << '\n';
@@ -237,6 +241,7 @@ namespace sibr {
 						infos.filename = splitS[0];
 						infos.width = stoi(splitS[1]);
 						infos.height = stoi(splitS[2]);
+						infos.camId = camId;
 
 						//infos.filename.erase(infos.filename.find_last_of("."), std::string::npos);
 						id = atoi(infos.filename.c_str());
@@ -252,6 +257,7 @@ namespace sibr {
 						}
 						_imgInfos.push_back(infos);
 
+						++camId;
 						infos.filename.clear();
 						splitS.clear();
 					}
@@ -359,18 +365,19 @@ namespace sibr {
 	void ParseData::getParsedData(const BasicIBRAppArgs & myArgs)
 	{
 		std::ifstream bundler(myArgs.dataset_path.get() + "/" + myArgs.scene_metadata_filename.get());
+		std::ifstream colmap(myArgs.dataset_path.get() + "/colmap/stereo/sparse/cameras.txt");
+
 		if (bundler.good()) {
 			getParsedBundlerData(myArgs.dataset_path, myArgs.scene_metadata_filename);
 			_datasetType = Type::SIBR;
-		}
-		
-		// What happens if both are present
-		std::ifstream colmap(myArgs.dataset_path.get() + "/colmap/stereo/sparse/cameras.txt");
-
-		if (colmap.good()) {
+		}else if (colmap.good()) {
 			getParsedColmapData(myArgs.dataset_path);
 			_datasetType = Type::COLMAP;
 		}
+		
+		// What happens if both are present
+		
 
+		
 	}
 }
