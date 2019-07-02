@@ -21,7 +21,7 @@ namespace sibr
 		NormalRenderer(int w,int h, bool generate = true, bool useFloats = false, bool imSpace = false) ;
 		~NormalRenderer();
 
-		void render( const sibr::InputCamera &cam, const Mesh& mesh );
+		void render( const sibr::InputCamera &cam, const Mesh& mesh, bool clear=true);
 		void setWH(int w, int h);
 		std::shared_ptr<sibr::RenderTargetRGB> _normal_RT;
 		std::shared_ptr<sibr::RenderTargetRGBA32F> _normal_RT_32F;

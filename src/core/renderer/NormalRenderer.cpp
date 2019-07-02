@@ -54,7 +54,7 @@ namespace sibr
 		}
 	}
 
-	void NormalRenderer::render(const sibr::InputCamera& cam, const Mesh& mesh)
+	void NormalRenderer::render(const sibr::InputCamera& cam, const Mesh& mesh, bool clear)
 	{
 #if USE_PIXELART_MODEN
 		glPointSize(10.f);
@@ -63,13 +63,16 @@ namespace sibr
 #endif
 
 		if (_useFloats) {
-			_normal_RT_32F->clear(sibr::Vector4f(0.5f,0.5f,0.5f,1.0f));
+			if(clear)
+				_normal_RT_32F->clear(sibr::Vector4f(0.5f,0.5f,0.5f,1.0f));
 			glViewport(0, 0, _normal_RT_32F->w(), _normal_RT_32F->h());
 			_normal_RT_32F->bind();
 		} else {
 			_normal_RT->bind();
-			glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			if (clear) {
+				glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
+				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			}
 			glViewport(0, 0, _normal_RT->w(), _normal_RT->h());
 			glScissor(0, 0, _normal_RT->w(), _normal_RT->h());
 		}
