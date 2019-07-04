@@ -138,7 +138,7 @@ void main(void){
 		vec2 fc = vec2(1.0) - smoothstep(vec2(0.7), vec2(1.0), abs(2.0*uvd.xy-1.0));
     	float penalty_uv = 1.0 - fc.x * fc.y; 
 
-		penaltyValue = penalty_ang + BETA*penalty_res + BETA*penalty_uv;
+		penaltyValue = penalty_ang + penalty_res + penalty_uv;
 		
 
 
