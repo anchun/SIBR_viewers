@@ -343,10 +343,6 @@ namespace sibr
 
 		if (!_onPause) {
 
-			// The rendering viewport is the same as the final viewport, but with a (0,0) origin.
-			unsigned int w = (unsigned int)subview.viewport.finalWidth();
-			unsigned int h = (unsigned int)subview.viewport.finalHeight();
-
 			/// \todo Offline video dumping.
 			//int camIdDump = 0;
 			//// This requires a scene, a handler and the save flag on the camera. (TODO: move flag to the handler).
@@ -367,17 +363,10 @@ namespace sibr
 			//	}
 			//}
 
-			// Adjsut rendering size if needed.
-			const Viewport renderViewport(0.0, 0.0, (float)w, (float)h);
-
-			if (subview.rt->w() != w || subview.rt->h() != h) {
-				subview.rt.reset(new RenderTargetRGB(w, h, SIBR_CLAMP_UVS));
-				invalidTexture = true;
-			}
-
+			const Viewport renderViewport(0.0, 0.0, (float)subview.rt->w(), (float)subview.rt->h());
 			subview.render(_renderingMode, renderViewport);
 
-			// Offline video dumping, continued. We ignore addiitonal rendering as those often are GUI overlays.
+			// Offline video dumping, continued. We ignore additional rendering as those often are GUI overlays.
 			//if (subview.handler != NULL && subview.handler->getCamera().needSave()) {
 			//	sibr::ImageRGB frame;
 			//	subview.rt->readBack(frame);

@@ -198,6 +198,9 @@ if os.path.exists(path_clipping_planes):
     clipping_planes_file.close()
 
 
+if not os.path.exists(path_dest):
+    os.mkdir(path_dest)
+
 folder_to_create = ["images","cameras","meshes","textures"]
 for f in folder_to_create:
     if not os.path.exists(os.path.join(path_dest,f)):
