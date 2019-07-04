@@ -311,8 +311,13 @@ namespace sibr {
 						break;
 				}
 			}
+			else if (line == "[proxy]") {
+				// Read the relative path of the mesh to load.
+				getline(scene_metadata, line);
+				_meshPath = _basePathName + "/" + line;
+			}
 		}
-		//std::cout << _imgInfos.size() << std::endl;
+
 		if (_activeImages.empty()) {
 			_activeImages.resize(_imgInfos.size());
 
@@ -344,10 +349,11 @@ namespace sibr {
 		if (!parseBundlerFile(dataset_path + "/cameras/bundle.out")) {
 			SIBR_ERR << "Bundle file does not exist at /" + dataset_path + "/cameras/." << std::endl;
 		}
+		// Default mesh path if none found in the metadata file.
+		if (_meshPath.empty()) {
+			_meshPath = _basePathName + "/meshes/recon.ply";
+		}
 
-		_meshPath = _basePathName + "/meshes/recon.ply";
-
-		return;
 	}
 
 	void ParseData::getParsedColmapData(const std::string & dataset_path)
