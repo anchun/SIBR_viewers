@@ -16,6 +16,8 @@ ${OpenCV_LIBRARIES}
 glfw3
 sibr_system
 sibr_graphics
+sibr_assets
+sibr_raycaster
 )
 
 if (NOT WIN32)

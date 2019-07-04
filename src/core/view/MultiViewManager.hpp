@@ -263,7 +263,7 @@ namespace sibr
 
 		void				renderSubView(SubView & subview) const;
 
-		void				captureView(const SubView & view, const std::string & path = "./screenshots", const std::string & filename = "");
+		static void				captureView(const SubView & view, const std::string & path = "./screenshots", const std::string & filename = "");
 		
 		Window& _window;
 		IRenderingMode::Ptr _renderingMode = nullptr;
