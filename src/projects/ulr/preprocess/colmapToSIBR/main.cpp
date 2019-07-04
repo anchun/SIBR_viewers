@@ -54,8 +54,8 @@ int main(const int argc, const char** argv)
 	outputListIm.open(pathScene + "/images/list_images.txt");
 	outputBundleCam << "# Bundle file v0.3" << std::endl;
 	outputBundleCam << maxCam << " " << 0 << std::endl;
-	
-	
+
+
 	for (int c = minCam; c < maxCam; c++) {
 		auto & camIm = cams[c];
 		

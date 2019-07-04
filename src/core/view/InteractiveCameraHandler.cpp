@@ -251,6 +251,9 @@ namespace sibr {
 					_interpPath.push_back(cameras[i]);
 				}
 			}
+			std::sort(_interpPath.begin(), _interpPath.end(), [](const InputCamera & a, const InputCamera & b) {
+				return a.id() < b.id();
+			});
 		}
 	}
 
