@@ -3,7 +3,6 @@
 
 namespace sibr {
 
-
 	MeshTexturing::MeshTexturing(unsigned int sideSize) :
 		_accum(sideSize, sideSize, Vector3f(0.0f, 0.0f, 0.0f)),
 		_mask(sideSize, sideSize, 0)
@@ -62,12 +61,18 @@ namespace sibr {
 		normal = (wCoord * normals[tri[0]] + uCoord * normals[tri[1]] + vCoord * normals[tri[2]]).normalized();
 	}
 
-	void MeshTexturing::reproject(const std::vector<InputCamera> & cameras, const std::vector<sibr::ImageRGB::Ptr> & images) {
+	void MeshTexturing::reproject(const std::vector<InputCamera> & cameras, const std::vector<sibr::ImageRGB> & images) {
 		// We need a mesh for reprojection.
 		if (!_mesh) {
 			SIBR_WRG << "[Texturing] No mesh available." << std::endl;
 			return;
 		}
+
+
+		struct SampleInfos {
+			sibr::Vector3f color;
+			float weight;
+		};
 
 		SIBR_LOG << "[Texturing] Gathering color samples from " << cameras.size() << " cameras ..." << std::endl;
 
@@ -93,6 +98,8 @@ namespace sibr {
 				sibr::Vector3f avgColor(0.0f, 0.0f, 0.0f);
 				float totalWeight = 0.0f;
 
+				std::vector<SampleInfos> samples;
+
 				for (int cid = 0; cid < cameras.size(); ++cid) {
 					const auto & cam = cameras[cid];
 					if (!cam.frustumTest(vertex)) {
@@ -112,14 +119,34 @@ namespace sibr {
 
 					// Reproject, read color.
 					const sibr::Vector2f pos = cam.projectImgSpaceInvertY(vertex).xy();
-					const sibr::Vector3f col = images[cid]->bilinear(pos).cast<float>().xyz();
+					const sibr::Vector3f col = images[cid].bilinear(pos).cast<float>().xyz();
 					// Angle-based weight for now.
 					const float angleWeight = std::max(-occDir.dot(normal), 0.0f);
 					const float weight = angleWeight;
-					avgColor += weight * col;
-					totalWeight += weight;
-
+					//avgColor += weight * col;
+					//totalWeight += weight;
+					samples.emplace_back();
+					samples.back().color = col;
+					samples.back().weight = weight;
 				}
+				if (samples.empty()) {
+					continue;
+				}
+				
+				std::sort(samples.begin(), samples.end(), [](const SampleInfos & a, const SampleInfos & b)
+				{
+					return a.weight < b.weight;
+				});
+
+				// Re-weight and accumulate the samples.
+				// The code is written this way to support 'best XX% samples' approaches in the future.
+				for(int i = 0; i < samples.size(); ++i) {
+					float w = samples[i].weight;
+					w = w * w;
+					totalWeight += w;
+					avgColor += w * samples[i].color;
+				}
+
 				if (totalWeight > 0.0f) {
 					_accum(px, py) = avgColor / totalWeight;
 					_mask(px, py)[0] = 255;
@@ -147,7 +174,7 @@ namespace sibr {
 		const cv::Mat3b outputB = cv::Mat3b(outputF);
 		result->fromOpenCV(outputB);
 
-
+		/// \todo For extra large images, this might crash because of internal openCV indexing limitations.
 		if (options & Options::FLIP_VERTICAL) {
 			result->flipH();
 		}
@@ -174,14 +201,13 @@ namespace sibr {
 		return filled;
 	}
 
-
 	sibr::ImageRGB32F::Ptr MeshTexturing::floodFill(const sibr::ImageRGB32F & image, const sibr::ImageL8 & mask) {
 
 		ImageRGB32F::Ptr filled(new ImageRGB32F(image.w(), image.h()));
 
 		SIBR_LOG << "[Texturing] Flood filling..." << std::endl;
 		// Perform filling.
-		// We need the zeros pixels.
+		// We need the zeros pixels marked as non zeros.
 		cv::Mat1b flipMask = mask.toOpenCV();
 		flipMask = 255 - flipMask;
 		cv::Mat1f dummyDist(flipMask.rows, flipMask.cols, 0.0f);
@@ -220,7 +246,6 @@ namespace sibr {
 		return filled;
 	}
 
-
 	bool MeshTexturing::hitTest(int px, int py, RayHit & finalHit)
 	{
 		// From the UVs find the world space position.
@@ -240,7 +265,6 @@ namespace sibr {
 		}
 		return false;
 	}
-
 
 	bool MeshTexturing::sampleNeighborhood(int px, int py, RayHit & hit)
 	{
@@ -266,6 +290,5 @@ namespace sibr {
 		}
 		return hasHit;
 	}
-
 
 }
