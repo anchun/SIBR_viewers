@@ -91,6 +91,7 @@ int main(int ac, char** av) {
 	generalCamera->setup(scene->cameras()->inputCameras(), Viewport(0, 0, (float)usedResolution.x(), (float)usedResolution.y()), raycaster);
 
 
+
 	// Add views to mvm.
 	MultiViewManager        multiViewManager(window, false);
 	multiViewManager.addIBRSubView("ULR view", ulrView, usedResolution, ImGuiWindowFlags_ResizeFromAnySide);

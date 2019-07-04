@@ -23,7 +23,7 @@ namespace sibr {
 
 		static UV from(const sibr::Vector2f & v) { return UV(v.x(), v.y()); }
 
-		UV(float u, float v) : sibr::Vector2f(u, v) {}
+		UV(float u, float v) : Vector2f(u, v) {}
 
 		//explicit UV(const sibr::Vector2f & v) : sibr::Vector2f(v) {}
 
