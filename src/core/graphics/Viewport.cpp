@@ -55,5 +55,8 @@ namespace sibr
 		return width() == 0.0 && height() == 0.0;
 	}
 
+	Vector2f Viewport::pixAt(const Vector2f & uv) const {
+		return uv.cwiseProduct(finalSize()) + finalTopLeft();
+	}
 
 } // namespace sibr

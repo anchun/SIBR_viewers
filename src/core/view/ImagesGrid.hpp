@@ -8,9 +8,14 @@
 namespace sibr
 {
 
+	SIBR_VIEW_EXPORT Vector2f toGLuv(const Vector2f & uv);
+
 	class SIBR_VIEW_EXPORT DrawUtilities
 	{
 	public:
+
+		DrawUtilities();
+
 		GLShader baseShader;
 
 		GLuniform<Vector3f> colorGL;
@@ -24,9 +29,10 @@ namespace sibr
 		GLuniform <Vector2f> gridGL;
 		GLuniform <Vector2f> gridTopLeftGL;
 		GLuniform <Vector2f> gridBottomRightGL;
+		GLuniform<bool> flip_texture;
 
-		void rectangle(const Vector3f & color, const Vector2f & tl, const Vector2f & br, bool fill, float alpha);
-		void rectanglePixels(const Vector3f & color, const Vector2f & center, const Vector2f & diagonal, bool fill, float alpha, const Vector2f & winSize);
+		void rectangle(const Vector3f & color, const Vector2f & tl, const Vector2f & br, bool fill, float alpha, const Viewport & vp = {} );
+		void rectanglePixels(const Vector3f & color, const Vector2f & center, const Vector2f & diagonalPixs, bool fill, float alpha, const Viewport & vp);
 		void circle(const Vector3f & color, const Vector2f & center, float radius, bool fill, float alpha, const Vector2f & scaling = Vector3f(1, 1), int precision = 50);
 		void circlePixels(const Vector3f & color, const Vector2f & center, float radius, bool fill, float alpha, const Vector2f & winSize, int precision = 50);
 		void linePixels(const Vector3f & color, const Vector2f & ptA, const Vector2f & ptB, const Vector2f & winSize);
@@ -40,9 +46,8 @@ namespace sibr
 
 	struct QuadData
 	{
-		QuadData() : center({ 0.5f, 0.5f }), diagonal({ 0.5f, 0.5f }) {}
-		Vector2f center;
-		Vector2f diagonal;
+		Vector2f center = { 0.5, 0.5 };
+		Vector2f diagonal = { 0.5, 0.5 };
 
 		Vector2f br() const { return center + diagonal; }
 		Vector2f tl() const { return center - diagonal; }
@@ -50,6 +55,7 @@ namespace sibr
 
 	struct QuadSelectionData
 	{
+		operator bool() const { return isActive; }
 		Vector2i first;
 		Vector2i second;
 		bool isActive = false;
@@ -65,7 +71,8 @@ namespace sibr
 	struct MVpixel {
 		MVpixel() : isDefined(false) {}
 		MVpixel(int i, const Vector2i & px) : im(i), pos(px), isDefined(true) {}
-			
+		operator bool() const { return isDefined; }
+
 		Vector2i pos;
 		int im;
 		bool isDefined = false;
@@ -75,26 +82,37 @@ namespace sibr
 	struct GridMapping {
 
 		MVpixel pixFromScreenPos(const Vector2i & pos, const Vector2f & size);
-		Vector2f uvFromMVpixel(const MVpixel & pix);
+
+		//uvs in opengl [1,-1]
+		Vector2f uvFromMVpixel(const MVpixel & pix, bool use_center = false);
 
 		void updateZoomBox(const Input & input, const Vector2f & size);
 		void updateZoomScroll(const Input & input);
 		void updateCenter(const Input & input, const Vector2f & size);
 		void updateDrag(const Input & input, const Vector2f & size);
 
+		void displayZoom(const sibr::Viewport & viewport, DrawUtilities & utils);
+
+		void highlightPixel(const MVpixel & pix, const sibr::Viewport & viewport, DrawUtilities & utils, const sibr::Vector3f & color = { 0, 1, 0 }, const sibr::Vector2f & minPixSize = { 10.0f, 10.0f });
+		void setupGrid(const Viewport & vp);
+
+
+		Viewport _vp;
 		QuadData viewRectangle;
 		QuadSelectionData zoomSelection;
 		DragClickData drag;
 
-		Vector2i grid;
+		int num_per_row = 4;
+		Vector2f grid_adjusted;
+
 		Vector2f imSizePixels;
-		float imRatio;
 		int num_imgs;
 	};
 
 	struct ImageGridLayer {	
 		std::vector<ITexture2DArray::Ptr> imgs_texture_array;
 		std::string name;
+		bool flip_texture = false;
 	};
 
 	class SIBR_VIEW_EXPORT ImagesGrid : public ViewBase, GridMapping 
@@ -108,12 +126,26 @@ namespace sibr
 		virtual void	onGUI() override;
 
 	protected:
+
+		void listImagesLayerGUI();
+		void optionsGUI();
+
+		bool name_collision(const std::string & name) const;
+		void setupFirstLayer();
+
 		std::list<ImageGridLayer> images_layers;
 		std::list<ImageGridLayer>::iterator current_layer;
-		ITexture2DArray::Ptr current_level;
-		//uint current_level = 0;
+		int current_level = 0;
+		ITexture2DArray::Ptr current_level_tex;
+
+		MVpixel currentActivePix;
 
 		DrawUtilities draw_utils;
+
+
+		//dgb
+		Viewport db_vp;
+		Vector2i db_mp;
 
 	public:
 		template<typename T, uint N>
@@ -125,9 +157,9 @@ namespace sibr
 		) {
 			std::vector<cv::Mat> images_cv(images.size());
 			for (size_t im = 0; im < images.size(); ++im) {
-				images_cv[im] = images[im].toOpenCV();
+				images_cv[im] = images[im].toOpenCVBGR();
 			}
-			addImageLayer<T, N>(images_cv);
+			addImageLayer<T, N>(layer_name, images_cv, num_levels, flags);
 		}
 
 		template<typename T, uint N>
@@ -139,9 +171,28 @@ namespace sibr
 		) {
 			std::vector<cv::Mat> images_cv(images.size());
 			for (size_t im = 0; im < images.size(); ++im) {
-				images_cv[im] = images[im]->toOpenCV();
+				images_cv[im] = images[im]->toOpenCVBGR();
 			}
-			addImageLayer<T, N>(images_cv);
+			addImageLayer<T, N>(layer_name, images_cv, num_levels, flags);
+		}
+
+		template<typename T, uint N>
+		void addImageLayer(
+			const std::string & layer_name,
+			const std::shared_ptr<Texture2DArray<T,N>> & images
+		) {
+			if (name_collision(layer_name)) {
+				return;
+			}
+
+
+			ImageGridLayer layer;
+			layer.name = layer_name;
+			layer.imgs_texture_array = { std::static_pointer_cast<ITexture2DArray>(images) };
+
+			images_layers.push_back(layer);
+
+			setupFirstLayer();
 		}
 
 		template<typename T, uint N>
@@ -151,7 +202,12 @@ namespace sibr
 			uint num_levels = 1,
 			uint flags = 0
 		) {
-			if (images_layers.count(layer_name)) {
+
+			if (!images.size()) {
+				return;
+			}
+
+			if (name_collision(layer_name)) {
 				return;
 			}
 
@@ -174,9 +230,7 @@ namespace sibr
 
 			images_layers.push_back(layer);
 
-			if (images_layers.size() == 1) {
-				current_layer = images_layers.begin();
-			}
+			setupFirstLayer();
 		}
 	};
 }

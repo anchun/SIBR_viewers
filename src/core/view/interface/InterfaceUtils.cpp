@@ -260,7 +260,7 @@ namespace sibr {
 	{
 		UV11 uvA = UV01::from(ptA.cwiseQuotient(winSize));
 		UV11 uvB = UV01::from(ptB.cwiseQuotient(winSize));
-
+			
 		sibr::Mesh line(true);
 		line.vertices({
 			{ uvA.x(), uvA.y(), 0.0f },
