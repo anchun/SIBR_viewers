@@ -14,12 +14,13 @@ namespace sibr{
 
 	public:
 		
-		std::vector<uint>						selectCameras(const std::vector<InputCamera>& cams, const sibr::Camera& eye, uint count);
+		static std::vector<uint>						selectCameras(const std::vector<InputCamera>& cams, const sibr::Camera& eye, uint count);
 
+		static std::vector<uint>						selectCamerasSimpleDist(const std::vector<InputCamera>& cams, const sibr::Camera& eye, uint count);
 
 	protected:
-		std::vector<uint>						selectCamerasSimpleDist(const std::vector<InputCamera>& cams, const sibr::Camera& eye, uint count);
-		std::vector<uint>						selectCamerasAngleWeight(const std::vector<InputCamera>& cams, const sibr::Camera& eye, uint count);
+		
+		static std::vector<uint>						selectCamerasAngleWeight(const std::vector<InputCamera>& cams, const sibr::Camera& eye, uint count);
 
 	};
 
