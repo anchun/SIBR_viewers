@@ -1277,6 +1277,7 @@ namespace sibr
 		virtual uint	w(void) const = 0;
 		virtual uint	h(void) const = 0;
 		virtual uint	depth(void) const = 0;
+		virtual uint	numLODs(void) const = 0;
 	};
 
 	/**
@@ -1298,7 +1299,7 @@ namespace sibr
 		uint    m_H = 0;
 		uint    m_Flags = 0;
 		uint	m_Depth = 0;
-
+		uint	m_numLODs = 1;
 	public:
 
 		Texture2DArray(const uint d = 0, uint flags = 0);
@@ -1335,6 +1336,7 @@ namespace sibr
 		uint	w(void) const;
 		uint	h(void) const;
 		uint	depth(void) const;
+		uint	numLODs(void) const;
 
 	private:
 		void createArray();
@@ -1413,19 +1415,32 @@ namespace sibr
 		glGenTextures(1, &m_Handle);
 		glBindTexture(GL_TEXTURE_2D_ARRAY, m_Handle);
 
-		if (m_Flags & SIBR_GPU_LINEAR_SAMPLING) {
-			glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-			glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		} else {
-			glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-			glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		}
-		
-		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
 		const bool autoMIPMAP = ((m_Flags & SIBR_GPU_AUTOGEN_MIPMAP) != 0);
 		const int numMipMap = autoMIPMAP ? (int)std::floor(std::log2(std::max(m_W, m_H))) : 1;
+
+		m_numLODs = numMipMap;
+
+		if (m_numLODs == 1) {
+			if (m_Flags & SIBR_GPU_LINEAR_SAMPLING) {
+				glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+				glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			} else {
+				glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+				glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+			}
+
+		} else {
+			if (m_Flags & SIBR_GPU_LINEAR_SAMPLING) {
+				glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+				glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			} else {
+				glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+				glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+			}
+		}
+
+		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
 		glTexStorage3D(GL_TEXTURE_2D_ARRAY, numMipMap,
 			GLFormat<T_Type, T_NumComp>::internal_format,
@@ -1647,6 +1662,8 @@ namespace sibr
 	template<typename T_Type, unsigned int T_NumComp>
 	uint Texture2DArray<T_Type, T_NumComp>::depth(void) const { return m_Depth; }
 	
+	template<typename T_Type, unsigned int T_NumComp>
+	uint Texture2DArray<T_Type, T_NumComp>::numLODs(void) const { return m_numLODs; }
 
 
 

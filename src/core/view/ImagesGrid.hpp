@@ -25,10 +25,12 @@ namespace sibr
 
 		GLShader gridShader;
 
-		GLuniform <int> numImgsGL;
+		
 		GLuniform <Vector2f> gridGL;
 		GLuniform <Vector2f> gridTopLeftGL;
 		GLuniform <Vector2f> gridBottomRightGL;
+		GLuniform <float> lod;
+		GLuniform <int> numImgsGL; 
 		GLuniform<bool> flip_texture;
 
 		void rectangle(const Vector3f & color, const Vector2f & tl, const Vector2f & br, bool fill, float alpha, const Viewport & vp = {} );
@@ -110,7 +112,7 @@ namespace sibr
 	};
 
 	struct ImageGridLayer {	
-		std::vector<ITexture2DArray::Ptr> imgs_texture_array;
+		ITexture2DArray::Ptr imgs_texture_array;
 		std::string name;
 		bool flip_texture = false;
 	};
@@ -135,8 +137,8 @@ namespace sibr
 
 		std::list<ImageGridLayer> images_layers;
 		std::list<ImageGridLayer>::iterator current_layer;
-		int current_level = 0;
 		ITexture2DArray::Ptr current_level_tex;
+		float current_lod = 0;
 
 		MVpixel currentActivePix;
 
@@ -152,28 +154,26 @@ namespace sibr
 		void addImageLayer(
 			const std::string & layer_name,
 			const std::vector<Image<T, N> > & images,
-			uint num_levels = 1,
 			uint flags = 0
 		) {
 			std::vector<cv::Mat> images_cv(images.size());
 			for (size_t im = 0; im < images.size(); ++im) {
 				images_cv[im] = images[im].toOpenCVBGR();
 			}
-			addImageLayer<T, N>(layer_name, images_cv, num_levels, flags);
+			addImageLayer<T, N>(layer_name, images_cv, flags);
 		}
 
 		template<typename T, uint N>
 		void addImageLayer(
 			const std::string & layer_name,
 			const std::vector<ImagePtr<T,N>> & images,
-			uint num_levels = 1,
 			uint flags = 0
 		) {
 			std::vector<cv::Mat> images_cv(images.size());
 			for (size_t im = 0; im < images.size(); ++im) {
 				images_cv[im] = images[im]->toOpenCVBGR();
 			}
-			addImageLayer<T, N>(layer_name, images_cv, num_levels, flags);
+			addImageLayer<T, N>(layer_name, images_cv, flags);
 		}
 
 		template<typename T, uint N>
@@ -184,7 +184,6 @@ namespace sibr
 			if (name_collision(layer_name)) {
 				return;
 			}
-
 
 			ImageGridLayer layer;
 			layer.name = layer_name;
@@ -199,7 +198,6 @@ namespace sibr
 		void addImageLayer(
 			const std::string & layer_name,
 			const std::vector<cv::Mat> & images,
-			uint num_levels = 1,
 			uint flags = 0
 		) {
 
@@ -211,23 +209,9 @@ namespace sibr
 				return;
 			}
 
-			std::vector<std::vector<cv::Mat>> pyrs(images.size());
-			for (int im = 0; im < (int)images.size(); ++im) {
-				cv::buildPyramid(images[im], pyrs[im], num_levels);
-			}
-
 			ImageGridLayer layer;
 			layer.name = layer_name;
-			layer.imgs_texture_array.resize(num_levels);
-			for (uint l = 0; l < num_levels; ++l) {
-				std::vector<cv::Mat> current_level;
-				for (const auto & pyr : pyrs) {
-					current_level.push_back(pyr[l]);
-				}
-				auto tex = std::make_shared<Texture2DArray<T, N>>(current_level, flags);
-				layer.imgs_texture_array[l] = std::static_pointer_cast<ITexture2DArray>(tex);
-			}
-
+			layer.imgs_texture_array = std::make_shared<Texture2DArray<T, N>>(images, flags | SIBR_GPU_AUTOGEN_MIPMAP);
 			images_layers.push_back(layer);
 
 			setupFirstLayer();

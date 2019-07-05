@@ -11,7 +11,9 @@ namespace sibr
 
 		if (current_level_tex) {
 			imSizePixels = { current_level_tex->w(), current_level_tex->h() };
-			num_imgs = (int)current_layer->imgs_texture_array.front()->depth();
+			imSizePixels = imSizePixels.cwiseQuotient(pow(2.0, std::round(current_lod))*Vector2f(1, 1)).unaryExpr([](float f) { return std::floor(f); });
+
+			num_imgs = (int)current_layer->imgs_texture_array->depth();
 		}
 
 		currentActivePix = pixFromScreenPos(input.mousePosition(), size);
@@ -41,6 +43,7 @@ namespace sibr
 
 		draw_utils.numImgsGL.set(num_imgs);
 		draw_utils.gridGL.set(grid_adjusted);
+		draw_utils.lod.set(current_lod);
 
 		draw_utils.gridTopLeftGL.set(viewRectangle.tl());
 		draw_utils.gridBottomRightGL.set(viewRectangle.br());
@@ -117,16 +120,14 @@ namespace sibr
 			ImGui::Separator();
 
 			for (auto imgs_it = images_layers.begin(); imgs_it != images_layers.end(); ++imgs_it) {
-
 				if (ImGui::Selectable(imgs_it->name.c_str(), current_layer == imgs_it)) {
 					current_layer = imgs_it;
-					current_level = std::min(current_level, (int)current_layer->imgs_texture_array.size() - 1);
-					current_level_tex = current_layer->imgs_texture_array[current_level];
+					current_level_tex = current_layer->imgs_texture_array;
 				}
 
 				ImGui::NextColumn();
 
-				auto & tex_arr = imgs_it->imgs_texture_array.front();
+				auto & tex_arr = imgs_it->imgs_texture_array;
 				GUI_TEXT(tex_arr->depth() << " x " << tex_arr->w() << " x " << tex_arr->h());
 				ImGui::NextColumn();
 
@@ -149,9 +150,7 @@ namespace sibr
 				viewRectangle.center = { 0.5f, 0.5f };
 				viewRectangle.diagonal = { 0.5f, 0.5f };
 			}
-			if (current_layer->imgs_texture_array.size() > 1 && ImGui::SliderInt("pyramid level", &current_level, 1, current_layer->imgs_texture_array.size() - 1)) {
-				current_level_tex = current_layer->imgs_texture_array[current_level];
-			}
+			ImGui::SliderFloat("pyramid level", &current_lod, 0, 10);
 		}
 	}
 
@@ -169,7 +168,7 @@ namespace sibr
 	{
 		if (images_layers.size() == 1) {
 			current_layer = images_layers.begin();
-			current_level_tex = current_layer->imgs_texture_array.front();
+			current_level_tex = current_layer->imgs_texture_array;
 		}
 	}
 
@@ -371,6 +370,7 @@ namespace sibr
 			"layout(binding = 0) uniform sampler2DArray texArray;				\n"
 			"uniform int numImgs;												\n"
 			"uniform vec2 grid;													\n"
+			"uniform float lod;													\n"
 			"uniform bool flip_texture;											\n"
 			"in vec2 uv_coord;													\n"
 			"out vec4 out_color;												\n"
@@ -382,7 +382,7 @@ namespace sibr
 			"   vec2 mods = uvs - fracs; 										\n"
 			"   int n = int(mods.x + grid.x*mods.y); 							\n"
 			" if ( n< 0 || n > numImgs || mods.x >= grid.x || mods.y >= (float(numImgs)/grid.x) ) { discard; } else { \n"
-			"	out_color = texture(texArray,vec3(fracs.x, flip_texture ? 1.0 -fracs.y : fracs.y,n));	}		\n"
+			"	out_color = textureLod(texArray,vec3(fracs.x, flip_texture ? 1.0 -fracs.y : fracs.y,n), lod);	}		\n"
 			"	//out_color = vec4(n/64.0,0.0,0.0,1.0); }						\n"
 			"	//out_color = vec4(uv_coord.x,uv_coord.y,0.0,1.0);	}			\n"
 			"}																	\n";
@@ -393,6 +393,7 @@ namespace sibr
 		gridBottomRightGL.init(gridShader, "zoomBR");
 		numImgsGL.init(gridShader, "numImgs");
 		gridGL.init(gridShader, "grid");
+		lod.init(gridShader, "lod");
 		flip_texture.init(gridShader, "flip_texture");
 	}
 
@@ -469,8 +470,9 @@ namespace sibr
 
 				viewRectangle.center = center.cwiseQuotient(size);
 				viewRectangle.diagonal = diag.cwiseQuotient(size);
-				zoomSelection.isActive = false;
 			}
+
+			zoomSelection.isActive = false;
 		}
 	}
 
