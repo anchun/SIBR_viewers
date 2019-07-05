@@ -1,40 +1,70 @@
-#include <fstream>
-#include <iostream>
-#include <iomanip>
-#include <core/graphics/Image.hpp>
+#include <core/imgproc/CropScaleImageUtility.hpp>
 #include <core/system/CommandLineArgs.hpp>
-#include <boost/filesystem.hpp>
+
+
 
 /*
 Crop input images from center so they end up with resolution <crop_width> x <crop_height>
 if scale down factor is also passed, after the image has been cropped, it will be scaled down by that value
 */
-const char* USAGE						= "Usage: cropFromCenter --inputFile <path_to_input_file> --outputPath <path_to_output_folder> --avgResolution <width x height> --cropResolution <width x height> [--scaleDownFactor <alpha> --targetResolution <width x height>] \n";
+const char* USAGE = "Usage: cropFromCenter --inputFile <path_to_input_file> --outputPath <path_to_output_folder> --avgResolution <width x height> --cropResolution <width x height> [--scaleDownFactor <alpha> --targetResolution <width x height>] \n";
 //const char* USAGE						= "Usage: cropFromCenter --inputFile <path_to_input_file> --outputPath <path_to_output_folder> --avgResolution <width x height> --cropResolution <widht x height> [--scaleDownFactor <alpha> --targetResolution <width x height>] \n";
-const char* TAG							= "[cropFromCenter]";
-const unsigned PROCESSING_BATCH_SIZE	= 150;
-const char* LOG_FILE_NAME				= "cropFromCenter.log";
-const char* SCALED_DOWN_SUBFOLDER		= "scaled";
-const char* SCALED_DOWN_FILENAME		= "scale_factor.txt";
+const char* TAG = "[cropFromCenter]";
+const unsigned PROCESSING_BATCH_SIZE = 150;
+const char* LOG_FILE_NAME = "cropFromCenter.log";
+const char* SCALED_DOWN_SUBFOLDER = "scaled";
+const char* SCALED_DOWN_FILENAME = "scale_factor.txt";
 
-struct Image {
-	std::string	filename;
-	unsigned	width;
-	unsigned	height;
+struct CropAppArgs :
+	virtual sibr::BasicIBRAppArgs {
+	sibr::Arg<std::string> inputFileArg = { "inputFile", "" };
+	sibr::Arg<std::string> outputFolderArg = { "outputPath", "" };
+	sibr::Arg<sibr::Vector2i> avgResolutionArg = { "avgResolution",{ 0, 0 } };
+	sibr::Arg<sibr::Vector2i> cropResolutionArg = { "cropResolution",{ 0, 0 } };
+	sibr::Arg<float> scaleDownFactorArg = { "scaleDownFactor", 0.0f };
+	sibr::Arg<sibr::Vector2i> targetResolutionArg = { "targetResolution",{ 0, 0 } };
 };
+
+void printUsage()
+{
+	std::cout << USAGE << std::endl;
+}
+
 
 bool getParamas(int argc, const char ** argv,
 	std::string & inputFile, boost::filesystem::path & outputPath,
-	sibr::Vector2i & avgResolution, sibr::Vector2i & cropResolution, float & scaleDownFactor, sibr::Vector2i & targetResolution
-);
-void printUsage();
-std::vector<std::string> getPathToImgs(const std::string & inputFileName);
-bool getIsEmptyFile(const char * filename);
-void logExecution(const sibr::Vector2i & resolution, unsigned nrImages, long long elapsedTime, bool wasTransformed);
-void writeListImages(const std::string path_to_file, const std::vector<Image> & listOfImages);
-void writeScaleFactor(const std::string path_to_file, float scaleFactor);
-void writeTargetResolution(const std::string path_to_file, const sibr::Vector2i & targetResolution);
-sibr::Vector2i parseResolution(const std::string & param);
+	sibr::Vector2i & avgResolution, sibr::Vector2i & cropResolution, float & scaleDownFactor, sibr::Vector2i & targetResolution)
+{
+
+	sibr::CommandLineArgs::parseMainArgs(argc, argv);
+	CropAppArgs myArgs;
+
+	inputFile = myArgs.inputFileArg;
+
+	std::string outputFolder = myArgs.outputFolderArg;
+	outputPath = outputFolder;
+
+	avgResolution = myArgs.avgResolutionArg;
+
+	cropResolution = myArgs.cropResolutionArg;
+
+	// optional parameters
+	if (myArgs.scaleDownFactorArg != 0.0f) {
+		scaleDownFactor = myArgs.scaleDownFactorArg;
+	}
+
+	if (myArgs.targetResolutionArg.get() != sibr::Vector2i(0, 0)) {
+		targetResolution = myArgs.targetResolutionArg;
+	}
+
+
+	if (inputFile.empty() || outputFolder.empty() || avgResolution == sibr::Vector2i(0, 0) || cropResolution == sibr::Vector2i(0, 0)) {
+		return false;
+	}
+
+	return true;
+}
+
 
 int main(const int argc, const char** argv)
 {
@@ -46,6 +76,8 @@ int main(const int argc, const char** argv)
 	sibr::Vector2i				cropResolution;
 	float						scaleDownFactor = 0.f;
 	sibr::Vector2i				targetResolution;
+
+	sibr::CropScaleImageUtility appUtility;
 
 	if (!getParamas(argc, argv, inputFileName, outputFolder, avgInitialResolution, cropResolution, scaleDownFactor, targetResolution)) {
 		std::cerr << TAG << " ERROR: wrong parameters.\n";
@@ -70,9 +102,9 @@ int main(const int argc, const char** argv)
 	}
 
 	// read input file
-	std::vector<std::string> pathToImgs = getPathToImgs(inputFileName);
-	std::vector<Image> listOfImages(pathToImgs.size());
-	std::vector<Image> listOfImagesScaledDown(scaleDown ? pathToImgs.size() : 0);
+	std::vector<std::string> pathToImgs = appUtility.getPathToImgs(inputFileName);
+	std::vector<sibr::CropScaleImageUtility::Image> listOfImages(pathToImgs.size());
+	std::vector<sibr::CropScaleImageUtility::Image> listOfImagesScaledDown(scaleDown ? pathToImgs.size() : 0);
 
 	// calculate nr batches
 	unsigned nrBatches = static_cast<int>(ceil((float)(pathToImgs.size()) / PROCESSING_BATCH_SIZE));
@@ -129,155 +161,20 @@ int main(const int argc, const char** argv)
 
 	std::cout << TAG << " elapsed time=" << elapsedTime << "s.\n";
 
-	logExecution(avgInitialResolution, pathToImgs.size(), elapsedTime, scaleDown);
+	appUtility.logExecution(avgInitialResolution, pathToImgs.size(), elapsedTime, scaleDown, LOG_FILE_NAME);
 
 	// write list_images.txt
-	writeListImages((outputFolder / "list_images.txt").string(), listOfImages);
+	appUtility.writeListImages((outputFolder / "list_images.txt").string(), listOfImages);
 
 	// write list_images.txt and scale_factor in scaled down directoy if needed
 	if (scaleDown) {
-		writeListImages((scaledDownOutputFolder / "list_images.txt").string(), listOfImagesScaledDown);
-		writeScaleFactor((scaledDownOutputFolder / SCALED_DOWN_FILENAME).string(), scaleDownFactor);
+		appUtility.writeListImages((scaledDownOutputFolder / "list_images.txt").string(), listOfImagesScaledDown);
+		appUtility.writeScaleFactor((scaledDownOutputFolder / SCALED_DOWN_FILENAME).string(), scaleDownFactor);
 
 		if (targetResolution != sibr::Vector2i(0, 0)) {
-			writeTargetResolution((scaledDownOutputFolder / "target_resolution.txt").string(), targetResolution);
+			appUtility.writeTargetResolution((scaledDownOutputFolder / "target_resolution.txt").string(), targetResolution);
 		}
 	}
 
 	return 0;
-}
-
-struct CropAppArgs :
-	virtual sibr::BasicIBRAppArgs {
-	sibr::Arg<std::string> inputFileArg = { "inputFile", "" };
-	sibr::Arg<std::string> outputFolderArg = { "outputPath", "" };
-	sibr::Arg<sibr::Vector2i> avgResolutionArg = { "avgResolution", {0, 0} };
-	sibr::Arg<sibr::Vector2i> cropResolutionArg = { "cropResolution",{ 0, 0 } };
-	sibr::Arg<float> scaleDownFactorArg = { "scaleDownFactor", 0.0f };
-	sibr::Arg<sibr::Vector2i> targetResolutionArg = { "targetResolution",{ 0, 0 } };
-};
-
-bool getParamas(int argc, const char ** argv,
-	std::string & inputFile, boost::filesystem::path & outputPath,
-	sibr::Vector2i & avgResolution, sibr::Vector2i & cropResolution, float & scaleDownFactor, sibr::Vector2i & targetResolution)
-{
-
-	sibr::CommandLineArgs::parseMainArgs(argc, argv);
-	CropAppArgs myArgs;
-
-	inputFile = myArgs.inputFileArg;
-
-	std::string outputFolder = myArgs.outputFolderArg;
-	outputPath = outputFolder;
-
-	avgResolution = myArgs.avgResolutionArg;
-
-	cropResolution = myArgs.cropResolutionArg;
-
-	// optional parameters
-	if (myArgs.scaleDownFactorArg != 0.0f) {
-		scaleDownFactor = myArgs.scaleDownFactorArg;
-	}
-
-	if (myArgs.targetResolutionArg.get() != sibr::Vector2i(0, 0)) {
-		targetResolution = myArgs.targetResolutionArg;
-	}
-
-
-	if (inputFile.empty() || outputFolder.empty() || avgResolution == sibr::Vector2i(0, 0) || cropResolution == sibr::Vector2i(0, 0)) {
-		return false;
-	}
-
-	return true;
-}
-
-void printUsage()
-{
-	std::cout << USAGE << std::endl;
-}
-
-std::vector<std::string> getPathToImgs(const std::string & inputFileName)
-{
-	std::ifstream inputFile(inputFileName);
-	std::string line;
-	std::vector<std::string> pathToImgs;
-	while (getline(inputFile, line)) {
-		std::stringstream ss(line);
-		std::string path;
-		unsigned width, height;
-		ss >> path >> width >> height;
-		pathToImgs.push_back(path);
-	}
-	inputFile.close();
-	return pathToImgs;
-}
-
-bool getIsEmptyFile(const char * filename)
-{
-	std::ifstream testFile(filename);
-
-	bool result = !testFile.good();
-
-	testFile.close();
-
-	return result;
-}
-
-void logExecution(const sibr::Vector2i & originalResolution, unsigned nrImages, long long elapsedTime, bool wasTransformed)
-{
-	// check if file exists
-	bool isEmptyFile = getIsEmptyFile(LOG_FILE_NAME);
-	std::ofstream outputFile(LOG_FILE_NAME, std::ios::app);
-
-	if (isEmptyFile) {
-		outputFile << "date\t\t\tresolution\tnrImgs\telapsedTime\twas transformed?\n";
-	}
-
-	time_t now = time(0);
-	tm *ltm = localtime(&now);
-
-	std::stringstream dateSS;
-	dateSS << "[" << 1900 + ltm->tm_year << "/" << 1 + ltm->tm_mon << "/" << ltm->tm_mday << "] "
-		<< ltm->tm_hour << ":" << ltm->tm_min << ":" << ltm->tm_sec;
-
-	outputFile << dateSS.str() << "\t" << originalResolution[0] << "x" << originalResolution[1] << "\t\t" << nrImages << "\t" << elapsedTime << "\t" << wasTransformed << "\n";
-
-	outputFile.close();
-}
-
-void writeListImages(const std::string path_to_file, const std::vector<Image> & listOfImages)
-{
-	std::ofstream outputFile(path_to_file);
-
-	for (unsigned i = 0; i < listOfImages.size(); i++) {
-		outputFile << listOfImages[i].filename << " " << listOfImages[i].width << " " << listOfImages[i].height << "\n";
-	}
-
-	outputFile.close();
-}
-
-sibr::Vector2i parseResolution(const std::string & param)
-{
-	size_t delimiterPos = param.find('x');
-	std::string widthStr = param.substr(0, delimiterPos);
-	std::string heightStr = param.substr(delimiterPos + 1);
-	return sibr::Vector2i(std::stoi(widthStr), std::stoi(heightStr));
-}
-
-void writeScaleFactor(const std::string path_to_file, float scaleFactor)
-{
-	std::ofstream outputFile(path_to_file);
-
-	outputFile << scaleFactor << "\n";
-
-	outputFile.close();
-}
-
-void writeTargetResolution(const std::string path_to_file, const sibr::Vector2i & targetResolution)
-{
-	std::ofstream outputFile(path_to_file);
-
-	outputFile << targetResolution[0] << " " << targetResolution[1] << "\n";
-
-	outputFile.close();
 }
