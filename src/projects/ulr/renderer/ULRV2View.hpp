@@ -42,17 +42,13 @@ namespace sibr {
 
 		void	inputRTs(const std::vector<std::shared_ptr<RenderTargetRGBA32F> >& iRTs) { _inputRTs = iRTs;}
 
-		void	setMasks( const std::vector<RenderTargetLum::Ptr>& masks ) override;
+		void	setMasks( const std::vector<RenderTargetLum::Ptr>& masks );
 		void	loadMasks(
 			const sibr::BasicIBRScene::Ptr& ibrScene, int w, int h,
 			const std::string& maskDir = "",
-			const std::string& preFileName= "" ,
+			const std::string& preFileName = "",
 			const std::string& postFileName = ""
-			) {
-			std::string finalMaskDir = (maskDir == "" ? ibrScene->data()->basePathName() + "/masks/" : maskDir);
-			std::string finalPostFileName= (postFileName == "" ? "-mask.jpg" : postFileName);
-			_ulr->loadMasks(ibrScene, finalMaskDir, preFileName, finalPostFileName, w, h);
-		}
+		);
 	
 		void		setRenderMode(RenderMode mode) { _renderMode = mode; }
 		RenderMode	getRenderMode() const { return _renderMode; }

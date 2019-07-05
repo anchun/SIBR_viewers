@@ -1,13 +1,5 @@
-#include <core/graphics/Image.hpp>
-#include <core/system/Vector.hpp>
+#include <core/imgproc/DistordCropUtility.hpp>
 #include <core/system/CommandLineArgs.hpp>
-#include <core/system/Array2d.hpp>
-
-#include <boost/filesystem.hpp>
-#include <boost/foreach.hpp> 
-
-#include<fstream>
-#include <queue>
 
 typedef boost::filesystem::path Path;
 using namespace boost::filesystem;
@@ -40,11 +32,13 @@ struct DistordCropAppArgs :
 	sibr::Arg<int> black_threshold = { "black", threshold_black_color };
 	sibr::Arg<int> minSizeThresholdArg = { "min", threshold_bounding_box_size};
 	sibr::Arg<float> minRatioThresholdArg = { "ratio", threshold_ratio_bounding_box_size };
+	sibr::Arg<float> resThreshold = { "resolution_threshold", 0.15f };
 	sibr::Arg<float> toleranceArg = { "tolerance", toleranceFactor };
 	sibr::Arg<bool> vizArg = { "debug" };
 	sibr::ArgSwitch modeArg = { "modesame", true };
 	sibr::Arg<int> avgWidthArg = { "avg_width", 0 };
 	sibr::Arg<int> avgHeightArg = { "avg_height", 0 };
+	sibr::Arg<sibr::Vector3i> backgroundColor = { "backgroundColor", sibr::Vector3i(0, 0, 0) };
 };
 
 
@@ -60,321 +54,8 @@ update: reality capture (using the 'fit' option when exporting bundle) sometimes
 but also with a completely different resolution. We need to take into account those datasets too.
 */
 
-struct Bounds
-{
-	Bounds() {}
-	Bounds(const sibr::ImageRGB & img) {
-		xMax = (int)img.w() - 1;
-		xMin = 0;
-		yMax = (int)img.h() - 1;
-		yMin = 0;
-		xRatio = 1.0f;
-		yRatio = 1.0f;
-	}
 
-	Bounds(const sibr::Vector2i & res) {
-		xMax = res.x() - 1;
-		xMin = 0;
-		yMax = res.y() - 1;
-		yMin = 0;
-		xRatio = 1.0f;
-		yRatio = 1.0f;
-	}
-
-	std::string display() const {
-		std::stringstream s;
-		s << "[" << xMin << ", " << xMax << "]x[" << yMin << ", " << yMax << "]";
-		return s.str();
-	}
-
-	int xMax;
-	int xMin;
-	int yMax;
-	int yMin;
-	int width;
-	int height;
-
-	float xRatio;
-	float yRatio;
-};
-
-bool isBlack(const sibr::Vector3ub & pixelColor) {
-	sibr::Vector3i c = pixelColor.cast<int>() - backgroundColor;
-	return c.squaredNorm() < threshold_black_color;
-}
-
-/* 
-for checking if a file name is made out only of digits and not letters (like texture file names)
-*/
-bool is_number(const std::string& s)
-{
-	return !s.empty() && std::find_if(s.begin(),
-		s.end(), [](char c) { return !std::isdigit(c); }) == s.end();
-}
-
-/*
- * add pixel(x,y) to the queue if it is black
- * pd: they are not marked as visited if they are not black. why? a) because it is only used to avoid adding black pixels multiple times
- */
-void addPixelToQueue(const sibr::Vector2i & pixel, const sibr::ImageRGB & img, std::priority_queue<sibr::Vector2i> & queue, sibr::Array2d<bool> & arrayVisited) {
-	if (!arrayVisited(pixel.x(), pixel.y()) && isBlack(img(pixel.x(), pixel.y()))) {
-		queue.push(pixel);
-		arrayVisited(pixel.x(), pixel.y()) = true;
-	}
-}
-
-void findBounds(sibr::Array2d<bool> & isBlack, Bounds & bounds)
-{
-	bool wasUpdated = true;
-
-	while (wasUpdated) {	
-
-		wasUpdated = false;
-
-		for (int x = bounds.xMin; x <= bounds.xMax; ++x) {
-			wasUpdated = wasUpdated || isBlack(x, bounds.yMax) || isBlack(x, bounds.yMin);
-		}
-		for (int y = bounds.yMin; y <= bounds.yMax; ++y) {
-			wasUpdated = wasUpdated || isBlack(bounds.xMax, y) || isBlack(bounds.xMin, y);
-		}
-
-		if (wasUpdated) {
-			--bounds.xMax;
-			++bounds.xMin;
-			--bounds.yMax;
-			++bounds.yMin;
-		}
-
-		if (bounds.xMax - bounds.xMin < thinest_bounding_box_size || bounds.yMax - bounds.yMin < thinest_bounding_box_size) {
-			break;
-		}
-	}
-}
-
-
-Bounds getBounds(const sibr::ImageRGB & img) {
-	int w = img.w() - 1;
-	int h = img.h() - 1;
-
-	sibr::Array2d<bool> wasVisited(img.w(), img.h(), false);
-	sibr::Array2d<bool> isBlack(img.w(), img.h(), false);
-	std::priority_queue<sibr::Vector2i> pixelsQueue;
-
-	//init with boundary pixel (set initial pixelQueue)
-	// add first row and last row of pixels to the pixelsQueue (if they are black) and marked them as visited
-	for (int x = 0; x<w; ++x) {
-		addPixelToQueue(sibr::Vector2i(x, 0), img, pixelsQueue, wasVisited);
-		addPixelToQueue(sibr::Vector2i(x, h - 1), img, pixelsQueue, wasVisited);
-	}
-
-	// add left col and right col of pixels to the pixelsQueue (if they are black) and marked them as visited
-	for (int y = 0; y<h; ++y) {
-		addPixelToQueue(sibr::Vector2i(0, y), img, pixelsQueue, wasVisited);
-		addPixelToQueue(sibr::Vector2i(w - 1, y), img, pixelsQueue, wasVisited);
-	}
-
-	//neighbors shifts
-	sibr::Vector2i shiftsArray[4] = { sibr::Vector2i(1,0), sibr::Vector2i(-1,0), sibr::Vector2i(0,-1), sibr::Vector2i(0,1) };
-	std::vector<sibr::Vector2i> shifts(shiftsArray, shiftsArray + sizeof(shiftsArray) / sizeof(sibr::Vector2i));
-
-	//find all black pixels linked to the boundaries
-	while (pixelsQueue.size() > 0) {
-		sibr::Vector2i currentPix = pixelsQueue.top();
-		pixelsQueue.pop();
-		// if it was in the queue, then it was black
-		isBlack(currentPix.x(), currentPix.y()) = true;
-
-		for (auto & shift : shifts) {
-			sibr::Vector2i newPos = currentPix + shift;
-			if (img.isInRange(newPos.x(), newPos.y())) {
-				addPixelToQueue(newPos, img, pixelsQueue, wasVisited);
-			}
-		}
-
-	}
-
-	//find maximal bounding box not containing black pixels
-	Bounds bounds(img);
-	findBounds(isBlack, bounds);
-
-	bounds.xRatio = bounds.xMax / (float)img.w() - 0.5f;
-	bounds.yRatio = bounds.yMax / (float)img.h() - 0.5f;
-
-	int proposedWidth = bounds.xMax - bounds.xMin;
-	int proposedHeight = bounds.yMax - bounds.yMin;
-
-	bounds.width = (img.w() - proposedWidth) * toleranceFactor + proposedWidth;
-	bounds.height = (img.h() - proposedHeight) * toleranceFactor + proposedHeight;
-
-	return bounds;
-}
-
-sibr::Vector2i calculateAvgResolution(const std::vector< Path > & imagePaths)
-{
-	unsigned nrBatches = static_cast<int>(ceil((float)(imagePaths.size()) / PROCESSING_BATCH_SIZE));
-
-	std::vector<std::pair<std::pair<long, long>, unsigned>> sumAndNrItems(nrBatches);
-
-	for (unsigned batchId = 0; batchId < nrBatches; batchId++) {
-
-		unsigned nrItems = (batchId != nrBatches - 1) ? PROCESSING_BATCH_SIZE : ((nrBatches * PROCESSING_BATCH_SIZE != imagePaths.size()) ? (imagePaths.size() - (PROCESSING_BATCH_SIZE * batchId)) : PROCESSING_BATCH_SIZE);
-		long sumOfWidths = 0;
-		long sumOfHeights = 0;
-
-		std::vector<sibr::ImageRGB> chunkOfInputImages(nrItems);
-
-		#pragma omp parallel for
-		for (int localImgIndex = 0; localImgIndex < nrItems; localImgIndex++) {
-			unsigned globalImgIndex = (batchId * PROCESSING_BATCH_SIZE) + localImgIndex;
-			chunkOfInputImages.at(localImgIndex).load(imagePaths.at(globalImgIndex).string(), false);
-
-			#pragma omp critical
-			{
-				sumOfWidths += chunkOfInputImages[localImgIndex].w();
-				sumOfHeights += chunkOfInputImages[localImgIndex].h();
-			}
-		}
-		std::pair<long, long> sums(sumOfWidths, sumOfHeights);
-		std::pair<std::pair<long, long>, unsigned> batch(sums, nrItems);
-		sumAndNrItems[batchId] = batch;
-	}
-
-	long sumOfWidth = 0;
-	long sumOfHeight = 0;
-	for (unsigned i = 0; i < sumAndNrItems.size(); i++) {
-		sumOfWidth += sumAndNrItems[i].first.first;
-		sumOfHeight += sumAndNrItems[i].first.second;
-	}
-
-	unsigned globalAvgWidth = sumOfWidth / imagePaths.size();
-	unsigned globalAvgHeight = sumOfHeight / imagePaths.size();
-
-	return sibr::Vector2i(globalAvgWidth, globalAvgHeight);
-}
-
-
-sibr::Vector2i findBiggestImageCenteredBox(const Path & root, const std::vector< Path > & imagePaths, const std::vector<sibr::Vector2i> & resolutions, int avgWidth = 0, int avgHeight = 0)
-{
-	// check if avg resolution needs to be calculated
-	if (avgWidth == 0 || avgHeight == 0) {
-		std::cout << "about to calculate avg resolution. use python get_image_size script if dataset has too many images\n";
-		sibr::Vector2i avgResolution = calculateAvgResolution(imagePaths);
-		avgWidth = avgResolution.x();
-		avgHeight = avgResolution.y();
-	}
-
-	std::cout << "[distordCrop] average resolution " << avgWidth << "x" << avgHeight << " and nr resolutions given: " << resolutions.size() << "\n";
-
-	// discard images with different resolution
-	std::vector<uint> preExcludedCams;
-	for (unsigned i = 0; i < resolutions.size(); i++) {
-		bool shrinkHorizontally = ((resolutions[i].x() < avgWidth) && ((avgWidth - resolutions[i].x()) > avgWidth * resolutionThreshold)) ? true : false;
-		bool shrinkVertically = ((resolutions[i].y() < avgHeight) && ((avgHeight - resolutions[i].y()) > avgHeight * resolutionThreshold)) ? true : false;
-		if (shrinkHorizontally || shrinkVertically) {
-			preExcludedCams.push_back(i);
-			std::cout << "[distordCrop] excluding input image " << i << " resolution=" << resolutions[i].x() << "x" << resolutions[i].y() << "\n";
-		}
-	}
-
-	std::cout << "[distordCrop] nr pre excluded images " << preExcludedCams.size() << "\n";
-
-	// compute bounding boxes for all non-discarded images
-	std::vector<Bounds> allBounds(imagePaths.size());
-
-	unsigned nrBatches = static_cast<int>(ceil((float)(imagePaths.size()) / PROCESSING_BATCH_SIZE));
-
-	// processs batches sequentially (we don't want to run out of memory)
-	for (unsigned batchId = 0; batchId < nrBatches; batchId++) {
-
-		unsigned nrItems = (batchId != nrBatches - 1) ? PROCESSING_BATCH_SIZE : ((nrBatches * PROCESSING_BATCH_SIZE != imagePaths.size()) ? (imagePaths.size() - (PROCESSING_BATCH_SIZE * batchId)) : PROCESSING_BATCH_SIZE);
-
-		std::vector<sibr::ImageRGB> chunkOfInputImages(nrItems);
-
-		// load images in parallel (OpenMP 2.0 doesn't allow unsigned int as index. must be signed integral type)
-		#pragma omp parallel for
-		for (int localImgIndex = 0; localImgIndex < nrItems; localImgIndex++) {
-			unsigned globalImgIndex = (batchId * PROCESSING_BATCH_SIZE) + localImgIndex;
-			// if cam was discarded, do nothing
-			if (std::find(preExcludedCams.begin(), preExcludedCams.end(), globalImgIndex) == preExcludedCams.end()) {
-				// only now load the img
-				chunkOfInputImages.at(localImgIndex).load(imagePaths.at(globalImgIndex).string(), false);
-				allBounds.at(globalImgIndex) = getBounds(chunkOfInputImages.at(localImgIndex));
-				
-			}
-		}
-	}
-
-	Bounds finalBounds(resolutions.at(0));
-
-	int im_id = 0;
-
-	// generate exclude file based on x and y ratios
-	std::string excludeFilePath = root.string() + "/exclude_images.txt";
-	std::ofstream excludeFile(excludeFilePath, std::ios::trunc);
-
-	int minWidth = -1;
-	int minHeight = -1;
-
-	for (auto & bounds : allBounds) {
-		bool wasPreExcluded = std::find(preExcludedCams.begin(), preExcludedCams.end(), im_id) != preExcludedCams.end();
-
-		if (!wasPreExcluded && bounds.xRatio > threshold_ratio_bounding_box_size && bounds.yRatio > threshold_ratio_bounding_box_size) {
-			// get global x and y ratios
-			bool check = false;
-			if (bounds.xRatio < finalBounds.xRatio) {
-				finalBounds.xRatio = bounds.xRatio;
-				check = true;
-			}
-			if (bounds.yRatio < finalBounds.yRatio) {
-				finalBounds.yRatio = bounds.yRatio;
-				check = true;
-			}
-
-			minWidth = (minWidth < 0 || bounds.width < minWidth) ? bounds.width : minWidth;
-			minHeight = (minHeight < 0 || bounds.height < minHeight) ? bounds.height : minHeight;
-		}
-		else {
-			std::cerr << im_id << " ";
-			excludeFile << im_id << " ";
-
-			std::cout << wasPreExcluded << " " << bounds.xRatio << " " << threshold_ratio_bounding_box_size << " " << bounds.yRatio << " " << threshold_ratio_bounding_box_size << std::endl;
-		}
-
-		++im_id;
-
-	}
-	excludeFile.close();
-	std::cout << std::endl;
-
-	return sibr::Vector2i(minWidth, minHeight);
-
-}
-
-sibr::Vector2i findMinImageSize(const Path & root, const std::vector< Path > & imagePaths) {
-	std::vector<sibr::ImageRGB> inputImgs(imagePaths.size());
-	std::vector<sibr::Vector2i> imSizes(imagePaths.size());
-
-	std::cout << "[distordCrop] loading input images : " << std::flush;
-
-#pragma omp parallel for
-	for (int id = 0; id < (int)inputImgs.size(); ++id) {
-		inputImgs.at(id).load(imagePaths.at(id).string(), false);
-		imSizes[id] = inputImgs[id].size().cast<int>();
-	}
-
-	sibr::Vector2i minSize = imSizes[0];
-	for (const auto & size : imSizes) {
-		minSize = minSize.cwiseMin(size);
-	}
-
-	// generate exclude file based on x and y ratios
-	std::string excludeFilePath = root.string() + "/excludeImages.txt";
-	std::ofstream excludeFile(excludeFilePath, std::ios::trunc);
-	excludeFile.close();
-
-	return minSize;
-}
-
+using namespace sibr;
 
 
 int main(const int argc, const char* const* argv)
@@ -383,12 +64,16 @@ int main(const int argc, const char* const* argv)
 	sibr::CommandLineArgs::parseMainArgs(argc, argv);
 	DistordCropAppArgs myArgs;
 
+	DistordCropUtility appUtils;
+
 	std::string datasetPath = myArgs.dataset_path;
 
 	threshold_black_color = myArgs.black_threshold;
 	threshold_bounding_box_size = myArgs.minSizeThresholdArg;
 	threshold_ratio_bounding_box_size = myArgs.minRatioThresholdArg;
 	toleranceFactor = myArgs.toleranceArg;
+	backgroundColor = myArgs.backgroundColor;	
+	resolutionThreshold = myArgs.resThreshold;
 
 	if( myArgs.vizArg.get()) {
 		debug_viz = true;
@@ -408,7 +93,7 @@ int main(const int argc, const char* const* argv)
 	std::vector<sibr::Vector2i> resolutions;
 
 	BOOST_FOREACH(Path const &p, std::make_pair(it, eod)) {
-		if (is_regular_file(p) && ( p.extension() == ".jpg" || p.extension() == ".png" ) && is_number(p.stem().string())) {
+		if (is_regular_file(p) && ( p.extension() == ".jpg" || p.extension() == ".png" ) && appUtils.is_number(p.stem().string())) {
 
 			std::cout << "\t " << p.filename().string() << std::endl;
 			imagePaths.push_back(p);
@@ -458,13 +143,16 @@ int main(const int argc, const char* const* argv)
 	
 	if (sameSize) {
 		std::cout << " ALL IMG SHOULD HAVE SAME SIZE " << std::endl;
-		sibr::Vector2i minSize = findBiggestImageCenteredBox(root, imagePaths, resolutions, avgWidth, avgHeight);
+		sibr::Vector2i minSize = appUtils.findBiggestImageCenteredBox(root, imagePaths, resolutions, avgWidth, avgHeight, 
+			PROCESSING_BATCH_SIZE, resolutionThreshold, threshold_ratio_bounding_box_size, backgroundColor, 
+			threshold_black_color, thinest_bounding_box_size, toleranceFactor);
+
 		std::cout << "[distordCrop] minSize " << minSize[0] << "x" << minSize[1] << std::endl;
 		minWidth = minSize[0];
 		minHeight = minSize[1];
 	} else {
 		std::cout << " ALL IMG SHOULD NOT HAVE SAME SIZE " << std::endl;
-		sibr::Vector2i minSize = findMinImageSize(root, imagePaths);
+		sibr::Vector2i minSize = appUtils.findMinImageSize(root, imagePaths);
 		minWidth = minSize[0];
 		minHeight = minSize[1];
 	}

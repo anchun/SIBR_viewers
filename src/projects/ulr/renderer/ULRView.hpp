@@ -34,7 +34,7 @@ namespace sibr {
 
 		void	inputRTs(const std::vector<std::shared_ptr<RenderTargetRGBA32F> >& iRTs) { _inputRTs = iRTs;}
 
-		void	setMasks( const std::vector<RenderTargetLum::Ptr>& masks ) override;
+		void	setMasks( const std::vector<RenderTargetLum::Ptr>& masks);
 
 	protected:
 		// renderers
