@@ -48,6 +48,7 @@ namespace sibr
 
 		bool	contains( float x, float y ) const;
 		bool	contains( int x, int y ) const;
+		bool	contains(const Vector2f & xy) const;
 
 		void			bind( uint screenWidth, uint screenHeight ) const;
 		void			bind( void ) const; // tmp

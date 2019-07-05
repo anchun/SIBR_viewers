@@ -21,7 +21,7 @@ namespace sibr
 
 		setupGrid(vp);
 
-		updateZoomBox(input, size);
+		updateZoomBox(input, vp);
 		updateZoomScroll(input);
 		updateDrag(input, size);
 
@@ -433,8 +433,10 @@ namespace sibr
 		return pos;
 	}
 
-	void GridMapping::updateZoomBox(const Input & input, const Vector2f & size)
+	void GridMapping::updateZoomBox(const Input & input, const sibr::Viewport & vp)
 	{
+		Vector2f size = vp.finalSize();
+
 		if (input.key().isPressed(Key::Q)) {
 			viewRectangle.center = Vector2f(0.5, 0.5);
 			viewRectangle.diagonal = Vector2f(0.5, 0.5);
@@ -443,37 +445,46 @@ namespace sibr
 		if (input.mouseButton().isPressed(Mouse::Code::Right) && !zoomSelection) {
 			zoomSelection.isActive = true;
 			zoomSelection.first = input.mousePosition();
-			//zoomSelection.first.y() = (int)size.y() - zoomSelection.first.y() - 1;
 		}
-		if (input.mouseButton().isActivated(Mouse::Code::Right) && zoomSelection) {
+
+		if (zoomSelection) {
 			zoomSelection.second = input.mousePosition();
-			//zoomSelection.second.y() = (int)size.y() - zoomSelection.second.y() - 1;
-		}
-		if (input.mouseButton().isReleased(Mouse::Code::Right) && zoomSelection) {
+
+			Viewport aligned_vp = Viewport(0, 0, vp.finalWidth(), vp.finalHeight());
+			
 			Vector2f currentTL = (zoomSelection.first.cwiseMin(zoomSelection.second)).cast<float>();
 			Vector2f currentBR = (zoomSelection.first.cwiseMax(zoomSelection.second)).cast<float>();
+			
+			const auto clamp = [](Vector2f & v, float w, float h) { v = v.cwiseMax(Vector2f(1, 1)).cwiseMin(Vector2f(w - 2, h - 2)); };
+			clamp(currentTL, vp.finalRight(), vp.finalBottom());
+			clamp(currentBR, vp.finalRight(), vp.finalBottom());
 
-			if (((currentBR - currentTL).array() > Vector2f(10, 10).array()).all()) {
-				Vector2f tlPix = viewRectangle.tl().cwiseProduct(size) + (viewRectangle.br() - viewRectangle.tl()).cwiseProduct(currentTL);
-				Vector2f brPix = viewRectangle.tl().cwiseProduct(size) + (viewRectangle.br() - viewRectangle.tl()).cwiseProduct(currentBR);
+			if (input.mouseButton().isReleased(Mouse::Code::Right)) {
+				zoomSelection.isActive = false;
+				if (((currentBR - currentTL).array() > Vector2f(5, 5).array()).all()) {
+					Vector2f tlPix = viewRectangle.tl().cwiseProduct(size) + (viewRectangle.br() - viewRectangle.tl()).cwiseProduct(currentTL);
+					Vector2f brPix = viewRectangle.tl().cwiseProduct(size) + (viewRectangle.br() - viewRectangle.tl()).cwiseProduct(currentBR);
 
-				Vector2f center = 0.5f*(brPix + tlPix);
-				Vector2f diag = 0.5f*(brPix - tlPix);
+					Vector2f center = 0.5f*(brPix + tlPix);
+					Vector2f diag = 0.5f*(brPix - tlPix);
 
-				double new_ratio = diag.x() / diag.y();
-				double target_ratio = size.x() / size.y();
-				if (new_ratio > target_ratio) {
-					diag.y() = diag.x() / target_ratio;
-				} else {
-					diag.x() = diag.y() * target_ratio;
+					double new_ratio = diag.x() / diag.y();
+					double target_ratio = size.x() / size.y();
+					if (new_ratio > target_ratio) {
+						diag.y() = diag.x() / target_ratio;
+					} else {
+						diag.x() = diag.y() * target_ratio;
+					}
+
+					viewRectangle.center = center.cwiseQuotient(size);
+					viewRectangle.diagonal = diag.cwiseQuotient(size);
 				}
-
-				viewRectangle.center = center.cwiseQuotient(size);
-				viewRectangle.diagonal = diag.cwiseQuotient(size);
+				
+			} else if (!input.mouseButton().isActivated(Mouse::Code::Right) && input.isInsideViewport(aligned_vp)) {
+				zoomSelection.isActive = false;
 			}
-
-			zoomSelection.isActive = false;
 		}
+
 	}
 
 	void GridMapping::updateZoomScroll(const Input & input)

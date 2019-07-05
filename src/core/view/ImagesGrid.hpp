@@ -88,7 +88,7 @@ namespace sibr
 		//uvs in opengl [1,-1]
 		Vector2f uvFromMVpixel(const MVpixel & pix, bool use_center = false);
 
-		void updateZoomBox(const Input & input, const Vector2f & size);
+		void updateZoomBox(const Input & input, const sibr::Viewport & vp);
 		void updateZoomScroll(const Input & input);
 		void updateCenter(const Input & input, const Vector2f & size);
 		void updateDrag(const Input & input, const Vector2f & size);
