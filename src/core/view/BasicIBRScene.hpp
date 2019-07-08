@@ -2,6 +2,7 @@
 #include "core/view/Config.hpp"
 #include <core/system/CommandLineArgs.hpp>
 #include "core/view/RenderTargetTextures.hpp"
+#include "core/raycaster/CameraRaycaster.hpp"
 
 namespace sibr {
 

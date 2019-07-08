@@ -61,6 +61,11 @@ namespace sibr
 		_proxies.reset(new ProxyMesh());
 		_proxies->ProxyMesh::loadFromData(_data);
 
+		std::vector<InputCamera> inCams = _cams->inputCameras();
+		std::vector<sibr::Vector2f>    nearsFars;
+		CameraRaycaster::computeClippingPlanes(_proxies->proxy(), inCams, nearsFars);
+		_cams->updateNearsFars(nearsFars);
+
 		_renderTargets.reset(new RenderTargetTextures(width));
 		if (!noRTs) {
 			createRenderTargets();

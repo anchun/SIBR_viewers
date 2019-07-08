@@ -199,8 +199,8 @@ namespace sibr {
 
 			if (!clippingPlanesFile.is_open()) {
 				for (int i = 0; i < _numCameras; i++) {
-					_nearsFars[i].near = 0.01f;
-					_nearsFars[i].far = 1000.0f;
+					_nearsFars[i].near = 0.1f;
+					_nearsFars[i].far = 100.0f;
 				}
 			}
 			else {
