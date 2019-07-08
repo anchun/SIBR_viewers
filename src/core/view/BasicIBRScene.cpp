@@ -61,6 +61,11 @@ namespace sibr
 		_proxies.reset(new ProxyMesh());
 		_proxies->ProxyMesh::loadFromData(_data);
 
+		std::vector<InputCamera> inCams = _cams->inputCameras();
+		std::vector<sibr::Vector2f>    nearsFars;
+		CameraRaycaster::computeClippingPlanes(_proxies->proxy(), inCams, nearsFars);
+		_cams->updateNearsFars(nearsFars);
+
 		_renderTargets.reset(new RenderTargetTextures(width));
 		if (!noRTs) {
 			createRenderTargets();
@@ -72,5 +77,13 @@ namespace sibr
 		_renderTargets->initializeDefaultRenderTargets(_cams, _imgs, _proxies);
 	}
 
+	BasicIBRScene::BasicIBRScene(BasicIBRScene & scene)
+	{
+		_data = scene.data();
+		_cams = scene.cameras();
+		_imgs = scene.images();
+		_proxies = scene.proxies();
+		_renderTargets = scene.renderTargets();
+	}
 	
 }
