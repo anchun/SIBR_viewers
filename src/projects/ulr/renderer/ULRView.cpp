@@ -93,7 +93,6 @@ std::vector<uint> ULRView::chosen_cameras(const sibr::Camera& eye) {
 }
 
 void ULRView::setMasks( const std::vector<RenderTargetLum::Ptr>& masks ) {
-		ViewBase::setMasks(masks);
 		_ulr->setMasks(masks);
 }
 

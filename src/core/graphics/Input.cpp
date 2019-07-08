@@ -19,30 +19,28 @@ namespace sibr
 
 	Input Input::subInput(const sibr::Input & global, const sibr::Viewport & viewport, const bool mouseOutsideDisablesKeyboard)
 	{
-		if (!global.isInsideViewport(viewport)) {
-			if (mouseOutsideDisablesKeyboard) {
-				return Input();
-			} else {
-				Input sub = global;
-				sub._mouseButton = MouseButton();
-				sub._mouseScroll = 0;
-				return sub;
-			}
-			
-		} else {
-			Input sub = global;
-			sub._mousePrevPos -= sibr::Vector2i(viewport.finalLeft(), viewport.finalTop());
-			sub._mousePos -= sibr::Vector2i(viewport.finalLeft(), viewport.finalTop());
+		Input sub = global;
+		sub._mousePrevPos -= sibr::Vector2i(viewport.finalLeft(), viewport.finalTop());
+		sub._mousePos -= sibr::Vector2i(viewport.finalLeft(), viewport.finalTop());
 
-			return sub;
-		}	
+		if (!global.isInsideViewport(viewport)) {
+			sub._mouseButton = MouseButton();
+			sub._mouseScroll = 0;
+
+			if (mouseOutsideDisablesKeyboard) {
+				sub._keyboard = Keyboard();				
+			} 
+			return sub;		
+		} 
+		
+		return sub;	
 	}
 
 	bool Input::isInsideViewport(const sibr::Viewport & viewport) const
 	{
 		Eigen::AlignedBox2i subBox;
-		subBox.extend(sibr::Vector2i(sibr::Vector2i(viewport.finalLeft(), viewport.finalTop())));
-		subBox.extend(sibr::Vector2i(sibr::Vector2i(viewport.finalRight(), viewport.finalBottom())));
+		subBox.extend(Vector2i(viewport.finalLeft(), viewport.finalTop()));
+		subBox.extend(Vector2i(viewport.finalRight(), viewport.finalBottom()));
 
 		return subBox.contains(mousePosition());
 	}

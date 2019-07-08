@@ -40,7 +40,7 @@ namespace sibr {
 		"void main(void) {									\n"
 		"	uv_coord = 0.5*in_vertex.xy + vec2(0.5);		\n"
 		"	uv_coord = zoomTL + (zoomBR-zoomTL)*uv_coord;	\n"
-		"	uv_coord.y = 1.0 - uv_coord.y;				\n"
+		"	uv_coord.y = 1.0 - uv_coord.y;					\n"
 		"	gl_Position = vec4(in_vertex.xy,0.0, 1.0);		\n"
 		"}													\n";
 
@@ -48,21 +48,21 @@ namespace sibr {
 	const std::string InterfaceUtilities::multiViewFragmentShader =
 		"#version 420														\n"
 		"layout(binding = 0) uniform sampler2DArray texArray;				\n"
-		"uniform int numImgs;													\n"
-		"uniform vec2 grid;												\n"
+		"uniform int numImgs;												\n"
+		"uniform vec2 grid;													\n"
 		"in vec2 uv_coord;													\n"
 		"out vec4 out_color;												\n"
 		"void main(void) {													\n"
-		"	vec2 uvs = uv_coord; \n"
-		"	uvs =  grid*uvs; \n"
-		"  if( uvs.x < 0 || uvs.y < 0 ) { discard; }"
-		"   vec2 fracs = fract(uvs); \n"
-		"   vec2 mods = uvs - fracs; \n"
-		"   int n = int(mods.x + grid.x*mods.y); \n"
+		"	vec2 uvs = uv_coord;											\n"
+		"	uvs =  grid*uvs;												\n"
+		"  if( uvs.x < 0 || uvs.y < 0 ) { discard; } 						\n"
+		"   vec2 fracs = fract(uvs); 										\n"
+		"   vec2 mods = uvs - fracs; 										\n"
+		"   int n = int(mods.x + grid.x*mods.y); 							\n"
 		" if ( n< 0 || n > numImgs || mods.x >= grid.x || mods.y >= (float(numImgs)/grid.x) + 1) { discard; } else { \n"
-		"	out_color = texture(texArray,vec3(fracs.x,fracs.y,n));	} \n"
-		"	//out_color = vec4(n/64.0,0.0,0.0,1.0); }\n"
-		"	//out_color = vec4(uv_coord.x,uv_coord.y,0.0,1.0);	} \n"
+		"	out_color = texture(texArray,vec3(fracs.x,fracs.y,n));	}		\n"
+		"	//out_color = vec4(n/64.0,0.0,0.0,1.0); }						\n"
+		"	//out_color = vec4(uv_coord.x,uv_coord.y,0.0,1.0);	}			\n"
 		"}																	\n";
 
 	//sibr::GLShader InterfaceUtilities::baseShader;
@@ -260,7 +260,7 @@ namespace sibr {
 	{
 		UV11 uvA = UV01::from(ptA.cwiseQuotient(winSize));
 		UV11 uvB = UV01::from(ptB.cwiseQuotient(winSize));
-
+			
 		sibr::Mesh line(true);
 		line.vertices({
 			{ uvA.x(), uvA.y(), 0.0f },

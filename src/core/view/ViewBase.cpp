@@ -33,20 +33,4 @@ namespace sibr
 	}
 
 
-
-	void											ViewBase::setMasks( const std::vector<RenderTargetLum::Ptr>& masks )
-	{
-		_masks = masks;
-	}
-
-	const std::vector<RenderTargetLum::Ptr>&	ViewBase::getMasks( void ) const
-	{
-		return _masks;
-	}
-
-	bool											ViewBase::useMasks( void ) const
-	{
-		return _masks.empty() == false;
-	}
-
 } // namespace sibr

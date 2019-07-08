@@ -70,7 +70,7 @@ namespace sibr{
 		* \brief Function to parse data from a dataset path. Will automatically determine the type of dataset based on the files present.
 		* \param myArgs Arguments containing the dataset path and other infos
 		*/
-		void  getParsedData(const BasicIBRAppArgs & myArgs);
+		void  getParsedData(const BasicIBRAppArgs & myArgs, const std::string & customPath = "");
 
 		/**
 		* \brief Getter for the information regarding the input images.

@@ -42,9 +42,13 @@ namespace sibr
 		float	finalHeight( void ) const;
 		
 		sibr::Vector2f finalSize() const;
+		Vector2f finalTopLeft() const;
+
+		Vector2f pixAt(const Vector2f & uv) const;
 
 		bool	contains( float x, float y ) const;
 		bool	contains( int x, int y ) const;
+		bool	contains(const Vector2f & xy) const;
 
 		void			bind( uint screenWidth, uint screenHeight ) const;
 		void			bind( void ) const; // tmp
@@ -108,6 +112,9 @@ namespace sibr
 		return sibr::Vector2f(finalWidth(),finalHeight());
 	}
 
+	inline Vector2f Viewport::finalTopLeft() const {
+		return { finalLeft(), finalTop() };
+	}
 
 
 } // namespace sibr

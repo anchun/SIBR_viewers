@@ -51,9 +51,17 @@ namespace sibr
 		return (x > (int)finalLeft() && x < (int)finalRight() && y > (int)finalTop() && y < (int)finalBottom());
 	}
 
+	bool Viewport::contains(const Vector2f & xy) const
+	{
+		return contains(xy.x(), xy.y());
+	}
+
 	bool Viewport::isEmpty() const {
 		return width() == 0.0 && height() == 0.0;
 	}
 
+	Vector2f Viewport::pixAt(const Vector2f & uv) const {
+		return uv.cwiseProduct(finalSize()) + finalTopLeft();
+	}
 
 } // namespace sibr

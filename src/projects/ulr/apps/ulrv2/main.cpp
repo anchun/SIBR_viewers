@@ -11,6 +11,8 @@
 #include <core/raycaster/Raycaster.hpp>
 #include <core/view/SceneDebugView.hpp>
 
+#include <core/view/ImagesGrid.hpp>
+
 #define PROGRAM_NAME "sibr_ulr_app"
 using namespace sibr;
 
@@ -91,6 +93,7 @@ int main(int ac, char** av) {
 	generalCamera->setup(scene->cameras()->inputCameras(), Viewport(0, 0, (float)usedResolution.x(), (float)usedResolution.y()), raycaster);
 
 
+
 	// Add views to mvm.
 	MultiViewManager        multiViewManager(window, false);
 	multiViewManager.addIBRSubView("ULR view", ulrView, usedResolution, ImGuiWindowFlags_ResizeFromAnySide);
@@ -99,6 +102,19 @@ int main(int ac, char** av) {
 	// Top view
 	const std::shared_ptr<sibr::SceneDebugView> topView(new sibr::SceneDebugView(scene, multiViewManager.getViewport(), generalCamera, myArgs));
 	multiViewManager.addSubView("Top view", topView, usedResolution);
+
+
+	//test grid view - can be removed
+	if (getCommandLineArgs().contains("test-grid")) {
+		const std::shared_ptr<sibr::ImagesGrid> grid(new ImagesGrid());
+		grid->addImageLayer("input images", scene->images()->inputImages(), 10);
+
+		if (ulrView->getULRrenderer()->useMasks()) {
+			grid->addImageLayer("masks", ulrView->getULRrenderer()->getMasks());
+		}
+
+		multiViewManager.addSubView("grid", grid, usedResolution);
+	}
 
 	CHECK_GL_ERROR;
 

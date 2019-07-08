@@ -1,10 +1,4 @@
-project(cropFromCenter)
-
-# libraries used:
-# * sibr graphics (vector2i class)
-# * sibr system (programArg class)
-# * boost filesystem (path class)
-# * openmp
+project(textureMesh)
 
 # Define build output for project
 add_executable(${PROJECT_NAME} main.cpp)
@@ -12,8 +6,11 @@ add_executable(${PROJECT_NAME} main.cpp)
 target_link_libraries(${PROJECT_NAME}
     ${Boost_LIBRARIES}
 	sibr_system
+	sibr_assets
     sibr_graphics
+	sibr_raycaster
 	sibr_imgproc
+	sibr_view
 )
 
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER "__projects__/__ulr__/__preprocess__")
