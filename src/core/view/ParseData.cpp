@@ -199,8 +199,8 @@ namespace sibr {
 
 			if (!clippingPlanesFile.is_open()) {
 				for (int i = 0; i < _numCameras; i++) {
-					_nearsFars[i].near = 0.01f;
-					_nearsFars[i].far = 1000.0f;
+					_nearsFars[i].near = 0.1f;
+					_nearsFars[i].far = 100.0f;
 				}
 			}
 			else {
@@ -351,15 +351,15 @@ namespace sibr {
 	}
 
 
-	void ParseData::getParsedBundlerData(const std::string & dataset_path, const std::string & scene_metadata_filename)
+	void ParseData::getParsedBundlerData(const std::string & dataset_path, const std::string & customPath, const std::string & scene_metadata_filename)
 	{
-		_basePathName = dataset_path;
+		_basePathName = dataset_path + customPath;
 		/*std::cout << scene_metadata_filename << std::endl;*/
-		if (!parseSceneMetadata(dataset_path + "/" + scene_metadata_filename)) {
+		if (!parseSceneMetadata(_basePathName + "/" + scene_metadata_filename)) {
 			SIBR_ERR << "Scene Metadata file does not exist at /" + dataset_path + "/." << std::endl;
 		}
 
-		if (!parseBundlerFile(dataset_path + "/cameras/bundle.out")) {
+		if (!parseBundlerFile(_basePathName + "/cameras/bundle.out")) {
 			SIBR_ERR << "Bundle file does not exist at /" + dataset_path + "/cameras/." << std::endl;
 		}
 		// Default mesh path if none found in the metadata file.
@@ -387,12 +387,7 @@ namespace sibr {
 		std::ifstream colmap(myArgs.dataset_path.get() + "/colmap/stereo/sparse/cameras.txt");
 
 		if (bundler.good()) {
-			if (!customPath.empty()) {
-				getParsedBundlerData(myArgs.dataset_path.get() + customPath, myArgs.scene_metadata_filename);
-			}
-			else {
-				getParsedBundlerData(myArgs.dataset_path, myArgs.scene_metadata_filename);
-			}
+			getParsedBundlerData(myArgs.dataset_path.get(), customPath, myArgs.scene_metadata_filename);
 			_datasetType = Type::SIBR;
 		}else if (colmap.good()) {
 			getParsedColmapData(myArgs.dataset_path);

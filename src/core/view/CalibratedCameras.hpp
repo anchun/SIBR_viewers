@@ -69,6 +69,9 @@ namespace sibr
 		*
 		*/
 		const std::vector<InputCamera>&				inputCameras(void) const;
+
+
+		const void									updateNearsFars(std::vector<sibr::Vector2f> & nearsFars);
 	protected:
 
 		std::vector<InputCamera>					_inputCameras; 
