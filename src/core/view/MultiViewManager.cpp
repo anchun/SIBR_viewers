@@ -4,39 +4,26 @@
 
 namespace sibr
 {
-	MultiViewManager::MultiViewManager(Window& window, bool resize) : _window(window), _fpsCounter(false)
+	MultiViewBase::MultiViewBase(const Vector2i & defaultViewRes)
 	{
-		if (resize) {
-			window.size(
-				Window::desktopSize().x() - 200,
-				Window::desktopSize().y() - 200);
-			window.position(100, 100);
-		}
-
 		/// \todo TODO: support launch arg for stereo mode.
 		renderingMode(IRenderingMode::Ptr(new MonoRdrMode()));
 
 		//Default view resolution.
-		int w = int(window.size().x() * 0.5f);
-		int h = int(window.size().y() * 0.5f);
-		setDefaultViewResolution(Vector2i(w, h));
+		setDefaultViewResolution(defaultViewRes);
 
-		ImGui::GetStyle().WindowBorderSize = 0.0;
 		_timeLastFrame = std::chrono::steady_clock::now();
 		_deltaTime = 0.0;
 		_exportPath = "./screenshots";
 	}
 
-	void MultiViewManager::onUpdate(Input& input)
+	void MultiViewBase::onUpdate(Input& input)
 	{
-		if (input.key().isActivated(sibr::Key::LeftControl) && input.key().isPressed(sibr::Key::LeftAlt) && input.key().isPressed(sibr::Key::P)) {
+		if (input.key().isActivated(Key::LeftControl) && input.key().isPressed(Key::LeftAlt) && input.key().isPressed(Key::P)) {
 			_onPause = !_onPause;
 		}
 		if (_onPause) {
 			return;
-		}
-		if (input.key().isActivated(sibr::Key::LeftControl) && input.key().isActivated(sibr::Key::LeftAlt) && input.key().isReleased(sibr::Key::G)) {
-			_showGUI = !_showGUI;
 		}
 
 		// Elapsed time since last rendering.
@@ -58,7 +45,7 @@ namespace sibr
 		}
 
 		for (auto & subview : _ibrSubViews) {
-			sibr::MultiViewManager::IBRSubView & fView = subview.second;
+			MultiViewBase::IBRSubView & fView = subview.second;
 
 			if (fView.view->active()) {
 				auto subInput = !fView.view->isFocused() ? Input() : Input::subInput(input, fView.viewport, false);
@@ -78,159 +65,20 @@ namespace sibr
 			}
 		}
 
+		for (auto & subMultiView : _subMultiViews) {
+			subMultiView.second->onUpdate(input);
+		}
 	}
 
-	void MultiViewManager::onRender(Window& win)
+	void MultiViewBase::onRender(Window& win)
 	{
-
-		win.viewport().bind();
-		glClearColor(37.f / 255.f, 37.f / 255.f, 38.f / 255.f, 1.f);
-		glClear(GL_COLOR_BUFFER_BIT);
-		glClearColor(1.f, 1.f, 1.f, 1.f);
-
-		// Menu
-		if (_showGUI) {
-			if (ImGui::BeginMainMenuBar())
-			{
-				if (ImGui::BeginMenu("Menu"))
-				{
-					ImGui::MenuItem("Pause", "", &_onPause);
-					if (ImGui::BeginMenu("Display")) {
-						const bool currentScreenState = win.isFullscreen();
-						if (ImGui::MenuItem("Fullscreen", "", currentScreenState)) {
-							win.setFullscreen(!currentScreenState);
-						}
-
-						const bool currentSyncState = win.isVsynced();
-						if (ImGui::MenuItem("V-sync", "", currentSyncState)) {
-							win.setVsynced(!currentSyncState);
-						}
-
-						const bool isHiDPI = ImGui::GetIO().FontGlobalScale > 1.0f;
-						if (ImGui::MenuItem("HiDPI", "", isHiDPI)) {
-							if(isHiDPI) {
-								ImGui::GetStyle().ScaleAllSizes(1.0f/win.scaling());
-								ImGui::GetIO().FontGlobalScale = 1.0f;
-							} else {
-								ImGui::GetStyle().ScaleAllSizes(win.scaling());
-								ImGui::GetIO().FontGlobalScale = win.scaling();
-							}	
-						}
-						
-						if (ImGui::MenuItem("Hide GUI (!)", "Ctrl+Alt+G")) {
-							_showGUI = !_showGUI;
-						}
-						ImGui::EndMenu();
-					}
-
-
-					if (ImGui::MenuItem("Mosaic layout")) {
-						const int viewsCount = _subViews.size() + _ibrSubViews.size();
-						// Do square decomposition for now.
-						// Find the next square.
-						const int sideCount = int(ceil(sqrt(viewsCount)));
-						const int verticalShift = ImGui::GetTitleBarHeight();
-						const sibr::Vector2i itemSize = ((_window.size() - sibr::Vector2i(0, verticalShift)).cast<float>() / sideCount).cast<int>();
-						int vid = 0;
-						for (auto & view : _ibrSubViews) {
-							// Compute position on grid.
-							const int col = vid % sideCount;
-							const int row = vid / sideCount;
-							view.second.viewport = sibr::Viewport(col*itemSize[0], verticalShift  + row*itemSize[1], (col + 1)*itemSize[0] - 1, verticalShift + (row + 1)*itemSize[1] - 1);
-							view.second.shouldUpdateLayout = true;
-							++vid;
-						}
-						for (auto & view : _subViews) {
-							// Compute position on grid.
-							const int col = vid % sideCount;
-							const int row = vid / sideCount;
-							view.second.viewport = sibr::Viewport(col*itemSize[0], verticalShift + row*itemSize[1], (col + 1)*itemSize[0] - 1, verticalShift + (row + 1)*itemSize[1] - 1);
-							view.second.shouldUpdateLayout = true;
-							++vid;
-						}
-					}
-
-
-					if (ImGui::MenuItem("Row layout")) {
-						sibr::Vector2i itemSize = _window.size();
-						itemSize[0] = int(float(itemSize[0]) / (_subViews.size() + _ibrSubViews.size()));
-						const int verticalShift = ImGui::GetTitleBarHeight();
-						int vid = 0;
-						for (auto & view : _ibrSubViews) {
-							// Compute position on grid.
-							view.second.viewport = sibr::Viewport(vid*itemSize[0], verticalShift, (vid + 1)*itemSize[0] - 1, verticalShift + itemSize[1] - 1);
-							view.second.shouldUpdateLayout = true;
-							++vid;
-						}
-						for (auto & view : _subViews) {
-							// Compute position on grid.
-							view.second.viewport = sibr::Viewport(vid*itemSize[0], verticalShift, (vid + 1)*itemSize[0] - 1, verticalShift + itemSize[1] - 1);
-							view.second.shouldUpdateLayout = true;
-							++vid;
-						}
-					}
-
-					
-					if (ImGui::MenuItem("Quit", "Escape")) { win.close(); }
-					ImGui::EndMenu();
-				}
-
-				if (ImGui::BeginMenu("Views"))
-				{
-					for (auto & subview : _subViews) {
-						if (ImGui::MenuItem(subview.first.c_str(), "", subview.second.view->active())) {
-							subview.second.view->active(!subview.second.view->active());
-						}
-					}
-					for (auto & subview : _ibrSubViews) {
-						if (ImGui::MenuItem(subview.first.c_str(), "", subview.second.view->active())) {
-							subview.second.view->active(!subview.second.view->active());
-						}
-					}
-					if (ImGui::MenuItem("Metrics", "", _fpsCounter.active())) {
-						_fpsCounter.toggleVisibility();
-					}
-					ImGui::EndMenu();
-				}
-
-				if (ImGui::BeginMenu("Capture"))
-				{
-
-					if (ImGui::MenuItem("Set export directory...")) {
-						std::string selectedDirectory;
-						if (sibr::showFilePicker(selectedDirectory, FilePickerMode::Directory)) {
-							std::cout << selectedDirectory << std::endl;
-							if (!selectedDirectory.empty()) {
-								_exportPath = selectedDirectory;
-							}
-						}
-					}
-
-					for (auto & subview : _subViews) {
-						if (ImGui::MenuItem(subview.first.c_str())) {
-							captureView(subview.second, _exportPath);
-						}
-					}
-					for (auto & subview : _ibrSubViews) {
-						if (ImGui::MenuItem(subview.first.c_str())) {
-							captureView(subview.second, _exportPath);
-						}
-					}
-
-					ImGui::EndMenu();
-				}
-
-				ImGui::EndMainMenuBar();
-			}
-		}
-		
 		// Render all views.
 		for (auto & subview : _ibrSubViews) {
 			if (subview.second.view->active()) {
 
 				renderSubView(subview.second);
 
-				if (_showGUI) {
+				if (_showSubViewsGui) {
 					subview.second.view->onGUI();
 					if (subview.second.handler) {
 						subview.second.handler->onGUI("Camera " + subview.first);
@@ -243,7 +91,7 @@ namespace sibr
 
 				renderSubView(subview.second);
 				
-				if (_showGUI) {
+				if (_showSubViewsGui) {
 					subview.second.view->onGUI();
 					if (subview.second.handler) {
 						subview.second.handler->onGUI("Camera " + subview.first);
@@ -251,12 +99,18 @@ namespace sibr
 				}
 			}
 		}
+		for (auto & subMultiView : _subMultiViews) {
+			subMultiView.second->onRender(win);
+		}
 
-		_fpsCounter.update(_showGUI);
 
 	}
 
-	void MultiViewManager::addSubView(const std::string & title, ViewBase::Ptr view, const Vector2u & res, const ImGuiWindowFlags flags)
+	void MultiViewBase::onGui(Window & win)
+	{
+	}
+
+	void MultiViewBase::addSubView(const std::string & title, ViewBase::Ptr view, const Vector2u & res, const ImGuiWindowFlags flags)
 	{
 		const ViewUpdateFonc updateFunc =
 			[](ViewBase::Ptr& vi, Input& in, const Viewport& vp, const float dt) {
@@ -265,7 +119,7 @@ namespace sibr
 		addSubView(title, view, updateFunc, res, flags);
 	}
 
-	void MultiViewManager::addSubView(const std::string & title, ViewBase::Ptr view, const ViewUpdateFonc updateFunc, const Vector2u & res, const ImGuiWindowFlags flags)
+	void MultiViewBase::addSubView(const std::string & title, ViewBase::Ptr view, const ViewUpdateFonc updateFunc, const Vector2u & res, const ImGuiWindowFlags flags)
 	{
 		// We have to shift vertically to avoid an overlap with the menu bar.
 		const Viewport viewport(0.0f, ImGui::GetTitleBarHeight(),
@@ -276,7 +130,7 @@ namespace sibr
 
 	}
 
-	void MultiViewManager::addIBRSubView(const std::string & title, ViewBase::Ptr view, const IBRViewUpdateFonc updateFunc, const Vector2u & res, const ImGuiWindowFlags flags, const bool defaultFuncUsed)
+	void MultiViewBase::addIBRSubView(const std::string & title, ViewBase::Ptr view, const IBRViewUpdateFonc updateFunc, const Vector2u & res, const ImGuiWindowFlags flags, const bool defaultFuncUsed)
 	{
 		// We have to shift vertically to avoid an overlap with the menu bar.
 		const Viewport viewport(0.0f, ImGui::GetTitleBarHeight(),
@@ -295,7 +149,7 @@ namespace sibr
 
 	}
 
-	void MultiViewManager::addIBRSubView(const std::string & title, ViewBase::Ptr view, const Vector2u & res, const ImGuiWindowFlags flags)
+	void MultiViewBase::addIBRSubView(const std::string & title, ViewBase::Ptr view, const Vector2u & res, const ImGuiWindowFlags flags)
 	{
 		const auto updateFunc = [](ViewBase::Ptr& vi, Input& in, const Viewport& vp, const float dt) {
 			vi->onUpdate(in, vp);
@@ -304,12 +158,17 @@ namespace sibr
 		addIBRSubView(title, view, updateFunc, res, flags, true);
 	}
 
-	void MultiViewManager::addIBRSubView(const std::string & title, ViewBase::Ptr view, const IBRViewUpdateFonc updateFunc, const Vector2u & res, const ImGuiWindowFlags flags)
+	void MultiViewBase::addIBRSubView(const std::string & title, ViewBase::Ptr view, const IBRViewUpdateFonc updateFunc, const Vector2u & res, const ImGuiWindowFlags flags)
 	{
 		addIBRSubView(title, view, updateFunc, res, flags, false);
 	}
 
-	ViewBase::Ptr & MultiViewManager::getIBRSubView(const std::string & title)
+	void MultiViewBase::addSubMultiView(const std::string & title, MultiViewBase::Ptr multiview)
+	{
+		_subMultiViews[title] = multiview;
+	}
+
+	ViewBase::Ptr & MultiViewBase::getIBRSubView(const std::string & title)
 	{
 		if (_subViews.count(title) > 0) {
 			return _subViews.at(title).view;
@@ -323,7 +182,7 @@ namespace sibr
 		return _subViews.begin()->second.view;
 	}
 
-	Viewport & MultiViewManager::getIBRSubViewport(const std::string & title)
+	Viewport & MultiViewBase::getIBRSubViewport(const std::string & title)
 	{
 		if (_subViews.count(title) > 0) {
 			return _subViews.at(title).viewport;
@@ -337,7 +196,7 @@ namespace sibr
 		return _subViews.begin()->second.viewport;
 	}
 
-	void MultiViewManager::renderSubView(SubView & subview) const
+	void MultiViewBase::renderSubView(SubView & subview) const
 	{
 		bool invalidTexture = false;
 
@@ -368,7 +227,7 @@ namespace sibr
 
 			// Offline video dumping, continued. We ignore additional rendering as those often are GUI overlays.
 			//if (subview.handler != NULL && subview.handler->getCamera().needSave()) {
-			//	sibr::ImageRGB frame;
+			//	ImageRGB frame;
 			//	subview.rt->readBack(frame);
 			//	frame.save(subview.handler->getCamera().savePath());
 			//	// Restore the disabled camera.
@@ -400,7 +259,7 @@ namespace sibr
 		subview.shouldUpdateLayout = false;
 	}
 
-	ViewBase::Ptr MultiViewManager::removeSubView(const std::string & name)
+	ViewBase::Ptr MultiViewBase::removeSubView(const std::string & name)
 	{
 		ViewBase::Ptr viewPtr = nullptr;
 		if (_subViews.count(name) > 0) {
@@ -417,17 +276,17 @@ namespace sibr
 		return viewPtr;
 	}
 
-	void MultiViewManager::renderingMode(const IRenderingMode::Ptr& mode)
+	void MultiViewBase::renderingMode(const IRenderingMode::Ptr& mode)
 	{
 		_renderingMode = std::move(mode);
 	}
 
-	const Viewport MultiViewManager::getViewport(void) const
+	const Viewport MultiViewBase::getViewport(void) const
 	{
 		return Viewport(0.0f, 0.0f, (float)_defaultViewResolution.x(), (float)_defaultViewResolution.y());
 	}
 
-	void MultiViewManager::addCameraForView(const std::string & name, ICameraHandler::Ptr cameraHandler)
+	void MultiViewBase::addCameraForView(const std::string & name, ICameraHandler::Ptr cameraHandler)
 	{
 		if (_subViews.count(name) > 0) {
 			_subViews.at(name).handler = cameraHandler;
@@ -456,7 +315,7 @@ namespace sibr
 							}
 							else if (subview.view->scene().args().dumpLeave1Out) {
 								handler->cameraRecorder().cams().clear();
-								for (const sibr::InputCamera & cam : subview.view->scene().inputCameras()) {
+								for (const InputCamera & cam : subview.view->scene().inputCameras()) {
 									handler->cameraRecorder().cams().emplace_back(cam);
 								}
 							}
@@ -476,7 +335,7 @@ namespace sibr
 
 	}
 
-	void MultiViewManager::addAdditionalRenderingForView(const std::string & name, const AdditionalRenderFonc renderFunc)
+	void MultiViewBase::addAdditionalRenderingForView(const std::string & name, const AdditionalRenderFonc renderFunc)
 	{
 		if (_subViews.count(name) > 0) {
 			_subViews.at(name).renderFunc = renderFunc;
@@ -489,12 +348,17 @@ namespace sibr
 		}
 	}
 
-	void MultiViewManager::captureView(const SubView & view, const std::string& path, const std::string & filename) {
+	int MultiViewBase::numSubViews() const
+	{
+		return static_cast<int>(_subViews.size() + _ibrSubViews.size() + _subMultiViews.size());
+	}
+
+	void MultiViewBase::captureView(const SubView & view, const std::string& path, const std::string & filename) {
 
 		const uint w = view.rt->w();
 		const uint h = view.rt->h();
 
-		sibr::ImageRGB renderingImg(w, h);
+		ImageRGB renderingImg(w, h);
 
 		view.rt->readBack(renderingImg);
 
@@ -511,8 +375,206 @@ namespace sibr
 			finalPath.append(autoName + ".png");
 		}
 
-		sibr::makeDirectory(path);
+		makeDirectory(path);
 		renderingImg.save(finalPath, false);
+	}
+
+	void MultiViewBase::mosaicLayout(const Viewport & vp)
+	{
+		const int viewsCount = numSubViews();
+		
+		// Do square decomposition for now.
+		// Find the next square.
+		const int sideCount = int(ceil(sqrt(viewsCount)));
+		const int verticalShift = ImGui::GetTitleBarHeight();
+
+		Viewport usedVP = Viewport(vp.finalLeft(), vp.finalTop() + verticalShift, vp.finalRight(), vp.finalBottom());
+		Vector2f itemRatio = Vector2f(1, 1) / sideCount;
+
+		int vid = 0;
+		for (auto & view : _ibrSubViews) {
+			// Compute position on grid.
+			const int col = vid % sideCount;
+			const int row = vid / sideCount;
+			view.second.viewport = Viewport(usedVP, col*itemRatio[0], row * itemRatio[1], (col + 1)*itemRatio[0], (row + 1)*itemRatio[1]);
+			view.second.shouldUpdateLayout = true;
+			++vid;
+		}
+		for (auto & view : _subViews) {
+			// Compute position on grid.
+			const int col = vid % sideCount;
+			const int row = vid / sideCount;
+			view.second.viewport = Viewport(usedVP, col*itemRatio[0], row * itemRatio[1], (col + 1)*itemRatio[0], (row + 1)*itemRatio[1]);
+			view.second.shouldUpdateLayout = true;
+			++vid;
+		}
+		for (auto & view : _subMultiViews) {
+			// Compute position on grid.
+			const int col = vid % sideCount;
+			const int row = vid / sideCount;
+			view.second->mosaicLayout(Viewport(usedVP, col*itemRatio[0], row * itemRatio[1], (col + 1)*itemRatio[0], (row + 1)*itemRatio[1]));
+			++vid;
+		}
+
+	}
+	MultiViewManager::MultiViewManager(Window& window, bool resize)
+		: _window(window), _fpsCounter(false)
+	{
+		if (resize) {
+			window.size(
+				Window::desktopSize().x() - 200,
+				Window::desktopSize().y() - 200);
+			window.position(100, 100);
+		}
+
+		/// \todo TODO: support launch arg for stereo mode.
+		renderingMode(IRenderingMode::Ptr(new MonoRdrMode()));
+
+		//Default view resolution.
+		int w = int(window.size().x() * 0.5f);
+		int h = int(window.size().y() * 0.5f);
+		setDefaultViewResolution(Vector2i(w, h));
+
+		ImGui::GetStyle().WindowBorderSize = 0.0;
+	}
+
+	void MultiViewManager::onUpdate(Input & input)
+	{
+		if (input.key().isActivated(Key::LeftControl) && input.key().isActivated(Key::LeftAlt) && input.key().isReleased(Key::G)) {
+			_showGUI = !_showGUI;
+			_showSubViewsGui = !_showSubViewsGui;
+		}
+
+		MultiViewBase::onUpdate(input);
+	}
+
+	void MultiViewManager::onRender(Window & win)
+	{
+		win.viewport().bind();
+		glClearColor(37.f / 255.f, 37.f / 255.f, 38.f / 255.f, 1.f);
+		glClear(GL_COLOR_BUFFER_BIT);
+		glClearColor(1.f, 1.f, 1.f, 1.f);
+
+		onGui(win);
+
+		MultiViewBase::onRender(win);
+
+		_fpsCounter.update(_showGUI);
+	}
+
+	void MultiViewManager::onGui(Window & win)
+	{
+		// Menu
+		if (_showGUI && ImGui::BeginMainMenuBar())
+		{
+			if (ImGui::BeginMenu("Menu"))
+			{
+				ImGui::MenuItem("Pause", "", &_onPause);
+				if (ImGui::BeginMenu("Display")) {
+					const bool currentScreenState = win.isFullscreen();
+					if (ImGui::MenuItem("Fullscreen", "", currentScreenState)) {
+						win.setFullscreen(!currentScreenState);
+					}
+
+					const bool currentSyncState = win.isVsynced();
+					if (ImGui::MenuItem("V-sync", "", currentSyncState)) {
+						win.setVsynced(!currentSyncState);
+					}
+
+					const bool isHiDPI = ImGui::GetIO().FontGlobalScale > 1.0f;
+					if (ImGui::MenuItem("HiDPI", "", isHiDPI)) {
+						if (isHiDPI) {
+							ImGui::GetStyle().ScaleAllSizes(1.0f / win.scaling());
+							ImGui::GetIO().FontGlobalScale = 1.0f;
+						} else {
+							ImGui::GetStyle().ScaleAllSizes(win.scaling());
+							ImGui::GetIO().FontGlobalScale = win.scaling();
+						}
+					}
+
+					if (ImGui::MenuItem("Hide GUI (!)", "Ctrl+Alt+G")) {
+						_showGUI = !_showGUI;
+						_showSubViewsGui = !_showSubViewsGui;
+					}
+					ImGui::EndMenu();
+				}
+
+
+				if (ImGui::MenuItem("Mosaic layout")) {
+					mosaicLayout(win.viewport());
+				}
+
+				if (ImGui::MenuItem("Row layout")) {
+					Vector2i itemSize = win.size();
+					itemSize[0] = int(float(itemSize[0]) / (_subViews.size() + _ibrSubViews.size()));
+					const int verticalShift = ImGui::GetTitleBarHeight();
+					int vid = 0;
+					for (auto & view : _ibrSubViews) {
+						// Compute position on grid.
+						view.second.viewport = Viewport(vid*itemSize[0], verticalShift, (vid + 1)*itemSize[0] - 1, verticalShift + itemSize[1] - 1);
+						view.second.shouldUpdateLayout = true;
+						++vid;
+					}
+					for (auto & view : _subViews) {
+						// Compute position on grid.
+						view.second.viewport = Viewport(vid*itemSize[0], verticalShift, (vid + 1)*itemSize[0] - 1, verticalShift + itemSize[1] - 1);
+						view.second.shouldUpdateLayout = true;
+						++vid;
+					}
+				}
+
+
+				if (ImGui::MenuItem("Quit", "Escape")) { win.close(); }
+				ImGui::EndMenu();
+			}
+
+			if (ImGui::BeginMenu("Views"))
+			{
+				for (auto & subview : _subViews) {
+					if (ImGui::MenuItem(subview.first.c_str(), "", subview.second.view->active())) {
+						subview.second.view->active(!subview.second.view->active());
+					}
+				}
+				for (auto & subview : _ibrSubViews) {
+					if (ImGui::MenuItem(subview.first.c_str(), "", subview.second.view->active())) {
+						subview.second.view->active(!subview.second.view->active());
+					}
+				}
+				if (ImGui::MenuItem("Metrics", "", _fpsCounter.active())) {
+					_fpsCounter.toggleVisibility();
+				}
+				ImGui::EndMenu();
+			}
+
+			if (ImGui::BeginMenu("Capture"))
+			{
+
+				if (ImGui::MenuItem("Set export directory...")) {
+					std::string selectedDirectory;
+					if (showFilePicker(selectedDirectory, FilePickerMode::Directory)) {
+						std::cout << selectedDirectory << std::endl;
+						if (!selectedDirectory.empty()) {
+							_exportPath = selectedDirectory;
+						}
+					}
+				}
+
+				for (auto & subview : _subViews) {
+					if (ImGui::MenuItem(subview.first.c_str())) {
+						captureView(subview.second, _exportPath);
+					}
+				}
+				for (auto & subview : _ibrSubViews) {
+					if (ImGui::MenuItem(subview.first.c_str())) {
+						captureView(subview.second, _exportPath);
+					}
+				}
+
+				ImGui::EndMenu();
+			}
+
+			ImGui::EndMainMenuBar();
+		}
 	}
 
 } // namespace sibr

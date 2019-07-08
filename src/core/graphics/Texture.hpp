@@ -1278,6 +1278,9 @@ namespace sibr
 		virtual uint	h(void) const = 0;
 		virtual uint	depth(void) const = 0;
 		virtual uint	numLODs(void) const = 0;
+
+		//warning, low perfomances, for debug use only
+		virtual Vector4f	readBackPixel(int i, int x, int y, uint lod = 0) const = 0;
 	};
 
 	/**
@@ -1337,6 +1340,9 @@ namespace sibr
 		uint	h(void) const;
 		uint	depth(void) const;
 		uint	numLODs(void) const;
+
+		//warning, low perfomances, for debug use only
+		Vector4f	readBackPixel(int i, int x, int y, uint lod = 0) const;
 
 	private:
 		void createArray();
@@ -1665,6 +1671,19 @@ namespace sibr
 	template<typename T_Type, unsigned int T_NumComp>
 	uint Texture2DArray<T_Type, T_NumComp>::numLODs(void) const { return m_numLODs; }
 
+	template<typename T_Type, unsigned int T_NumComp>
+	Vector4f	Texture2DArray<T_Type, T_NumComp>::readBackPixel(int i, int x, int y, uint lod) const {
+		Vector4f out;
+		glGetTextureSubImage(handle(),
+			lod, x, y, i, 1, 1, 1,
+			GL_RGBA, GL_FLOAT, 4 * sizeof(float), out.data()
+		);
+		CHECK_GL_ERROR;
+		for (uint c = T_NumComp; c < 4; ++c) {
+			out[c] = 0;
+		}
+		return out;
+	}
 
 
 	/**
