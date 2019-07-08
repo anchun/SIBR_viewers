@@ -126,6 +126,8 @@ namespace sibr {
 		
 
 	protected:
+		BasicIBRScene(BasicIBRScene & scene);
+
 		ParseData::Ptr								_data;
 		CalibratedCameras::Ptr						_cams;
 		InputImages::Ptr							_imgs;
@@ -175,5 +177,7 @@ namespace sibr {
 	{
 		_userCamera = cam;
 	}
+
+	
 
 }

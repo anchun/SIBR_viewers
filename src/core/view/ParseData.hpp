@@ -47,7 +47,7 @@ namespace sibr{
 		* \param dataset_path Path to the folder containing data
 		* \param scene_metadata_filename Specify the filename of the Scene Metadata file to load specific scene
 		*/
-		void  getParsedBundlerData(const std::string & dataset_path, const std::string & scene_metadata_filename);
+		void  getParsedBundlerData(const std::string & dataset_path, const std::string & customPath, const std::string & scene_metadata_filename);
 
 		
 		/**

@@ -72,5 +72,13 @@ namespace sibr
 		_renderTargets->initializeDefaultRenderTargets(_cams, _imgs, _proxies);
 	}
 
+	BasicIBRScene::BasicIBRScene(BasicIBRScene & scene)
+	{
+		_data = scene.data();
+		_cams = scene.cameras();
+		_imgs = scene.images();
+		_proxies = scene.proxies();
+		_renderTargets = scene.renderTargets();
+	}
 	
 }
