@@ -1351,7 +1351,7 @@ namespace sibr {
 
 	PyramidLayer PyramidLayer::operator+(const PyramidLayer & other)
 	{
-		assert(w == ohter.w && h == other.w && l = other.l);
+		//assert(w == other.w && h == other.w && l = other.l);
 
 		PyramidLayer out;
 		out.w = w;
@@ -1363,7 +1363,7 @@ namespace sibr {
 
 	PyramidLayer PyramidLayer::operator-(const PyramidLayer & other)
 	{
-		assert(w == ohter.w && h == other.w && l = other.l);
+		//assert(w == other.w && h == other.w && l = other.l);
 
 		PyramidLayer out;
 		out.w = w;
