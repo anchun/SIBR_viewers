@@ -33,6 +33,21 @@ namespace sibr
 				current_layer->pixel_selection.switchSelection(currentActivePix);
 			}
 		}
+	
+		std::vector<int> all_ims;
+		std::iota(all_ims.begin(), all_ims.end(), 0);
+		addImagesToHighlight("imBorders", all_ims, { 0,0,0 });
+
+		if (currentActivePix) {
+			addPixelsToHighlight("activePix", { currentActivePix }, { 0, 1, 0 }, 0.25f);
+		}
+		
+		const auto & imgs_list = current_layer->image_selection.get();
+		if (!imgs_list.empty()) {
+			std::vector<int> selected_ims(std::begin(imgs_list), std::end(imgs_list));
+			addImagesToHighlight("imSelection", selected_ims, { 0,1,0 }, 0.1f);
+		}
+		
 
 	}
 
@@ -48,25 +63,21 @@ namespace sibr
 
 		draw_utils.image_grid(num_imgs, current_level_tex->handle(), grid_adjusted, viewRectangle.tl(), viewRectangle.br(), current_lod, current_layer->flip_texture);
 
-		for (int i = 0; i < num_imgs; ++i) {
-			highlightImage(i, viewport, draw_utils, { 0,0,0 });
+		for (const auto & ims_highlight : images_to_highlight) {
+			const auto & imgs = ims_highlight.second;
+			for (int im : imgs.data) {
+				highlightImage(im, viewport, imgs.color, imgs.alpha);
+			}		
 		}
 
-		if (currentActivePix) {
-			highlightPixel(currentActivePix, viewport, draw_utils);
-		}
-
-		for (const int im : current_layer->image_selection.get()) {
-			highlightImage(im, viewport, draw_utils, { 0,1,0 }, 0.1f);
-		}
-
-		for (const auto & pix : current_layer->pixel_selection.get()) {
-			highlightPixel(pix, viewport, draw_utils, { 1, 0, 1 });
+		for (const auto & pixels_highlight : pixels_to_highlight) {
+			const auto & pix_data = pixels_highlight.second;
+			for (const auto  pix : pix_data.data) {
+				highlightPixel(pix, viewport, pix_data.color);
+			}
 		}
 
 		displayZoom(viewport, draw_utils);
-
-
 	}
 
 	void ImagesGrid::onRender(IRenderTarget & dst)
@@ -87,21 +98,19 @@ namespace sibr
 			optionsGUI();
 
 			listImagesLayerGUI();
-		
+
 			if (currentActivePix) {
 				GUI_TEXT("current pix : " << currentActivePix.im << ", " << currentActivePix.pos.transpose());
-				try {
-					Vector4f value = current_layer->imgs_texture_array->readBackPixel(currentActivePix.im, currentActivePix.pos[0], currentActivePix.pos[1], current_lod);
-					if (integer_pixel_values) {
-						Vector4i value_i = (255 * value).cast<int>();
-						GUI_TEXT(" \t value : " << value_i.transpose());
-					} else {
-						GUI_TEXT(" \t value : " << value.transpose());
-					}
+
+				Vector4f value = current_layer->imgs_texture_array->readBackPixel(currentActivePix.im, currentActivePix.pos[0], currentActivePix.pos[1], current_lod);
+				if (integer_pixel_values) {
+					Vector4i value_i = (255 * value).cast<int>();
+					GUI_TEXT(" \t value : " << value_i.transpose());
+				} else {
+					GUI_TEXT(" \t value : " << value.transpose());
 				}
-				catch (const std::exception & e) {
-					currentActivePix.isDefined = false;
-				}		
+
+
 			}
 
 			std::stringstream s;
@@ -113,6 +122,21 @@ namespace sibr
 
 		}
 		ImGui::End();
+	}
+
+	void ImagesGrid::addImagesToHighlight(const std::string & name, const std::vector<int>& imgs, const Vector3f & col, float alpha_fill)
+	{
+		images_to_highlight[name] = { imgs, col, alpha_fill };
+	}
+
+	void ImagesGrid::addPixelsToHighlight(const std::string & name, const std::vector<MVpixel>& pixs, const Vector3f & col, float alpha_fill)
+	{
+		pixels_to_highlight[name] = { pixs, col, alpha_fill };
+	}
+
+	const MVpixel & ImagesGrid::getCurrentPixel()
+	{
+		return currentActivePix;
 	}
 
 	void ImagesGrid::listImagesLayerGUI()
@@ -478,7 +502,7 @@ namespace sibr
 			viewRectangle.diagonal = Vector2f(0.5, 0.5);
 		}
 
-		if (input.mouseButton().isPressed(Mouse::Code::Right) && !zoomSelection) {
+		if (input.mouseButton().isPressed(Mouse::Code::Right) && !input.key().isActivated(Key::LeftControl) && !zoomSelection) {
 			zoomSelection.isActive = true;
 			zoomSelection.first = input.mousePosition();
 		}
@@ -565,7 +589,7 @@ namespace sibr
 		}
 	}
 
-	void GridMapping::highlightPixel(const MVpixel & pix, const Viewport & viewport, DrawUtilities & utils, const Vector3f & color, const Vector2f & pixScreenSize)
+	void GridMapping::highlightPixel(const MVpixel & pix, const Viewport & viewport, const Vector3f & color, const Vector2f & pixScreenSize)
 	{
 		Vector2f pixTl = uvFromMVpixel(pix);
 		Vector2f pixBR = uvFromMVpixel(MVpixel(pix.im, pix.pos + Vector2i(1, 1)));
@@ -574,19 +598,19 @@ namespace sibr
 
 		if ((pixBR - pixTl).cwiseProduct(viewport.finalSize()).norm() < pixScreenSize.diagonal().norm()) {
 			//if pixel size in screen space is too tiny
-			utils.rectanglePixels(color, 0.5*(pixTl + pixBR), pixScreenSize, true, 0.15f, viewport);
+			draw_utils.rectanglePixels(color, 0.5*(pixTl + pixBR), pixScreenSize, true, 0.15f, viewport);
 		} else {
 			//otherwise highlight pixel intirely
-			utils.rectangle(color, pixTl, pixBR, true, 0.15f, viewport);
+			draw_utils.rectangle(color, pixTl, pixBR, true, 0.15f, viewport);
 		}
 	}
 
-	void GridMapping::highlightImage(int im, const sibr::Viewport & viewport, DrawUtilities & utils, const sibr::Vector3f & color, float alpha)
+	void GridMapping::highlightImage(int im, const sibr::Viewport & viewport, const sibr::Vector3f & color, float alpha)
 	{
 		Vector2f imTl = uvFromMVpixel(MVpixel(im, { 0, 0 }));
 		Vector2f imBR = uvFromMVpixel(MVpixel(im, imSizePixels.cast<int>()));
 
-		utils.rectangle(color, imTl, imBR, alpha != 0 , alpha, viewport);
+		draw_utils.rectangle(color, imTl, imBR, alpha != 0 , alpha, viewport);
 	}
 
 	void GridMapping::setupGrid(const Viewport & vp)

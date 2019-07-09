@@ -4,6 +4,7 @@
 # include <core/graphics/Texture.hpp>
 #include <core/view/ViewBase.hpp>
 #include <list>
+#include <map>
 
 namespace sibr
 {
@@ -85,8 +86,9 @@ namespace sibr
 	};
 
 
-	struct GridMapping {
+	class SIBR_VIEW_EXPORT GridMapping {
 
+	protected:
 		MVpixel pixFromScreenPos(const Vector2i & pos, const Vector2f & size);
 
 		//uvs in opengl [1,-1]
@@ -99,10 +101,11 @@ namespace sibr
 
 		void displayZoom(const sibr::Viewport & viewport, DrawUtilities & utils);
 
-		void highlightPixel(const MVpixel & pix, const sibr::Viewport & viewport, DrawUtilities & utils, const sibr::Vector3f & color = { 0, 1, 0 }, const sibr::Vector2f & minPixSize = { 10.0f, 10.0f });
-		void highlightImage(int im, const sibr::Viewport & viewport, DrawUtilities & utils, const sibr::Vector3f & color = { 0, 1, 0 }, float alpha = 0);
+		void highlightPixel(const MVpixel & pix, const sibr::Viewport & viewport, const sibr::Vector3f & color = { 0, 1, 0 }, const sibr::Vector2f & minPixSize = { 10.0f, 10.0f });
+		void highlightImage(int im, const sibr::Viewport & viewport, const sibr::Vector3f & color = { 0, 1, 0 }, float alpha = 0);
 		void setupGrid(const Viewport & vp);
 
+		DrawUtilities draw_utils;
 		Viewport _vp;
 		QuadData viewRectangle;
 		QuadSelectionData zoomSelection;
@@ -148,6 +151,12 @@ namespace sibr
 		bool flip_texture = false;
 	};
 
+	template<typename T> 
+	struct HighlightData {
+		std::vector<T> data;
+		Vector3f color;
+		float alpha = 0;
+	};
 	
 
 	class SIBR_VIEW_EXPORT ImagesGrid : public ViewBase, GridMapping 
@@ -164,6 +173,12 @@ namespace sibr
 		virtual void	onRender(IRenderTarget & dst);
 		virtual void	onGUI() override;
 
+		void addImagesToHighlight(const std::string & name, const std::vector<int> & imgs, const Vector3f & col, float alpha_fill = 0);
+		void addPixelsToHighlight(const std::string & name, const std::vector<MVpixel> & pixs, const Vector3f & col, float alpha_fill = 0);
+
+
+		const MVpixel & getCurrentPixel();
+
 	protected:
 
 		void listImagesLayerGUI();
@@ -178,10 +193,10 @@ namespace sibr
 		int current_lod = 0;
 		bool integer_pixel_values = true;
 
+		std::map< std::string, HighlightData<MVpixel> > pixels_to_highlight;
+		std::map<std::string, HighlightData<int> > images_to_highlight;
+
 		MVpixel currentActivePix;
-
-		DrawUtilities draw_utils;
-
 		SelectionMode selectionMode = IMAGE_SELECTION;
 
 	public:

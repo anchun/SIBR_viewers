@@ -417,6 +417,15 @@ namespace sibr
 		}
 
 	}
+	void MultiViewBase::toggleSubViewsGUI()
+	{
+		_showSubViewsGui = !_showSubViewsGui;
+
+		for (auto & view : _subMultiViews) {
+			view.second->toggleSubViewsGUI();
+		}
+	}
+
 	MultiViewManager::MultiViewManager(Window& window, bool resize)
 		: _window(window), _fpsCounter(false)
 	{
@@ -440,12 +449,11 @@ namespace sibr
 
 	void MultiViewManager::onUpdate(Input & input)
 	{
-		if (input.key().isActivated(Key::LeftControl) && input.key().isActivated(Key::LeftAlt) && input.key().isReleased(Key::G)) {
-			_showGUI = !_showGUI;
-			_showSubViewsGui = !_showSubViewsGui;
-		}
-
 		MultiViewBase::onUpdate(input);
+
+		if (input.key().isActivated(Key::LeftControl) && input.key().isActivated(Key::LeftAlt) && input.key().isReleased(Key::G)) {
+			toggleSubViewsGUI();
+		}
 	}
 
 	void MultiViewManager::onRender(Window & win)
@@ -464,6 +472,8 @@ namespace sibr
 
 	void MultiViewManager::onGui(Window & win)
 	{
+		MultiViewBase::onGui(win);
+
 		// Menu
 		if (_showGUI && ImGui::BeginMainMenuBar())
 		{
@@ -493,8 +503,7 @@ namespace sibr
 					}
 
 					if (ImGui::MenuItem("Hide GUI (!)", "Ctrl+Alt+G")) {
-						_showGUI = !_showGUI;
-						_showSubViewsGui = !_showSubViewsGui;
+						toggleGUI();
 					}
 					ImGui::EndMenu();
 				}
@@ -575,6 +584,12 @@ namespace sibr
 
 			ImGui::EndMainMenuBar();
 		}
+	}
+
+	void MultiViewManager::toggleGUI()
+	{
+		_showGUI = !_showGUI;
+		toggleSubViewsGUI();
 	}
 
 } // namespace sibr

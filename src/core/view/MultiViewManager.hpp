@@ -65,19 +65,19 @@ namespace sibr
 		 * \brief Update subviews and the MultiViewManager.
 		 * \param input The Input state to use.
 		 */
-		void	onUpdate(Input & input);
+		virtual void	onUpdate(Input & input);
 
 		/**
 		 * \brief Render the content of the MultiViewManager
 		 * \param win The OS window into which the rendering should be performed.
 		 */
-		void	onRender(Window& win);
+		virtual void	onRender(Window& win);
 
 		/**
 		 * \brief Render additional gui
 		 * \param win The OS window into which the rendering should be performed.
 		 */
-		void	onGui(Window& win);
+		virtual void	onGui(Window& win);
 
 		/**
 		 * \brief Register a standard subview (for instance a SceneDebugView). It will be rendered via a call to onRender(Viewport).
@@ -203,6 +203,8 @@ namespace sibr
 
 		void mosaicLayout(const Viewport & vp);
 
+		void toggleSubViewsGUI();
+
 		/**
 		* \brief Set the export path.
 		* \param path path to the directory to use.
@@ -212,7 +214,7 @@ namespace sibr
 			sibr::makeDirectory(path);
 		}
 
-	private:
+	protected:
 
 		struct SubView {
 			ViewBase::Ptr view;
@@ -309,21 +311,23 @@ namespace sibr
 		 * \brief Update subviews and the MultiViewManager.
 		 * \param input The Input state to use.
 		 */
-		void	onUpdate(Input & input);
+		void	onUpdate(Input & input) override;
 
 		/**
 		 * \brief Render the content of the MultiViewManager and its interface
 		 * \param win The OS window into which the rendering should be performed.
 		 */
-		void	onRender(Window& win);
+		void	onRender(Window& win) override;
 
 		/**
 		 * \brief Render menus and additional gui
 		 * \param win The OS window into which the rendering should be performed.
 		 */
-		void	onGui(Window& win);
+		void	onGui(Window& win) override;
 
 	private:
+		void toggleGUI();
+
 		Window& _window;
 		FPSCounter _fpsCounter;
 		bool _showGUI = true;
