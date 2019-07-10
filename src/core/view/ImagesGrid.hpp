@@ -4,11 +4,10 @@
 # include <core/graphics/Texture.hpp>
 #include <core/view/ViewBase.hpp>
 #include <list>
+#include <map>
 
 namespace sibr
 {
-
-	SIBR_VIEW_EXPORT Vector2f toGLuv(const Vector2f & uv);
 
 	class SIBR_VIEW_EXPORT DrawUtilities
 	{
@@ -29,15 +28,19 @@ namespace sibr
 		GLuniform <Vector2f> gridGL;
 		GLuniform <Vector2f> gridTopLeftGL;
 		GLuniform <Vector2f> gridBottomRightGL;
-		GLuniform <float> lod;
+		GLuniform <float> lodGL;
 		GLuniform <int> numImgsGL; 
-		GLuniform<bool> flip_texture;
+		GLuniform<bool> flip_textureGL;
 
-		void rectangle(const Vector3f & color, const Vector2f & tl, const Vector2f & br, bool fill, float alpha, const Viewport & vp = {} );
+		void baseRendering(const Mesh & mesh, Mesh::RenderMode mode, const Vector3f & color, const Vector2f & translation, const Vector2f & scaling, float alpha, const Viewport & vp);
+
+		void rectangle(const Vector3f & color, const Vector2f & tl, const Vector2f & br, bool fill, float alpha, const Viewport & vp );
 		void rectanglePixels(const Vector3f & color, const Vector2f & center, const Vector2f & diagonalPixs, bool fill, float alpha, const Viewport & vp);
 		void circle(const Vector3f & color, const Vector2f & center, float radius, bool fill, float alpha, const Vector2f & scaling = Vector3f(1, 1), int precision = 50);
 		void circlePixels(const Vector3f & color, const Vector2f & center, float radius, bool fill, float alpha, const Vector2f & winSize, int precision = 50);
 		void linePixels(const Vector3f & color, const Vector2f & ptA, const Vector2f & ptB, const Vector2f & winSize);
+		
+		void image_grid(int num_imgs, uint texture, const Vector2f & grid, const Vector2f & tl, const Vector2f & br, int lod, bool flip_texture);
 
 	private:
 
@@ -73,7 +76,9 @@ namespace sibr
 	struct MVpixel {
 		MVpixel() : isDefined(false) {}
 		MVpixel(int i, const Vector2i & px) : im(i), pos(px), isDefined(true) {}
+		
 		operator bool() const { return isDefined; }
+		bool operator ==(const MVpixel & other) const { return im == other.im && pos == other.pos; }
 
 		Vector2i pos;
 		int im;
@@ -81,8 +86,9 @@ namespace sibr
 	};
 
 
-	struct GridMapping {
+	class SIBR_VIEW_EXPORT GridMapping {
 
+	protected:
 		MVpixel pixFromScreenPos(const Vector2i & pos, const Vector2f & size);
 
 		//uvs in opengl [1,-1]
@@ -95,10 +101,11 @@ namespace sibr
 
 		void displayZoom(const sibr::Viewport & viewport, DrawUtilities & utils);
 
-		void highlightPixel(const MVpixel & pix, const sibr::Viewport & viewport, DrawUtilities & utils, const sibr::Vector3f & color = { 0, 1, 0 }, const sibr::Vector2f & minPixSize = { 10.0f, 10.0f });
+		void highlightPixel(const MVpixel & pix, const sibr::Viewport & viewport, const sibr::Vector3f & color = { 0, 1, 0 }, const sibr::Vector2f & minPixSize = { 10.0f, 10.0f });
+		void highlightImage(int im, const sibr::Viewport & viewport, const sibr::Vector3f & color = { 0, 1, 0 }, float alpha = 0);
 		void setupGrid(const Viewport & vp);
 
-
+		DrawUtilities draw_utils;
 		Viewport _vp;
 		QuadData viewRectangle;
 		QuadSelectionData zoomSelection;
@@ -111,21 +118,66 @@ namespace sibr
 		int num_imgs;
 	};
 
+
+
+	template<typename T>
+	class ObjectSelection {
+	public:
+		void switchSelection(const T & t) {
+			for (auto it = _selected.begin(); it != _selected.end(); ++it) {
+				if (*it == t) {
+					_selected.erase(it);
+					return;
+				}
+			}
+			_selected.push_back(t);
+		}
+
+		const std::list<T> get() const {
+			return _selected;
+		}
+
+	protected:
+		std::list<T> _selected;
+	};
+
 	struct ImageGridLayer {	
 		ITexture2DArray::Ptr imgs_texture_array;
+
+		ObjectSelection<MVpixel> pixel_selection;
+		ObjectSelection<int> image_selection;
+
 		std::string name;
 		bool flip_texture = false;
 	};
 
+	template<typename T> 
+	struct HighlightData {
+		std::vector<T> data;
+		Vector3f color;
+		float alpha = 0;
+	};
+	
+
 	class SIBR_VIEW_EXPORT ImagesGrid : public ViewBase, GridMapping 
 	{
+		SIBR_CLASS_PTR(ImagesGrid);
 
 	public:
+
+		enum SelectionMode { NO_SELECTION, IMAGE_SELECTION, PIXEL_SELECTION };
+
 		//ViewBase interface
 		virtual void	onUpdate(Input& input, const Viewport & vp) override;
 		virtual void	onRender(const Viewport & viewport) override;
 		virtual void	onRender(IRenderTarget & dst);
 		virtual void	onGUI() override;
+
+		void addImagesToHighlight(const std::string & name, const std::vector<int> & imgs, const Vector3f & col, float alpha_fill = 0);
+		void addPixelsToHighlight(const std::string & name, const std::vector<MVpixel> & pixs, const Vector3f & col, float alpha_fill = 0);
+
+
+		const MVpixel & getCurrentPixel();
 
 	protected:
 
@@ -138,16 +190,14 @@ namespace sibr
 		std::list<ImageGridLayer> images_layers;
 		std::list<ImageGridLayer>::iterator current_layer;
 		ITexture2DArray::Ptr current_level_tex;
-		float current_lod = 0;
+		int current_lod = 0;
+		bool integer_pixel_values = true;
+
+		std::map< std::string, HighlightData<MVpixel> > pixels_to_highlight;
+		std::map<std::string, HighlightData<int> > images_to_highlight;
 
 		MVpixel currentActivePix;
-
-		DrawUtilities draw_utils;
-
-
-		//dgb
-		Viewport db_vp;
-		Vector2i db_mp;
+		SelectionMode selectionMode = IMAGE_SELECTION;
 
 	public:
 		template<typename T, uint N>

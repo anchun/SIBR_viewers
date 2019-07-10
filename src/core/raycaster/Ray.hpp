@@ -37,6 +37,8 @@ namespace sibr
 		/// Get the direction to where the ray goes.
 		inline const sibr::Vector3f&	dir( void ) const;
 
+		Vector3f at(float t) const;
+
 	private:
 		sibr::Vector3f		_orig;	///< position from where the ray starts
 		sibr::Vector3f		_dir;	///< direction where the ray goes
@@ -117,6 +119,11 @@ namespace sibr
 	}
 	const sibr::Vector3f&	Ray::dir( void ) const {
 		return _dir;
+	}
+
+	inline Vector3f Ray::at(float t) const
+	{
+		return orig() + t * dir();
 	}
 
 

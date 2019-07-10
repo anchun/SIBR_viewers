@@ -11,7 +11,7 @@
 #include <core/raycaster/Raycaster.hpp>
 #include <core/view/SceneDebugView.hpp>
 
-#include <core/view/ImagesGrid.hpp>
+#include <core/view/DatasetView.hpp>
 
 #define PROGRAM_NAME "sibr_ulr_app"
 using namespace sibr;
@@ -106,14 +106,8 @@ int main(int ac, char** av) {
 
 	//test grid view - can be removed
 	if (getCommandLineArgs().contains("test-grid")) {
-		const std::shared_ptr<sibr::ImagesGrid> grid(new ImagesGrid());
-		grid->addImageLayer("input images", scene->images()->inputImages(), 10);
-
-		if (ulrView->getULRrenderer()->useMasks()) {
-			grid->addImageLayer("masks", ulrView->getULRrenderer()->getMasks());
-		}
-
-		multiViewManager.addSubView("grid", grid, usedResolution);
+		DatasetView::Ptr datasetView(new DatasetView(*scene, usedResolution));
+		multiViewManager.addSubMultiView("subMulti", datasetView);
 	}
 
 	CHECK_GL_ERROR;
