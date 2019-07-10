@@ -439,7 +439,7 @@ namespace sibr {
 		bool do_swap = false;
 		static int num_swap = 1;
 		
-		if (ImGui::CollapsingHeader("Meshes list", ImGuiTreeNodeFlags_DefaultOpen)) {
+		if (ImGui::CollapsingHeader(("Meshes list##" + name).c_str(), ImGuiTreeNodeFlags_DefaultOpen)) {
 
 			static char loaded_mesh_str[128] = "";
 			static std::string loaded_mesh_path;

@@ -25,6 +25,7 @@
 
 namespace sibr
 {
+
 	/**
 	 * MultiViewManager is designed to provide 
 	 * more flexibility and with a multi-windows system in mind.
@@ -40,9 +41,9 @@ namespace sibr
 	 * Note: new IBR views don't have to implement this distinction
 	* \ingroup sibr_view
 	*/
-	class SIBR_VIEW_EXPORT MultiViewManager
+	class SIBR_VIEW_EXPORT MultiViewBase
 	{
-		SIBR_CLASS_PTR(MultiViewManager);
+		SIBR_CLASS_PTR(MultiViewBase);
 
 	public:
 
@@ -58,19 +59,25 @@ namespace sibr
 		 * \param window The OS window to use.
 		 * \param resize Should the window be resized by the manager to maximize usable space.
 		 */
-		MultiViewManager(Window& window, bool resize = true);
+		MultiViewBase(const Vector2i & defaultViewRes = { 800, 600 });
 
 		/**
 		 * \brief Update subviews and the MultiViewManager.
 		 * \param input The Input state to use.
 		 */
-		void	onUpdate(Input & input);
+		virtual void	onUpdate(Input & input);
 
 		/**
-		 * \brief Render the content of the MultiViewManager, and its interface.
+		 * \brief Render the content of the MultiViewManager
 		 * \param win The OS window into which the rendering should be performed.
 		 */
-		void	onRender(Window& win);
+		virtual void	onRender(Window& win);
+
+		/**
+		 * \brief Render additional gui
+		 * \param win The OS window into which the rendering should be performed.
+		 */
+		virtual void	onGui(Window& win);
 
 		/**
 		 * \brief Register a standard subview (for instance a SceneDebugView). It will be rendered via a call to onRender(Viewport).
@@ -127,6 +134,8 @@ namespace sibr
 			const IBRViewUpdateFonc updateFunc,
 			const Vector2u & res = Vector2u(0, 0),
 			const ImGuiWindowFlags flags = 0);
+
+		void	addSubMultiView(const std::string & title, MultiViewBase::Ptr multiview);
 
 		/**
 		* \param title
@@ -188,6 +197,15 @@ namespace sibr
 		void addAdditionalRenderingForView(const std::string & name, const AdditionalRenderFonc renderFunc);
 
 		/**
+		* \brief Count NOT recursively the number of subViews
+		*/
+		int numSubViews() const;
+
+		void mosaicLayout(const Viewport & vp);
+
+		void toggleSubViewsGUI();
+
+		/**
 		* \brief Set the export path.
 		* \param path path to the directory to use.
 		*/
@@ -196,7 +214,7 @@ namespace sibr
 			sibr::makeDirectory(path);
 		}
 
-	private:
+	protected:
 
 		struct SubView {
 			ViewBase::Ptr view;
@@ -256,7 +274,7 @@ namespace sibr
 			}
 		};
 
-	private:
+	protected:
 		void				addIBRSubView(const std::string & title, ViewBase::Ptr view, 
 											const IBRViewUpdateFonc updateFunc, const Vector2u & res, 
 											const ImGuiWindowFlags flags, const bool defaultFuncUsed);
@@ -265,22 +283,59 @@ namespace sibr
 
 		static void				captureView(const SubView & view, const std::string & path = "./screenshots", const std::string & filename = "");
 		
-		Window& _window;
 		IRenderingMode::Ptr _renderingMode = nullptr;
 		std::map<std::string, BasicSubView> _subViews;
 		std::map<std::string, IBRSubView> _ibrSubViews;
-		FPSCounter _fpsCounter;
+		std::map<std::string, std::shared_ptr<MultiViewBase> > _subMultiViews;
+
 		Vector2i _defaultViewResolution;
 		std::string _exportPath;
 		std::chrono::time_point<std::chrono::steady_clock> _timeLastFrame;
 		float _deltaTime;
-		bool _showGUI = true;
+		bool _showSubViewsGui = true;
 		bool _onPause = false;
+	};
+
+
+	class SIBR_VIEW_EXPORT MultiViewManager : public MultiViewBase
+	{
+	public:
+		/*
+		 * \brief Creates a MultiViewManager in a given OS window.
+		 * \param window The OS window to use.
+		 * \param resize Should the window be resized by the manager to maximize usable space.
+		 */
+		MultiViewManager(Window& window, bool resize = true);
+
+		/**
+		 * \brief Update subviews and the MultiViewManager.
+		 * \param input The Input state to use.
+		 */
+		void	onUpdate(Input & input) override;
+
+		/**
+		 * \brief Render the content of the MultiViewManager and its interface
+		 * \param win The OS window into which the rendering should be performed.
+		 */
+		void	onRender(Window& win) override;
+
+		/**
+		 * \brief Render menus and additional gui
+		 * \param win The OS window into which the rendering should be performed.
+		 */
+		void	onGui(Window& win) override;
+
+	private:
+		void toggleGUI();
+
+		Window& _window;
+		FPSCounter _fpsCounter;
+		bool _showGUI = true;
 	};
 
 	///// INLINE /////
 
-	inline void					MultiViewManager::setDefaultViewResolution(const Vector2i& size) {
+	inline void					MultiViewBase::setDefaultViewResolution(const Vector2i& size) {
 		_defaultViewResolution = size;
 	}
 

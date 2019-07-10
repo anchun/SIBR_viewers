@@ -16,7 +16,6 @@ const char* usage = ""
 
 struct ColmapPreprocessArgs :
 	virtual BasicIBRAppArgs {
-	Arg<bool> textureAlpha = { "textureAlpha" };
 };
 
 int main(const int argc, const char** argv)
@@ -27,7 +26,7 @@ int main(const int argc, const char** argv)
 
 	std::string pathScene = myArgs.dataset_path;
 
-	std::vector<std::string> dirs = {"cameras", "images", "meshes", "textures"};
+	std::vector<std::string> dirs = { "cameras", "images", "meshes", "textures" };
 
 	std::cout << "Generating SIBR scene." << std::endl;
 	BasicIBRScene scene(myArgs, true);
@@ -43,23 +42,26 @@ int main(const int argc, const char** argv)
 			sibr::makeDirectory(pathScene + "/" + dir.c_str());
 		}
 	}
-	if (myArgs.textureAlpha) {
-		sibr::makeDirectory(pathScene + "/textureAlpha/");
-	}
 
 	std::ofstream outputBundleCam;
 	std::ofstream outputListIm;
+	std::ofstream outputSceneMetadata;
 
 	outputBundleCam.open(pathScene + "/cameras/bundle.out");
 	outputListIm.open(pathScene + "/images/list_images.txt");
+	outputSceneMetadata.open(pathScene + "/scene_metadata.txt");
 	outputBundleCam << "# Bundle file v0.3" << std::endl;
 	outputBundleCam << maxCam << " " << 0 << std::endl;
+	outputSceneMetadata << "Scene Metadata File\n" << std::endl;
+	outputSceneMetadata << "[list_images]\n<filename> <image_width> <image_height> <near_clipping_plane> <far_clipping_plane>" << std::endl;
 
+	std::sort(cams.begin(), cams.end(), [](const InputCamera & a, const InputCamera & b) {
+		return a.id() < b.id();
+	});
 
 	for (int c = minCam; c < maxCam; c++) {
 		auto & camIm = cams[c];
-		
-		//InputCamera newCam(camIm, 2222, 2222);
+
 		std::string extensionFile = boost::filesystem::extension(camIm.name());
 		std::ostringstream ssZeroPad;
 		ssZeroPad << std::setw(8) << std::setfill('0') << camIm.id();
@@ -68,10 +70,22 @@ int main(const int argc, const char** argv)
 		boost::filesystem::copy_file(pathScene + "/colmap/stereo/images/" + camIm.name(), pathScene + "/images/" + newFileName, boost::filesystem::copy_option::overwrite_if_exists);
 		outputBundleCam << camIm.toBundleString();
 		outputListIm << newFileName << " " << camIm.w() << " " << camIm.h() << std::endl;
+		outputSceneMetadata << newFileName << " " << camIm.w() << " " << camIm.h() << " " << camIm.znear() << " " << camIm.zfar() << std::endl;
 	}
+
+
+	outputSceneMetadata << "\n// Always specify active/exclude images after list images\n\n[exclude_images]\n<image1_idx> <image2_idx> ... <image3_idx>" << std::endl;
+
+	for (int i = 0; i < scene.data()->excludeImages().size(); i++) {
+		if (scene.data()->excludeImages()[i])
+			outputSceneMetadata << i << " ";
+	}
+
+	outputSceneMetadata << "\n\n\n[other parameters]" << std::endl;
 
 	outputBundleCam.close();
 	outputListIm.close();
+	outputSceneMetadata.close();
 
 	const std::string meshPath = pathScene + "/capreal/mesh.ply";
 	sibr::copyFile(meshPath, pathScene + "/meshes/recon.ply", true);

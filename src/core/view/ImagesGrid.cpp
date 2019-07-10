@@ -11,7 +11,7 @@ namespace sibr
 
 		if (current_level_tex) {
 			imSizePixels = { current_level_tex->w(), current_level_tex->h() };
-			imSizePixels = imSizePixels.cwiseQuotient(pow(2.0, std::round(current_lod))*Vector2f(1, 1)).unaryExpr([](float f) { return std::floor(f); });
+			imSizePixels = imSizePixels.cwiseQuotient(pow(2.0, current_lod)*Vector2f(1, 1)).unaryExpr([](float f) { return std::floor(f); });
 
 			num_imgs = (int)current_layer->imgs_texture_array->depth();
 		}
@@ -25,8 +25,30 @@ namespace sibr
 		updateZoomScroll(input);
 		updateDrag(input, size);
 
-		db_vp = vp;
-		db_mp = input.mousePosition();
+		if (currentActivePix && input.key().isActivated(Key::LeftControl) && input.mouseButton().isReleased(Mouse::Code::Left) ) {
+			if (selectionMode == IMAGE_SELECTION) {
+				current_layer->image_selection.switchSelection(currentActivePix.im);
+			}
+			if (selectionMode == PIXEL_SELECTION && !current_layer->flip_texture) {
+				current_layer->pixel_selection.switchSelection(currentActivePix);
+			}
+		}
+	
+		std::vector<int> all_ims;
+		std::iota(all_ims.begin(), all_ims.end(), 0);
+		addImagesToHighlight("imBorders", all_ims, { 0,0,0 });
+
+		if (currentActivePix) {
+			addPixelsToHighlight("activePix", { currentActivePix }, { 0, 1, 0 }, 0.25f);
+		}
+		
+		const auto & imgs_list = current_layer->image_selection.get();
+		if (!imgs_list.empty()) {
+			std::vector<int> selected_ims(std::begin(imgs_list), std::end(imgs_list));
+			addImagesToHighlight("imSelection", selected_ims, { 0,1,0 }, 0.1f);
+		}
+		
+
 	}
 
 	void ImagesGrid::onRender(const Viewport & viewport)
@@ -39,36 +61,23 @@ namespace sibr
 			return;
 		}
 
-		draw_utils.gridShader.begin();
+		draw_utils.image_grid(num_imgs, current_level_tex->handle(), grid_adjusted, viewRectangle.tl(), viewRectangle.br(), current_lod, current_layer->flip_texture);
 
-		draw_utils.numImgsGL.set(num_imgs);
-		draw_utils.gridGL.set(grid_adjusted);
-		draw_utils.lod.set(current_lod);
-
-		draw_utils.gridTopLeftGL.set(viewRectangle.tl());
-		draw_utils.gridBottomRightGL.set(viewRectangle.br());
-
-		draw_utils.flip_texture.set(current_layer->flip_texture);
-
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D_ARRAY, current_level_tex->handle());
-		RenderUtility::renderScreenQuad();
-
-		draw_utils.gridShader.end();
-
-		for (int i = 0; i < num_imgs; ++i) {
-			Vector2f imTl = uvFromMVpixel(MVpixel(i, { 0, 0 }));
-			Vector2f imBR = uvFromMVpixel(MVpixel(i, imSizePixels.cast<int>()));
-			draw_utils.rectangle({ 0, 0, 0 }, imTl, imBR, false, 1.0, viewport);
+		for (const auto & ims_highlight : images_to_highlight) {
+			const auto & imgs = ims_highlight.second;
+			for (int im : imgs.data) {
+				highlightImage(im, viewport, imgs.color, imgs.alpha);
+			}		
 		}
 
-		if (currentActivePix) {
-			highlightPixel(currentActivePix, viewport, draw_utils);
+		for (const auto & pixels_highlight : pixels_to_highlight) {
+			const auto & pix_data = pixels_highlight.second;
+			for (const auto  pix : pix_data.data) {
+				highlightPixel(pix, viewport, pix_data.color);
+			}
 		}
 
 		displayZoom(viewport, draw_utils);
-
-
 	}
 
 	void ImagesGrid::onRender(IRenderTarget & dst)
@@ -89,13 +98,45 @@ namespace sibr
 			optionsGUI();
 
 			listImagesLayerGUI();
-		
+
 			if (currentActivePix) {
 				GUI_TEXT("current pix : " << currentActivePix.im << ", " << currentActivePix.pos.transpose());
+
+				Vector4f value = current_layer->imgs_texture_array->readBackPixel(currentActivePix.im, currentActivePix.pos[0], currentActivePix.pos[1], current_lod);
+				if (integer_pixel_values) {
+					Vector4i value_i = (255 * value).cast<int>();
+					GUI_TEXT(" \t value : " << value_i.transpose());
+				} else {
+					GUI_TEXT(" \t value : " << value.transpose());
+				}
+
+
 			}
+
+			std::stringstream s;
+			s << "active images : ";
+			for (int im : current_layer->image_selection.get()) {
+				s << im << ", ";
+			}
+			ImGui::Text(s.str().c_str());
 
 		}
 		ImGui::End();
+	}
+
+	void ImagesGrid::addImagesToHighlight(const std::string & name, const std::vector<int>& imgs, const Vector3f & col, float alpha_fill)
+	{
+		images_to_highlight[name] = { imgs, col, alpha_fill };
+	}
+
+	void ImagesGrid::addPixelsToHighlight(const std::string & name, const std::vector<MVpixel>& pixs, const Vector3f & col, float alpha_fill)
+	{
+		pixels_to_highlight[name] = { pixs, col, alpha_fill };
+	}
+
+	const MVpixel & ImagesGrid::getCurrentPixel()
+	{
+		return currentActivePix;
 	}
 
 	void ImagesGrid::listImagesLayerGUI()
@@ -146,11 +187,27 @@ namespace sibr
 	void ImagesGrid::optionsGUI()
 	{
 		if (ImGui::CollapsingHeader("grid_options")) {
+
+
 			if (ImGui::SliderInt("num per row", &num_per_row, 1, num_imgs)) {
 				viewRectangle.center = { 0.5f, 0.5f };
 				viewRectangle.diagonal = { 0.5f, 0.5f };
 			}
-			ImGui::SliderFloat("pyramid level", &current_lod, 0, 10);
+			if (ImGui::SliderInt("pyramid level", &current_lod, 0, 10)) {
+				currentActivePix.isDefined = false;
+			}
+
+			static const std::vector<const char*> selection_mode_str = { "no selection", "image" ,"pixel" };
+			for (int i = 0; i < (int)selection_mode_str.size(); ++i) {
+				if (i != 0) {
+					ImGui::SameLine();
+				}
+				if (ImGui::RadioButton(selection_mode_str[i], selectionMode == (SelectionMode)i)) {
+					selectionMode = (SelectionMode)i;
+				}
+			}
+
+			ImGui::Checkbox("integer pixel values", &integer_pixel_values);
 		}
 	}
 
@@ -178,15 +235,30 @@ namespace sibr
 		initGridShader();
 	}
 
-	void DrawUtilities::rectangle(const Vector3f & color, const Vector2f & tl, const Vector2f & br, bool fill, float alpha, const Viewport & vp)
+	void DrawUtilities::baseRendering(const Mesh & mesh, Mesh::RenderMode mode, const Vector3f & color, 
+		const Vector2f & translation, const Vector2f & scaling, float alpha, const Viewport & vp)
 	{
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glBlendEquation(GL_FUNC_ADD);
+
 		vp.bind();
 		baseShader.begin();
 
-		scalingGL.set(Vector2f(1.0f, 1.0f));
-		translationGL.set(Vector2f(0, 0));
+		scalingGL.set(scaling);
+		translationGL.set(translation);
 		colorGL.set(color);
+		alphaGL.set(alpha);
 
+		mesh.render(false, false, mode);
+
+		baseShader.end();
+
+		glDisable(GL_BLEND);
+	}
+
+	void DrawUtilities::rectangle(const Vector3f & color, const Vector2f & tl, const Vector2f & br, bool fill, float alpha, const Viewport & vp)
+	{
 		auto rectangleMesh = std::make_shared<Mesh>();
 
 		rectangleMesh->vertices({
@@ -202,22 +274,14 @@ namespace sibr
 				{ 0,2,3 }
 				});
 
-			alphaGL.set(alpha);
-			glEnable(GL_BLEND);
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-			glBlendEquation(GL_FUNC_ADD);
-			rectangleMesh->render(false, false);
-			glDisable(GL_BLEND);
+			baseRendering(*rectangleMesh, Mesh::FillRenderMode, color, { 0,0 }, { 1,1 }, alpha, vp);
 		}
 
 		rectangleMesh->triangles({
 			{ 0,0,1 },{ 1,1,2 },{ 2,2,3 },{ 3,3,0 }
 			});
 
-		alphaGL.set(1.0f);
-		rectangleMesh->render(false, false, Mesh::LineRenderMode);
-
-		baseShader.end();
+		baseRendering(*rectangleMesh, Mesh::LineRenderMode, color, { 0,0 }, { 1,1 }, 1.0f, vp);
 	}
 
 	void DrawUtilities::rectanglePixels(const Vector3f & color, const Vector2f & center, const Vector2f & diagonalPixs, bool fill, float alpha, const Viewport & vp)
@@ -264,26 +328,10 @@ namespace sibr
 		circleMesh->triangles(circleTriangles);
 		circleFilledMesh->triangles(circleFillTriangles);
 
-		baseShader.begin();
-
-		translationGL.set(Vector2f(0, 0));
-
-		colorGL.set(color);
-		scalingGL.set(scaling);
-		translationGL.set(center);
-
 		if (fill) {
-			alphaGL.set(alpha);
-			glEnable(GL_BLEND);
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-			glBlendEquation(GL_FUNC_ADD);
-			circleFilledMesh->render(false, false);
+			baseRendering(*circleFilledMesh, Mesh::FillRenderMode, color, { 0,0 }, { radius, radius }, alpha, {});
 		}
-
-		alphaGL.set(1.0f);
-		circleMesh->render(false, false, Mesh::LineRenderMode);
-
-		baseShader.end();
+		baseRendering(*circleMesh, Mesh::LineRenderMode, color, { 0,0 }, { radius, radius }, 1.0f, {});
 	}
 
 	void DrawUtilities::circlePixels(const Vector3f & color, const Vector2f & center, float radius, bool fill, float alpha, const Vector2f & winSize, int precision)
@@ -308,16 +356,28 @@ namespace sibr
 			Vector3u(0,0,1)
 			});
 
-		baseShader.begin();
+		baseRendering(line, Mesh::LineRenderMode, color, { 0,0 }, { 1.0, 1.0 }, 1.0f, {});
 
-		scalingGL.set(Vector2f(1.0f, 1.0f));
-		translationGL.set(Vector2f(0, 0));
-		colorGL.set(color);
-		alphaGL.set(1.0f);
+	}
 
-		line.render(false, false, Mesh::LineRenderMode);
+	void DrawUtilities::image_grid(int num_imgs, uint texture, const Vector2f & grid, const Vector2f & tl, const Vector2f & br, int lod, bool flip_texture)
+	{
+		gridShader.begin();
 
-		baseShader.end();
+		numImgsGL.set(num_imgs);
+		gridGL.set(grid);
+		lodGL.set((float)lod);
+
+		gridTopLeftGL.set(tl);
+		gridBottomRightGL.set(br);
+
+		flip_textureGL.set(flip_texture);
+
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D_ARRAY, texture);
+		RenderUtility::renderScreenQuad();
+
+		gridShader.end();
 	}
 
 	void DrawUtilities::initBaseShader()
@@ -393,8 +453,8 @@ namespace sibr
 		gridBottomRightGL.init(gridShader, "zoomBR");
 		numImgsGL.init(gridShader, "numImgs");
 		gridGL.init(gridShader, "grid");
-		lod.init(gridShader, "lod");
-		flip_texture.init(gridShader, "flip_texture");
+		lodGL.init(gridShader, "lod");
+		flip_textureGL.init(gridShader, "flip_texture");
 	}
 
 	MVpixel GridMapping::pixFromScreenPos(const Vector2i & pos, const Vector2f & size)
@@ -442,7 +502,7 @@ namespace sibr
 			viewRectangle.diagonal = Vector2f(0.5, 0.5);
 		}
 
-		if (input.mouseButton().isPressed(Mouse::Code::Right) && !zoomSelection) {
+		if (input.mouseButton().isPressed(Mouse::Code::Right) && !input.key().isActivated(Key::LeftControl) && !zoomSelection) {
 			zoomSelection.isActive = true;
 			zoomSelection.first = input.mousePosition();
 		}
@@ -468,8 +528,8 @@ namespace sibr
 					Vector2f center = 0.5f*(brPix + tlPix);
 					Vector2f diag = 0.5f*(brPix - tlPix);
 
-					double new_ratio = diag.x() / diag.y();
-					double target_ratio = size.x() / size.y();
+					float new_ratio = diag.x() / diag.y();
+					float target_ratio = size.x() / size.y();
 					if (new_ratio > target_ratio) {
 						diag.y() = diag.x() / target_ratio;
 					} else {
@@ -529,20 +589,28 @@ namespace sibr
 		}
 	}
 
-	void GridMapping::highlightPixel(const MVpixel & pix, const Viewport & viewport, DrawUtilities & utils, const Vector3f & color, const Vector2f & pixScreenSize)
+	void GridMapping::highlightPixel(const MVpixel & pix, const Viewport & viewport, const Vector3f & color, const Vector2f & pixScreenSize)
 	{
 		Vector2f pixTl = uvFromMVpixel(pix);
 		Vector2f pixBR = uvFromMVpixel(MVpixel(pix.im, pix.pos + Vector2i(1, 1)));
 
 		viewport.bind();
 
-		if ((pixBR - pixTl).cwiseProduct(viewport.finalSize()).norm() < 2.0f*pixScreenSize.diagonal().norm()) {
+		if ((pixBR - pixTl).cwiseProduct(viewport.finalSize()).norm() < pixScreenSize.diagonal().norm()) {
 			//if pixel size in screen space is too tiny
-			utils.rectanglePixels(color, 0.5*(pixTl + pixBR), pixScreenSize, true, 0.15f, viewport);
+			draw_utils.rectanglePixels(color, 0.5*(pixTl + pixBR), pixScreenSize, true, 0.15f, viewport);
 		} else {
 			//otherwise highlight pixel intirely
-			utils.rectangle(color, pixTl, pixBR, true, 0.15f, viewport);
+			draw_utils.rectangle(color, pixTl, pixBR, true, 0.15f, viewport);
 		}
+	}
+
+	void GridMapping::highlightImage(int im, const sibr::Viewport & viewport, const sibr::Vector3f & color, float alpha)
+	{
+		Vector2f imTl = uvFromMVpixel(MVpixel(im, { 0, 0 }));
+		Vector2f imBR = uvFromMVpixel(MVpixel(im, imSizePixels.cast<int>()));
+
+		draw_utils.rectangle(color, imTl, imBR, alpha != 0 , alpha, viewport);
 	}
 
 	void GridMapping::setupGrid(const Viewport & vp)
@@ -550,12 +618,6 @@ namespace sibr
 		float ratio_img = imSizePixels.x() / imSizePixels.y();
 		float ratio_vp = vp.finalWidth() / vp.finalHeight();
 		grid_adjusted = num_per_row * Vector2f(1, ratio_img / ratio_vp);
-	}
-
-	Vector2f toGLuv(const Vector2f & uv)
-	{
-		Vector2f out = { uv.x() , 1.0f - uv.y() };
-		return 2.0f*out - Vector2f(1, 1);
 	}
 
 }
