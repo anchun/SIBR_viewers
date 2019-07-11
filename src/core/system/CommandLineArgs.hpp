@@ -12,12 +12,18 @@
 namespace sibr
 {
 
+	struct Switch {};
+
 	/// uint contexpr helper, defining the number of command line tokens required to init T
 	template<typename T>
 	constexpr uint NumberOfArg = 1;
 
 	template<>
 	constexpr uint NumberOfArg<bool> = 0;
+
+
+	template<>
+	constexpr uint NumberOfArg<Switch> = 0;
 
 	template<typename T, uint N>
 	constexpr uint NumberOfArg<std::array<T, N>> = N * NumberOfArg<T>;
@@ -88,24 +94,52 @@ namespace sibr
 
 	SIBR_SYSTEM_EXPORT const CommandLineArgs & getCommandLineArgs();
 	
+	template<typename T>
+	class ArgBase {
+	public:
+		operator const T &() const { return value; }
+		const T & get() const { return value; }
+		T & operator=(const T & t) { value = t; return value; }
+	protected:
+		T value;
+	};
 
 	/// Template Arg class, will init itself in the defaut ctor using the command line args (ie. --key value)
 	/// should be declared as some class member using Arg<T> myArg = { "key", some_default_value };
 	/// is implicitly convertible to the template type
 	/// \note Note : as multiple implicit conversion is not possible in cpp, you might have to use the .get() method to access the inner T value
 	template<typename T>
-	class Arg {
+	class Arg : public ArgBase<T> {
 	public:
 		Arg(const std::string & key, const T & default_value) {
 			value = getCommandLineArgs().get<T>(key, default_value);
 		}
+		using ArgBase<T>::operator=;
+	};
 
-		operator const T &() const { return value; }
-		const T & get() const { return value; }
-		T & operator=(const T & t) { value = t; return value; }
+	///specialization of Arg for Switch, default value get flipped if arg is present
+	template<>
+	class Arg<Switch> : public ArgBase<bool> {
+	public:
+		Arg(const std::string & key, const bool & default_value) {
+			bool arg_is_present = getCommandLineArgs().get<bool>(key, false);
+			if (arg_is_present) {
+				value = !default_value;
+			} else {
+				value = default_value;
+			}
+		}	
+	};
+	using ArgSwitch = Arg<Switch>;
 
-	protected:
-		T value;
+	///specialization of Arg for bool, value is true if key is present and false otherwise
+	template<>
+	class Arg<bool> : public ArgBase<bool> {
+	public:
+		Arg(const std::string & key) {
+			bool arg_is_present = getCommandLineArgs().get<bool>(key, false);
+			value = arg_is_present;
+		}
 	};
 
 	/// helper for RequiredArg class
@@ -181,9 +215,9 @@ namespace sibr
 		Arg<int> win_width = { "width", 720 };
 		Arg<int> win_height = { "height", 480 };
 		Arg<int> vsync = { "vsync", 1 };
-		Arg<bool> fullscreen = { "fullscreen", false };
-		Arg<bool> hdpi = { "hd", false };
-		Arg<bool> no_gui = { "nogui", false };
+		Arg<bool> fullscreen = { "fullscreen" };
+		Arg<bool> hdpi = { "hd" };
+		Arg<bool> no_gui = { "nogui" };
 	};
 
 	struct WindowAppArgs : 

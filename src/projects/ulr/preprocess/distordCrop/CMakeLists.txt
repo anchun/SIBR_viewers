@@ -22,6 +22,7 @@ target_link_libraries(${PROJECT_NAME}
    ${Boost_LIBRARIES}
    sibr_system
    sibr_graphics
+   sibr_imgproc
 )
 
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER "__projects__/__ulr__/__preprocess__")

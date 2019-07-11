@@ -47,10 +47,20 @@ namespace sibr{
 		* \param dataset_path Path to the folder containing data
 		* \param scene_metadata_filename Specify the filename of the Scene Metadata file to load specific scene
 		*/
-		void  getParsedBundlerData(const std::string & dataset_path, const std::string & scene_metadata_filename);
+		void  getParsedBundlerData(const std::string & dataset_path, const std::string & customPath, const std::string & scene_metadata_filename);
 
-
+		
 		/**
+		* \brief Function to parse data from a colmap sparse dataset path.
+		* \param dataset_path Path to the colmap dataset sparse folder containing data
+		*
+		* The function takes in a colmap dataset sparse folder path and populates ParseData members with data.
+		* This function can be used for direct compatibility with colmap data in SIBR.
+		* The function automatically computes the intrinsic and extrinsic parameters of the camera, input images filename, widht and height etc.
+		* Colmap uses LHS coordinate system while SIBR uses RHS coordinate system. The function applies appropriate transformation to handle this case.
+		* 
+		* For further compatibility with FrIBR, which enforces a Y-up RHS coordinate system, we need to apply an extra conversion to the rotation matrix, to 'flip back' from y-down to y-up.
+		* \note Note: when applying the above mentioned conversion, the mesh needs to be converted by the same converter matrix
 		* \brief Function to parse data from a colmap dataset path.
 		* \param dataset_path Path to the folder containing data
 		*/
@@ -60,7 +70,7 @@ namespace sibr{
 		* \brief Function to parse data from a dataset path. Will automatically determine the type of dataset based on the files present.
 		* \param myArgs Arguments containing the dataset path and other infos
 		*/
-		void  getParsedData(const BasicIBRAppArgs & myArgs);
+		void  getParsedData(const BasicIBRAppArgs & myArgs, const std::string & customPath = "");
 
 		/**
 		* \brief Getter for the information regarding the input images.

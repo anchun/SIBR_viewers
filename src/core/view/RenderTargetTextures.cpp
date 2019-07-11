@@ -146,7 +146,7 @@ namespace sibr {
 
 			depthOnlyShader.begin();
 			proj.set(cams->inputCameras()[i].viewproj());
-			proxies->proxy().render();
+			proxies->proxy().render(true, facecull);
 			depthOnlyShader.end();
 
 			depthRT.unbind();
@@ -185,9 +185,9 @@ namespace sibr {
 		initializeDepthRenderTargets(cams, imgs, proxies, true);
 	}
 
-	void RenderTargetTextures::initRGBandDepthTextureArrays(CalibratedCameras::Ptr cams, InputImages::Ptr imgs, ProxyMesh::Ptr proxies, int flags)
+	void RenderTargetTextures::initRGBandDepthTextureArrays(CalibratedCameras::Ptr cams, InputImages::Ptr imgs, ProxyMesh::Ptr proxies, int textureFlags, bool faceCull)
 	{
-		initRGBTextureArrays(imgs, flags);
-		initDepthTextureArrays(cams, proxies, true);
+		initRGBTextureArrays(imgs, textureFlags);
+		initDepthTextureArrays(cams, proxies, faceCull);
 	}
 }

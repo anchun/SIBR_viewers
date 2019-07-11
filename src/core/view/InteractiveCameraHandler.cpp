@@ -84,7 +84,7 @@ namespace sibr {
 		fromCamera(_trackball.getCamera(), false);
 	}
 
-	void InteractiveCameraHandler::setup(const std::vector<sibr::InputCamera>& cams, const sibr::Viewport & viewport, const std::shared_ptr<sibr::Raycaster> raycaster) {
+	void InteractiveCameraHandler::setup(const std::vector<sibr::InputCamera>& cams, const sibr::Viewport & viewport, const std::shared_ptr<sibr::Raycaster> raycaster, const sibr::Vector2f & clippingPlanes) {
 
 		// setup interpolation path if not set
 		if (_interpPath.empty()) {
@@ -92,14 +92,20 @@ namespace sibr {
 		}
 		// Update the near and far planes.
 		sibr::InputCamera idealCam = cams[0];
-		float zFar = -1.0f, zNear = -1.0f;
-		for (const auto & cam : cams) {
-			zFar = (zFar<0 || cam.zfar() > zFar ? cam.zfar() : zFar);
-			zNear = (zNear < 0 || cam.znear() < zNear ? cam.znear() : zNear);
+		if(clippingPlanes[0] < 0.0f || clippingPlanes[1] < 0.0f) {
+			float zFar = -1.0f, zNear = -1.0f;
+			for (const auto & cam : cams) {
+				zFar = (zFar<0 || cam.zfar() > zFar ? cam.zfar() : zFar);
+				zNear = (zNear < 0 || cam.znear() < zNear ? cam.znear() : zNear);
+			}
+			idealCam.zfar(zFar*1.1f);
+			idealCam.znear(zNear*0.9f);
+		} else {
+			idealCam.znear(clippingPlanes[0]);
+			idealCam.zfar(clippingPlanes[1]);
 		}
-		idealCam.zfar(zFar*1.1f);
-		idealCam.znear(zNear*0.9f);
-		SIBR_LOG << "Interactive camera using (" << zNear << "," << zFar << ") near/far planes." << std::endl;
+		
+		SIBR_LOG << "Interactive camera using (" << idealCam.znear() << "," << idealCam.zfar() << ") near/far planes." << std::endl;
 
 		setup(idealCam, viewport, raycaster);
 	}
@@ -150,20 +156,16 @@ namespace sibr {
 		if (!interpolate) {
 			_previousCamera = _currentCamera;
 		}
+
+		_clippingPlanes[0] = _currentCamera.znear();
+		_clippingPlanes[1] = _currentCamera.zfar();
 	}
 
-	void InteractiveCameraHandler::fromTransform(const Transform3f & transform, bool _interpolate, bool _updateResolution)
+	void InteractiveCameraHandler::fromTransform(const Transform3f & transform, bool interpolate, bool updateResolution)
 	{
 		InputCamera camCopy = getCamera();
 		camCopy.transform(transform);
-		fromCamera(camCopy, _interpolate, _updateResolution);
-	}
-
-	void InteractiveCameraHandler::updateView(const sibr::InputCamera & cam)
-	{
-		sibr::InputCamera newCam = _currentCamera;
-		newCam.transform(cam.transform());
-		fromCamera(newCam, true, false);
+		fromCamera(camCopy, interpolate, updateResolution);
 	}
 
 	void InteractiveCameraHandler::switchMode(const InteractionMode mode) {
@@ -226,11 +228,32 @@ namespace sibr {
 	}
 
 	void InteractiveCameraHandler::setupInterpolationPath(const std::vector<sibr::InputCamera> & cameras) {
-		_interpPath.clear();
+		_interpPath.resize(cameras.size());
+
+		bool defaultPath = false;
 		for (int i = 0; i < cameras.size(); i++) {
 			if (cameras[i].isActive()) {
-				_interpPath.push_back(cameras[i]);
+				if (cameras[i].id() < cameras.size()) {
+					_interpPath[cameras[i].id()] = cameras[i];
+				}
+				else {
+					std::cout << "Cameras ID inconsistent. Setting default interpolation path." << std::endl;
+					defaultPath = true;
+					break;
+				}
 			}
+		}
+
+		if (defaultPath) {
+			_interpPath.clear();
+			for (int i = 0; i < cameras.size(); i++) {
+				if (cameras[i].isActive()) {
+					_interpPath.push_back(cameras[i]);
+				}
+			}
+			std::sort(_interpPath.begin(), _interpPath.end(), [](const InputCamera & a, const InputCamera & b) {
+				return a.id() < b.id();
+			});
 		}
 	}
 
@@ -425,6 +448,8 @@ namespace sibr {
 		_cameraRecorder.use(_currentCamera);
 
 		_previousCamera = sibr::InputCamera(_currentCamera);
+		_clippingPlanes[0] = _currentCamera.znear();
+		_clippingPlanes[1] = _currentCamera.zfar();
 	}
 
 	const sibr::InputCamera & InteractiveCameraHandler::getCamera(void) const {
@@ -491,6 +516,20 @@ namespace sibr {
 				// Synchronize internal cameras.
 				fromCamera(_currentCamera, _shouldSmooth);
 			}
+			ImGui::PushScaledItemWidth(130);
+			if(ImGui::InputFloat("Near", &_clippingPlanes[0], 1.0f, 10.0f)) {
+				_currentCamera.znear(_clippingPlanes[0]);
+				fromCamera(_currentCamera);
+			}
+			ImGui::SameLine();
+			if (ImGui::InputFloat("Far", &_clippingPlanes[1], 1.0f, 10.0f)) {
+				_currentCamera.zfar(_clippingPlanes[1]);
+				fromCamera(_currentCamera);
+			}
+			ImGui::PopItemWidth();
+
+
+
 			ImGui::Separator();
 
 		}

@@ -132,6 +132,7 @@ void sibr::ULRV3View::onGUI()
 		}
 		
 		ImGui::Checkbox("Debug weights", &_ulrRenderer->showWeights());
+		ImGui::Checkbox("Gamma correction", &_ulrRenderer->gammaCorrection());
 		ImGui::PopItemWidth();
 	}
 	ImGui::End();

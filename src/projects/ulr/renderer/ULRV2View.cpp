@@ -291,7 +291,7 @@ std::vector<uint> ULRV2View::chosen_camerasNew(const sibr::Camera & eye)
 
 void ULRV2View::setNumBlend(short int dist, short int angle)
 {
-	// Backup masks. technically the view has them too, but maybe there are different due to developer choice.
+	// Backup masks.
 	auto copyMasks = _ulr->getMasks();
 
 	_numDistUlr = dist, _numAnglUlr = angle;
@@ -301,8 +301,14 @@ void ULRV2View::setNumBlend(short int dist, short int angle)
 	
 }
 
+void ULRV2View::loadMasks(const sibr::BasicIBRScene::Ptr& ibrScene, int w, int h, const std::string& maskDir, const std::string& preFileName, const std::string& postFileName
+) {
+	std::string finalMaskDir = (maskDir == "" ? ibrScene->data()->basePathName() + "/masks/" : maskDir);
+	std::string finalPostFileName = (postFileName == "" ? "-mask.jpg" : postFileName);
+	_ulr->loadMasks(ibrScene, finalMaskDir, preFileName, finalPostFileName, w, h);
+}
+
 void ULRV2View::setMasks( const std::vector<RenderTargetLum::Ptr>& masks ) {
-		ViewBase::setMasks(masks);
 		_ulr->setMasks(masks);
 }
 

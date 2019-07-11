@@ -399,7 +399,7 @@ input_bundle.save(path_to_output_bundle)
 if (target_res is not None):
     # scale bundle file for the same factor
     input_bundle.scale(scale_factor)
-    path_to_scaled_down_output_bundle = os.path.join (os.path.join (path_dest, "cameras"), "bundle.out")
+    path_to_scaled_down_output_bundle = os.path.join (os.path.join (path_dest, "images/scaled"), "bundle.out")
     input_bundle.save(path_to_scaled_down_output_bundle)
 
 ################################################################################

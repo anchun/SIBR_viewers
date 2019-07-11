@@ -11,6 +11,8 @@
 #include <core/raycaster/Raycaster.hpp>
 #include <core/view/SceneDebugView.hpp>
 
+#include <core/view/DatasetView.hpp>
+
 #define PROGRAM_NAME "sibr_ulr_app"
 using namespace sibr;
 
@@ -18,19 +20,6 @@ const char* usage = ""
 "Usage: " PROGRAM_NAME " -path <dataset-path>"    	                                "\n"
 ;
 
-
-struct ULRAppArgs :
-	virtual BasicIBRAppArgs {
-	Arg<int> version = { "v", 3 };
-	Arg<bool> softVisibility = { "soft-visibility", true };
-	Arg<bool> masks = { "masks", false };
-	Arg<std::string> maskParams = { "masks-param" , "" };
-	Arg<std::string> maskParamsExtra = { "masks-param-extra" , "" };
-	Arg<bool> invert = { "invert", false };
-	Arg<bool> alphas = { "alphas", false };
-	Arg<bool> poisson = { "poisson-blend", false };
-
-};
 
 int legacyV1main(ULRAppArgs & myArgs);
 int legacyV2main(ULRAppArgs & myArgs);
@@ -104,6 +93,7 @@ int main(int ac, char** av) {
 	generalCamera->setup(scene->cameras()->inputCameras(), Viewport(0, 0, (float)usedResolution.x(), (float)usedResolution.y()), raycaster);
 
 
+
 	// Add views to mvm.
 	MultiViewManager        multiViewManager(window, false);
 	multiViewManager.addIBRSubView("ULR view", ulrView, usedResolution, ImGuiWindowFlags_ResizeFromAnySide);
@@ -112,6 +102,13 @@ int main(int ac, char** av) {
 	// Top view
 	const std::shared_ptr<sibr::SceneDebugView> topView(new sibr::SceneDebugView(scene, multiViewManager.getViewport(), generalCamera, myArgs));
 	multiViewManager.addSubView("Top view", topView, usedResolution);
+
+
+	//test grid view - can be removed
+	if (getCommandLineArgs().contains("test-grid")) {
+		DatasetView::Ptr datasetView(new DatasetView(*scene, usedResolution));
+		multiViewManager.addSubMultiView("subMulti", datasetView);
+	}
 
 	CHECK_GL_ERROR;
 
@@ -362,4 +359,3 @@ int legacyV1main(ULRAppArgs & myArgs)
 	}
 	return EXIT_SUCCESS;
 }
-

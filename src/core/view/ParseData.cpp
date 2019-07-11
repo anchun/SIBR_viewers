@@ -41,10 +41,12 @@ namespace sibr {
 	{
 		const std::string camerasListing = scene_sparse_path + "/cameras.txt";
 		const std::string imagesListing = scene_sparse_path + "/images.txt";
+		const std::string clippingPlanes = scene_sparse_path + "/../../../clipping_planes.txt";
 
 
 		std::ifstream camerasFile(camerasListing);
 		std::ifstream imagesFile(imagesListing);
+		std::ifstream clippingPlanesFile(clippingPlanes);
 		if (!camerasFile.is_open()) {
 			SIBR_ERR << "Unable to load camera colmap file" << std::endl;
 		}
@@ -72,7 +74,7 @@ namespace sibr {
 			}
 
 			CameraParametersColmap params;
-			params.id = std::stol(tokens[0]) - 1;
+			params.id = std::stol(tokens[0]);
 			params.width = std::stol(tokens[2]);
 			params.height = std::stol(tokens[3]);
 			params.fx = std::stof(tokens[4]);
@@ -105,7 +107,7 @@ namespace sibr {
 				continue;
 			}
 
-			size_t      id = std::stol(tokens[8]) - 1;
+			uint		cId = std::stoi(tokens[0]) - 1;
 			float       qw = std::stof(tokens[1]);
 			float       qx = std::stof(tokens[2]);
 			float       qy = std::stof(tokens[3]);
@@ -113,6 +115,7 @@ namespace sibr {
 			float       tx = std::stof(tokens[5]);
 			float       ty = std::stof(tokens[6]);
 			float       tz = std::stof(tokens[7]);
+			size_t      id = std::stol(tokens[8]);
 
 			std::string imageName = tokens[9];
 
@@ -132,15 +135,20 @@ namespace sibr {
 			/// where,
 			/// orientation = flipM * rotationM, and
 			/// translation = flipM * translationM
+			///
+			/// For compatibility with FRIBR:
+			/// orientation = flipM' * rotationM * flipM
 
 			const sibr::Quaternionf quat(qw, qx, qy, qz);
-			const sibr::Matrix3f orientation = quat.toRotationMatrix().transpose() * converter;
+			const sibr::Matrix3f orientation = /*converter.transpose() **/ quat.toRotationMatrix().transpose() * converter;
 			sibr::Vector3f position(tx, ty, tz);
 
 			// populate image infos
 			infos.filename = imageName;
 			infos.width = camParams.width;
 			infos.height = camParams.height;
+			infos.camId = cId;
+
 
 			_imgInfos.push_back(infos);
 
@@ -154,7 +162,7 @@ namespace sibr {
 				m(3 + i) = orientation(i);
 			}
 			
-			sibr:Vector3f finTrans = converter * position;
+			Vector3f finTrans = converter * position;
 			for (int i = 0; i < 3; i++) {
 				m(12 + i) = finTrans(i);
 			}
@@ -169,26 +177,42 @@ namespace sibr {
 		_numCameras = camid;
 
 		if (_activeImages.empty()) {
-			_activeImages.resize(_imgInfos.size());
+			if (_excludeImages.empty()) {
 
-			for (int i = 0; i < _imgInfos.size(); i++)
-				_activeImages[i] = true;
-		}
+				_activeImages.resize(_imgInfos.size());
+				_excludeImages.resize(_imgInfos.size());
 
-		if (_excludeImages.empty()) {
-			_excludeImages.resize(_imgInfos.size());
-
-			for (int i = 0; i < _imgInfos.size(); i++)
-				_excludeImages[i] = false;
+				for (int i = 0; i < _imgInfos.size(); i++) {
+					_activeImages[i] = true;
+					_excludeImages[i] = false;
+				}
+			}
+			else {
+				_activeImages.resize(_imgInfos.size());
+				for (int i = 0; i < _imgInfos.size(); i++)
+					_activeImages[i] = !_excludeImages[i];
+			}
 		}
 
 		if (_nearsFars.empty()) {
 			_nearsFars.resize(_numCameras);
 
-			for (int i = 0; i < _numCameras; i++) {
-				_nearsFars[i].near = 0.01f;
-				_nearsFars[i].far = 1000.0f;
+			if (!clippingPlanesFile.is_open()) {
+				for (int i = 0; i < _numCameras; i++) {
+					_nearsFars[i].near = 0.1f;
+					_nearsFars[i].far = 100.0f;
+				}
 			}
+			else {
+				int i = 0;
+				while(std::getline(clippingPlanesFile, line)){
+					std::vector<std::string> tokens = sibr::split(line, ' ');
+					_nearsFars[i].near = stof(tokens[0]);
+					_nearsFars[i].far = stof(tokens[1]);
+					++i;
+				}
+			}
+
 		}
 
 		return true;
@@ -204,6 +228,7 @@ namespace sibr {
 			return false;
 		}
 
+		uint camId = 0;
 		while (getline(scene_metadata, line))
 		{
 			//std::cout << line << '\n';
@@ -220,6 +245,7 @@ namespace sibr {
 						infos.filename = splitS[0];
 						infos.width = stoi(splitS[1]);
 						infos.height = stoi(splitS[2]);
+						infos.camId = camId;
 
 						//infos.filename.erase(infos.filename.find_last_of("."), std::string::npos);
 						id = atoi(infos.filename.c_str());
@@ -236,6 +262,7 @@ namespace sibr {
 						}
 						_imgInfos.push_back(infos);
 
+						++camId;
 						infos.filename.clear();
 						splitS.clear();
 					}
@@ -259,7 +286,8 @@ namespace sibr {
 					//std::cout << splitS.size() << std::endl;
 					if (splitS.size() > 1) {
 						for (auto& s : splitS)
-							_activeImages[stoi(s)] = true;
+							if (!s.empty())
+								_activeImages[stoi(s)] = true;
 						splitS.clear();
 					}
 					else
@@ -282,28 +310,41 @@ namespace sibr {
 					//std::cout << splitS.size() << std::endl;
 					if (splitS.size() > 1) {
 						for (auto& s : splitS)
-							_excludeImages[stoi(s)] = true;
+							if(!s.empty())
+								_excludeImages[stoi(s)] = true;
 						splitS.clear();
 					}
 					else
 						break;
 				}
 			}
+			else if (line == "[proxy]") {
+				// Read the relative path of the mesh to load.
+				getline(scene_metadata, line);
+				_meshPath = _basePathName + "/" + line;
+			}
 		}
-		//std::cout << _imgInfos.size() << std::endl;
+
 		if (_activeImages.empty()) {
-			_activeImages.resize(_imgInfos.size());
+			if (_excludeImages.empty()) {
 
-			for (int i = 0; i < _imgInfos.size(); i++)
-				_activeImages[i] = true;
+				_activeImages.resize(_imgInfos.size());
+				_excludeImages.resize(_imgInfos.size());
+
+				for (int i = 0; i < _imgInfos.size(); i++) {
+					_activeImages[i] = true;
+					_excludeImages[i] = false;
+				}
+			}
+			else {
+				_activeImages.resize(_imgInfos.size());
+				for (int i = 0; i < _imgInfos.size(); i++)
+					_activeImages[i] = !_excludeImages[i];
+			}
 		}
 
-		if (_excludeImages.empty()) {
-			_excludeImages.resize(_imgInfos.size());
-
-			for (int i = 0; i < _imgInfos.size(); i++)
-				_excludeImages[i] = false;
-		}
+		if (_activeImages.size() != _excludeImages.size())
+			SIBR_ERR << "Active Image size does not match exclude image size" << std::endl;
 
 		scene_metadata.close();
 
@@ -311,21 +352,22 @@ namespace sibr {
 	}
 
 
-	void ParseData::getParsedBundlerData(const std::string & dataset_path, const std::string & scene_metadata_filename)
+	void ParseData::getParsedBundlerData(const std::string & dataset_path, const std::string & customPath, const std::string & scene_metadata_filename)
 	{
-		_basePathName = dataset_path;
+		_basePathName = dataset_path + customPath;
 		/*std::cout << scene_metadata_filename << std::endl;*/
-		if (!parseSceneMetadata(dataset_path + "/" + scene_metadata_filename)) {
-			SIBR_ERR << "Scene Metadata file does not exist at \"" + dataset_path + "\"." << std::endl;
+		if (!parseSceneMetadata(_basePathName + "/" + scene_metadata_filename)) {
+			SIBR_ERR << "Scene Metadata file does not exist at /" + dataset_path + "/." << std::endl;
 		}
 
-		if (!parseBundlerFile(dataset_path + "/cameras/bundle.out")) {
-			SIBR_ERR << "Bundle file does not exist at \"" + dataset_path + "\cameras\"." << std::endl;
+		if (!parseBundlerFile(_basePathName + "/cameras/bundle.out")) {
+			SIBR_ERR << "Bundle file does not exist at /" + dataset_path + "/cameras/." << std::endl;
+		}
+		// Default mesh path if none found in the metadata file.
+		if (_meshPath.empty()) {
+			_meshPath = _basePathName + "/meshes/recon.ply";
 		}
 
-		_meshPath = _basePathName + "/meshes/recon.ply";
-
-		return;
 	}
 
 	void ParseData::getParsedColmapData(const std::string & dataset_path)
@@ -333,26 +375,29 @@ namespace sibr {
 		_basePathName = dataset_path + "/colmap/stereo";
 
 		if (!parseColmapSparseData(_basePathName + "/sparse")) {
-			SIBR_ERR << "Colmap Sparse Data text file does not exist at \"" + dataset_path + "\sparse\"." << std::endl;
+			SIBR_ERR << "Colmap Sparse Data text file does not exist at /" + dataset_path + "/sparse/." << std::endl;
 		}
 
 		_meshPath = _basePathName + "/../../capreal/mesh.ply";
 
 	}
 
-	void ParseData::getParsedData(const BasicIBRAppArgs & myArgs)
+	void ParseData::getParsedData(const BasicIBRAppArgs & myArgs, const std::string & customPath)
 	{
-		std::ifstream bundler(myArgs.dataset_path.get() + "/" + myArgs.scene_metadata_filename.get());
-		if (bundler.good()) {
-			getParsedBundlerData(myArgs.dataset_path, myArgs.scene_metadata_filename);
-			_datasetType = Type::SIBR;
-		}
-
+		std::ifstream bundler(myArgs.dataset_path.get() + customPath + "/" + myArgs.scene_metadata_filename.get());
 		std::ifstream colmap(myArgs.dataset_path.get() + "/colmap/stereo/sparse/cameras.txt");
-		if (colmap.good()) {
+
+		if (bundler.good()) {
+			getParsedBundlerData(myArgs.dataset_path.get(), customPath, myArgs.scene_metadata_filename);
+			_datasetType = Type::SIBR;
+		}else if (colmap.good()) {
 			getParsedColmapData(myArgs.dataset_path);
 			_datasetType = Type::COLMAP;
 		}
+		
+		// What happens if both are present
+		
 
+		
 	}
 }

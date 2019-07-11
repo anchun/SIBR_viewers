@@ -345,13 +345,18 @@ namespace sibr
 		uint offsetFaces = 0;
 		uint matId = 0;
 		std::map<std::string, int> matName2Id;
+		Matrix3f converter;
+		converter <<
+			1, 0, 0,
+			0, 1, 0,
+			0, 0, 1;
 
 		for (uint meshId = 0; meshId < scene->mNumMeshes; ++meshId) {
 			const aiMesh* mesh = scene->mMeshes[meshId];
 
 			_vertices.resize(offsetVertices + mesh->mNumVertices);
 			for (uint i = 0; i < mesh->mNumVertices; ++i)
-				_vertices[offsetVertices + i] = convertVec(mesh->mVertices[i]);
+				_vertices[offsetVertices + i] = converter * convertVec(mesh->mVertices[i]);
 
 
 			if (mesh->HasVertexColors(0) && mesh->mColors[0])
@@ -370,7 +375,7 @@ namespace sibr
 			{
 				_normals.resize(offsetVertices + mesh->mNumVertices);
 				for (uint i = 0; i < mesh->mNumVertices; ++i) {
-					_normals[offsetVertices + i] = convertVec(mesh->mNormals[i]);
+					_normals[offsetVertices + i] = converter * convertVec(mesh->mNormals[i]);
 				}
 
 			}

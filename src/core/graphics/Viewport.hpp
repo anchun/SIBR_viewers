@@ -25,6 +25,11 @@ namespace sibr
 		Viewport( const Viewport* parent_, float left, float top, float right, float bottom ) :
 			_left(left), _top(top), _right(right), _bottom(bottom) { parent(parent_); }
 
+		Viewport(const Viewport & parent_, float left, float top, float right, float bottom) :
+			Viewport(&parent_, left, top, right, bottom) {
+			*this = Viewport(finalLeft(), finalTop(), finalRight(), finalBottom());
+		}
+
 		inline float	left( void ) const { return _left; }
 		inline float	top( void ) const { return _top; }
 		inline float	right( void ) const { return _right; }
@@ -42,9 +47,13 @@ namespace sibr
 		float	finalHeight( void ) const;
 		
 		sibr::Vector2f finalSize() const;
+		Vector2f finalTopLeft() const;
+
+		Vector2f pixAt(const Vector2f & uv) const;
 
 		bool	contains( float x, float y ) const;
 		bool	contains( int x, int y ) const;
+		bool	contains(const Vector2f & xy) const;
 
 		void			bind( uint screenWidth, uint screenHeight ) const;
 		void			bind( void ) const; // tmp
@@ -81,19 +90,19 @@ namespace sibr
 	}
 
 	inline float	Viewport::finalLeft( void ) const {
-		return (_parent)? _parent->finalWidth()*left() : left();
+		return (_parent)? (_parent->finalLeft() + _parent->finalWidth()*left()) : left();
 	}
 
 	inline float	Viewport::finalTop( void ) const {
-		return (_parent)? _parent->finalHeight()*top() : top();
+		return (_parent)? ( _parent->finalTop() + _parent->finalHeight()*top() ) : top();
 	}
 
 	inline float	Viewport::finalRight( void ) const {
-		return (_parent)? _parent->finalWidth()*right() : right();
+		return (_parent)? (_parent->finalLeft() + _parent->finalWidth()*right()) : right();
 	}
 
 	inline float	Viewport::finalBottom( void ) const {
-		return (_parent)?  _parent->finalHeight()*bottom() : bottom();
+		return (_parent)? (_parent->finalTop() + _parent->finalHeight()*bottom()) : bottom();
 	}
 
 	inline float	Viewport::finalWidth( void ) const {
@@ -108,6 +117,9 @@ namespace sibr
 		return sibr::Vector2f(finalWidth(),finalHeight());
 	}
 
+	inline Vector2f Viewport::finalTopLeft() const {
+		return { finalLeft(), finalTop() };
+	}
 
 
 } // namespace sibr

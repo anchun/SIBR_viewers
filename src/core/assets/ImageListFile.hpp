@@ -20,6 +20,7 @@ namespace sibr
 		struct Infos
 		{
 			std::string		filename;
+			uint			camId;
 			uint			width;
 			uint			height;
 		};

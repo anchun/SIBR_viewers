@@ -101,7 +101,9 @@ namespace sibr
 		const std::string bundlerFile = datasetPath + "/cameras/" + bundleName;
 		const std::string listFile = datasetPath + "/images/" + listName;
 		const std::string clipFile = datasetPath + "/clipping_planes.txt";
-		SIBR_LOG << "Loading input cameras." << std::endl;
+
+		// Loading clipping planes if they are available.
+		SIBR_LOG << "Loading clipping planes from " << clipFile << std::endl;
 
 		struct Z {
 			Z() {}
@@ -109,13 +111,11 @@ namespace sibr
 			float far;
 			float near;
 		};
-
 		std::vector<Z> nearsFars;
-
-		float z;
+		
 		{ // Load znear & zfar for unprojecting depth samples
-			SIBR_LOG << "Loading clipping planes from " << clipFile << std::endl;
-
+			
+			float z;
 			std::ifstream zfile(clipFile);
 			// During preprocessing clipping planes are not yet defined
 			// the preprocess utility "depth" defines this
@@ -145,85 +145,26 @@ namespace sibr
 				SIBR_WRG << "Cannot open '" << clipFile << "' (not clipping plane loaded)." << std::endl;
 			}
 
-			//default values for all cameras
-			if (nearsFars.size() == 0) {
-				nearsFars.push_back(Z(zFar, zNear));
+		}
+
+		// Load cameras and images infos.
+		SIBR_LOG << "Loading input cameras." << std::endl;
+		auto cameras = InputCamera::loadBundle(bundlerFile, zNear, zFar, listFile);
+
+		if(!nearsFars.empty()) {
+			for(int cid = 0; cid < cameras.size(); ++cid) {
+				const int zid = std::min(cid, int(nearsFars.size())-1);
+				cameras[cid].znear(nearsFars[zid].near);
+				cameras[cid].zfar(nearsFars[zid].far);
 			}
 		}
-
-		// check bundler file
-		std::ifstream bundle_file(bundlerFile);
-		if (!bundle_file.is_open()) {
-			SIBR_ERR << "Unable to load bundle file at path \"" << bundlerFile << "\"." << std::endl;
-		}
-
-		//check list of images
-		std::ifstream list_images(listFile);
-		if (!list_images.is_open()) {
-			SIBR_ERR << "Unable to load list_images file at path \"" << listFile << "\"." << std::endl;
-		}
-
-		// read number of images
-		std::string line;
-		getline(bundle_file, line);	// ignore first line - contains version
-		int numImages = 0;
-		bundle_file >> numImages;	// read first value (number of images)
-		getline(bundle_file, line);	// ignore the rest of the line
-
-		// Read all filenames
-		struct ImgInfos
-		{
-			std::string name;
-			int id;
-			int w, h;
-		};
-		std::vector<ImgInfos>	imgInfos;
-		{
-			ImgInfos				infos;
-			while (true)
-			{
-				list_images >> infos.name;
-				if (infos.name.empty()) break;
-				list_images >> infos.w >> infos.h;
-				infos.name.erase(infos.name.find_last_of("."), std::string::npos);
-				infos.id = atoi(infos.name.c_str());
-				imgInfos.push_back(infos);
-				infos.name.clear();	// why? clear doesn't reclaim memory
-			}
-		}
-
-		std::vector<InputCamera> cameras(numImages);
-		//  Parse bundle.out file for camera calibration parameters
-		for (int i = 0, infosId = 0, currentIdZnearZfar = 0; i < numImages && infosId < imgInfos.size(); i++) {
-			const ImgInfos& infos = imgInfos[infosId];
-			//if (i != infos.id)
-			//	continue;
-
-			Matrix4f m; // bundler params
-
-			bundle_file >> m(0) >> m(1) >> m(2) >> m(3) >> m(4);
-			bundle_file >> m(5) >> m(6) >> m(7) >> m(8) >> m(9);
-			bundle_file >> m(10) >> m(11) >> m(12) >> m(13) >> m(14);
-
-			//
-			cameras[infosId] = InputCamera(infosId, infos.w, infos.h, m, true);
-			// get rid of suffix of image file name
-			cameras[infosId].name(infos.name);
-
-			const Z & current_Z = nearsFars[currentIdZnearZfar];
-			cameras[infosId].znear(current_Z.near); cameras[infosId].zfar(current_Z.far);
-
-			++infosId;
-			currentIdZnearZfar = std::min(currentIdZnearZfar + 1, (int)nearsFars.size() - 1);
-		}
-
 
 		// Load active images
 		ActiveImageFile activeImageFile;
 		activeImageFile.setNumImages((int)cameras.size());
 		// load active image file and set (in)active
 		if (activeImageFile.load(datasetPath + "/active_images.txt", false)) {
-			for (int i = 0; i < numImages; i++) {
+			for (int i = 0; i < (int)cameras.size(); i++) {
 				if (!activeImageFile.active()[i])
 					cameras[i].setActive(false);
 			}
@@ -234,7 +175,7 @@ namespace sibr
 		excludeImageFile.setNumImages((int)cameras.size());
 		// load exclude image file and set *in*active
 		if (excludeImageFile.load(datasetPath + "/exclude_images.txt", false)) {
-			for (int i = 0; i < numImages; i++) {
+			for (int i = 0; i < (int)cameras.size(); i++) {
 				// Attn (GD): invert the meaning of active for exclude:
 				// only file numbers explicitly in exclude_images are set
 				// to active, and these are the only ones we set to *inactive*
@@ -316,6 +257,7 @@ namespace sibr
 					wIm = wh[i].x();
 					hIm = wh[i].y();
 				}
+
 				//camera_data[i].SetFocalLength(f);
 				cameras.push_back(InputCamera((float)f, (float)d[0], (float)d[1], wIm, hIm, i));
 
@@ -520,7 +462,7 @@ namespace sibr
 			}
 
 			CameraParametersColmap params;
-			params.id = std::stol(tokens[0]) - 1;
+			params.id = std::stol(tokens[0]);
 			params.width = std::stol(tokens[2]);
 			params.height = std::stol(tokens[3]);
 			params.fx = std::stof(tokens[4]);
@@ -548,7 +490,8 @@ namespace sibr
 				SIBR_WRG << "Unknown line." << std::endl;
 				continue;
 			}
-			size_t      id = std::stol(tokens[8]) - 1;
+
+			uint		cId = std::stoi(tokens[0]) - 1;
 			float       qw = std::stof(tokens[1]);
 			float       qx = std::stof(tokens[2]);
 			float       qy = std::stof(tokens[3]);
@@ -556,6 +499,7 @@ namespace sibr
 			float       tx = std::stof(tokens[5]);
 			float       ty = std::stof(tokens[6]);
 			float       tz = std::stof(tokens[7]);
+			size_t      id = std::stol(tokens[8]);
 
 			std::string imageName = tokens[9];
 
@@ -572,7 +516,7 @@ namespace sibr
 			
 			sibr::Vector3f position = -(orientation * converter * translation);
 
-			sibr::InputCamera camera(camParams.fy, 0.0f, 0.0f, camParams.width, camParams.height, camid);
+			sibr::InputCamera camera(camParams.fy, 0.0f, 0.0f, camParams.width, camParams.height, cId);
 			camera.name(imageName);
 			camera.position(position);
 			camera.rotation( sibr::Quaternionf(orientation));
@@ -585,6 +529,74 @@ namespace sibr
 			std::getline(imagesFile, line);
 		}
 
+
+		return cameras;
+	}
+
+	std::vector<InputCamera> InputCamera::loadBundle(const std::string& bundlerPath, float zNear, float zFar, const std::string & listImagePath)
+	{
+		SIBR_LOG << "Loading input cameras." << std::endl;
+
+		// check bundler file
+		std::ifstream bundle_file(bundlerPath);
+		if (!bundle_file.is_open()) {
+			SIBR_ERR << "Unable to load bundle file at path \"" << bundlerPath << "\"." << std::endl;
+			return {};
+		}
+
+		const std::string listImages = listImagePath.empty() ? (bundlerPath + "/../list_images.txt") : listImagePath;
+		std::ifstream list_images(listImages);
+		if (!list_images.is_open()) {
+			SIBR_ERR << "Unable to load list_images file at path \"" << listImages << "\"." << std::endl;
+			return {};
+		}
+
+		// read number of images
+		std::string line;
+		getline(bundle_file, line);	// ignore first line - contains version
+		int numImages = 0;
+		bundle_file >> numImages;	// read first value (number of images)
+		getline(bundle_file, line);	// ignore the rest of the line
+
+		// Read all filenames
+		struct ImgInfos
+		{
+			std::string name;
+			int id;
+			int w, h;
+		};
+		std::vector<ImgInfos>	imgInfos;
+		{
+			ImgInfos				infos;
+			while (true)
+			{
+				list_images >> infos.name;
+				if (infos.name.empty()) break;
+				list_images >> infos.w >> infos.h;
+				infos.name.erase(infos.name.find_last_of("."), std::string::npos);
+				infos.id = atoi(infos.name.c_str());
+				imgInfos.push_back(infos);
+				infos.name.clear();
+			}
+		}
+
+		std::vector<InputCamera> cameras(numImages);
+		//  Parse bundle.out file for camera calibration parameters
+		for (int i = 0, infosId = 0; i < numImages && infosId < imgInfos.size(); i++) {
+			const ImgInfos& infos = imgInfos[infosId];
+			
+			Matrix4f m; // bundler params
+
+			bundle_file >> m(0) >> m(1) >> m(2) >> m(3) >> m(4);
+			bundle_file >> m(5) >> m(6) >> m(7) >> m(8) >> m(9);
+			bundle_file >> m(10) >> m(11) >> m(12) >> m(13) >> m(14);
+
+			cameras[infosId] = InputCamera(infosId, infos.w, infos.h, m, true);
+			cameras[infosId].name(infos.name);
+			cameras[infosId].znear(zNear); cameras[infosId].zfar(zFar);
+
+			++infosId;
+		}
 
 		return cameras;
 	}

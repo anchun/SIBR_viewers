@@ -2,6 +2,7 @@
 #include "core/view/Config.hpp"
 #include <core/system/CommandLineArgs.hpp>
 #include "core/view/RenderTargetTextures.hpp"
+#include "core/raycaster/CameraRaycaster.hpp"
 
 namespace sibr {
 
@@ -126,6 +127,8 @@ namespace sibr {
 		
 
 	protected:
+		BasicIBRScene(BasicIBRScene & scene);
+
 		ParseData::Ptr								_data;
 		CalibratedCameras::Ptr						_cams;
 		InputImages::Ptr							_imgs;
@@ -175,5 +178,7 @@ namespace sibr {
 	{
 		_userCamera = cam;
 	}
+
+	
 
 }

@@ -72,8 +72,9 @@ void sibr::ULRV3Renderer::setupShaders(const std::string & fShader, const std::s
 	_invertMasks.init(_ulrShader, "invert_mask");
 	_flipRGBs.init(_ulrShader, "flipRGBs");
 	_showWeights.init(_ulrShader, "showWeights");
-	_winner_takes_all.init(_ulrShader, "winner_takes_all");
+	_winnerTakesAll.init(_ulrShader, "winner_takes_all");
 	_camsCount.init(_ulrShader, "camsCount");
+	_gammaCorrection.init(_ulrShader, "gammaCorrection");
 
 	CHECK_GL_ERROR;
 }
@@ -154,7 +155,8 @@ void sibr::ULRV3Renderer::renderBlending(
 	_flipRGBs.send();
 	_showWeights.send();
 	_camsCount.send();
-	_winner_takes_all.send();
+	_winnerTakesAll.send();
+	_gammaCorrection.send();
 
 	// Textures.
 	glActiveTexture(GL_TEXTURE0);

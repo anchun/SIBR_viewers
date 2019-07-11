@@ -9,6 +9,19 @@
 # include <core/view/BasicIBRScene.hpp>
 
 namespace sibr { 
+	
+	struct ULRAppArgs :
+		virtual BasicIBRAppArgs {
+		Arg<int> version = { "v", 3 };
+		ArgSwitch softVisibility = { "soft-visibility", true };
+		Arg<bool> masks = { "masks" };
+		Arg<std::string> maskParams = { "masks-param" , "" };
+		Arg<std::string> maskParamsExtra = { "masks-param-extra" , "" };
+		Arg<bool> invert = { "invert" };
+		Arg<bool> alphas = { "alphas" };
+		Arg<bool> poisson = { "poisson-blend" };
+
+	};
 
 	/**
 	 * \class ULRV3Renderer
@@ -42,7 +55,7 @@ namespace sibr {
 		 * \param fShader The name of the fragment shader to use.
 		 * \param vShader The name of the vertex shader to use.
 		 */
-		void setupShaders(
+		virtual void setupShaders(
 			const std::string & fShader = "ulr_v3",
 			const std::string & vShader = "ulr_v3"
 		);
@@ -56,7 +69,7 @@ namespace sibr {
 		 * \param inputDepths A texture array containing the input depth maps.
 		 * \param passthroughDepth If true, depth from the position map will be output to the depth buffer for ulterior passes.
 		 */
-		void process(
+		virtual void process(
 			const sibr::Mesh & mesh,
 			const sibr::Camera& eye,
 			IRenderTarget& dst,
@@ -83,8 +96,11 @@ namespace sibr {
 		/// Show debug weights.
 		bool & showWeights() { return _showWeights.get(); }
 
-		/// Set winn takes all weights strategy
-		bool & winnerTakesAll() { return _winner_takes_all.get(); }
+		/// Set winner takes all weights strategy
+		bool & winnerTakesAll() { return _winnerTakesAll.get(); }
+
+		/// Apply gamma correction to the output.
+		bool & gammaCorrection() { return _gammaCorrection.get(); }
 
 		/** Resize the internal rendertargets.
 		 *\param w the new width
@@ -140,7 +156,8 @@ namespace sibr {
 			_invertMasks = false,
 			_flipRGBs = false,
 			_showWeights = false,
-			_winner_takes_all = false;
+			_winnerTakesAll = false,
+			_gammaCorrection = false;
 
 		size_t _maxNumCams = 0;
 		GLuniform<int> _camsCount = 0;

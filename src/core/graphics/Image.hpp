@@ -767,11 +767,15 @@ namespace sibr
 
 		const sibr::Vector2i topLeft(0, 0), bottomRight(w() - 1, h() - 1);
 
+		const sibr::Vector2i mm = sibr::clamp<int, 2>(cornerPixel + sibr::Vector2i(0, 0), topLeft, bottomRight);
+		const sibr::Vector2i pm = sibr::clamp<int, 2>(cornerPixel + sibr::Vector2i(1, 0), topLeft, bottomRight);
+		const sibr::Vector2i mp = sibr::clamp<int, 2>(cornerPixel + sibr::Vector2i(0, 1), topLeft, bottomRight);
+		const sibr::Vector2i pp = sibr::clamp<int, 2>(cornerPixel + sibr::Vector2i(1, 1), topLeft, bottomRight);
 		return (
-			pixel(sibr::clamp<int, 2>(cornerPixel + sibr::Vector2i(0, 0), topLeft, bottomRight)).cast<float>() * (1.0f - ts[0]) * (1.0f - ts[1]) +
-			pixel(sibr::clamp<int, 2>(cornerPixel + sibr::Vector2i(1, 0), topLeft, bottomRight)).cast<float>() * ts[0] * (1.0f - ts[1]) +
-			pixel(sibr::clamp<int, 2>(cornerPixel + sibr::Vector2i(0, 1), topLeft, bottomRight)).cast<float>() * (1.0f - ts[0]) * ts[1] +
-			pixel(sibr::clamp<int, 2>(cornerPixel + sibr::Vector2i(1, 1), topLeft, bottomRight)).cast<float>() * ts[0] * ts[1]
+			operator()(mm).cast<float>() * (1.0f - ts[0]) * (1.0f - ts[1]) +
+			operator()(pm).cast<float>() * ts[0] * (1.0f - ts[1]) +
+			operator()(mp).cast<float>() * (1.0f - ts[0]) * ts[1] +
+			operator()(pp).cast<float>() * ts[0] * ts[1]
 			).cast<T_Type>();
 	}
 
