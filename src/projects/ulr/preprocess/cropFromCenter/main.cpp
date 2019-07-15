@@ -95,10 +95,10 @@ int main(const int argc, const char** argv)
 	if (!boost::filesystem::exists(outputFolder))
 	{
 		boost::filesystem::create_directory(outputFolder);
+	}
 
-		if (scaleDown && !boost::filesystem::exists(scaledDownOutputFolder)) {
-			boost::filesystem::create_directory(scaledDownOutputFolder);
-		}
+	if (scaleDown && !boost::filesystem::exists(scaledDownOutputFolder)) {
+		boost::filesystem::create_directory(scaledDownOutputFolder);
 	}
 
 	// read input file

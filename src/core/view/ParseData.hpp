@@ -34,7 +34,7 @@ namespace sibr{
 		* \ingroup sibr_view
 		*/
 		enum class Type {
-			EMPTY, SIBR, COLMAP
+			EMPTY, SIBR, COLMAP, NVM
 		};
 
 		/**
@@ -45,6 +45,7 @@ namespace sibr{
 		/**
 		* \brief Function to parse data from a template dataset path.
 		* \param dataset_path Path to the folder containing data
+		* \param customPath Path to algorithm specific data
 		* \param scene_metadata_filename Specify the filename of the Scene Metadata file to load specific scene
 		*/
 		void  getParsedBundlerData(const std::string & dataset_path, const std::string & customPath, const std::string & scene_metadata_filename);
@@ -65,6 +66,14 @@ namespace sibr{
 		* \param dataset_path Path to the folder containing data
 		*/
 		void  getParsedColmapData(const std::string & dataset_path);
+
+		/**
+		* \brief Function to parse data from a template dataset path.
+		* \param dataset_path Path to the folder containing data
+		* \param customPath Path to algorithm specific data
+		* \param scene_metadata_filename Specify the filename of the Scene Metadata file to load specific scene
+		*/
+		void  getParsedNVMData(const std::string & dataset_path, const std::string & customPath, const std::string & nvm_path);
 
 		/**
 		* \brief Function to parse data from a dataset path. Will automatically determine the type of dataset based on the files present.
@@ -162,6 +171,12 @@ namespace sibr{
 		*
 		*/
 		bool parseColmapSparseData(const std::string & scene_sparse_path);
+
+		/**
+		* \brief Function to parse the NVM data files to read camera and image data.
+		*
+		*/
+		bool parseNVMData(const std::string & nvm_path);
 
 
 		std::string									_basePathName;
