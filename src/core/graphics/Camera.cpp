@@ -59,7 +59,7 @@ namespace sibr
 		Vector4f p4d;
 		p4d[0] = p3d[0]; p4d[1] = p3d[1]; p4d[2] = p3d[2]; p4d[3] = 1.0;
 		//p4d[2] = p4d[2]*2.f - 1.f; // [0;1] to [-1;1]  // not used
-		Vector4f p3d_t = viewproj().inverse() * p4d;
+		Vector4f p3d_t = invViewproj() * p4d;//;viewproj().inverse() * p4d;
 		return Vector3f(p3d_t[0],p3d_t[1],p3d_t[2])/p3d_t[3];
 	}
 
