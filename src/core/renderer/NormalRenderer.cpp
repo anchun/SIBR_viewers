@@ -30,7 +30,8 @@ namespace sibr
 		}
 
 		_normalShader_proj.init(_normalShader, "MVP");
-		_normalShader_view.init(_normalShader, "MV");
+		_normalShader_view.init(_normalShader, "V");
+		_normalShader_model.init(_normalShader, "M");
 		_normalShader_imSpace.init(_normalShader, "imSpaceNormals");
 		_normalShader.begin();
 		_normalShader_imSpace.set(imSpace);
@@ -54,7 +55,7 @@ namespace sibr
 		}
 	}
 
-	void NormalRenderer::render(const sibr::InputCamera& cam, const Mesh& mesh, bool clear)
+	void NormalRenderer::render(const sibr::InputCamera& cam, const Mesh& mesh, const Matrix4f &modelMat, bool clear)
 	{
 #if USE_PIXELART_MODEN
 		glPointSize(10.f);
@@ -78,11 +79,13 @@ namespace sibr
 		}
 
 		_normalShader.begin();
-		_normalShader_proj.set(cam.viewproj());
+		const Matrix4f MVP = cam.viewproj() * modelMat;
+		_normalShader_proj.set(MVP);
 		_normalShader_view.set(cam.view());
+		_normalShader_model.set(modelMat);
 
 		if (_generate) {
-			const Matrix4f MVPinv = cam.viewproj().inverse();
+			const Matrix4f MVPinv = (cam.viewproj()*modelMat).inverse();
 			_normalShader_projInv.set(MVPinv);
 		}
 
