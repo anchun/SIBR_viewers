@@ -253,9 +253,10 @@ namespace sibr
 		/// \todo TODO : check for errors */
 		void fromOffStream(std::stringstream & stream, bool generateNormals = true );
 
+		enum class PartOfSphere {WHOLE, UP, BOTTOM};
 		/* compute a simple sphere with UVs coordinates to use with lat-long envMap*/
 		static sibr::Mesh::Ptr getEnvSphere(sibr::Vector3f center, float radius, sibr::Vector3f zenith, sibr::Vector3f north,
-											std::string partOfSphere="whole");
+											PartOfSphere part = PartOfSphere::WHOLE);
 
 		/* compute a simple cube with normals */
 		static sibr::Mesh::Ptr getTestCube(bool withGraphics = true);

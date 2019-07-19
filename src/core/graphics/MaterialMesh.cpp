@@ -1350,11 +1350,12 @@ namespace sibr
 		if (forcedCenterZ) center.z() = *forcedCenterZ;
 		if (forcedRadius) radius = *forcedRadius;
 
-		std::vector<std::string> partsOfSphere;
-		partsOfSphere.push_back("bottom");
-		partsOfSphere.push_back("up");
+		//std::vector<std::string> partsOfSphere;
+		std::vector<PartOfSphere> partsOfSphere = { PartOfSphere::BOTTOM, PartOfSphere::UP };
+		//partsOfSphere.push_back("bottom");
+		//partsOfSphere.push_back("up");
 
-		for (std::string part : partsOfSphere) {
+		for (PartOfSphere part : partsOfSphere) {
 			std::shared_ptr<Mesh> pSphere = getEnvSphere(center, radius,
 				Vector3f(0.f, 1.f, 0.f),
 				Vector3f(1.f, 0.f, 0.f),
@@ -1366,7 +1367,11 @@ namespace sibr
 			MatId2Name materialNames;
 			MatIds materialIds;
 
-			std::string matName("SibrSkyEmissive" + part);
+			std::string matName;
+			if (part == PartOfSphere::BOTTOM)
+				matName = std::string("SibrSkyEmissivebottom");
+			else
+				matName = std::string("SibrSkyEmissiveup");
 			materialNames.push_back(matName);
 
 			std::vector<int> matIdsSphere;

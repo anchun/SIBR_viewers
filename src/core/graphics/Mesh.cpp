@@ -1467,7 +1467,7 @@ namespace sibr
 	}
 
 	sibr::Mesh::Ptr sibr::Mesh::getEnvSphere(sibr::Vector3f center, float radius, sibr::Vector3f zenith, sibr::Vector3f north,
-		std::string partOfSphere) {
+		PartOfSphere part) {
 
 		sibr::Vector3f east = north.cross(zenith);
 		sibr::Mesh::Ptr envMesh(new sibr::Mesh());
@@ -1476,18 +1476,20 @@ namespace sibr
 		sibr::Mesh::Triangles tri;
 
 		int highLimit = 0, lowLimit = 0;
-
-		if (partOfSphere.compare("whole") == 0) {
-			highLimit = 90;
-			lowLimit = -90;
-		}
-		else if (partOfSphere.compare("up") == 0) {
-			highLimit = 90;
-			lowLimit = 0;
-		}
-		else if (partOfSphere.compare("bottom") == 0) {
-			highLimit = 0;
-			lowLimit = -90;
+		switch(part)
+		{
+			case PartOfSphere::WHOLE:
+				highLimit = 90;
+				lowLimit = -90;
+				break;
+			case PartOfSphere::UP:
+				highLimit = 90;
+				lowLimit = 0;
+				break;
+			case PartOfSphere::BOTTOM:
+				highLimit = 0;
+				lowLimit = -90;
+				break;
 		}
 
 		for (int lat = lowLimit; lat <= highLimit; lat++) {
