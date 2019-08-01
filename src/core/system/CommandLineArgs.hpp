@@ -226,7 +226,7 @@ namespace sibr
 
 	struct SIBR_SYSTEM_EXPORT RenderingArgs {
 		Arg<std::string> scene_metadata_filename = { "scene", "scene_metadata.txt" };
-		Arg<std::array<int, 2>> rendering_size = { "rendering-size", { 720, 480 } };
+		Arg<std::array<int, 2>> rendering_size = { "rendering-size", { 0, 0 } };
 		Arg<int> texture_width = { "texture-width", 0 };
 		Arg<float> texture_ratio = { "texture-ratio", 1.0f };
 		Arg<int> rendering_mode = { "rendering-mode", RENDERMODE_MONO };
