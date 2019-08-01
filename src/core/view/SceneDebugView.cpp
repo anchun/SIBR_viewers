@@ -398,9 +398,27 @@ namespace sibr
 				ImGui::NextColumn();
 
 				if (ImGui::Button(("SnapTo##" + name).c_str())) {
-					//camera_handler.snapToCamera(i);
-					//camera_handler.fromCamera(_cameras[i].cam, true, false);
-					camera_handler.fromTransform(_cameras[i].cam.transform(), true, false);
+					const auto & input_cam = _scene->cameras()->inputCameras()[0];	
+
+					auto size = camera_handler.getViewport().finalSize();
+					float ratio_dst = size[0] / size[1];
+					float ratio_src = input_cam.w() / (float)input_cam.h();
+
+					std::cout << ratio_dst << " " << ratio_src << std::endl;
+
+					InputCamera cam = InputCamera(_cameras[i].cam, size[0], size[1]);
+			
+					if (true) {
+						//matching fov_w for better viewport coverage
+						float fov_h = 2 * atan(tan(input_cam.fovy() / 2) * ratio_src / ratio_dst);
+
+						cam.fovy(fov_h);
+					} else {
+						cam.fovy(input_cam.fovy());
+					}
+				
+					cam.znear(0.0001f);
+					camera_handler.fromCamera(cam, true, false);				
 				}
 				ImGui::NextColumn();
 

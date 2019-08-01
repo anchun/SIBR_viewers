@@ -30,7 +30,8 @@ namespace sibr
 		}
 
 		_normalShader_proj.init(_normalShader, "MVP");
-		_normalShader_view.init(_normalShader, "MV");
+		_normalShader_view.init(_normalShader, "V");
+		_normalShader_model.init(_normalShader, "M");
 		_normalShader_imSpace.init(_normalShader, "imSpaceNormals");
 		_normalShader.begin();
 		_normalShader_imSpace.set(imSpace);
@@ -54,7 +55,7 @@ namespace sibr
 		}
 	}
 
-	void NormalRenderer::render(const sibr::InputCamera& cam, const Mesh& mesh)
+	void NormalRenderer::render(const sibr::InputCamera& cam, const Mesh& mesh, const Matrix4f &modelMat, bool clear)
 	{
 #if USE_PIXELART_MODEN
 		glPointSize(10.f);
@@ -63,23 +64,28 @@ namespace sibr
 #endif
 
 		if (_useFloats) {
-			_normal_RT_32F->clear(sibr::Vector4f(0.5f,0.5f,0.5f,1.0f));
+			if(clear)
+				_normal_RT_32F->clear(sibr::Vector4f(0.5f,0.5f,0.5f,1.0f));
 			glViewport(0, 0, _normal_RT_32F->w(), _normal_RT_32F->h());
 			_normal_RT_32F->bind();
 		} else {
 			_normal_RT->bind();
-			glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			if (clear) {
+				glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
+				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			}
 			glViewport(0, 0, _normal_RT->w(), _normal_RT->h());
 			glScissor(0, 0, _normal_RT->w(), _normal_RT->h());
 		}
 
 		_normalShader.begin();
-		_normalShader_proj.set(cam.viewproj());
+		const Matrix4f MVP = cam.viewproj() * modelMat;
+		_normalShader_proj.set(MVP);
 		_normalShader_view.set(cam.view());
+		_normalShader_model.set(modelMat);
 
 		if (_generate) {
-			const Matrix4f MVPinv = cam.viewproj().inverse();
+			const Matrix4f MVPinv = (cam.viewproj()*modelMat).inverse();
 			_normalShader_projInv.set(MVPinv);
 		}
 
