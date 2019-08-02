@@ -419,16 +419,18 @@ namespace sibr {
 						//infos.filename.erase(infos.filename.find_last_of("."), std::string::npos);
 						id = atoi(infos.filename.c_str());
 
-						_nearsFars.push_back(InputCamera::Z());
+						InputCamera::Z nearFar;
+						
 						if (splitS.size() > 3) {
-							_nearsFars[id].near = stof(splitS[3]);
-							_nearsFars[id].far = stof(splitS[4]);
+							nearFar.near = stof(splitS[3]);
+							nearFar.far = stof(splitS[4]);
 						}
 						else {
-							_nearsFars[id].near = 0.1f;
-							_nearsFars[id].far = 1.0f;
+							nearFar.near = 0.1f;
+							nearFar.far = 1.0f;
 						}
 						_imgInfos.push_back(infos);
+						_nearsFars.push_back(nearFar);
 
 						++camId;
 						infos.filename.clear();
@@ -584,7 +586,46 @@ namespace sibr {
 		// What happens if multiple are present?
 		// Ans: Priority --> SIBR > COLMAP > NVM
 		
-
+		// Find max cam ID and check present image IDs
+		int maxId = 0;
+		std::vector<bool> presentIDs;
 		
+		presentIDs.resize(_numCameras);
+
+		for (int c = 0; c < _numCameras; c++) {
+			maxId = (maxId > _imgInfos[c].camId) ? maxId : _imgInfos[c].camId;
+			try
+			{
+				presentIDs[_imgInfos[c].camId] = true;
+			}
+			catch (const std::exception&)
+			{
+				SIBR_ERR << "Incorrect Camera IDs " << std::endl;
+			}
+		}
+
+		// Check if max cam ID matches max number of cams
+		// If not find the missing IDs 
+		std::vector<int> missingIDs;
+		int curid;
+		int j, pos;
+		if (maxId >= _numCameras) {
+			for (int i = 0; i < _numCameras; i++) {
+				if (!presentIDs[i]) { missingIDs.push_back(i); }
+			}
+
+			// Now, shift the imgInfo IDs to adjust max Cam IDs
+			for (int k = 0; k < _numCameras; k++) {
+				curid = _imgInfos[k].camId;
+				pos = -1;
+				for (j = 0; j < missingIDs.size(); j++) {
+					if (curid > missingIDs[j]) { pos = j; }
+					else { break; }
+				}
+
+				_imgInfos[k].camId = _imgInfos[k].camId - (pos + 1);
+			}
+		}
+
 	}
 }

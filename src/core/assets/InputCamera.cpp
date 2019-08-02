@@ -296,7 +296,7 @@ namespace sibr
 						0, 0, -1;
 					//older format for compability
 					Quaternionf quat((float)q[0], (float)q[1], (float)q[2], (float)q[3]);
-					Eigen::Matrix3f	matRotation = converter.transpose()*quat.toRotationMatrix();
+					Eigen::Matrix3f	matRotation = converter.transpose() * quat.toRotationMatrix();
 					matRotation.transposeInPlace();
 
 					cameras[i].position(posCam);
