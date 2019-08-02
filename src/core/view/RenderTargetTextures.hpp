@@ -38,7 +38,7 @@ namespace sibr{
 		const std::vector<RenderTargetRGBA32F::Ptr> & inputImagesRT() const;
 
 		void initializeImageRenderTargets(CalibratedCameras::Ptr cams, InputImages::Ptr imgs);
-		void initializeDepthRenderTargets(CalibratedCameras::Ptr cams, InputImages::Ptr imgs, ProxyMesh::Ptr proxies, bool facecull);
+		void initializeDepthRenderTargets(CalibratedCameras::Ptr cams, ProxyMesh::Ptr proxies, bool facecull);
 
 	protected:
 		std::vector<RenderTargetRGBA32F::Ptr> _inputRGBARenderTextures;

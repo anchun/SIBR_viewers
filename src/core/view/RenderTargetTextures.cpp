@@ -65,7 +65,7 @@ namespace sibr {
 		}
 	}
 
-	void RGBDInputTextures::initializeDepthRenderTargets(CalibratedCameras::Ptr cams, InputImages::Ptr imgs, ProxyMesh::Ptr proxies, bool facecull)
+	void RGBDInputTextures::initializeDepthRenderTargets(CalibratedCameras::Ptr cams, ProxyMesh::Ptr proxies, bool facecull)
 	{
 		if (!isInit()) {
 			initSize(cams->inputCameras()[0].w(), cams->inputCameras()[0].h());
@@ -81,7 +81,7 @@ namespace sibr {
 
 		proj.init(depthShader, "proj"); // [SP]: ??
 		size.init(depthShader, "size"); // [SP]: ??
-		for (uint i = 0; i < imgs->inputImages().size(); i++) {
+		for (uint i = 0; i < cams->inputCameras().size(); i++) {
 			if (cams->inputCameras()[i].isActive()) {
 				_inputRGBARenderTextures[i]->bind();
 				glEnable(GL_DEPTH_TEST);
@@ -182,7 +182,7 @@ namespace sibr {
 	void RenderTargetTextures::initializeDefaultRenderTargets(CalibratedCameras::Ptr cams, InputImages::Ptr imgs, ProxyMesh::Ptr proxies)
 	{
 		initializeImageRenderTargets(cams, imgs);
-		initializeDepthRenderTargets(cams, imgs, proxies, true);
+		initializeDepthRenderTargets(cams, proxies, true);
 	}
 
 	void RenderTargetTextures::initRGBandDepthTextureArrays(CalibratedCameras::Ptr cams, InputImages::Ptr imgs, ProxyMesh::Ptr proxies, int textureFlags, bool faceCull)
