@@ -200,7 +200,7 @@ namespace sibr
 	}
 
 	SceneDebugView::SceneDebugView(const BasicIBRScene::Ptr & scene, const Viewport & viewport,
-		const InteractiveCameraHandler::Ptr & camHandler, const BasicIBRAppArgs & myArgs)
+		const InteractiveCameraHandler::Ptr & camHandler, const BasicDatasetArgs & myArgs)
 	{
 		initImageCamShaders();
 		setupLabelsManagerShader();
@@ -348,6 +348,18 @@ namespace sibr
 		}
 	}
 
+	void SceneDebugView::updateActiveCams(const std::vector<uint>& cams_id)
+	{
+		for(auto & cam : _cameras) {
+			cam.highlight = false;
+		}
+		for(const uint id : cams_id) {
+			if(id < _cameras.size()) {
+				_cameras[id].highlight = true;
+			}
+		}
+	}
+
 	void SceneDebugView::gui_options()
 	{
 
@@ -469,7 +481,7 @@ namespace sibr
 	{
 		addMesh("proxy", _scene->proxies()->proxyPtr());
 
-		//guizmo
+		//gizmo
 		addMeshAsLines("guizmo", RenderUtility::createAxisGizmoPtr())
 			.setDepthTest(false).setColorMode(MeshData::ColorMode::VERTEX);
 	}
