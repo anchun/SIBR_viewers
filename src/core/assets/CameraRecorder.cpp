@@ -7,11 +7,25 @@ namespace sibr
 {
 	void	CameraRecorder::use(Camera& cam)
 	{
-		if (_recording)
+		if (_recording) {
 			_cameras.push_back(cam);
-		else if (_playing && _pos < _cameras.size())
+		} else if (_playing && _pos < _cameras.size())
 		{
-			cam = _cameras[_pos++];
+		
+			// If we reach the last frame of the interpolation b/w two cameras, skip to next camera.
+			if (_interp >= (1.0f - _speed))
+			{
+				_interp = 0.0f;
+				_pos++;
+			}
+			// Interpolate between the two closest cameras.
+			const float k = std::min(std::max(_interp, 1e-6f), 1.0f - 1e-6f);
+			sibr::Camera & camStart = _cameras[std::min(int(_pos), int(_cameras.size()) - 1)];
+			sibr::Camera & camNext = _cameras[std::min(int(_pos) + 1, int(_cameras.size())-1)];
+			cam = sibr::Camera::interpolate(camStart, camNext, k);
+			
+			_interp += _speed;
+
 			if (_saving) {
 				std::ostringstream ssZeroPad;
 				ssZeroPad << std::setw(8) << std::setfill('0') << (_pos - 1);
@@ -22,8 +36,7 @@ namespace sibr
 				stop();
 				SIBR_LOG << "[CameraRecorder] - Playback Finished" << std::endl;
 			}
-		}
-		else {
+		} else {
 			cam.setSavePath("");
 		}
 	}
@@ -59,6 +72,7 @@ namespace sibr
 	{
 		_recording = _playing = false;
 		_pos = 0;
+		_interp = 0.0f;
 	}
 
 	void	CameraRecorder::reset(void)
@@ -122,9 +136,9 @@ namespace sibr
 		for (int i = 0; i < numImages; i++) {
 		
 			Matrix4f m;
-			bundle_file >> m(0, 0) >> m(0, 1) >> m(0, 2) >> m(0, 3) >> m(1, 0);
-			bundle_file >> m(1, 1) >> m(1, 2) >> m(1, 3) >> m(2, 0) >> m(2, 1);
-			bundle_file >> m(2, 2) >> m(2, 3) >> m(3, 0) >> m(3, 1) >> m(3, 2);
+			bundle_file >> m(0) >> m(1) >> m(2) >> m(3) >> m(4);
+			bundle_file >> m(5) >> m(6) >> m(7) >> m(8) >> m(9);
+			bundle_file >> m(10) >> m(11) >> m(12) >> m(13) >> m(14);
 
 			//
 			cameras[i] = InputCamera(i, w, h, m, true);
