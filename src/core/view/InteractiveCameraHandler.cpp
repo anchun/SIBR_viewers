@@ -583,6 +583,11 @@ namespace sibr {
 						}
 					}
 				}
+
+				if(ImGui::InputFloat("Speed##CamRecorder", &_cameraRecorder.speed(), 0.1f)) {
+					_cameraRecorder.speed() = sibr::clamp(_cameraRecorder.speed(), 0.0f, 1.0f);
+				}
+
 				bool saveFrameOld = _saveFrame;
 				ImGui::Checkbox("Save frame Playing", (&_saveFrame));
 				if (_saveFrame && !saveFrameOld) {
