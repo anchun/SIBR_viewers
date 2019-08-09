@@ -35,7 +35,7 @@ namespace sibr
 			ImGui::SetCursorPos(ImVec2(offset.x(), ImGui::GetTitleBarHeight()+offset.y()));
 			ImGui::InvisibleButton((windowTitle + "--TEXTURE-INVISIBLE_BUTTON").c_str(), ImVec2(size.x(), size.y()));
 			if (!invalidTexture) {
-				::ImGui::GetWindowDrawList()->AddImage((void *)(rt.texture()),
+				::ImGui::GetWindowDrawList()->AddImage((void*)(intptr_t)(rt.texture()),
 					pos, ImVec2(pos.x + size.x(), pos.y + size.y()),
 					ImVec2(0, 1), ImVec2(1, 0));
 			}
@@ -78,8 +78,8 @@ namespace sibr
 		sibr::Vector3f centroid(0.0f, 0.0f, 0.0f);
 		for (int k = 0; k < vertCount; ++k) {
 			const auto & vtx = drawlist->VtxBuffer[k];
-			vertices[k][0] = (vtx.pos.x)*2.0;
-			vertices[k][1] = -vtx.pos.y*2.0;
+			vertices[k][0] = (vtx.pos.x)*2.0f;
+			vertices[k][1] = -vtx.pos.y*2.0f;
 			uvs[k][0] = vtx.uv.x; uvs[k][1] = vtx.uv.y;
 			ImVec4 col = ImGui::ColorConvertU32ToFloat4(vtx.col);
 			colors[k][0] = col.x; colors[k][1] = col.y;
@@ -92,7 +92,7 @@ namespace sibr
 			faces[k / 3][2] = (unsigned int)drawlist->IdxBuffer[k + 2];
 		}
 		// Center the mesh?
-		centroid /= vertices.size();
+		centroid /= float(vertices.size());
 		for (int k = 0; k < vertices.size(); ++k) {
 			vertices[k] -= centroid;
 		}
@@ -276,7 +276,7 @@ namespace sibr
 		const sibr::Vector2f& uv0,
 		const sibr::Vector2f& uv1 
 	) {
-		ImGui::Image((void*)(texture), ImVec2((float)(displaySize[0]), (float)(displaySize[1])), ImVec2(uv0[0], uv0[1]), ImVec2(uv1[0], uv1[1]));
+		ImGui::Image((void*)(intptr_t)(texture), ImVec2(float(displaySize[0]), float(displaySize[1])), ImVec2(uv0[0], uv0[1]), ImVec2(uv1[0], uv1[1]));
 	}
 
 	void ImageWithCallback(
