@@ -8,7 +8,7 @@ sibr::ULRV3Renderer::ULRV3Renderer(const std::vector<sibr::InputCamera> & camera
 	fragString = fShader;
 	vertexString = vShader;
 	_maxNumCams = cameras.size();
-	_camsCount = _maxNumCams;
+	_camsCount = int(_maxNumCams);
 
 	// Populate the cameraInfos array (will be uploaded to the GPU).
 	_cameraInfos.clear();

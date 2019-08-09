@@ -33,7 +33,7 @@ int main(const int argc, const char** argv)
 
 	// load the cams
 	std::vector<InputCamera>	cams = scene.cameras()->inputCameras();
-	const int maxCam = cams.size();
+	const int maxCam = int(cams.size());
 	const int minCam = 0;
 
 	for (auto dir : dirs) {
