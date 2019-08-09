@@ -84,14 +84,18 @@ namespace sibr
 		TexPtr & getLoadingTex();
 		TexPtr & getDisplayTex();
 
-		void update(cv::Mat frame);
-		void updateGPU(cv::Mat frame);
+		template<typename ImgType>
+		void update(const ImgType & frame);
+
+		template<typename ImgType>
+		void updateGPU(const ImgType &  frame);
 		
 		int displayTex = 1, loadingTex = 1;
 		TexPtr ping, pong;
 		bool first = true;
 	};
 
+	using PingPong4u = PingPongTexture<4>;
 	using PingPong3u = PingPongTexture<3>;
 	using PingPong1u = PingPongTexture<1>;
 
@@ -269,8 +273,8 @@ namespace sibr
 		return displayTex ? ping : pong;
 	}
 
-	template<uint N>
-	void PingPongTexture<N>::update(cv::Mat frame)
+	template<uint N> template<typename ImgType>
+	void PingPongTexture<N>::update(const ImgType & frame)
 	{
 		if (first) {
 			updateGPU(frame);
@@ -285,8 +289,8 @@ namespace sibr
 		loadingTex = (loadingTex + 1) % 2;
 	}
 
-	template<uint N>
-	void PingPongTexture<N>::updateGPU(cv::Mat frame)
+	template<uint N> template<typename ImgType>
+	void PingPongTexture<N>::updateGPU(const ImgType & frame)
 	{
 		if (getLoadingTex()) {
 			getLoadingTex()->update(frame);

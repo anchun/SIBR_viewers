@@ -49,6 +49,7 @@ namespace sibr {
 
 	using Volume3f = VideoVolume<float, 3>;
 	using Volume1f = VideoVolume<float, 1>;
+	using Volume4u = VideoVolume<uchar, 4>;
 	using Volume3u = VideoVolume<uchar, 3>;
 	using Volume1u = VideoVolume<uchar, 1>;
 
@@ -143,6 +144,15 @@ namespace sibr {
 			}
 			return  out;
 		}	
+
+		VideoVolume swapRBchannels() const {
+			static_assert(N >= 3, "need 3 channels");
+			VideoVolume out = VideoVolume(l, w, h, 0);
+			for (int t = 0; t < l; ++t) {
+				cv::cvtColor(frame(t), out.frame(t), cv::COLOR_BGR2RGB);
+			}
+			return  out;
+		}
 
 		template<uint M>
 		VideoVolume applyMask(const VideoVolume<uchar,M> & mask) {
