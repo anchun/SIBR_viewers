@@ -39,12 +39,18 @@ namespace sibr {
 			outputFile << "date\t\t\tresolution\tnrImgs\telapsedTime\twas transformed?\n";
 		}
 
-		time_t now = time(0);
-		tm *ltm = localtime(&now);
-
+		time_t now = std::time(nullptr);
+		
+#ifdef SIBR_OS_WINDOWS
+		tm ltm = {0,0,0,0,0,0,0,0,0};
+		localtime_s(&ltm, &now);
+#else
+		tm ltm = *(std::localtime(&now));
+#endif
+		
 		std::stringstream dateSS;
-		dateSS << "[" << 1900 + ltm->tm_year << "/" << 1 + ltm->tm_mon << "/" << ltm->tm_mday << "] "
-			<< ltm->tm_hour << ":" << ltm->tm_min << ":" << ltm->tm_sec;
+		dateSS << "[" << 1900 + ltm.tm_year << "/" << 1 + ltm.tm_mon << "/" << ltm.tm_mday << "] "
+			<< ltm.tm_hour << ":" << ltm.tm_min << ":" << ltm.tm_sec;
 
 		outputFile << dateSS.str() << "\t" << originalResolution[0] << "x" << originalResolution[1] << "\t\t" << nrImages << "\t" << elapsedTime << "\t" << wasTransformed << "\n";
 

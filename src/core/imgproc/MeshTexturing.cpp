@@ -25,7 +25,7 @@ namespace sibr {
 
 		// Create a mesh in UV space, using the UVs as 2D coordinates.
 		SIBR_LOG << "[Texturing] Generating UV mesh..." << std::endl;
-		const int verticesCount = _mesh->vertices().size();
+		const int verticesCount = int(_mesh->vertices().size());
 		std::vector<sibr::Vector3f> uvVertices(verticesCount);
 
 #pragma omp parallel for
