@@ -1,7 +1,7 @@
 #include <fstream>
 #include "core/assets/CameraRecorder.hpp"
 #include "core/assets/InputCamera.hpp"
-#include <opencv2/opencv.hpp>
+#include <opencv2/imgcodecs.hpp>
 
 namespace sibr
 {
