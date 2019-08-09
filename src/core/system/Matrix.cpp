@@ -70,10 +70,10 @@ namespace sibr
 		Matrix4f m;
 
 		m <<
-			1.0/right, 0	  , 0				   , 0,
-			0		 , 1.0/top, 0				   , 0,
-			0        , 0      , -2.0/(myfar-mynear), -(myfar + mynear) / (myfar - mynear),
-			0		 , 0	  , 0				   , 1;
+			1.0f/right, 0.0f,		0.0f,					0.0f,
+			0.0f,		1.0f/top,	0.0f,					0.0f,
+			0.0f,		0.0f,		-2.0f/(myfar-mynear),	-(myfar + mynear) / (myfar - mynear),
+			0.0f,		0.0f,		0.0f,					1.0f;
 
 		return m;
 	}
