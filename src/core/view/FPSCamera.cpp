@@ -138,14 +138,14 @@ namespace sibr {
 
 		if (_currentCamera._isOrtho) {
 			if (input.key().isActivated(sibr::Key::Z)) {
-				_currentCamera._right /= 1.1;
-				_currentCamera._top /= 1.1;
-				_speedRotFpsCam /= 1.1;
+				_currentCamera._right /= 1.1f;
+				_currentCamera._top /= 1.1f;
+				_speedRotFpsCam /= 1.1f;
 			}
 			else if (input.key().isActivated(sibr::Key::X)) {
-				_currentCamera._right *= 1.1;
-				_currentCamera._top *= 1.1;
-				_speedRotFpsCam *= 1.1;
+				_currentCamera._right *= 1.1f;
+				_currentCamera._top *= 1.1f;
+				_speedRotFpsCam *= 1.1f;
 			}
 		}
 		_currentCamera.translate(move*_speedFpsCam, _currentCamera.transform());

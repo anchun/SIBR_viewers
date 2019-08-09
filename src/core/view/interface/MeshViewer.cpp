@@ -328,7 +328,7 @@ void sibr::MeshViewer::setMainMesh(sibr::Window & win, const sibr::Mesh & mesh, 
 	float radius;
 	sibr::Vector3f pos;
 	meshGL->getBoundingSphere(pos, radius);
-	interactCam->setFPSCameraSpeed(radius/10.0);
+	interactCam->setFPSCameraSpeed(radius/10.0f);
 
 }
 

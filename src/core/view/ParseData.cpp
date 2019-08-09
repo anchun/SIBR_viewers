@@ -146,8 +146,8 @@ namespace sibr {
 
 			// populate image infos
 			infos.filename = imageName;
-			infos.width = camParams.width;
-			infos.height = camParams.height;
+			infos.width = uint(camParams.width);
+			infos.height = uint(camParams.height);
 			infos.camId = cId;
 
 
@@ -252,9 +252,6 @@ namespace sibr {
 		_imgInfos.resize(_numCameras);
 
 		sibr::ImageRGB image;
-		int w, h;
-
-
 		
 		std::function<Eigen::Matrix3f(const double[9])> matrix = [](const double q[9])
 		{
@@ -451,7 +448,6 @@ namespace sibr {
 
 				while (getline(scene_metadata, line))
 				{
-					int imageID;
 					split(splitS, line, is_any_of(" "));
 					//std::cout << splitS.size() << std::endl;
 					if (splitS.size() > 1) {
@@ -475,7 +471,6 @@ namespace sibr {
 
 				while (getline(scene_metadata, line))
 				{
-					int imageID;
 					split(splitS, line, is_any_of(" "));
 					//std::cout << splitS.size() << std::endl;
 					if (splitS.size() > 1) {
@@ -593,7 +588,7 @@ namespace sibr {
 		presentIDs.resize(_numCameras);
 
 		for (int c = 0; c < _numCameras; c++) {
-			maxId = (maxId > _imgInfos[c].camId) ? maxId : _imgInfos[c].camId;
+			maxId = (maxId > int(_imgInfos[c].camId)) ? maxId : int(_imgInfos[c].camId);
 			try
 			{
 				presentIDs[_imgInfos[c].camId] = true;

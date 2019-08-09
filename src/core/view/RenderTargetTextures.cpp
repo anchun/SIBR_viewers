@@ -8,8 +8,8 @@ namespace sibr {
 			_width = w;
 			_height = h;
 		} else { // use constrained resolution
-			float aspect = w / (float)h;
-			_height = floor(_width / aspect);
+			const float aspect = float(w) / float(h);
+			_height = uint(floor(float(_width) / aspect));
 		}
 
 		_isInit = true;

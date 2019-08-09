@@ -132,7 +132,7 @@ namespace sibr {
 			else {
 				const float w = _viewport.finalWidth();
 				const float h = _viewport.finalHeight();
-				idealCam.size(w, h);
+				idealCam.size(uint(w), uint(h));
 				idealCam.aspect(w / h);
 			}
 		}
@@ -151,7 +151,7 @@ namespace sibr {
 		_trackball.fromCamera(idealCam, _viewport, _radius);
 
 		_currentCamera = idealCam;
-		_cameraFovDeg = _currentCamera.fovy() * 180.0f / M_PI;
+		_cameraFovDeg = _currentCamera.fovy() * 180.0f / float(M_PI);
 
 		if (!interpolate) {
 			_previousCamera = _currentCamera;
@@ -382,7 +382,7 @@ namespace sibr {
 				_cameraRecorder.save(filename);
 				_cameraRecorder.saveAsBundle(filename + ".out", _currentCamera.h());
 				if (_fribrExport) {
-					const int height = std::floor(1920.0f * (float(_currentCamera.h()) / float(_currentCamera.w())));
+					const int height = int(std::floor(1920.0f / _currentCamera.aspect()));
 					_cameraRecorder.saveAsFRIBRBundle(filename + "_fribr/", 1920, height);
 				}
 				_cameraRecorder.stop();
@@ -400,7 +400,7 @@ namespace sibr {
 				_cameraRecorder.playback();
 				_cameraRecorder.saveAsBundle(filename + ".out", _currentCamera.h());
 				if (_fribrExport) {
-					const int height = std::floor(1920.0f * (float(_currentCamera.h()) / float(_currentCamera.w())));
+					const int height = int(std::floor(1920.0f / _currentCamera.aspect()));
 					_cameraRecorder.saveAsFRIBRBundle(filename + "_fribr/", 1920, height);
 				}
 			}
@@ -512,7 +512,7 @@ namespace sibr {
 
 			if (ImGui::InputFloat("Fov Y", &_cameraFovDeg, 1.0f, 5.0f)) {
 				_cameraFovDeg = sibr::clamp(_cameraFovDeg, 1.0f, 180.0f);
-				_currentCamera.fovy(_cameraFovDeg * M_PI / 180.0f);
+				_currentCamera.fovy(_cameraFovDeg * float(M_PI) / 180.0f);
 				// Synchronize internal cameras.
 				fromCamera(_currentCamera, _shouldSmooth);
 			}
@@ -559,7 +559,7 @@ namespace sibr {
 							SIBR_LOG << "Loading" << std::endl;
 							_cameraRecorder.reset();
 							if (boost::filesystem::extension(selectedFile) == ".out")
-								_cameraRecorder.loadBundle(selectedFile);
+								_cameraRecorder.loadBundle(selectedFile, 1280, 800);
 							else
 								_cameraRecorder.load(selectedFile);
 							_cameraRecorder.playback();
@@ -577,7 +577,7 @@ namespace sibr {
 							_cameraRecorder.save(selectedFile + ".path");
 							_cameraRecorder.saveAsBundle(selectedFile + ".out", _currentCamera.h());
 							if (_fribrExport) {
-								const int height = std::floor(1920.0f * (float(_currentCamera.h()) / float(_currentCamera.w())));
+								const int height = int(std::floor(1920.0f / _currentCamera.aspect()));
 								_cameraRecorder.saveAsFRIBRBundle(selectedFile + "_fribr/", 1920, height);
 							}
 						}
