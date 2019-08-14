@@ -78,6 +78,15 @@ namespace sibr {
 			bool passthroughDepth = false
 			);
 
+		virtual void process(
+			const sibr::Mesh & mesh,
+			const sibr::Camera& eye,
+			IRenderTarget& dst,
+			uint input_texs_handle,
+			const sibr::Texture2DArrayLum32F::Ptr & inputDepths,
+			bool passthroughDepth = false
+		);
+
 		/** 
 		 *  Update which cameras should be used for rendering, based on the indices passed.
 		 *  \param camIds The indices to enable.
@@ -136,6 +145,15 @@ namespace sibr {
 			const sibr::Texture2DArrayLum32F::Ptr & inputDepths,
 			bool passthroughDepth
 		);
+
+		void renderBlending(
+			const sibr::Camera& eye,
+			IRenderTarget& dst,
+			uint input_texs_handle,
+			const sibr::Texture2DArrayLum32F::Ptr & inputDepths,
+			bool passthroughDepth
+		);
+
 
 	protected:
 		/// Shader names.

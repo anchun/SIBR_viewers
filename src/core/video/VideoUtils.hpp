@@ -148,6 +148,8 @@ namespace sibr {
 		VideoVolume swapRBchannels() const {
 			static_assert(N >= 3, "need 3 channels");
 			VideoVolume out = VideoVolume(l, w, h, 0);
+
+#pragma omp parallel for
 			for (int t = 0; t < l; ++t) {
 				cv::cvtColor(frame(t), out.frame(t), cv::COLOR_BGR2RGB);
 			}
@@ -513,7 +515,7 @@ namespace sibr {
 	VideoVolume<T, N + M>  concatVolumesChannels(const sibr::VideoVolume<T, N> & A, const sibr::VideoVolume<T, M> & B) {
 		VideoVolume<T, N + M> out(A.l, A.w, A.h);
 
-//#pragma omp parallel for
+#pragma omp parallel for
 		for (int t = 0; t < A.l; ++t) {
 			std::vector<cv::Mat> A_cs, B_cs;
 			cv::split(A.frame(t), A_cs);
