@@ -317,6 +317,7 @@ namespace sibr
 
 	void SceneDebugView::onGUI()
 	{
+		ImGui::ShowDemoWindow();
 		if (ImGui::Begin("Top view settings")) {
 			gui_options();
 			list_mesh_onGUI();
@@ -364,32 +365,32 @@ namespace sibr
 	{
 
 		if (ImGui::CollapsingHeader("OptionsSceneDebugView##")) {
+
+			// First block: camera options
 			if (ImGui::Button("Save topview")) {
 				save();
 			}
+			ImGui::SameLine();
+			camera_handler.onGUI("Top view settings");
+			
 
-			ImGui::PushScaledItemWidth(120);
+			ImGui::Separator();
+			// Second block: display options
+			ImGui::PushScaledItemWidth(150);
 			ImGui::InputFloat("Camera scale", &_cameraScaling, 0.1f, 10.0f);
 			_cameraScaling = std::max(0.001f, _cameraScaling);
-
+			ImGui::SameLine();
 			ImGui::Checkbox("Draw labels ", &_showLabels);
 			if (_showLabels) {
 				ImGui::SameLine();
 				ImGui::InputFloat("Label scale", &_labelScale, 0.2f, 10.0f);
 			}
-
-			ImGui::Separator();
 			ImGui::Checkbox("Draw Input Images ", &_showImages);
 			if (_showImages) {
 				ImGui::SameLine();
 				ImGui::SliderFloat("Alpha", &_alphaImage, 0, 1.0);
 			}
-
-			
-
-			camera_handler.onGUI("Top view settings");
 			ImGui::PopItemWidth();
-			ImGui::Separator();
 		}
 	}
 
