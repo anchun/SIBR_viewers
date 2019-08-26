@@ -155,7 +155,18 @@ namespace sibr {
 	  //!
 	  void writeCameras();
 
+	  //!
+	  //! Allows to write the validated lights in a file
+	  //! @return void
+	  //!
 	  void writeLights();
+
+	  //!
+	  //! Allows to write the validated lights on several files
+	  //! => one light by file
+	  //! @return void
+	  //!
+	  void writeLightsSeparatively();
 
 	  //!
 	  //! Allows to listen the keyboard and do actions
