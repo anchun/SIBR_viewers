@@ -465,12 +465,12 @@ namespace sibr {
 	void InteractiveCameraHandler::onGUI(const std::string & suffix) {
 
 		const std::string fullName = (suffix);
-		ImGui::PushScaledItemWidth(150);
+		
 
 		// Saving camera.
 		if (ImGui::Begin(fullName.c_str())) {
 
-
+			ImGui::PushScaledItemWidth(130);
 			ImGui::Combo("Mode", (int*)&_currentMode, "FPS\0Orbit\0Interp.\0Trackball\0None\0\0");
 			switchMode(_currentMode);
 			ImGui::SameLine();
@@ -511,8 +511,9 @@ namespace sibr {
 				_currentCamId = sibr::clamp(_currentCamId, 0, int(_interpPath.size()) - 1);
 				snapToCamera(_currentCamId);
 			}
-			ImGui::SameLine();
+			
 			if (_currentMode == TRACKBALL) {
+				ImGui::SameLine();
 				ImGui::Checkbox("Show trackball", &_trackball.drawThis);
 			}
 
@@ -534,7 +535,7 @@ namespace sibr {
 			}
 			
 			ImGui::Separator();
-
+			ImGui::PopItemWidth();
 		}
 		ImGui::End();
 
@@ -543,6 +544,7 @@ namespace sibr {
 			std::string selectedFile;
 
 			if (ImGui::Begin(fullName.c_str())) {
+				ImGui::PushScaledItemWidth(130);
 
 				if (ImGui::Button("Play")) {
 					_cameraRecorder.playback();
@@ -608,15 +610,16 @@ namespace sibr {
 				else if (!_saveFrame && saveFrameOld) {
 					_cameraRecorder.stopSaving();
 				}
-				ImGui::SameLine();
-				ImGui::Checkbox("Fribr export", &_fribrExport);
+				//ImGui::SameLine();
+				//ImGui::Checkbox("Fribr export", &_fribrExport);
 				ImGui::Separator();
+				ImGui::PopItemWidth();
 			}
 			ImGui::End();
 		}
 		// add the FPS camera controls in the same ImGui window.
 		_fpsCamera.onGUI(suffix);
-		ImGui::PopItemWidth();
+		
 
 	}
 

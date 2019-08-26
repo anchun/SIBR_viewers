@@ -317,7 +317,7 @@ namespace sibr
 
 	void SceneDebugView::onGUI()
 	{
-		ImGui::ShowDemoWindow();
+		
 		if (ImGui::Begin("Top view settings")) {
 			gui_options();
 			list_mesh_onGUI();
