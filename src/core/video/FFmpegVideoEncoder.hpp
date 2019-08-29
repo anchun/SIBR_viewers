@@ -12,6 +12,8 @@ extern "C"
 #include "Video.hpp"
 #include "Config.hpp"
 
+
+
 namespace sibr {
 
 	class SIBR_VIDEO_EXPORT AVinit {
@@ -21,6 +23,8 @@ namespace sibr {
 		static void checkInit() {
 			if (!initDone) {
 				std::cout << " ffmpeg register all" << std::endl;
+				// Ignore next line warning.
+				#pragma warning(suppress : 4996)
 				av_register_all();
 				initDone = true;
 			}

@@ -322,10 +322,10 @@ namespace sibr {
 
 		sibr::Mesh::Ptr baseMesh = filled ? baseCellMeshFilled : baseCellMesh;
 
-		const int numT = (int)baseMesh->triangles().size();
-		const int numTtotal = getNumCells()*numT;
-		const int numV = (int)baseMesh->vertices().size();
-		const int numVtotal = getNumCells()*numV;
+		const int numT = int(baseMesh->triangles().size());
+		const int numTtotal = int(getNumCells())*numT;
+		const int numV = int(baseMesh->vertices().size());
+		const int numVtotal = int(getNumCells())*numV;
 		const sibr::Vector3u offsetT = sibr::Vector3u(numV, numV, numV);
 
 		sibr::Mesh::Vertices vs(numVtotal);

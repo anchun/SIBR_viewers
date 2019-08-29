@@ -102,8 +102,8 @@ namespace sibr {
 		int proposedWidth = bounds.xMax - bounds.xMin;
 		int proposedHeight = bounds.yMax - bounds.yMin;
 
-		bounds.width = (img.w() - proposedWidth) * toleranceFactor + proposedWidth;
-		bounds.height = (img.h() - proposedHeight) * toleranceFactor + proposedHeight;
+		bounds.width = int(float(int(img.w()) - proposedWidth) * toleranceFactor + float(proposedWidth));
+		bounds.height = int(float(int(img.h()) - proposedHeight) * toleranceFactor + float(proposedHeight));
 
 		return bounds;
 	}
@@ -111,13 +111,13 @@ namespace sibr {
 
 	sibr::Vector2i DistordCropUtility::calculateAvgResolution(const std::vector<Path>& imagePaths, std::vector<sibr::Vector2i> & resolutions, const int batch_size)
 	{
-		unsigned nrBatches = static_cast<int>(ceil((float)(imagePaths.size()) / batch_size));
+		const int nrBatches = static_cast<int>(ceil((float)(imagePaths.size()) / batch_size));
 		resolutions.resize(imagePaths.size());
 		std::vector<std::pair<std::pair<long, long>, unsigned>> sumAndNrItems(nrBatches);
 
-		for (unsigned batchId = 0; batchId < nrBatches; batchId++) {
+		for (int batchId = 0; batchId < nrBatches; batchId++) {
 
-			unsigned nrItems = (batchId != nrBatches - 1) ? batch_size : ((nrBatches * batch_size != imagePaths.size()) ? (imagePaths.size() - (batch_size * batchId)) : batch_size);
+			const int nrItems = (batchId != nrBatches - 1) ? batch_size : ((nrBatches * batch_size != int(imagePaths.size())) ? (int(imagePaths.size()) - (batch_size * batchId)) : batch_size);
 			long sumOfWidths = 0;
 			long sumOfHeights = 0;
 
@@ -130,8 +130,8 @@ namespace sibr {
 
 #pragma omp critical
 				{
-					sumOfWidths += chunkOfInputImages[localImgIndex].w();
-					sumOfHeights += chunkOfInputImages[localImgIndex].h();
+					sumOfWidths += long(chunkOfInputImages[localImgIndex].w());
+					sumOfHeights += long(chunkOfInputImages[localImgIndex].h());
 					resolutions[localImgIndex].x() = chunkOfInputImages[localImgIndex].w();
 					resolutions[localImgIndex].y() = chunkOfInputImages[localImgIndex].h();
 				}
@@ -148,10 +148,10 @@ namespace sibr {
 			sumOfHeight += sumAndNrItems[i].first.second;
 		}
 
-		unsigned globalAvgWidth = sumOfWidth / imagePaths.size();
-		unsigned globalAvgHeight = sumOfHeight / imagePaths.size();
+		const long globalAvgWidth = sumOfWidth / long(imagePaths.size());
+		const long globalAvgHeight = sumOfHeight / long(imagePaths.size());
 
-		return sibr::Vector2i(globalAvgWidth, globalAvgHeight);
+		return sibr::Vector2i(int(globalAvgWidth), int(globalAvgHeight));
 	}
 
 	sibr::Vector2i DistordCropUtility::findBiggestImageCenteredBox(const Path & root,
@@ -192,19 +192,19 @@ namespace sibr {
 		// compute bounding boxes for all non-discarded images
 		std::vector<Bounds> allBounds(imagePaths.size());
 
-		unsigned nrBatches = static_cast<int>(ceil((float)(imagePaths.size()) / batch_size));
+		const int nrBatches = static_cast<int>(ceil((float)(imagePaths.size()) / batch_size));
 
 		// processs batches sequentially (we don't want to run out of memory)
-		for (unsigned batchId = 0; batchId < nrBatches; batchId++) {
+		for (int batchId = 0; batchId < nrBatches; batchId++) {
 
-			unsigned nrItems = (batchId != nrBatches - 1) ? batch_size : ((nrBatches * batch_size != imagePaths.size()) ? (imagePaths.size() - (batch_size * batchId)) : batch_size);
+			const int nrItems = (batchId != nrBatches - 1) ? batch_size : ((nrBatches * batch_size != int(imagePaths.size())) ? (int(imagePaths.size()) - (batch_size * batchId)) : batch_size);
 
 			std::vector<sibr::ImageRGB> chunkOfInputImages(nrItems);
 
 			// load images in parallel (OpenMP 2.0 doesn't allow unsigned int as index. must be signed integral type)
 #pragma omp parallel for
 			for (int localImgIndex = 0; localImgIndex < nrItems; localImgIndex++) {
-				unsigned globalImgIndex = (batchId * batch_size) + localImgIndex;
+				const uint globalImgIndex = uint((batchId * batch_size) + localImgIndex);
 				// if cam was discarded, do nothing
 				if (std::find(preExcludedCams.begin(), preExcludedCams.end(), globalImgIndex) == preExcludedCams.end()) {
 					// only now load the img

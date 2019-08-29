@@ -90,7 +90,8 @@ namespace sibr
 		SIBR_CLASS_PTR(SceneDebugView);
 
 	public:
-		SceneDebugView(const std::shared_ptr<BasicIBRScene> & scene, const Viewport & viewport, const InteractiveCameraHandler::Ptr & camHandler, const BasicIBRAppArgs & myArgs);
+		SceneDebugView(const std::shared_ptr<BasicIBRScene> & scene, const Viewport & viewport, const InteractiveCameraHandler::Ptr & camHandler, const BasicDatasetArgs & myArgs);
+
 
 		virtual void onUpdate(Input & input, const float deltaTime, const Viewport & viewport = Viewport(0.0f, 0.0f, 0.0f, 0.0f));
 
@@ -116,7 +117,7 @@ namespace sibr
 
 		void setScene(const BasicIBRScene::Ptr & scene, bool preserveCamera = false);
 
-	//	void updateActiveCams(const std::vector<int> & cams_id);
+		void updateActiveCams(const std::vector<uint> & cams_id);
 
 	protected:
 	

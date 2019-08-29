@@ -137,7 +137,7 @@ namespace sibr
 		_labelShader.begin();
 		// Bind the ImGui font texture.
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, (GLuint)ImGui::GetFont()->ContainerAtlas->TexID);
+		glBindTexture(GL_TEXTURE_2D, (GLuint)(intptr_t)(ImGui::GetFont()->ContainerAtlas->TexID));
 		_labelShaderViewport.set(Vector2f(vp.finalWidth(), vp.finalHeight()));
 
 		for (const auto & camInfos : cams_info) {
@@ -162,7 +162,7 @@ namespace sibr
 			label.mesh->renderSubMesh(0, label.splitIndex, false, false);
 			// Render the text label.
 			_labelShaderScale.set(1.0f*_labelScale);
-			label.mesh->renderSubMesh(label.splitIndex, label.mesh->triangles().size() * 3, false, false);
+			label.mesh->renderSubMesh(label.splitIndex, int(label.mesh->triangles().size()) * 3, false, false);
 
 		}
 		_labelShader.end();
@@ -200,7 +200,7 @@ namespace sibr
 	}
 
 	SceneDebugView::SceneDebugView(const BasicIBRScene::Ptr & scene, const Viewport & viewport,
-		const InteractiveCameraHandler::Ptr & camHandler, const BasicIBRAppArgs & myArgs)
+		const InteractiveCameraHandler::Ptr & camHandler, const BasicDatasetArgs & myArgs)
 	{
 		initImageCamShaders();
 		setupLabelsManagerShader();
@@ -317,6 +317,7 @@ namespace sibr
 
 	void SceneDebugView::onGUI()
 	{
+		
 		if (ImGui::Begin("Top view settings")) {
 			gui_options();
 			list_mesh_onGUI();
@@ -348,36 +349,48 @@ namespace sibr
 		}
 	}
 
+	void SceneDebugView::updateActiveCams(const std::vector<uint>& cams_id)
+	{
+		for(auto & cam : _cameras) {
+			cam.highlight = false;
+		}
+		for(const uint id : cams_id) {
+			if(id < _cameras.size()) {
+				_cameras[id].highlight = true;
+			}
+		}
+	}
+
 	void SceneDebugView::gui_options()
 	{
 
 		if (ImGui::CollapsingHeader("OptionsSceneDebugView##")) {
+
+			// First block: camera options
 			if (ImGui::Button("Save topview")) {
 				save();
 			}
+			ImGui::SameLine();
+			camera_handler.onGUI("Top view settings");
+			
 
-			ImGui::PushScaledItemWidth(120);
+			ImGui::Separator();
+			// Second block: display options
+			ImGui::PushScaledItemWidth(150);
 			ImGui::InputFloat("Camera scale", &_cameraScaling, 0.1f, 10.0f);
 			_cameraScaling = std::max(0.001f, _cameraScaling);
-
+			ImGui::SameLine();
 			ImGui::Checkbox("Draw labels ", &_showLabels);
 			if (_showLabels) {
 				ImGui::SameLine();
 				ImGui::InputFloat("Label scale", &_labelScale, 0.2f, 10.0f);
 			}
-
-			ImGui::Separator();
 			ImGui::Checkbox("Draw Input Images ", &_showImages);
 			if (_showImages) {
 				ImGui::SameLine();
 				ImGui::SliderFloat("Alpha", &_alphaImage, 0, 1.0);
 			}
-
-			
-
-			camera_handler.onGUI("Top view settings");
 			ImGui::PopItemWidth();
-			ImGui::Separator();
 		}
 	}
 
@@ -398,9 +411,27 @@ namespace sibr
 				ImGui::NextColumn();
 
 				if (ImGui::Button(("SnapTo##" + name).c_str())) {
-					//camera_handler.snapToCamera(i);
-					//camera_handler.fromCamera(_cameras[i].cam, true, false);
-					camera_handler.fromTransform(_cameras[i].cam.transform(), true, false);
+					const auto & input_cam = _scene->cameras()->inputCameras()[0];	
+
+					auto size = camera_handler.getViewport().finalSize();
+					float ratio_dst = size[0] / size[1];
+					float ratio_src = input_cam.w() / (float)input_cam.h();
+
+					std::cout << ratio_dst << " " << ratio_src << std::endl;
+
+					InputCamera cam = InputCamera(_cameras[i].cam, int(size[0]), int(size[1]));
+			
+					if (true) {
+						//matching fov_w for better viewport coverage
+						float fov_h = 2 * atan(tan(input_cam.fovy() / 2) * ratio_src / ratio_dst);
+
+						cam.fovy(fov_h);
+					} else {
+						cam.fovy(input_cam.fovy());
+					}
+				
+					cam.znear(0.0001f);
+					camera_handler.fromCamera(cam, true, false);				
 				}
 				ImGui::NextColumn();
 
@@ -451,7 +482,7 @@ namespace sibr
 	{
 		addMesh("proxy", _scene->proxies()->proxyPtr());
 
-		//guizmo
+		//gizmo
 		addMeshAsLines("guizmo", RenderUtility::createAxisGizmoPtr())
 			.setDepthTest(false).setColorMode(MeshData::ColorMode::VERTEX);
 	}

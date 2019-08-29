@@ -7,7 +7,7 @@ namespace sibr
 	/*static*/ bool													Raycaster::g_initRegisterFlag = false;
 	/*static*/ Raycaster::RTCDevicePtr								Raycaster::g_device = nullptr;
 
-	/*static*/ void Raycaster::rtcErrorCallback(RTCError code, const char* msg)
+	/*static*/ void Raycaster::rtcErrorCallback(void* userPtr, RTCError code, const char* msg)
 	{
 		std::string err;
 
@@ -53,7 +53,7 @@ namespace sibr
 				SIBR_LOG << "Cannot create an embree device : " << rtcDeviceGetError(g_device.get()) << std::endl;
 			}
 
-			rtcDeviceSetErrorFunction(g_device.get(), &Raycaster::rtcErrorCallback); // Set callback error function
+			rtcDeviceSetErrorFunction2(g_device.get(), &Raycaster::rtcErrorCallback, nullptr); // Set callback error function
 			_devicePtr = g_device; //Moved in the init
 		}
 

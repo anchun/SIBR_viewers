@@ -367,11 +367,16 @@ namespace sibr
 			finalPath.append(filename);
 		}
 		else {
-			auto t = std::time(nullptr);
-			auto tm = *std::localtime(&t);
+			auto now = std::time(nullptr);
+#ifdef SIBR_OS_WINDOWS
+			tm ltm = { 0,0,0,0,0,0,0,0,0 };
+			localtime_s(&ltm, &now);
+#else
+			tm ltm = *(std::localtime(&now));
+#endif
 			std::stringstream buffer;
-			buffer << std::put_time(&tm, "%Y_%m_%d_%H_%M_%S");
-			std::string autoName = view.name + "_" + buffer.str();
+			buffer << std::put_time(&ltm, "%Y_%m_%d_%H_%M_%S");
+			const std::string autoName = view.name + "_" + buffer.str();
 			finalPath.append(autoName + ".png");
 		}
 
@@ -385,8 +390,8 @@ namespace sibr
 		
 		// Do square decomposition for now.
 		// Find the next square.
-		const int sideCount = int(ceil(sqrt(viewsCount)));
-		const int verticalShift = ImGui::GetTitleBarHeight();
+		const int sideCount = int(std::ceil(std::sqrt(viewsCount)));
+		const int verticalShift = int(ImGui::GetTitleBarHeight());
 
 		Viewport usedVP = Viewport(vp.finalLeft(), vp.finalTop() + verticalShift, vp.finalRight(), vp.finalBottom());
 		Vector2f itemRatio = Vector2f(1, 1) / sideCount;
@@ -514,19 +519,19 @@ namespace sibr
 				}
 
 				if (ImGui::MenuItem("Row layout")) {
-					Vector2i itemSize = win.size();
-					itemSize[0] = int(float(itemSize[0]) / (_subViews.size() + _ibrSubViews.size()));
-					const int verticalShift = ImGui::GetTitleBarHeight();
-					int vid = 0;
+					Vector2f itemSize = win.size().cast<float>();
+					itemSize[0] = std::round(float(itemSize[0]) / float(_subViews.size() + _ibrSubViews.size()));
+					const float verticalShift = ImGui::GetTitleBarHeight();
+					float vid = 0.0f;
 					for (auto & view : _ibrSubViews) {
 						// Compute position on grid.
-						view.second.viewport = Viewport(vid*itemSize[0], verticalShift, (vid + 1)*itemSize[0] - 1, verticalShift + itemSize[1] - 1);
+						view.second.viewport = Viewport(vid*itemSize[0], verticalShift, (vid + 1.0f)*itemSize[0] - 1.0f, verticalShift + itemSize[1] - 1.0f);
 						view.second.shouldUpdateLayout = true;
 						++vid;
 					}
 					for (auto & view : _subViews) {
 						// Compute position on grid.
-						view.second.viewport = Viewport(vid*itemSize[0], verticalShift, (vid + 1)*itemSize[0] - 1, verticalShift + itemSize[1] - 1);
+						view.second.viewport = Viewport(vid*itemSize[0], verticalShift, (vid + 1.0f)*itemSize[0] - 1.0f, verticalShift + itemSize[1] - 1.0f);
 						view.second.shouldUpdateLayout = true;
 						++vid;
 					}

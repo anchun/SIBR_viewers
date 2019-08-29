@@ -7,7 +7,7 @@ using namespace boost::filesystem;
 int threshold_black_color = 10; //10
 int thinest_bounding_box_size = 5;
 int threshold_bounding_box_size = 500;
-float threshold_ratio_bounding_box_size = 0.2;
+float threshold_ratio_bounding_box_size = 0.2f;
 
 const int PROCESSING_BATCH_SIZE = 150;	// process PROCESSING_BATCH_SIZE images together
 

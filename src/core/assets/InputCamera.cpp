@@ -296,7 +296,7 @@ namespace sibr
 						0, 0, -1;
 					//older format for compability
 					Quaternionf quat((float)q[0], (float)q[1], (float)q[2], (float)q[3]);
-					Eigen::Matrix3f	matRotation = converter.transpose()*quat.toRotationMatrix();
+					Eigen::Matrix3f	matRotation = converter.transpose() * quat.toRotationMatrix();
 					matRotation.transposeInPlace();
 
 					cameras[i].position(posCam);
@@ -377,8 +377,8 @@ namespace sibr
 				mLook.block<3, 1>(0, 3) = transl;
 				mLook(3, 3) = 1;
 
-				float fovRad = fov * M_PI / 180;
-				float sibr_focal = 0.5*w / tan(fovRad / 2); // Blender plugin register horizontal fov ! Using w here
+				float fovRad = fov * float(M_PI) / 180;
+				float sibr_focal = 0.5f*w / tan(fovRad / 2.0f); // Blender plugin register horizontal fov ! Using w here
 
 				Eigen::Matrix4f r(mLook);
 				/*float m[15] = {
@@ -516,7 +516,7 @@ namespace sibr
 			
 			sibr::Vector3f position = -(orientation * converter * translation);
 
-			sibr::InputCamera camera(camParams.fy, 0.0f, 0.0f, camParams.width, camParams.height, cId);
+			sibr::InputCamera camera(camParams.fy, 0.0f, 0.0f, int(camParams.width), int(camParams.height), int(cId));
 			camera.name(imageName);
 			camera.position(position);
 			camera.rotation( sibr::Quaternionf(orientation));

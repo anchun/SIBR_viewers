@@ -15,7 +15,7 @@ namespace sibr {
 		// check bundler file
 		std::ifstream bundle_file(bundler_file_path);
 		if (!bundle_file.is_open()) {
-			return false;
+			SIBR_ERR << "Bundler file does not exist at " + bundler_file_path << std::endl;
 		}
 
 		// read number of images
@@ -47,6 +47,7 @@ namespace sibr {
 		std::ifstream camerasFile(camerasListing);
 		std::ifstream imagesFile(imagesListing);
 		std::ifstream clippingPlanesFile(clippingPlanes);
+
 		if (!camerasFile.is_open()) {
 			SIBR_ERR << "Unable to load camera colmap file" << std::endl;
 		}
@@ -140,13 +141,13 @@ namespace sibr {
 			/// orientation = flipM' * rotationM * flipM
 
 			const sibr::Quaternionf quat(qw, qx, qy, qz);
-			const sibr::Matrix3f orientation = /*converter.transpose() **/ quat.toRotationMatrix().transpose() * converter;
+			const sibr::Matrix3f orientation = quat.toRotationMatrix().transpose() * converter;
 			sibr::Vector3f position(tx, ty, tz);
 
 			// populate image infos
 			infos.filename = imageName;
-			infos.width = camParams.width;
-			infos.height = camParams.height;
+			infos.width = uint(camParams.width);
+			infos.height = uint(camParams.height);
 			infos.camId = cId;
 
 
@@ -218,6 +219,171 @@ namespace sibr {
 		return true;
 	}
 
+	bool ParseData::parseNVMData(const std::string & nvm_path)
+	{
+
+		const std::string clippingPlanes = nvm_path + "/clipping_planes.txt";
+
+		std::ifstream nvm_scene(nvm_path + "/scene.nvm");
+		std::ifstream clippingPlanesFile(clippingPlanes);
+
+		std::string line;
+
+		if (!nvm_scene.is_open()) {
+			SIBR_ERR << "NVM scene.nvm file does not exist at /" + nvm_path << std::endl;
+		}
+
+		int rotation_parameter_num = 4;
+		bool format_r9t = false;
+		std::string token;
+		if (nvm_scene.peek() == 'N')
+		{
+			nvm_scene >> token; //file header
+			if (strstr(token.c_str(), "R9T"))
+			{
+				rotation_parameter_num = 9;    //rotation as 3x3 matrix
+				format_r9t = true;
+			}
+		}
+
+		nvm_scene >> _numCameras;	// read first value (number of images)
+
+		_outputCamsMatrix.resize(_numCameras);
+		_imgInfos.resize(_numCameras);
+
+		sibr::ImageRGB image;
+		
+		std::function<Eigen::Matrix3f(const double[9])> matrix = [](const double q[9])
+		{
+
+			Eigen::Matrix3f m;
+			double qq = sqrt(q[0] * q[0] + q[1] * q[1] + q[2] * q[2] + q[3] * q[3]);
+			double qw, qx, qy, qz;
+			if (qq > 0)
+			{
+				qw = q[0] / qq;
+				qx = q[1] / qq;
+				qy = q[2] / qq;
+				qz = q[3] / qq;
+			}
+			else
+			{
+				qw = 1;
+				qx = qy = qz = 0;
+			}
+			m(0, 0) = float(qw*qw + qx * qx - qz * qz - qy * qy);
+			m(0, 1) = float(2 * qx*qy - 2 * qz*qw);
+			m(0, 2) = float(2 * qy*qw + 2 * qz*qx);
+			m(1, 0) = float(2 * qx*qy + 2 * qw*qz);
+			m(1, 1) = float(qy*qy + qw * qw - qz * qz - qx * qx);
+			m(1, 2) = float(2 * qz*qy - 2 * qx*qw);
+			m(2, 0) = float(2 * qx*qz - 2 * qy*qw);
+			m(2, 1) = float(2 * qy*qz + 2 * qw*qx);
+			m(2, 2) = float(qz*qz + qw * qw - qy * qy - qx * qx);
+
+			return m;
+		};
+
+		for (int i = 0; i < _numCameras; i++) {
+			double f, q[9], c[3], d[2];
+			Eigen::Matrix3f		matRotation;
+			sibr::Matrix4f &m = _outputCamsMatrix[i];
+			std::vector<std::string> splitS;
+
+			nvm_scene >> token >> f;
+			for (int j = 0; j < rotation_parameter_num; ++j) nvm_scene >> q[j];
+			nvm_scene >> c[0] >> c[1] >> c[2] >> d[0] >> d[1];
+
+			image.load(nvm_path + "/" + token);
+			split(splitS, token, is_any_of("/"));
+
+			_imgInfos[i].camId = i;
+			_imgInfos[i].filename = splitS[1];
+			_imgInfos[i].width = image.w();
+			_imgInfos[i].height = image.h();
+
+			m(0) = (float)f;
+
+			m(1) = (float)d[0];
+			m(2) = (float)d[1];
+
+			Vector3f posCam((float)c[0], (float)c[1], (float)c[2]);
+
+			Vector3f finCam;
+			if (format_r9t)
+			{
+
+				std::cout << " WARNING THIS PART OF THE CODE WAS NEVER TESTED. IT IS SUPPOSED NOT TO WORK PROPERLY" << std::endl;
+				matRotation <<
+					float(q[0]), float(q[1]), float(q[2]),
+					float(q[3]), float(q[4]), float(q[5]),
+					float(q[6]), float(q[7]), float(q[8])
+					;
+			}
+			else
+			{
+
+				Eigen::Matrix3f converter;
+				converter <<
+					1, 0, 0,
+					0, -1, 0,
+					0, 0, -1;
+				//older format for compability
+				Quaternionf quat((float)q[0], (float)q[1], (float)q[2], (float)q[3]);
+				
+				matRotation = quat.toRotationMatrix().transpose() * converter;
+				finCam = -(matRotation * posCam);
+			}
+
+
+
+			for (int j = 0; j < 3; j++) m(12 + j) = (float)finCam[j];
+
+			for (int j = 0; j < 9; j++) m(3 + j) = (float)matRotation(j);
+
+		}
+		
+		if (_activeImages.empty()) {
+			if (_excludeImages.empty()) {
+
+				_activeImages.resize(_imgInfos.size());
+				_excludeImages.resize(_imgInfos.size());
+
+				for (int i = 0; i < _imgInfos.size(); i++) {
+					_activeImages[i] = true;
+					_excludeImages[i] = false;
+				}
+			}
+			else {
+				_activeImages.resize(_imgInfos.size());
+				for (int i = 0; i < _imgInfos.size(); i++)
+					_activeImages[i] = !_excludeImages[i];
+			}
+		}
+
+		if (_nearsFars.empty()) {
+			_nearsFars.resize(_numCameras);
+
+			if (!clippingPlanesFile.is_open()) {
+				for (int i = 0; i < _numCameras; i++) {
+					_nearsFars[i].near = 0.1f;
+					_nearsFars[i].far = 100.0f;
+				}
+			}
+			else {
+				int i = 0;
+				while (std::getline(clippingPlanesFile, line)) {
+					std::vector<std::string> tokens = sibr::split(line, ' ');
+					_nearsFars[i].near = stof(tokens[0]);
+					_nearsFars[i].far = stof(tokens[1]);
+					++i;
+				}
+			}
+
+		}
+		return true;
+	}
+
 	bool ParseData::parseSceneMetadata(const std::string & scene_metadata_path)
 	{
 
@@ -250,17 +416,18 @@ namespace sibr {
 						//infos.filename.erase(infos.filename.find_last_of("."), std::string::npos);
 						id = atoi(infos.filename.c_str());
 
-						_nearsFars.push_back(InputCamera::Z());
+						InputCamera::Z nearFar;
+						
 						if (splitS.size() > 3) {
-							_nearsFars[id].near = stof(splitS[3]);
-							_nearsFars[id].far = stof(splitS[4]);
+							nearFar.near = stof(splitS[3]);
+							nearFar.far = stof(splitS[4]);
 						}
 						else {
-							_nearsFars[id].near = 0.1f;
-							_nearsFars[id].far = 100.0f;
-							std::cout << "Warning: using dummy znear and zfar" << std::endl;
+							nearFar.near = 0.1f;
+							nearFar.far = 100.0f;
 						}
 						_imgInfos.push_back(infos);
+						_nearsFars.push_back(nearFar);
 
 						++camId;
 						infos.filename.clear();
@@ -281,7 +448,6 @@ namespace sibr {
 
 				while (getline(scene_metadata, line))
 				{
-					int imageID;
 					split(splitS, line, is_any_of(" "));
 					//std::cout << splitS.size() << std::endl;
 					if (splitS.size() > 1) {
@@ -305,7 +471,6 @@ namespace sibr {
 
 				while (getline(scene_metadata, line))
 				{
-					int imageID;
 					split(splitS, line, is_any_of(" "));
 					//std::cout << splitS.size() << std::endl;
 					if (splitS.size() > 1) {
@@ -351,17 +516,16 @@ namespace sibr {
 		return true;
 	}
 
-
 	void ParseData::getParsedBundlerData(const std::string & dataset_path, const std::string & customPath, const std::string & scene_metadata_filename)
 	{
 		_basePathName = dataset_path + customPath;
 		/*std::cout << scene_metadata_filename << std::endl;*/
 		if (!parseSceneMetadata(_basePathName + "/" + scene_metadata_filename)) {
-			SIBR_ERR << "Scene Metadata file does not exist at /" + dataset_path + "/." << std::endl;
+			SIBR_ERR << "Scene Metadata file does not exist at /" + _basePathName + "/." << std::endl;
 		}
 
 		if (!parseBundlerFile(_basePathName + "/cameras/bundle.out")) {
-			SIBR_ERR << "Bundle file does not exist at /" + dataset_path + "/cameras/." << std::endl;
+			SIBR_ERR << "Bundle file does not exist at /" + _basePathName + "/cameras/." << std::endl;
 		}
 		// Default mesh path if none found in the metadata file.
 		if (_meshPath.empty()) {
@@ -375,29 +539,88 @@ namespace sibr {
 		_basePathName = dataset_path + "/colmap/stereo";
 
 		if (!parseColmapSparseData(_basePathName + "/sparse")) {
-			SIBR_ERR << "Colmap Sparse Data text file does not exist at /" + dataset_path + "/sparse/." << std::endl;
+			SIBR_ERR << "Colmap Sparse Data text file does not exist at /" + _basePathName + "/sparse/." << std::endl;
 		}
 
 		_meshPath = _basePathName + "/../../capreal/mesh.ply";
 
 	}
 
+	void ParseData::getParsedNVMData(const std::string & dataset_path, const std::string & customPath, const std::string & nvm_path)
+	{
+		_basePathName = dataset_path + customPath + nvm_path;
+
+		if (!parseNVMData(_basePathName)) {
+			SIBR_ERR << "NVM folder does not exist at /" + _basePathName << std::endl;
+		}
+
+		_meshPath = dataset_path + "/capreal/mesh.ply";
+	}
+
 	void ParseData::getParsedData(const BasicIBRAppArgs & myArgs, const std::string & customPath)
 	{
 		std::ifstream bundler(myArgs.dataset_path.get() + customPath + "/" + myArgs.scene_metadata_filename.get());
+		std::ifstream nvmscene(myArgs.dataset_path.get() + customPath + "/nvm/scene.nvm");
 		std::ifstream colmap(myArgs.dataset_path.get() + "/colmap/stereo/sparse/cameras.txt");
 
 		if (bundler.good()) {
-			getParsedBundlerData(myArgs.dataset_path.get(), customPath, myArgs.scene_metadata_filename);
+			getParsedBundlerData(myArgs.dataset_path, customPath, myArgs.scene_metadata_filename);
 			_datasetType = Type::SIBR;
 		}else if (colmap.good()) {
 			getParsedColmapData(myArgs.dataset_path);
 			_datasetType = Type::COLMAP;
 		}
+		else if (nvmscene.good()) {
+			getParsedNVMData(myArgs.dataset_path, customPath, "/nvm/");
+			_datasetType = Type::NVM;
+		}
+		else {
+			SIBR_ERR << "Cannot determine type of dataset at /" + myArgs.dataset_path.get() + customPath << std::endl;
+		}
 		
-		// What happens if both are present
+		// What happens if multiple are present?
+		// Ans: Priority --> SIBR > COLMAP > NVM
 		
+		// Find max cam ID and check present image IDs
+		int maxId = 0;
+		std::vector<bool> presentIDs;
+		
+		presentIDs.resize(_numCameras);
 
-		
+		for (int c = 0; c < _numCameras; c++) {
+			maxId = (maxId > int(_imgInfos[c].camId)) ? maxId : int(_imgInfos[c].camId);
+			try
+			{
+				presentIDs[_imgInfos[c].camId] = true;
+			}
+			catch (const std::exception&)
+			{
+				SIBR_ERR << "Incorrect Camera IDs " << std::endl;
+			}
+		}
+
+		// Check if max cam ID matches max number of cams
+		// If not find the missing IDs 
+		std::vector<int> missingIDs;
+		int curid;
+		int j, pos;
+		if (maxId >= _numCameras) {
+			for (int i = 0; i < _numCameras; i++) {
+				if (!presentIDs[i]) { missingIDs.push_back(i); }
+			}
+
+			// Now, shift the imgInfo IDs to adjust max Cam IDs
+			for (int k = 0; k < _numCameras; k++) {
+				curid = _imgInfos[k].camId;
+				pos = -1;
+				for (j = 0; j < missingIDs.size(); j++) {
+					if (curid > missingIDs[j]) { pos = j; }
+					else { break; }
+				}
+
+				_imgInfos[k].camId = _imgInfos[k].camId - (pos + 1);
+			}
+		}
+
 	}
 }

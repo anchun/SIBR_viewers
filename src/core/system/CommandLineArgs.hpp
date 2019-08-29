@@ -220,13 +220,13 @@ namespace sibr
 		Arg<bool> no_gui = { "nogui" };
 	};
 
-	struct WindowAppArgs : 
+	struct SIBR_SYSTEM_EXPORT WindowAppArgs :
 		virtual AppArgs, virtual WindowArgs {
 	};
 
 	struct SIBR_SYSTEM_EXPORT RenderingArgs {
 		Arg<std::string> scene_metadata_filename = { "scene", "scene_metadata.txt" };
-		Arg<std::array<int, 2>> rendering_size = { "rendering-size", { 720, 480 } };
+		Arg<std::array<int, 2>> rendering_size = { "rendering-size", { 0, 0 } };
 		Arg<int> texture_width = { "texture-width", 0 };
 		Arg<float> texture_ratio = { "texture-ratio", 1.0f };
 		Arg<int> rendering_mode = { "rendering-mode", RENDERMODE_MONO };
@@ -237,7 +237,7 @@ namespace sibr
 		RequiredArg<std::string> dataset_path = { "path" };
 	};
 
-	struct BasicIBRAppArgs : 
+	struct SIBR_SYSTEM_EXPORT BasicIBRAppArgs :
 		virtual WindowAppArgs, virtual BasicDatasetArgs, virtual RenderingArgs {
 	};
 

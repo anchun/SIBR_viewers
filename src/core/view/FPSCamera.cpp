@@ -84,10 +84,12 @@ namespace sibr {
 
 	void FPSCamera::onGUI(const std::string& suffix) {
 		if(ImGui::Begin(suffix.c_str())) {
-			ImGui::PushScaledItemWidth(100);
+			ImGui::PushScaledItemWidth(130);
 			ImGui::Checkbox("Acceleration", &_useAcceleration);
+			ImGui::SameLine();
 			if(!_useAcceleration) {
 				ImGui::InputFloat("Speed", &_speedFpsCam, 0.1f, 0.5f);
+				ImGui::SameLine();
 			}
 			ImGui::InputFloat("Rot. speed", &_speedRotFpsCam, 0.1f, 0.5f);
 			ImGui::PopItemWidth();
@@ -138,14 +140,14 @@ namespace sibr {
 
 		if (_currentCamera._isOrtho) {
 			if (input.key().isActivated(sibr::Key::Z)) {
-				_currentCamera._right /= 1.1;
-				_currentCamera._top /= 1.1;
-				_speedRotFpsCam /= 1.1;
+				_currentCamera._right /= 1.1f;
+				_currentCamera._top /= 1.1f;
+				_speedRotFpsCam /= 1.1f;
 			}
 			else if (input.key().isActivated(sibr::Key::X)) {
-				_currentCamera._right *= 1.1;
-				_currentCamera._top *= 1.1;
-				_speedRotFpsCam *= 1.1;
+				_currentCamera._right *= 1.1f;
+				_currentCamera._top *= 1.1f;
+				_speedRotFpsCam *= 1.1f;
 			}
 		}
 		_currentCamera.translate(move*_speedFpsCam, _currentCamera.transform());

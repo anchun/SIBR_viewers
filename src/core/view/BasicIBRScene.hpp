@@ -21,15 +21,13 @@ namespace sibr {
 
 	class SIBR_VIEW_EXPORT BasicIBRScene
 	{
-		SIBR_DISALLOW_COPY(BasicIBRScene);
+		
 	public:
 
 		/**
 		* \brief Pointer to the instance of class sibr::BasicIBRScene.
 		*/
-		using Ptr = std::shared_ptr<BasicIBRScene>;
-
-	public:
+		SIBR_CLASS_PTR(BasicIBRScene);
 
 		/**
 		 * \brief Default constructor to create a BasicIBRScene.
@@ -128,6 +126,7 @@ namespace sibr {
 
 	protected:
 		BasicIBRScene(BasicIBRScene & scene);
+		BasicIBRScene& operator =(const BasicIBRScene&) = delete;
 
 		ParseData::Ptr								_data;
 		CalibratedCameras::Ptr						_cams;
@@ -135,6 +134,7 @@ namespace sibr {
 		ProxyMesh::Ptr								_proxies;
 		RenderTargetTextures::Ptr					_renderTargets;
 		sibr::InputCamera							_userCamera;
+
 	};
 
 	///// INLINE DEFINITIONS /////
