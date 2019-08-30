@@ -40,7 +40,7 @@ namespace sibr {
 		 * \param myArgs to provide all command line arguments containing path to specific components.
 		 * \param noRTs to specify whether to initialize render target textures or not.
 		 */
-		BasicIBRScene(const BasicIBRAppArgs & myArgs, bool noRTs = false);
+		BasicIBRScene(const BasicIBRAppArgs & myArgs, bool noRTs = false, bool noMesh = false);
 
 		~BasicIBRScene() {};
 
@@ -59,7 +59,7 @@ namespace sibr {
 		* \param noRTs to specify whether to initialize render target textures or not.
 		* \param width the constrained width for GPU texture data.
 		*/
-		void createFromData(bool noRTs = false, const uint width = 0);
+		void createFromData(bool noRTs = false, const uint width = 0, bool noMesh = false);
 
 		/**
 		 * \brief Function to create a scene directly using the dataset path specified in command-line.

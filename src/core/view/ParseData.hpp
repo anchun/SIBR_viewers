@@ -1,10 +1,17 @@
 #pragma once
+#include "core/view/picojson/picojson.hpp"
 #include "core/view/Config.hpp"
 #include "core/system/CommandLineArgs.hpp"
-#include <vector>
+#
 #include "core/system/Matrix.hpp"
 #include "core/assets/ImageListFile.hpp"
 #include "core/assets/InputCamera.hpp"
+
+
+#include <iostream>
+#include <vector>
+#include <string>
+
 
 namespace sibr{
 
@@ -34,7 +41,7 @@ namespace sibr{
 		* \ingroup sibr_view
 		*/
 		enum class Type {
-			EMPTY, SIBR, COLMAP, NVM
+			EMPTY, SIBR, COLMAP, NVM, MESHROOM
 		};
 
 		/**
@@ -50,7 +57,14 @@ namespace sibr{
 		*/
 		void  getParsedBundlerData(const std::string & dataset_path, const std::string & customPath, const std::string & scene_metadata_filename);
 
-		
+		/**
+		* \brief Function to parse data from a template dataset path.
+		* \param dataset_path Path to the folder containing data
+		* \param customPath Path to algorithm specific data
+		*/
+		void  getParsedMeshroomData(const std::string & dataset_path, const std::string & customPath = "");
+
+
 		/**
 		* \brief Function to parse data from a colmap sparse dataset path.
 		* \param dataset_path Path to the colmap dataset sparse folder containing data
@@ -177,6 +191,9 @@ namespace sibr{
 		*
 		*/
 		bool parseNVMData(const std::string & nvm_path);
+
+
+		bool parseMeshroomData(const std::string & sfm_path);
 
 
 		std::string									_basePathName;

@@ -1,10 +1,14 @@
 
 #include "ParseData.hpp"
-#include <iostream>
-#include <string>
+
+#include <fstream>
+#include <sstream>
+
+
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/classification.hpp>
 #include <map>
+
 
 using namespace boost::algorithm;
 namespace sibr {
@@ -41,12 +45,11 @@ namespace sibr {
 	{
 		const std::string camerasListing = scene_sparse_path + "/cameras.txt";
 		const std::string imagesListing = scene_sparse_path + "/images.txt";
-		const std::string clippingPlanes = scene_sparse_path + "/../../../clipping_planes.txt";
 
 
 		std::ifstream camerasFile(camerasListing);
 		std::ifstream imagesFile(imagesListing);
-		std::ifstream clippingPlanesFile(clippingPlanes);
+		
 
 		if (!camerasFile.is_open()) {
 			SIBR_ERR << "Unable to load camera colmap file" << std::endl;
@@ -101,7 +104,6 @@ namespace sibr {
 			}
 
 			ImageListFile::Infos infos;
-
 			std::vector<std::string> tokens = sibr::split(line, ' ');
 			if (tokens.size() < 10) {
 				SIBR_WRG << "Unknown line." << std::endl;
@@ -194,6 +196,9 @@ namespace sibr {
 					_activeImages[i] = !_excludeImages[i];
 			}
 		}
+
+		const std::string clippingPlanes = scene_sparse_path + "/../../../clipping_planes.txt";
+		std::ifstream clippingPlanesFile(clippingPlanes);
 
 		if (_nearsFars.empty()) {
 			_nearsFars.resize(_numCameras);
@@ -339,6 +344,14 @@ namespace sibr {
 
 			for (int j = 0; j < 3; j++) m(12 + j) = (float)finCam[j];
 
+			/*
+			m(0) = focal length;
+			m(1) = k_1;
+			m(2) = k_2;
+			m(3:11) = rotation matrix in RHS coordinate system;
+			m(12:14) = trans; // trans = -rotation * camera center;
+			*/
+
 			for (int j = 0; j < 9; j++) m(3 + j) = (float)matRotation(j);
 
 		}
@@ -381,6 +394,179 @@ namespace sibr {
 			}
 
 		}
+		return true;
+	}
+
+	bool ParseData::parseMeshroomData(const std::string & sfm_path)
+	{
+
+		
+		std::string file_path = sfm_path + "/" + sibr::listSubdirectories(sfm_path)[0] + "/cameras.sfm";
+		std::string images_path = _basePathName + "/PrepareDenseScene/";
+
+		std::ifstream json_file(file_path, std::ios::in);
+
+		if (!json_file)
+		{
+			std::cerr << "file loading failed: " << file_path << std::endl;
+			return false;
+		}
+
+
+		picojson::value v;
+		picojson::set_last_error(std::string());
+		std::string err = picojson::parse(v, json_file);
+		if (!err.empty()) {
+			picojson::set_last_error(err);
+			json_file.setstate(std::ios::failbit);
+		}
+
+		picojson::array& views = v.get("views").get<picojson::array>();
+		picojson::array& intrinsincs = v.get("intrinsics").get<picojson::array>();
+		picojson::array& poses = v.get("poses").get<picojson::array>();
+
+		_numCameras = poses.size();
+
+		sibr::Matrix3f converter;
+		converter << 1, 0, 0,
+			0, -1, 0,
+			0, 0, -1;
+
+		size_t pose_idx, view_idx, intrinsic_idx;
+		std::vector<std::string> splitS;
+
+		for (size_t i = 0; i < _numCameras; ++i)
+		{
+			ImageListFile::Infos infos;
+			Matrix4f m;
+			//std::vector<std::string> splitS;
+
+
+			pose_idx = i;
+			std::string pose_id = poses[pose_idx].get("poseId").get<std::string>();
+			
+			for (size_t j = 0; j < views.size(); j++) {
+				if (pose_id.compare(views[j].get("poseId").get<std::string>()) == 0) {
+					view_idx = j;
+					break;
+				}
+			}
+
+			//picojson::value& view = views[i].get("value").get("ptr_wrapper").get("data");
+			std::string intrinsics_id = views[view_idx].get("intrinsicId").get<std::string>();
+
+			for (size_t k = 0; k < intrinsincs.size(); k++) {
+				if (intrinsics_id.compare(intrinsincs[k].get("intrinsicId").get<std::string>()) == 0) {
+					intrinsic_idx = k;
+					break;
+				}
+			}
+
+			//picojson::value& intrinsic = intrinsincs[intrinsic_idx].get("value").get("ptr_wrapper").get("data");
+			m(0) = std::stof(intrinsincs[intrinsic_idx].get("pxFocalLength").get<std::string>());
+			//float dx = std::stof(intrinsincs[intrinsic_idx].get("principalPoint").get<picojson::array>()[0].get<std::string>());
+			//float dy = std::stof(intrinsincs[intrinsic_idx].get("principalPoint").get<picojson::array>()[1].get<std::string>());
+
+			//Eigen::Vector3f k(0.0f, 0.0f, 0.0f);
+
+			//if (!intrinsincs[intrinsic_idx].get("distortionParams").is<picojson::null>())
+			//	k = Eigen::Vector3f(intrinsincs[intrinsic_idx].get("distortionParams").get<picojson::array>()[0].get<double>(),
+			//		intrinsincs[intrinsic_idx].get("distortionParams").get<picojson::array>()[1].get<double>(),
+			//		intrinsincs[intrinsic_idx].get("distortionParams").get<picojson::array>()[2].get<double>());
+
+			m(1) = std::stof(intrinsincs[intrinsic_idx].get("distortionParams").get<picojson::array>()[0].get<std::string>());
+			m(2) = std::stof(intrinsincs[intrinsic_idx].get("distortionParams").get<picojson::array>()[1].get<std::string>());
+
+			//infos.filename = "/../PrepareDenseScene/" + sibr::listSubdirectories(images_path)[0] + "/" + pose_id + ".exr";
+			infos.width = std::stoi(views[view_idx].get("width").get<std::string>());
+			infos.height = std::stoi(views[view_idx].get("height").get<std::string>());
+			
+			
+			std::string path = views[view_idx].get("path").get<std::string>();
+			split(splitS, path, is_any_of("/"));
+			std::string filename = splitS[splitS.size() - 1];
+			infos.filename = "/../Images/" + filename;
+			split(splitS, filename, is_any_of("."));
+
+			//infos.camId = stoi(splitS[0]);
+			infos.camId = i;
+
+			picojson::array& center = poses[pose_idx].get("pose").get("transform").get("center").get<picojson::array>();
+			picojson::array& rotation = poses[pose_idx].get("pose").get("transform").get("rotation").get<picojson::array>();
+
+			Eigen::Vector3f position(std::stof(center[0].get<std::string>()), std::stof(center[1].get<std::string>()), std::stof(center[2].get<std::string>()));
+			Eigen::Matrix3f orientation;
+
+			for (int ii = 0; ii < 3; ++ii)
+				for (int jj = 0; jj < 3; ++jj)
+					orientation(ii, jj) = std::stof(rotation[jj + ii * 3].get<std::string>());
+
+			orientation = orientation * converter.transpose();
+
+			for (int i = 0; i < 9; i++) {
+				m(3 + i) = orientation(i);
+			}
+
+			Vector3f finTrans = -orientation * position;
+			for (int i = 0; i < 3; i++) {
+				m(12 + i) = finTrans(i);
+			}
+
+			/*
+			m(0) = focal length;
+			m(1) = k_1;
+			m(2) = k_2;
+			m(3:11) = rotation matrix in RHS coordinate system;
+			m(12:14) = trans; // trans = -rotation * camera center;
+			*/
+
+			_outputCamsMatrix.push_back(m);
+			_imgInfos.push_back(infos);
+		}
+
+		if (_activeImages.empty()) {
+			if (_excludeImages.empty()) {
+
+				_activeImages.resize(_imgInfos.size());
+				_excludeImages.resize(_imgInfos.size());
+
+				for (int i = 0; i < _imgInfos.size(); i++) {
+					_activeImages[i] = true;
+					_excludeImages[i] = false;
+				}
+			}
+			else {
+				_activeImages.resize(_imgInfos.size());
+				for (int i = 0; i < _imgInfos.size(); i++)
+					_activeImages[i] = !_excludeImages[i];
+			}
+		}
+
+		const std::string clippingPlanes = _basePathName + "/../clipping_planes.txt";
+		std::ifstream clippingPlanesFile(clippingPlanes);
+		std::string line;
+
+		if (_nearsFars.empty()) {
+			_nearsFars.resize(_numCameras);
+
+			if (!clippingPlanesFile.is_open()) {
+				for (int i = 0; i < _numCameras; i++) {
+					_nearsFars[i].near = 0.1f;
+					_nearsFars[i].far = 100.0f;
+				}
+			}
+			else {
+				int i = 0;
+				while (std::getline(clippingPlanesFile, line)) {
+					std::vector<std::string> tokens = sibr::split(line, ' ');
+					_nearsFars[i].near = stof(tokens[0]);
+					_nearsFars[i].far = stof(tokens[1]);
+					++i;
+				}
+			}
+
+		}
+
 		return true;
 	}
 
@@ -529,8 +715,21 @@ namespace sibr {
 		}
 		// Default mesh path if none found in the metadata file.
 		if (_meshPath.empty()) {
-			_meshPath = _basePathName + "/meshes/recon.ply";
+			_meshPath = _basePathName + "/meshes/recon";
 		}
+
+	}
+
+	void ParseData::getParsedMeshroomData(const std::string & dataset_path, const std::string & customPath)
+	{
+		
+		_basePathName = dataset_path;// +"/MeshroomCache/";
+
+		if (!parseMeshroomData(_basePathName + "/StructureFromMotion/")) {
+			SIBR_ERR << "Meshroom cameras.sfm file does not exist at /" + _basePathName + "/StructureFromMotion/<cache_dir>/." << std::endl;
+		}
+
+		_meshPath = _basePathName + "/Texturing/" + sibr::listSubdirectories(_basePathName + "/Texturing/")[0] + "/texturedMesh.obj";
 
 	}
 
@@ -559,20 +758,26 @@ namespace sibr {
 
 	void ParseData::getParsedData(const BasicIBRAppArgs & myArgs, const std::string & customPath)
 	{
-		std::ifstream bundler(myArgs.dataset_path.get() + customPath + "/" + myArgs.scene_metadata_filename.get());
-		std::ifstream nvmscene(myArgs.dataset_path.get() + customPath + "/nvm/scene.nvm");
-		std::ifstream colmap(myArgs.dataset_path.get() + "/colmap/stereo/sparse/cameras.txt");
+		std::string bundler = myArgs.dataset_path.get() + customPath + "/cameras/bundle.out";
+		std::string nvmscene = myArgs.dataset_path.get() + customPath + "/nvm/";
+		std::string colmap = myArgs.dataset_path.get() + "/colmap/stereo/sparse/";
+		std::string meshroom = myArgs.dataset_path.get() + "/StructureFromMotion/";
 
-		if (bundler.good()) {
+
+		if (sibr::fileExists(bundler)) {
 			getParsedBundlerData(myArgs.dataset_path, customPath, myArgs.scene_metadata_filename);
 			_datasetType = Type::SIBR;
-		}else if (colmap.good()) {
+		}else if (sibr::directoryExists(colmap)) {
 			getParsedColmapData(myArgs.dataset_path);
 			_datasetType = Type::COLMAP;
 		}
-		else if (nvmscene.good()) {
+		else if (sibr::directoryExists(nvmscene)) {
 			getParsedNVMData(myArgs.dataset_path, customPath, "/nvm/");
 			_datasetType = Type::NVM;
+		}
+		else if (sibr::directoryExists(meshroom)) {
+			getParsedMeshroomData(myArgs.dataset_path);
+			_datasetType = Type::MESHROOM;
 		}
 		else {
 			SIBR_ERR << "Cannot determine type of dataset at /" + myArgs.dataset_path.get() + customPath << std::endl;

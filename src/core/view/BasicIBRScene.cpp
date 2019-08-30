@@ -12,7 +12,7 @@ namespace sibr
 		_renderTargets.reset(new RenderTargetTextures());
 	}
 
-	BasicIBRScene::BasicIBRScene(const BasicIBRAppArgs & myArgs, bool noRTs)
+	BasicIBRScene::BasicIBRScene(const BasicIBRAppArgs & myArgs, bool noRTs, bool noMesh)
 	{
 
 		_cams.reset(new CalibratedCameras());
@@ -31,7 +31,7 @@ namespace sibr
 			SIBR_ERR << "List Image file size do not match number of input cameras in Bundle file!" << std::endl;
 
 		if (_data->datasetType() != ParseData::Type::EMPTY) {
-			createFromData(noRTs, myArgs.texture_width);
+			createFromData(noRTs, myArgs.texture_width, noMesh);
 		}
 
 		_userCamera.aspect((float)myArgs.rendering_size.get()[0] / (float)myArgs.rendering_size.get()[1]);
@@ -43,7 +43,7 @@ namespace sibr
 		createFromData(noRTs, width);
 	}
 
-	void BasicIBRScene::createFromData(bool noRTs, const uint width)
+	void BasicIBRScene::createFromData(bool noRTs, const uint width, bool noMesh)
 	{
 		// setup calibrated cameras
 		_cams.reset(new CalibratedCameras());
@@ -69,14 +69,18 @@ namespace sibr
 		_imgs->InputImages::loadFromData(_data);
 		std::cout << "Number of Images loaded: " << _imgs->inputImages().size() << std::endl;
 
-		// load proxy
-		_proxies.reset(new ProxyMesh());
-		_proxies->ProxyMesh::loadFromData(_data);
+		if (!noMesh) {
+			// load proxy
+			_proxies.reset(new ProxyMesh());
+			_proxies->ProxyMesh::loadFromData(_data);
 
-		std::vector<InputCamera> inCams = _cams->inputCameras();
-		std::vector<sibr::Vector2f>    nearsFars;
-		CameraRaycaster::computeClippingPlanes(_proxies->proxy(), inCams, nearsFars);
-		_cams->updateNearsFars(nearsFars);
+
+			std::vector<InputCamera> inCams = _cams->inputCameras();
+			std::vector<sibr::Vector2f>    nearsFars;
+			CameraRaycaster::computeClippingPlanes(_proxies->proxy(), inCams, nearsFars);
+			_cams->updateNearsFars(nearsFars);
+		}
+
 
 		_renderTargets.reset(new RenderTargetTextures(width));
 		if (!noRTs) {

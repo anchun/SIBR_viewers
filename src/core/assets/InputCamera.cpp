@@ -601,6 +601,21 @@ namespace sibr
 		return cameras;
 	}
 
+	std::vector<InputCamera> InputCamera::loadMeshroom(const std::string & meshroomSFMPath, const float zNear, const float zFar)
+	{
+
+		std::string file_path = meshroomSFMPath + "/cameras.sfm";
+
+		std::ifstream json_file(file_path, std::ios::in);
+
+		if (!json_file)
+		{
+			std::cerr << "file loading failed: " << file_path << std::endl;
+			return std::vector<InputCamera>();
+		}
+		return std::vector<InputCamera>();
+	}
+
 	Vector3f			InputCamera::unprojectImgSpaceInvertY(const sibr::Vector2i & pixelPos, const float & depth) const
 	{
 		sibr::Vector2f pos2dGL(2.0f*((pixelPos.cast<float>() + sibr::Vector2f(0.5, 0.5)).cwiseQuotient(sibr::Vector2f(w(), h()))) - sibr::Vector2f(1, 1));  //to [-1,1]
