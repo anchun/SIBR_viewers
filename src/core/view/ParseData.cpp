@@ -478,16 +478,16 @@ namespace sibr {
 			m(1) = std::stof(intrinsincs[intrinsic_idx].get("distortionParams").get<picojson::array>()[0].get<std::string>());
 			m(2) = std::stof(intrinsincs[intrinsic_idx].get("distortionParams").get<picojson::array>()[1].get<std::string>());
 
-			//infos.filename = "/../PrepareDenseScene/" + sibr::listSubdirectories(images_path)[0] + "/" + pose_id + ".exr";
+			infos.filename = "/../PrepareDenseScene/" + sibr::listSubdirectories(images_path)[0] + "/" + pose_id + ".exr";
 			infos.width = std::stoi(views[view_idx].get("width").get<std::string>());
 			infos.height = std::stoi(views[view_idx].get("height").get<std::string>());
 			
 			
-			std::string path = views[view_idx].get("path").get<std::string>();
-			split(splitS, path, is_any_of("/"));
-			std::string filename = splitS[splitS.size() - 1];
-			infos.filename = "/../Images/" + filename;
-			split(splitS, filename, is_any_of("."));
+			//std::string path = views[view_idx].get("path").get<std::string>();
+			//split(splitS, path, is_any_of("/"));
+			//std::string filename = splitS[splitS.size() - 1];
+			//infos.filename = "/../Images/" + filename;
+			//split(splitS, filename, is_any_of("."));
 
 			//infos.camId = stoi(splitS[0]);
 			infos.camId = i;
