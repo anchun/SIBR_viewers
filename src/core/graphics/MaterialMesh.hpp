@@ -31,6 +31,7 @@ namespace sibr
 	{
 	public:
 		typedef std::vector<int>								MatIds;
+		typedef std::vector<int>								MeshIds;
 		typedef std::vector<std::string>						MatId2Name;
 
 
@@ -133,6 +134,13 @@ namespace sibr
 		/// Set the mapping
 		inline void matId2Name(const MatId2Name& matId2Name);
 
+		/// Get the source mesh of each vertex.
+		inline void meshIds(const MeshIds& meshIds);
+		/// Set the source mesh of each vertex.
+		inline const MeshIds& meshIds(void) const;
+		/// \return true if source mesh information is available for each vertex.
+		inline bool hasMeshIds(void) const;
+
 		/// Return the pointer to oppacity texture if it exist
 		inline sibr::ImageRGB::Ptr opacityMap(const std::string& matName) const;
 		/// Set the opacityMaps
@@ -173,7 +181,7 @@ namespace sibr
 
 		/// Load a material mesh from a mitsuba XML files.
 		/// It allows handling instances used several times.
-		bool	loadMtsXML(const std::string& filename);
+		bool	loadMtsXML(const std::string& xmlFile, bool loadTextures = true);
 
 		void	fillColorsWithIndexMaterials(void);
 
@@ -240,6 +248,10 @@ namespace sibr
 		MatIds		_matIds;
 		MatIds		_matIdsVertices;
 		MatId2Name	_matId2Name;
+
+		MeshIds		_meshIds;
+		size_t		_maxMeshId = 0;
+
 		OpacityMaps _opacityMaps;
 		DiffuseMaps _diffuseMaps;
 
@@ -285,6 +297,16 @@ namespace sibr
 	void MaterialMesh::matId2Name(const MatId2Name & matId2Name)
 	{
 		_matId2Name = matId2Name;
+	}
+
+	void	MaterialMesh::meshIds(const MeshIds& meshIds) {
+		_meshIds = meshIds;
+	}
+	const MaterialMesh::MeshIds& MaterialMesh::meshIds(void) const {
+		return _meshIds;
+	}
+	bool	MaterialMesh::hasMeshIds(void) const {
+		return (!_meshIds.empty() && _meshIds.size() == _vertices.size());
 	}
 
 	// Opacity map function
