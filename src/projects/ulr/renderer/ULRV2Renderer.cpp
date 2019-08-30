@@ -2,6 +2,7 @@
 # include <core/view/Resources.hpp>
 # include <map>
 # include "ULRV2Renderer.hpp"
+#include "core/system/String.hpp"
 
 namespace sibr {
 		ULRV2Renderer::ULRV2Renderer(const std::vector<sibr::InputCamera> & cameras, const uint w, const uint h, const unsigned int maxCams, const std::string & fShader, const std::string & vShader, const bool facecull)

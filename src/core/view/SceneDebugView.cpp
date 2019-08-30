@@ -487,5 +487,3 @@ namespace sibr
 	}
 
 } // namespace
-
-

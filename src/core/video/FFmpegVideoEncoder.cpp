@@ -2,6 +2,9 @@
 
 #define QQ(rat) (rat.num/(double)rat.den)
 
+// Disable ffmpeg deprecation warning.
+#pragma warning(disable : 4996)
+
 namespace sibr {
 	bool AVinit::initDone = false;
 

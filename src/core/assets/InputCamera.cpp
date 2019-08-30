@@ -4,6 +4,7 @@
 #include "core/assets/InputCamera.hpp"
 #include "boost/algorithm/string.hpp"
 #include <map>
+#include "core/system/String.hpp"
 
 #define SIBR_INPUTCAMERA_BINARYFILE_VERSION 10
 #define IBRVIEW_TOPVIEW_SAVEVERSION "version002"

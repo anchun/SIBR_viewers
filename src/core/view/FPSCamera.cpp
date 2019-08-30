@@ -84,10 +84,12 @@ namespace sibr {
 
 	void FPSCamera::onGUI(const std::string& suffix) {
 		if(ImGui::Begin(suffix.c_str())) {
-			ImGui::PushScaledItemWidth(100);
+			ImGui::PushScaledItemWidth(130);
 			ImGui::Checkbox("Acceleration", &_useAcceleration);
+			ImGui::SameLine();
 			if(!_useAcceleration) {
 				ImGui::InputFloat("Speed", &_speedFpsCam, 0.1f, 0.5f);
+				ImGui::SameLine();
 			}
 			ImGui::InputFloat("Rot. speed", &_speedRotFpsCam, 0.1f, 0.5f);
 			ImGui::PopItemWidth();

@@ -8,6 +8,7 @@
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/classification.hpp>
 #include <map>
+#include "core/system/String.hpp"
 
 
 using namespace boost::algorithm;

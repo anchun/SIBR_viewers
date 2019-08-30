@@ -565,6 +565,9 @@ void sibr::CamEditMeshViewer::onGUI() {
 		if (ImGui::Button("Save lights")) {
 			writeLights();
 		}
+		if (ImGui::Button("Save lights separatively")) {
+			writeLightsSeparatively();
+		}
 		/*if (ImGui::Button("Load cameras")) {
 			//load();
 			SIBR_WRG << "Uninmplemented for now." << std::endl;
@@ -1147,6 +1150,55 @@ void sibr::CamEditMeshViewer::writeCameras() {
 	}
 	else
 		std::cerr << "Impossible to open this file !" << std::endl;
+
+}
+
+void sibr::CamEditMeshViewer::writeLightsSeparatively() {
+
+	unsigned int counterLights = 0;
+
+	// Safety: if validate was not press, the cameras won't be saved.
+	// So if there are no cameras to save, try to validate.
+	if (_lightSpheresValidated.empty()) {
+		SIBR_WRG << "There were no validated sets, trying to validate any available camera list..."
+			<< std::endl;
+		validateSpline();
+	}
+
+	for (auto light : _lightSpheresValidated)
+	{
+
+	std::ofstream fileLights(_outputPath + "/outLight"+ std::to_string(counterLights) + ".xml",
+		std::ios::out | std::ios::trunc);
+	if (fileLights) {
+		
+		std::string data;
+		data.append("<scene version=\"0.6.0\">\n");
+		data.append("\t<shape type=\"sphere\">\n");
+		data.append("\t\t<point name=\"center\" x=\"");
+		data.append(std::to_string(light._position.x()));
+		data.append("\" y=\"");
+		data.append(std::to_string(light._position.y()));
+		data.append("\" z=\"");
+		data.append(std::to_string(light._position.z()));
+		data.append("\"/>\n");
+		data.append("\t\t<float name=\"radius\" value=\"");
+		data.append(std::to_string(light._radius));
+		data.append("\"/>\n\n");
+		data.append("\t\t<emitter type=\"area\">\n");
+		data.append("\t\t\t<spectrum name=\"radiance\" value=\"");
+		data.append(std::to_string(light._radiance));
+		data.append("\"/>\n");
+		data.append("\t\t</emitter>\n");
+		data.append("\t</shape>\n");
+		data.append("</scene>");
+		fileLights << data;
+		fileLights.close();
+		counterLights++;
+	}
+	else
+		std::cerr << "Impossible to open this file !" << std::endl;
+	}
 
 }
 
