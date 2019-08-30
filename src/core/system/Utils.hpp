@@ -15,9 +15,6 @@ namespace sibr
 	/** load the whole file into a std::string */
 	SIBR_SYSTEM_EXPORT std::string	loadFile( const std::string& filename );
 
-	/** split string into sub-strings delimited by \param delim*/
-	SIBR_SYSTEM_EXPORT std::vector<std::string>	split( const std::string& str, char delim='\n' );
-
 	/** Create directory (if it doesn't exist already) */
 	SIBR_SYSTEM_EXPORT void			makeDirectory( const std::string& path );
 
@@ -44,10 +41,6 @@ namespace sibr
 
 	/** Return the available memory on windows system in Ko*/
 	SIBR_SYSTEM_EXPORT size_t			getAvailableMem();
-
-    /** Wrapper around sibr::sprintf that returns a string */
-	SIBR_SYSTEM_EXPORT std::string	sprint( const char *msg, ... );
-	SIBR_SYSTEM_EXPORT int 		sprintf( char* buffer, size_t size, const char* format, ... );
 
 	/** Selection mode for the file picker. */
 	enum FilePickerMode {
