@@ -475,8 +475,10 @@ namespace sibr {
 			//		intrinsincs[intrinsic_idx].get("distortionParams").get<picojson::array>()[1].get<double>(),
 			//		intrinsincs[intrinsic_idx].get("distortionParams").get<picojson::array>()[2].get<double>());
 
-			m(1) = std::stof(intrinsincs[intrinsic_idx].get("distortionParams").get<picojson::array>()[0].get<std::string>());
-			m(2) = std::stof(intrinsincs[intrinsic_idx].get("distortionParams").get<picojson::array>()[1].get<std::string>());
+			//m(1) = std::stof(intrinsincs[intrinsic_idx].get("distortionParams").get<picojson::array>()[0].get<std::string>());
+			//m(2) = std::stof(intrinsincs[intrinsic_idx].get("distortionParams").get<picojson::array>()[1].get<std::string>());
+			m(1) = 0;
+			m(2) = 0;
 
 			infos.filename = "/../PrepareDenseScene/" + sibr::listSubdirectories(images_path)[0] + "/" + pose_id + ".exr";
 			infos.width = std::stoi(views[view_idx].get("width").get<std::string>());
