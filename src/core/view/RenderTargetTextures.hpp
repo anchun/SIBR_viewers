@@ -28,6 +28,7 @@ namespace sibr{
 		uint		_width = 0; //constrained width provided by the command line args, defaults to 0
 		uint		_height = 0; //associated height, computed in initSize
 		bool		_isInit = false;
+		int			_initActiveCam = 0;
 
 	};
 
@@ -83,6 +84,10 @@ namespace sibr{
 		void initRGBandDepthTextureArrays(CalibratedCameras::Ptr cams, InputImages::Ptr imgs, ProxyMesh::Ptr proxies, int textureFlags, bool faceCull = true);
 		void initializeDefaultRenderTargets(CalibratedCameras::Ptr cams, InputImages::Ptr imgs, ProxyMesh::Ptr proxies);
 
+	protected:
+		void initRenderTargetRes(CalibratedCameras::Ptr cams);
+
 	};
+
 
 }

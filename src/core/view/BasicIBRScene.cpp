@@ -76,9 +76,12 @@ namespace sibr
 
 
 			std::vector<InputCamera> inCams = _cams->inputCameras();
-			std::vector<sibr::Vector2f>    nearsFars;
-			CameraRaycaster::computeClippingPlanes(_proxies->proxy(), inCams, nearsFars);
-			_cams->updateNearsFars(nearsFars);
+			float eps = 0.1;
+			if (inCams.size() > 0 && (abs(inCams[0].znear() - 0.1) < eps || abs(inCams[0].zfar() - 1000.0) < eps || abs(inCams[0].zfar() - 100.0 ) < eps)) {
+				std::vector<sibr::Vector2f>    nearsFars;
+				CameraRaycaster::computeClippingPlanes(_proxies->proxy(), inCams, nearsFars);
+				_cams->updateNearsFars(nearsFars);
+			}
 		}
 
 
