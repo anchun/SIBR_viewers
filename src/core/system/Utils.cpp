@@ -14,8 +14,7 @@ namespace sibr
 		std::ifstream file(fname.c_str(), std::ios::binary);
 		if (!file || !file.is_open()) {
 			SIBR_ERR << "File not found: " << fname << std::endl;
-			//std::string message = "[sibr::loadFile] file '" + fname + "' not found";
-			//throw std::runtime_error(message);
+			return "";
 		}
 		file.seekg(0, std::ios::end);
 
