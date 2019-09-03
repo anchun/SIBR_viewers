@@ -9,7 +9,7 @@
 #include <boost/algorithm/string/classification.hpp>
 #include <map>
 #include "core/system/String.hpp"
-
+#include "core/graphics/Mesh.hpp"
 
 using namespace boost::algorithm;
 namespace sibr {
@@ -145,7 +145,7 @@ namespace sibr {
 
 			const sibr::Quaternionf quat(qw, qx, qy, qz);
 			const sibr::Matrix3f orientation = quat.toRotationMatrix().transpose() * converter;
-			sibr::Vector3f position(tx, ty, tz);
+			sibr::Vector3f trans(tx, ty, tz);
 
 			// populate image infos
 			infos.filename = imageName;
@@ -166,7 +166,7 @@ namespace sibr {
 				m(3 + i) = orientation(i);
 			}
 			
-			Vector3f finTrans = converter * position;
+			const sibr::Vector3f finTrans = converter * trans;
 			for (int i = 0; i < 3; i++) {
 				m(12 + i) = finTrans(i);
 			}
@@ -429,12 +429,13 @@ namespace sibr {
 		_numCameras = poses.size();
 
 		sibr::Matrix3f converter;
-		converter << 1, 0, 0,
+		converter << 1.0f, 0, 0,
 			0, -1, 0,
 			0, 0, -1;
 
 		size_t pose_idx, view_idx, intrinsic_idx;
 		std::vector<std::string> splitS;
+
 
 		for (size_t i = 0; i < _numCameras; ++i)
 		{
@@ -497,35 +498,29 @@ namespace sibr {
 			picojson::array& center = poses[pose_idx].get("pose").get("transform").get("center").get<picojson::array>();
 			picojson::array& rotation = poses[pose_idx].get("pose").get("transform").get("rotation").get<picojson::array>();
 
-			Eigen::Vector3f position(std::stof(center[0].get<std::string>()), std::stof(center[1].get<std::string>()), std::stof(center[2].get<std::string>()));
-			Eigen::Matrix3f orientation;
+			sibr::Vector3f position(std::stof(center[0].get<std::string>()), std::stof(center[1].get<std::string>()), std::stof(center[2].get<std::string>()));
+			sibr::Matrix3f rotMat;
 
-			for (int ii = 0; ii < 3; ++ii)
-				for (int jj = 0; jj < 3; ++jj)
-					orientation(ii, jj) = std::stof(rotation[jj + ii * 3].get<std::string>());
-
-			orientation = orientation * converter.transpose();
-
-			for (int i = 0; i < 9; i++) {
-				m(3 + i) = orientation(i);
+			for (int ii = 0; ii < 9; ++ii) {
+				rotMat(ii) = std::stof(rotation[ii].get<std::string>());
+			}
+					
+			
+		//	orientation = orientation *converter.transpose();
+			rotMat = converter * rotMat ;
+			for (int ii = 0; ii < 9; ii++) {
+				m(3 + ii) = rotMat(ii);
 			}
 
-			Vector3f finTrans = -orientation * position;
-			for (int i = 0; i < 3; i++) {
-				m(12 + i) = finTrans(i);
+			const sibr::Vector3f finTrans = -rotMat.transpose()  * position;
+			for (int ii = 0; ii < 3; ii++) {
+				m(12 + ii) = finTrans[ii];
 			}
-
-			/*
-			m(0) = focal length;
-			m(1) = k_1;
-			m(2) = k_2;
-			m(3:11) = rotation matrix in RHS coordinate system;
-			m(12:14) = trans; // trans = -rotation * camera center;
-			*/
-
+			
 			_outputCamsMatrix.push_back(m);
 			_imgInfos.push_back(infos);
 		}
+		
 
 		if (_activeImages.empty()) {
 			if (_excludeImages.empty()) {
