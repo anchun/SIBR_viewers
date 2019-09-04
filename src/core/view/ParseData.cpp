@@ -497,14 +497,20 @@ namespace sibr {
 			picojson::array& center = poses[pose_idx].get("pose").get("transform").get("center").get<picojson::array>();
 			picojson::array& rotation = poses[pose_idx].get("pose").get("transform").get("rotation").get<picojson::array>();
 
+			std::vector<Eigen::Vector3f> rows;
+			Eigen::Vector3f row;
 			Eigen::Vector3f position(std::stof(center[0].get<std::string>()), std::stof(center[1].get<std::string>()), std::stof(center[2].get<std::string>()));
 			Eigen::Matrix3f orientation;
 
-			for (int ii = 0; ii < 3; ++ii)
+			for (int ii = 0; ii < 3; ++ii) {
 				for (int jj = 0; jj < 3; ++jj)
-					orientation(ii, jj) = std::stof(rotation[jj + ii * 3].get<std::string>());
+					row(jj) = std::stof(rotation[jj + ii * 3].get<std::string>());
+				rows.push_back(row);
+			}
 
-			orientation = orientation * converter.transpose();
+			orientation.row(0) = rows[0];
+			orientation.row(1) = -rows[1];
+			orientation.row(2) = -rows[2];
 
 			for (int i = 0; i < 9; i++) {
 				m(3 + i) = orientation(i);
