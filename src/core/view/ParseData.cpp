@@ -9,7 +9,7 @@
 #include <boost/algorithm/string/classification.hpp>
 #include <map>
 #include "core/system/String.hpp"
-
+#include "core/graphics/Mesh.hpp"
 
 using namespace boost::algorithm;
 namespace sibr {
@@ -145,7 +145,7 @@ namespace sibr {
 
 			const sibr::Quaternionf quat(qw, qx, qy, qz);
 			const sibr::Matrix3f orientation = quat.toRotationMatrix().transpose() * converter;
-			sibr::Vector3f position(tx, ty, tz);
+			sibr::Vector3f trans(tx, ty, tz);
 
 			// populate image infos
 			infos.filename = imageName;
@@ -166,7 +166,7 @@ namespace sibr {
 				m(3 + i) = orientation(i);
 			}
 			
-			Vector3f finTrans = converter * position;
+			const sibr::Vector3f finTrans = converter * trans;
 			for (int i = 0; i < 3; i++) {
 				m(12 + i) = finTrans(i);
 			}
@@ -429,12 +429,13 @@ namespace sibr {
 		_numCameras = poses.size();
 
 		sibr::Matrix3f converter;
-		converter << 1, 0, 0,
+		converter << 1.0f, 0, 0,
 			0, -1, 0,
 			0, 0, -1;
 
 		size_t pose_idx, view_idx, intrinsic_idx;
 		std::vector<std::string> splitS;
+
 
 		for (size_t i = 0; i < _numCameras; ++i)
 		{
@@ -475,10 +476,10 @@ namespace sibr {
 			//		intrinsincs[intrinsic_idx].get("distortionParams").get<picojson::array>()[1].get<double>(),
 			//		intrinsincs[intrinsic_idx].get("distortionParams").get<picojson::array>()[2].get<double>());
 
-			//m(1) = std::stof(intrinsincs[intrinsic_idx].get("distortionParams").get<picojson::array>()[0].get<std::string>());
-			//m(2) = std::stof(intrinsincs[intrinsic_idx].get("distortionParams").get<picojson::array>()[1].get<std::string>());
-			m(1) = 0;
-			m(2) = 0;
+			m(1) = std::stof(intrinsincs[intrinsic_idx].get("distortionParams").get<picojson::array>()[0].get<std::string>());
+			m(2) = std::stof(intrinsincs[intrinsic_idx].get("distortionParams").get<picojson::array>()[1].get<std::string>());
+			//m(1) = 0;
+			//m(2) = 0;
 
 			infos.filename = "/../PrepareDenseScene/" + sibr::listSubdirectories(images_path)[0] + "/" + pose_id + ".exr";
 			infos.width = std::stoi(views[view_idx].get("width").get<std::string>());
@@ -509,29 +510,30 @@ namespace sibr {
 			}
 
 			orientation.row(0) = rows[0];
-			orientation.row(1) = -rows[1];
-			orientation.row(2) = -rows[2];
+			orientation.row(1) = rows[1];
+			orientation.row(2) = rows[2];
+			orientation = converter * orientation.transpose();
 
 			for (int i = 0; i < 9; i++) {
 				m(3 + i) = orientation(i);
 			}
-
-			Vector3f finTrans = -orientation * position;
-			for (int i = 0; i < 3; i++) {
-				m(12 + i) = finTrans(i);
+					
+			
+			//orientation = converter * orientation;
+			//rotMat = converter * rotMat ;
+			for (int ii = 0; ii < 9; ii++) {
+				m(3 + ii) = orientation(ii);
 			}
 
-			/*
-			m(0) = focal length;
-			m(1) = k_1;
-			m(2) = k_2;
-			m(3:11) = rotation matrix in RHS coordinate system;
-			m(12:14) = trans; // trans = -rotation * camera center;
-			*/
-
+			const sibr::Vector3f finTrans = -orientation * position;
+			for (int ii = 0; ii < 3; ii++) {
+				m(12 + ii) = finTrans[ii];
+			}
+			
 			_outputCamsMatrix.push_back(m);
 			_imgInfos.push_back(infos);
 		}
+		
 
 		if (_activeImages.empty()) {
 			if (_excludeImages.empty()) {
@@ -837,4 +839,5 @@ namespace sibr {
 		}
 
 	}
+
 }

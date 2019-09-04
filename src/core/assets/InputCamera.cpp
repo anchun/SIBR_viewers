@@ -44,7 +44,7 @@ namespace sibr
 		float fov = 2.0f * atan(0.5f*h / m(0));
 		float aspect = float(w) / float(h);
 
-		Eigen::Matrix3f		matRotation;
+		sibr::Matrix3f		matRotation;
 		matRotation <<
 			r[0], r[1], r[2],
 			r[3], r[4], r[5],
@@ -56,10 +56,9 @@ namespace sibr
 
 		// http://www.cs.cornell.edu/~snavely/bundler/bundler-v0.4-manual.html#S6
 		// Do pos = -R' * t
-		matRotation.transposeInPlace();
-		Camera::position(-matRotation * t);
-
-		Camera::rotation(Quaternionf(matRotation));
+		const sibr::Matrix3f orientation = matRotation.transpose();
+		Camera::position(-orientation * t);
+		Camera::rotation(Quaternionf(orientation));
 
 		_id = id;
 		_name = "";
