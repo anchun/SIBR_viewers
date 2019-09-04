@@ -127,7 +127,7 @@ namespace sibr
 	template<typename T> class GLuniform {
 
 	public:
-		/// \todoTODO TT : check this doesnt break everything
+		/// \todo TT : check this doesnt break everything
 		GLuniform(const T & t) : value(t) {}
 
 		operator T & () { return value; }
@@ -138,7 +138,11 @@ namespace sibr
 		explicit GLuniform(const GLuniform&other) : value(other.value) { };
 		GLuniform() = default;
 
-		void init(sibr::GLShader& shader, std::string name) { parameter.init(shader, name); }
+		void init(sibr::GLShader& shader, std::string name) {
+			// \todo We could restore the parameter value if the shader was already init.
+			parameter.init(shader, name);
+		}
+
 		void send() {
 			if (parameter.isInitialized()) {
 				parameter.set(value);

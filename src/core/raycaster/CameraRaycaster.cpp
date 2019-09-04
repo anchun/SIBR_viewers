@@ -18,7 +18,7 @@ namespace sibr
 			// screenWorldSize.y = 2*tan(fov/2) because screenDist = 1 (indeed
 			// we use normalized cam.dir() to build this derivative)
 			float heightWorldSize = 2.f*tanf(cam.fovy()/2.f);
-			screenWorldSize = sibr::Vector2f( heightWorldSize*aspect, heightWorldSize ); /// \todo TODO simplify here *remove 2.f*
+			screenWorldSize = sibr::Vector2f( heightWorldSize*aspect, heightWorldSize ); 
 		}
 
 		sibr::Vector3f right = cross(cam.dir(), up);
