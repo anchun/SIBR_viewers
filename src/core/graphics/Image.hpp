@@ -178,6 +178,8 @@ namespace sibr
 
 		Image		clone(void) const;
 
+		ImagePtr<T_Type, T_NumComp>	  clonePtr(void) const;
+
 		/// Image sizes
 		/// Note that 'width' and 'height' would be more coherent than
 		/// just 'w' and 'h'...
@@ -395,6 +397,13 @@ namespace sibr
 	Image<T_Type, T_NumComp>		Image<T_Type, T_NumComp>::clone(void) const {
 		Image<T_Type, T_NumComp> img;
 		img._pixels = _pixels.clone();
+		return img;
+	}
+
+	template<typename T_Type, unsigned int T_NumComp>
+	ImagePtr<T_Type, T_NumComp>		Image<T_Type, T_NumComp>::clonePtr(void) const {
+		ImagePtr<T_Type, T_NumComp> img(new Image<T_Type, T_NumComp>());
+		img->_pixels = _pixels.clone();
 		return img;
 	}
 
