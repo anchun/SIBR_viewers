@@ -37,6 +37,7 @@ namespace sibr
 
 		typedef std::map<std::string, sibr::ImageRGB::Ptr>		OpacityMaps;
 		typedef std::map<std::string, sibr::ImageRGB::Ptr>		DiffuseMaps;
+		typedef sibr::ImageRGB::Ptr								TagsMap;
 
 		typedef std::vector<Mesh>								SubMeshes;
 		typedef std::vector<sibr::ImageRGB>						AlbedoTextures;
@@ -115,6 +116,44 @@ namespace sibr
 			"	out_color = texture(tex,vec2(uvCoords.x,1.0-uvCoords.y));\n"
 			"	//out_color = vec4(colors,1);										\n"
 			"}																	\n";
+
+
+		std::string fragmentShaderAlbedoTag =
+			"#version 450														\n"
+			"layout(binding = 0) uniform sampler2D tex;				\n"
+			"layout(binding = 1) uniform sampler2D tags;				\n"
+			"layout(binding = 2) uniform sampler2D opacity;				\n"
+			"uniform int layer;													\n"
+			"uniform bool AoIsActive;													\n"
+			"uniform vec2 grid;												\n"
+			"uniform float IlluminanceCoefficient;												\n"
+			"layout (location = 2) in vec2 uvCoords;													\n"
+			"layout (location = 3) in vec3 normal ;									\n"
+			"layout (location = 1) in vec3 colors;									\n"
+			"out vec4 out_color;												\n"
+			"void main(void) {													\n"
+			"	vec4 opacityColor;												\n"
+			"	vec3 colorsModified = colors;\n"
+			"	float lighter_ao = colors.x * IlluminanceCoefficient; \n"
+			"	if (lighter_ao > 1.f ) lighter_ao = 1.f;\n"
+			"	colorsModified.x = lighter_ao;\n"
+			"	colorsModified.y = lighter_ao;\n"
+			"	colorsModified.z = lighter_ao;\n"
+			"	opacityColor = texture(opacity,vec2(uvCoords.x,1.0-uvCoords.y));\n"
+			"	if (opacityColor.x < 0.1f) discard;						\n"
+			"							\n"
+			"							\n"
+			"	out_color = texture(tags,vec2((uvCoords.x/3.f),1.0-(uvCoords.y/3.f)));\n"
+			"	if (out_color.x == 1.f && out_color.y == 1.f && out_color.z == 1.f)		\n"
+			"	out_color = texture(tex,vec2(uvCoords.x,1.0-uvCoords.y));\n"
+			"							\n"
+			"							\n"
+			"							\n"
+			"	if (AoIsActive ) {						\n"
+			"	out_color = out_color * vec4(colorsModified,1);\n}"
+			"	out_color = vec4(out_color.x,out_color.y,out_color.z,opacityColor.x);\n"
+			"}																	\n";
+
 	public:
 
 		MaterialMesh(bool withGraphics = true) : Mesh(withGraphics) {
@@ -154,7 +193,14 @@ namespace sibr
 		inline void diffuseMaps(const DiffuseMaps & maps);
 		/// get the diffuseMaps
 		inline const DiffuseMaps& diffuseMaps(void) const;
-
+		///set the tagsFile boolean
+		inline void hasTagsFile(bool hasOrNot);
+		///get the tagsFile boolean
+		inline const bool hasTagsFile(void) const;
+		/// Set the tagsMap
+		inline void tagsMap(const TagsMap & map);
+		/// get the tagsMap
+		inline const TagsMap& tagsMap(void) const;
 		/// set the subMeshes 
 		inline void subMeshes(const SubMeshes& subMeshes);
 		/// get the subMeshes 
@@ -254,6 +300,7 @@ namespace sibr
 
 		OpacityMaps _opacityMaps;
 		DiffuseMaps _diffuseMaps;
+		TagsMap		_tagsMap;
 
 		// We have to gen one mesh per material to render them separately
 		SubMeshes	_subMeshes;
@@ -265,6 +312,10 @@ namespace sibr
 
 		std::vector<sibr::Texture2DRGB::Ptr> _opacityTextures;
 		std::vector<GLuint> _idTexturesOpacity;
+
+		bool _hasTagsFile = false;
+		sibr::Texture2DRGB::Ptr _tagTexture;
+		GLuint _idTagTexture;
 
 		//AO attributes
 		AmbientOcclusion _ambientOcclusion;
@@ -323,9 +374,27 @@ namespace sibr
 		return _opacityMaps;
 	}
 
+	void MaterialMesh::hasTagsFile(bool hasOrNot) 
+	{
+		_hasTagsFile = hasOrNot;
+	}
+
+	const bool MaterialMesh::hasTagsFile(void) const 
+	{
+		return _hasTagsFile;
+	}
+
 	void MaterialMesh::opacityMaps(const OpacityMaps& maps)
 	{
 		_opacityMaps = maps;
+	}
+
+	void MaterialMesh::tagsMap(const TagsMap & map) {
+		_tagsMap = map;
+	}
+
+	const MaterialMesh::TagsMap& MaterialMesh::tagsMap(void) const {
+		return _tagsMap;
 	}
 
 	ImageRGB::Ptr MaterialMesh::diffuseMap(const std::string& matName) const
