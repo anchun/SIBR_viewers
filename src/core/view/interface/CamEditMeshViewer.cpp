@@ -44,8 +44,14 @@ sibr::CamEditMeshViewer::CamEditMeshViewer(const sibr::Vector2i & screenRes,
 	_name(name), _materialMesh(mesh)
 {
 	CHECK_GL_ERROR;
-	_shaderAlbedo.init("shaderAlbedo", _materialMesh.vertexShaderAlbedo,
-		_materialMesh.fragmentShaderAlbedo);
+	if (mesh.hasTagsFile()) {
+		_shaderAlbedo.init("shaderAlbedo", _materialMesh.vertexShaderAlbedo,
+			_materialMesh.fragmentShaderAlbedoTag);
+	}
+	else {
+		_shaderAlbedo.init("shaderAlbedo", _materialMesh.vertexShaderAlbedo,
+			_materialMesh.fragmentShaderAlbedo);
+	}
 	CHECK_GL_ERROR;
 	_shaderThreeSixtyMaterials.init("shaderThreeSixtyMaterials",
 		sibr::loadFile(sibr::Resources::Instance()->getResourceFilePathName(

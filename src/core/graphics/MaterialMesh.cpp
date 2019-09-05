@@ -22,6 +22,8 @@ namespace sibr
 {
 	bool	MaterialMesh::load(const std::string& filename)
 	{
+
+		srand(static_cast <unsigned> (time(0)));
 		Assimp::Importer	importer;
 		importer.SetPropertyBool(AI_CONFIG_PP_FD_REMOVE, true);
 		// cause Assimp to remove all degenerated faces as soon as they are detected
@@ -99,13 +101,34 @@ namespace sibr
 
 			}
 
+			bool randomUV = true;
+
 			if (mesh->HasTextureCoords(0))
 			{
 				_texcoords.resize(offsetVertices + mesh->mNumVertices);
-				for (uint i = 0; i < mesh->mNumVertices; ++i)
+				for (uint i = 0; i < mesh->mNumVertices; ++i) {
 					_texcoords[offsetVertices + i] =
-					convertVec(mesh->mTextureCoords[0][i]).xy();
+						convertVec(mesh->mTextureCoords[0][i]).xy();
+					if (convertVec(mesh->mTextureCoords[0][i]).xy().x() != 0.f ||
+						convertVec(mesh->mTextureCoords[0][i]).xy().y() != 0.f)
+					{
+						randomUV = false;
+					}
+				}
+			
 			}
+
+			if (randomUV) {
+				std::cout << "Random" << std::endl;
+				_texcoords.resize(offsetVertices + mesh->mNumVertices);
+				for (uint i = 0; i < mesh->mNumVertices; ++i) {
+					float u = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+					float v = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+					_texcoords[offsetVertices + i] =
+						 Vector2f(u * 5.f,v * 5.f);
+				}
+			}
+
 
 			if (meshId == 0) {
 				SIBR_LOG << "Mesh contains: colors: " << mesh->HasVertexColors(0)
@@ -1168,7 +1191,13 @@ namespace sibr
 			}
 			i++;
 		}
-		
+		if (_hasTagsFile) {
+			sibr::ImageRGB::Ptr texturePtr = _tagsMap;
+			_tagTexture = std::shared_ptr<sibr::Texture2DRGB>(
+				new sibr::Texture2DRGB(*texturePtr));
+			_idTagTexture = _tagTexture->handle();
+		}
+
 		_albedoTexturesInitialized = true;
 	}
 
@@ -1188,6 +1217,11 @@ namespace sibr
 				//sibr::Texture2DRGB diffuseTexture(*texturePtr);
 				glActiveTexture(GL_TEXTURE0);
 				glBindTexture(GL_TEXTURE_2D, _idTextures[i]);
+
+				if (_hasTagsFile && _tagTexture != nullptr) {
+				glActiveTexture(GL_TEXTURE1);
+				glBindTexture(GL_TEXTURE_2D, _idTagTexture);
+				}
 
 				glActiveTexture(GL_TEXTURE2);
 				glBindTexture(GL_TEXTURE_2D, _idTexturesOpacity[i]);
