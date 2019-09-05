@@ -691,7 +691,7 @@ if(1)
     	win3rdParty(Boost VCID TIMEOUT 600 #VERBOSE ON
     	    MSVC11 "win3rdParty/MSVC11/Boost" "https://gforge.inria.fr/frs/download.php/file/35598/boost_1_55_0.7z"
     	    MSVC12 "win3rdParty/MSVC11/Boost" "https://gforge.inria.fr/frs/download.php/file/35598/boost_1_55_0.7z"
-    	    MSVC14 "win3rdParty/MSVC14/Boost" "https://gforge.inria.fr/frs/download.php/file/36899/boost-1.64.7z"    # boost compatible with msvc14
+    	    MSVC14 "win3rdParty/MSVC14/Boost" "https://gforge.inria.fr/frs/download.php/file/38118/boost-1.71.7z"    # boost compatible with msvc14
     	)
     	if(WIN32 AND NOT Boost_WIN3RDPARTY_VCID AND Boost_WIN3RDPARTY_USE)
     	    message(WARNING "Boost_COMPILER is not set and it's needed. Try to disable Boost_WIN3RDPARTY_USE and set it manually.")
@@ -708,9 +708,9 @@ if(1)
                 )
         elseif (MSVC14)
             set(boost_multiset_arguments 
-                    CHECK_CACHED_VAR BOOST_ROOT                 PATH "boost-1.64"
-                    CHECK_CACHED_VAR BOOST_INCLUDEDIR 		    PATH "boost-1.64"
-                    CHECK_CACHED_VAR BOOST_LIBRARYDIR 		    PATH "boost-1.64/${LIB_BUILT_DIR}"
+                    CHECK_CACHED_VAR BOOST_ROOT                 PATH "boost-1.71"
+                    CHECK_CACHED_VAR BOOST_INCLUDEDIR 		    PATH "boost-1.71"
+                    CHECK_CACHED_VAR BOOST_LIBRARYDIR 		    PATH "boost-1.71/${LIB_BUILT_DIR}"
                     CHECK_CACHED_VAR Boost_COMPILER             STRING "-vc141" DOC "vcid (eg: -vc110 for MSVC11)" # NOTE: if it doesnt work, uncomment this option and set the right value for VisualC id
                 )
         else ()
@@ -728,9 +728,9 @@ if(1)
                 # # CHECK_CACHED_VAR BOOST_ROOT                 PATH "boost_1_55_0"
     	        # # CHECK_CACHED_VAR BOOST_INCLUDEDIR 		    PATH "boost_1_55_0"
     	        # # CHECK_CACHED_VAR BOOST_LIBRARYDIR 		    PATH "boost_1_55_0/${LIB_BUILT_DIR}"
-    	        # CHECK_CACHED_VAR BOOST_ROOT                 PATH "boost-1.64"
-    	        # CHECK_CACHED_VAR BOOST_INCLUDEDIR 		    PATH "boost-1.64"
-    	        # CHECK_CACHED_VAR BOOST_LIBRARYDIR 		    PATH "boost-1.64/${LIB_BUILT_DIR}"
+    	        # CHECK_CACHED_VAR BOOST_ROOT                 PATH "boost-1.71"
+    	        # CHECK_CACHED_VAR BOOST_INCLUDEDIR 		    PATH "boost-1.71"
+    	        # CHECK_CACHED_VAR BOOST_LIBRARYDIR 		    PATH "boost-1.71/${LIB_BUILT_DIR}"
     	        CHECK_CACHED_VAR Boost_NO_SYSTEM_PATHS      BOOL ON DOC "Set to ON to disable searching in locations not specified by these boost cached hint variables"
     	        CHECK_CACHED_VAR Boost_NO_BOOST_CMAKE       BOOL ON DOC "Set to ON to disable the search for boost-cmake (package cmake config file if boost was built with cmake)"
     	        # #CHECK_CACHED_VAR Boost_COMPILER             STRING "-${Boost_WIN3RDPARTY_VCID}" DOC "vcid (eg: -vc110 for MSVC11)"
@@ -863,7 +863,14 @@ if (BUILD_IBR_TFGL_INTEROP)
     )
 endif()
 
-
+if (BUILD_IBR_TORCHGL_INTEROP)
+    sibr_addlibrary(
+        NAME torchgl_interop
+        MSVC11 "https://gforge.inria.fr/frs/download.php/file/38119/libtorch.7z"
+        MSVC14 "https://gforge.inria.fr/frs/download.php/file/38119/libtorch.7z"  
+        REQUIREDFOR BUILD_IBR_TORCHGL_INTEROP
+    )
+endif()
 
 
 if(BUILD_IS)

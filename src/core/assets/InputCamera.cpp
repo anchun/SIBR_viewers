@@ -332,6 +332,9 @@ namespace sibr
 					w = wh[whI].x();
 					h = wh[whI].y();
 				}
+				else {
+					std::cout << "Warning default image size of 1920*1280 is supposed for camera" << std::endl;
+				}
 
 				std::string camName = line.substr(0, line.find(" "));
 				size_t originPos = line.find("-D origin=") + 10;
@@ -378,7 +381,7 @@ namespace sibr
 				mLook(3, 3) = 1;
 
 				float fovRad = fov * float(M_PI) / 180;
-				float sibr_focal = 0.5f*w / tan(fovRad / 2.0f); // Blender plugin register horizontal fov ! Using w here
+				float sibr_focal = 0.5f*h / tan(fovRad / 2.0f); //float fov = 2.0f * atan(0.5f*h / m(0));
 
 				Eigen::Matrix4f r(mLook);
 				/*float m[15] = {
