@@ -29,9 +29,12 @@ sibr::CamEditMeshViewer::CamEditMeshViewer(const sibr::Vector2i & screenRes,
 	mesh.getBoundingSphere(center, radius);
 
 	InputCamera currentInteractCam(interactCam->getCamera());
-	currentInteractCam.zfar(10 * radius);
+	currentInteractCam.zfar(10.f * radius);
 	currentInteractCam.znear(radius / 1000.f);
 	interactCam->fromCamera(currentInteractCam);
+	_initialDeltaLight = radius / 10.f;
+	_currentDeltaLight = _initialDeltaLight;
+	_currentRadius = radius / 100.f; // Init the radius of the spheres lights
 	_outputPath = outputPath;
 }
 
@@ -44,8 +47,14 @@ sibr::CamEditMeshViewer::CamEditMeshViewer(const sibr::Vector2i & screenRes,
 	_name(name), _materialMesh(mesh)
 {
 	CHECK_GL_ERROR;
-	_shaderAlbedo.init("shaderAlbedo", _materialMesh.vertexShaderAlbedo,
-		_materialMesh.fragmentShaderAlbedo);
+	if (mesh.hasTagsFile()) {
+		_shaderAlbedo.init("shaderAlbedo", _materialMesh.vertexShaderAlbedo,
+			_materialMesh.fragmentShaderAlbedoTag);
+	}
+	else {
+		_shaderAlbedo.init("shaderAlbedo", _materialMesh.vertexShaderAlbedo,
+			_materialMesh.fragmentShaderAlbedo);
+	}
 	CHECK_GL_ERROR;
 	_shaderThreeSixtyMaterials.init("shaderThreeSixtyMaterials",
 		sibr::loadFile(sibr::Resources::Instance()->getResourceFilePathName(
@@ -90,6 +99,10 @@ sibr::CamEditMeshViewer::CamEditMeshViewer(const sibr::Vector2i & screenRes,
 	Vector3f center;
 	float radius;
 	mesh.getBoundingSphere(center, radius);
+
+	_initialDeltaLight = radius / 10.f;
+	_currentDeltaLight = _initialDeltaLight;
+	_currentRadius = radius / 100.f; // Init the radius of the spheres lights
 
 	InputCamera currentInteractCam(interactCam->getCamera());
 	currentInteractCam.zfar(10 * radius);
@@ -572,15 +585,13 @@ void sibr::CamEditMeshViewer::onGUI() {
 			//load();
 			SIBR_WRG << "Uninmplemented for now." << std::endl;
 		}*/
-		static float currentRadius = 1.f;
-		static float currentRadiance = 1.f;
 		if (ImGui::CollapsingHeader("Parameters")) {
 			static int e = 0;
 			ImGui::RadioButton("Sphere", &e, 0);
 			//ImGui::RadioButton("Spot", &e, 1);
-			ImGui::InputFloat("Radius", &currentRadius, 0.4f, 128.f);
+			ImGui::InputFloat("Radius", &_currentRadius, 0.4f, 128.f);
 
-			ImGui::InputFloat("Radiance", &currentRadiance, 0.4f, 128.f);
+			ImGui::InputFloat("Radiance", &_currentRadiance, 0.4f, 128.f);
 
 			ImGui::Separator();
 		}
@@ -588,7 +599,8 @@ void sibr::CamEditMeshViewer::onGUI() {
 			if (ImGui::Button("Place light")) {
 				InputCamera camera = interactCam->getCamera();
 				_currentLightSpheres.push_back(
-					LightSphere(camera.position(), currentRadius, currentRadiance)
+					LightSphere(camera.position() + camera.dir() * _currentDeltaLight
+						, _currentRadius, _currentRadiance)
 				);
 			}
 			if (ImGui::Button("Validate")) {
@@ -606,6 +618,8 @@ void sibr::CamEditMeshViewer::onGUI() {
 			if (ImGui::Button("Remove last")) {
 				if (!_currentLightSpheres.empty()) _currentLightSpheres.pop_back();
 			}
+			ImGui::SliderFloat("Delta camera",
+				&_currentDeltaLight, _initialDeltaLight/100.f, _initialDeltaLight*20.f);
 		}
 
 		//static unsigned int currentSetToSnapping = 0;
@@ -747,26 +761,45 @@ void sibr::CamEditMeshViewer::renderCameras() {
 
 void sibr::CamEditMeshViewer::renderLights()
 {
-	auto getSphere = [](const Vector3f& center, float radius)
+
+	static unsigned long int animation = 0;
+	auto getSphere = [](const Vector3f& center, float radius,bool anim = false)
 		-> std::vector<std::pair<sibr::Vector3f, sibr::Vector3f> > {
 
 		std::vector<std::pair<sibr::Vector3f, sibr::Vector3f> > lines;
 		for (int lat = -90; lat < 90; lat+=5) {
 			for (int lgt = 0; lgt < 360; lgt+=30) {
 
+
 				sibr::Vector3f pointA = cos(0.5* M_PI * lat / 90.0f)*
 					(cos(2 * M_PI * lgt / 360.0f)*
-						sibr::Vector3f(1.0f, 0.f, 0.f) + sin(2 * M_PI * lgt / 360.0f)*
-						sibr::Vector3f(0.f, 1.f, 0.f))
+						 sibr::Vector3f(1.0f, 0.f, 0.f) + sin(2 * M_PI * lgt / 360.0f)*
+						 sibr::Vector3f(0.f, 1.f, 0.f))
 					+ sin(0.5* M_PI * lat / 90.0f)*sibr::Vector3f(0.0f, 0.f, 1.f);
+
 				sibr::Vector3f pointB = cos(0.5* M_PI * lat / 90.0f)*
 					(cos(2 * M_PI * (lgt+30) / 360.0f)*
-						sibr::Vector3f(1.0f, 0.f, 0.f) + sin(2 * M_PI * (lgt+30) / 360.0f)*
-						sibr::Vector3f(0.f, 1.f, 0.f))
+						 sibr::Vector3f(1.0f, 0.f, 0.f) + sin(2 * M_PI * (lgt+30) / 360.0f)*
+						 sibr::Vector3f(0.f, 1.f, 0.f))
 					+ sin(0.5* M_PI * lat / 90.0f)*sibr::Vector3f(0.0f, 0.f, 1.f);
+
+
+				sibr::Vector4f pointA4(pointA.x(),pointA.y(),pointA.z(),1.f);
+				sibr::Vector4f pointB4(pointB.x(),pointB.y(),pointB.z(),1.f);
+				if (anim) {
+					sibr::Transform3f t;
+					t.rotation(static_cast<float>(animation), 0.f,0.f);
+
+					sibr::Matrix4f m(t.matrix());
+
+					pointA4 = m * pointA4;
+					pointB4 = m * pointB4;
+				}
+
 				lines.push_back(std::pair<sibr::Vector3f, sibr::Vector3f>(
-					radius*pointA + center,
-					radius*pointB + center));
+					radius*sibr::Vector3f(pointA4.xyz()) + center,
+					radius*sibr::Vector3f(pointB4.xyz()) + center));
+				
 
 			}
 		}
@@ -793,6 +826,21 @@ void sibr::CamEditMeshViewer::renderLights()
 				sibr::Vector3f(1.0f, 1.0f, 0.0f));
 		}
 	}
+	
+	if (_typeOfApp == CamEditMeshViewer::TypeOfApp::CamEditor) {
+		InputCamera camera = interactCam->getCamera();
+		LightSphere s(camera.position() + camera.dir() * _currentDeltaLight,
+			_currentRadius, _currentRadiance);
+
+		std::vector<std::pair<sibr::Vector3f, sibr::Vector3f> > linesSphere
+			= getSphere(s._position, s._radius, true);
+		for (std::pair<sibr::Vector3f, sibr::Vector3f> line : linesSphere) {
+			this->renderer->addLines({ line.first, line.second },
+				sibr::Vector3f(0.5f,0.5f, 0.5f));
+		}
+		animation++;
+	}
+	
 }
 
 unsigned int sibr::CamEditMeshViewer::getNumberOfCameras() {

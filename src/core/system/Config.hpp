@@ -168,10 +168,10 @@ namespace sibr
 
 
 //// Log Macro ////
-# define SIBR_LOG	std::cout << "[SIBR] --  INFOS  --: "			// Must be replaced by a true log system
-# define SIBR_WRG	std::cout << "[SIBR] !! WARNING !!: \nIn\n\tFILE " __FILE__ ",\n\tLINE " << __LINE__ << ",\n\tFUNCTION " << __FUNCTION_STR__ << "\n: "
+# define SIBR_LOG	std::cout << "[SIBR] --  INFOS  --:\t"			// Must be replaced by a true log system
+# define SIBR_WRG	std::cout << "[SIBR] !! WARNING !!:\tFILE " << __FILE__  << "\n\t\t\tLINE " << __LINE__ << ", FUNC " << __FUNCTION_STR__ << "\n\t\t\t"
 # define SIBR_ERR sibr::LogExit() <<= \
-					std::cerr << "[SIBR] ##  ERROR  ##: \nIn\n\tFILE " __FILE__ ",\n\tLINE " << __LINE__ << ",\n\tFUNCTION " << __FUNCTION_STR__ << "\n: "		// Could be augmented for exiting
+					std::cerr << "[SIBR] ##  ERROR  ##:\tFILE " << __FILE__  << "\n\t\t\tLINE " << __LINE__ << ", FUNC " << __FUNCTION_STR__ << "\n\t\t\t"		// Could be augmented for exiting
 
 // One drawback of using the standard assert is that you MUST catch the exception
 // it throws in order to display its message and know the error. Not everyone thinks

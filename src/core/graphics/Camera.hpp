@@ -44,7 +44,7 @@ namespace sibr
 		// perform a rotation with respect to frame ref
 		void					rotate( const Vector3f& v, const Transform3f& ref );
 
-		// set rotation values
+		// set orientation values
 		void					rotation( const Vector3f& v );
 		void					rotation( const Quaternionf& q );
 		const Quaternionf&		rotation( void ) const;

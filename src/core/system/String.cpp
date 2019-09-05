@@ -1,5 +1,6 @@
 
 #include "core/system/String.hpp"
+#include <cstdarg>
 
 namespace sibr
 {
@@ -15,12 +16,78 @@ namespace sibr
 		return src;
 	}
 
+	std::string removeExtension(const std::string & str)
+	{
+		return  str.substr(0, str.find_last_of('.'));
+	}
+
+	std::string parentDirectory(const std::string & str)
+	{
+		const std::string::size_type pos = str.find_last_of("/\\");
+		// If no separator, return empty path.
+		if(pos == std::string::npos) {
+			return "";
+		}
+		// If the separator is not trailing, we are done. 
+		if(pos < str.size()-1) {
+			return str.substr(0, pos);
+		}
+		// Else we have to look for the previous one.
+		const std::string::size_type pos1 = str.find_last_of("/\\", pos-1);
+		return str.substr(0, pos1);
+	}
+
 	bool strContainsOnlyDigits(const std::string& str)
 	{
 		for (char c : str)
 			if (c < '0' || c > '9')
 				return false;
 		return true;
+	}
+
+	std::vector<std::string>	split(const std::string& str, char delim)
+	{
+		std::stringstream	ss(str);
+		std::string			to;
+		std::vector<std::string>	out;
+
+		if (str.empty())
+			return out;
+
+		while (std::getline(ss, to, delim))
+			out.push_back(to);
+		return out;
+	}
+
+	/// Wrapper around sibr::sprintf that returns a string
+	std::string sprint(const char *msg, ...)
+	{
+#define TEMP_STR_SIZE 4096
+		va_list args;
+		va_start(args, msg);
+		char s_StrSingle[TEMP_STR_SIZE];
+#ifdef WIN32
+		vsprintf_s(s_StrSingle, TEMP_STR_SIZE, msg, args);
+#else
+		vsnprintf(s_StrSingle, TEMP_STR_SIZE, msg, args);
+#endif
+		va_end(args);
+		return std::string(s_StrSingle);
+#undef TEMP_STR_SIZE
+	}
+
+	int 		sprintf(char* buffer, size_t size, const char* format, ...)
+	{
+		va_list args;
+		int ret = 0;
+		va_start(args, format);
+#ifdef WIN32
+		ret = vsprintf_s(buffer, size, format, args);
+#else
+		ret = vsnprintf(buffer, size, format, args);
+#endif
+		va_end(args);
+		return ret;
 	}
 
 } // namespace sirb
