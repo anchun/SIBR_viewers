@@ -207,6 +207,11 @@ namespace sibr {
 
 	  std::vector<LightSphere> _currentLightSpheres;
 
+	  float _initialDeltaLight;
+	  float _currentDeltaLight;
+	  float _currentRadius = 1.f;
+	  float _currentRadiance = 1.f;
+
 	  std::string _name; //!< the name of the scene
 						 //!<
 
