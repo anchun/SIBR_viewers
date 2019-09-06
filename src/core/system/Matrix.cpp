@@ -3,16 +3,17 @@
 
 namespace sibr
 {
-	Matrix4f perspective( float fovRadian, float ratio, float zn, float zf )
+	Matrix4f perspective( float fovRadian, float ratio, float zn, float zf, const sibr::Vector2f & p)
 	{
-		float yScale = float(1.0)/std::tan(fovRadian/2.0f);
-		float xScale = yScale/ratio;
+		const float yScale = float(1.0)/std::tan(fovRadian/2.0f);
+		const float xScale = yScale/ratio;
 
 		Matrix4f m;
-
+		const float dx = 2.0f * p.x() - 1.0f;
+		const float dy = 2.0f * p.y() - 1.0f;
 		m << 
-			xScale,    0,          0,             0,
-			0,    yScale,          0,             0,
+			xScale,    0,          dx,             0,
+			0,    yScale,          dy,             0,
 			0,         0, (zn+zf)/(zn-zf), 2*zn*zf/(zn-zf),
 			0,         0,         -1,             0;
 

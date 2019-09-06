@@ -38,8 +38,8 @@ namespace sibr
 		_h = h;
 
 		_focal = m(0);
-		_k1 = m(1);
-		_k2 = m(2);
+		_k1 = 0.0f;//m(1);
+		_k2 = 0.0f;//m(2);
 
 		float fov = 2.0f * atan(0.5f*h / m(0));
 		float aspect = float(w) / float(h);
@@ -60,6 +60,10 @@ namespace sibr
 		sibr::Vector3f position = -orientation * t;
 		Camera::position(position);
 		Camera::rotation(Quaternionf(orientation));
+
+
+		Camera::principalPoint({ m(1) / float(w), m(2) / float(h) });
+
 
 		_id = id;
 		_name = "";

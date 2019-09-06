@@ -466,8 +466,8 @@ namespace sibr {
 
 			//picojson::value& intrinsic = intrinsincs[intrinsic_idx].get("value").get("ptr_wrapper").get("data");
 			m(0) = std::stof(intrinsincs[intrinsic_idx].get("pxFocalLength").get<std::string>());
-			//float dx = std::stof(intrinsincs[intrinsic_idx].get("principalPoint").get<picojson::array>()[0].get<std::string>());
-			//float dy = std::stof(intrinsincs[intrinsic_idx].get("principalPoint").get<picojson::array>()[1].get<std::string>());
+			float dx = std::stof(intrinsincs[intrinsic_idx].get("principalPoint").get<picojson::array>()[0].get<std::string>());
+			float dy = std::stof(intrinsincs[intrinsic_idx].get("principalPoint").get<picojson::array>()[1].get<std::string>());
 
 			//Eigen::Vector3f k(0.0f, 0.0f, 0.0f);
 
@@ -476,8 +476,9 @@ namespace sibr {
 			//		intrinsincs[intrinsic_idx].get("distortionParams").get<picojson::array>()[1].get<double>(),
 			//		intrinsincs[intrinsic_idx].get("distortionParams").get<picojson::array>()[2].get<double>());
 
-			m(1) = std::stof(intrinsincs[intrinsic_idx].get("distortionParams").get<picojson::array>()[0].get<std::string>());
-			m(2) = std::stof(intrinsincs[intrinsic_idx].get("distortionParams").get<picojson::array>()[1].get<std::string>());
+			/// HACK DO NOT KEEP.
+			m(1) = dx;//std::stof(intrinsincs[intrinsic_idx].get("distortionParams").get<picojson::array>()[0].get<std::string>());
+			m(2) = dy;//std::stof(intrinsincs[intrinsic_idx].get("distortionParams").get<picojson::array>()[1].get<std::string>());
 			//m(1) = 0;
 			//m(2) = 0;
 
@@ -515,11 +516,6 @@ namespace sibr {
 			orientation =  orientation * converter;
 			//orientation.transposeInPlace();
 
-			for (int i = 0; i < 9; i++) {
-				m(3 + i) = orientation(i);
-			}
-					
-			
 			//orientation = converter * orientation;
 			//rotMat = converter * rotMat ;
 			for (int ii = 0; ii < 9; ii++) {

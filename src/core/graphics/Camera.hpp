@@ -97,6 +97,9 @@ namespace sibr
 		const Matrix4f&		viewproj( void ) const; /* cached */
 		const Matrix4f&		invViewproj( void ) const; /* cached */
 
+		/** \param p the principal point, expressed in [0,1] */
+		void principalPoint(const sibr::Vector2f & p);
+
 		static Camera		interpolate( const Camera& from, const Camera& to, float dist01 );
 
 		void 				setStereoCam(bool isLeft, float, float);
@@ -125,6 +128,7 @@ namespace sibr
 		float			_aspect;
 		float			_znear;
 		float			_zfar;
+		sibr::Vector2f   _p = {0.5f, 0.5};
 		//bool			_isOrtho;
 		//float			_right;
 		//float			_top;
@@ -219,6 +223,10 @@ namespace sibr
 	}
 	inline float	Camera::zfar( void ) const {
 		return _zfar;
+	}
+
+	inline void Camera::principalPoint(const sibr::Vector2f & p) {
+		_p = p; _dirtyViewProj = true;
 	}
 
 	inline const Matrix4f&			Camera::viewproj( void ) const {

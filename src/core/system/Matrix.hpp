@@ -79,7 +79,8 @@ namespace sibr
 			return mat;
 		}
 
-	Matrix4f SIBR_SYSTEM_EXPORT perspective( float fovRadian, float ratio, float zn, float zf );
+	/** \param p the principal point, expressed in [0,1] */
+	Matrix4f SIBR_SYSTEM_EXPORT perspective( float fovRadian, float ratio, float zn, float zf, const sibr::Vector2f & p = {0.5f, 0.5f});
 
 	Matrix4f SIBR_SYSTEM_EXPORT perspectiveOffCenter(
 			float left, float right, float bottom, float top, float mynear, float myfar );
