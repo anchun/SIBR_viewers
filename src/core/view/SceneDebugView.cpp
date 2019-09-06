@@ -372,9 +372,7 @@ namespace sibr
 				ImGui::SameLine();
 				ImGui::SliderFloat("Alpha", &_alphaImage, 0, 1.0);
 			}
-
 			
-
 			camera_handler.onGUI("Top view settings");
 			ImGui::PopItemWidth();
 			ImGui::Separator();
@@ -390,7 +388,17 @@ namespace sibr
 			ImGui::Text("Camera"); ImGui::NextColumn();
 			ImGui::Text("SnapTo"); ImGui::NextColumn();
 			ImGui::Text("Active"); ImGui::NextColumn();
-			ImGui::Text("Size"); ImGui::NextColumn();
+
+			static std::vector<std::string> cam_info_option_str = { "size", "focal", "fov_y"," aspect" };
+			if (ImGui::BeginCombo("Info", cam_info_option_str[cam_info_option].c_str())) {
+				for (int i = 0; i < (int)cam_info_option_str.size(); ++i) {
+					if (ImGui::Selectable(cam_info_option_str[i].c_str(), cam_info_option == i)) {
+						cam_info_option = (CameraInfoDisplay)i;
+					}					
+				}
+				ImGui::EndCombo();
+			}
+			ImGui::NextColumn();
 			ImGui::Separator();
 			for (uint i = 0; i < _cameras.size(); ++i) {
 				std::string name = "cam_" + intToString<4>(i);
@@ -403,15 +411,10 @@ namespace sibr
 					auto size = camera_handler.getViewport().finalSize();
 					float ratio_dst = size[0] / size[1];
 					float ratio_src = input_cam.w() / (float)input_cam.h();
-
-					std::cout << ratio_dst << " " << ratio_src << std::endl;
-
-					InputCamera cam = InputCamera(_cameras[i].cam, size[0], size[1]);
+					InputCamera cam = InputCamera(_cameras[i].cam, (int)size[0], (int)size[1]);
 			
-					if (true) {
-						//matching fov_w for better viewport coverage
+					if (ratio_src < ratio_dst) {
 						float fov_h = 2 * atan(tan(input_cam.fovy() / 2) * ratio_src / ratio_dst);
-
 						cam.fovy(fov_h);
 					} else {
 						cam.fovy(input_cam.fovy());
@@ -424,9 +427,18 @@ namespace sibr
 
 				ImGui::Checkbox(("##is_valid" + name).c_str(), &_cameras[i].highlight);
 				ImGui::NextColumn();
-				std::stringstream temp;
-				temp << _cameras[i].cam.w() << " x " << _cameras[i].cam.h();
-				ImGui::Text(temp.str().c_str());
+
+				const auto & cam = _cameras[i].cam;
+				std::stringstream tmp;
+				switch (cam_info_option)
+				{
+				case SIZE: tmp << cam.w() << " x " << cam.h(); break;
+				case FOCAL: tmp << cam.focal(); break;
+				case FOV_Y: tmp << cam.fovy(); break;
+				case ASPECT: tmp << cam.aspect(); break;
+				default: break;
+				}
+				ImGui::Text(tmp.str().c_str());
 				ImGui::NextColumn();
 			}
 			ImGui::Columns(1);
