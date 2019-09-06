@@ -156,6 +156,14 @@ namespace sibr{
 		const ParseData::Type&								datasetType(void) const;
 
 
+
+	public:
+			/**
+		* \brief Function to parse the scene metadata file to read image data.
+		*
+		*/
+			bool parseSceneMetadata(const std::string & scene_metadata_path);
+
 	protected:
 
 		struct CameraParametersColmap {
@@ -167,12 +175,6 @@ namespace sibr{
 			float  dx;
 			float  dy;
 		};
-
-		/**
-		* \brief Function to parse the scene metadata file to read image data.
-		*
-		*/
-		bool parseSceneMetadata(const std::string & scene_metadata_path);
 
 		/**
 		* \brief Function to parse the camera calibration files to read camera properties (camera matrix etc.).

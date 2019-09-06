@@ -1345,12 +1345,13 @@ namespace sibr
 		Vector4f	readBackPixel(int i, int x, int y, uint lod = 0) const;
 
 	private:
+
 		void createArray();
 
 		template<typename ImageType>
 		void sendArray(const std::vector<ImageType> & images);
 
-		void sendArray(const std::vector<typename PixelRT::Ptr> & RTs);
+		void sendRTarray(const std::vector<typename PixelRT::Ptr> & RTs);
 
 		template<typename ImageType>
 		std::vector<const ImageType*> applyFlipAndResize(
@@ -1454,6 +1455,7 @@ namespace sibr
 			m_H,
 			m_Depth
 		);
+
 		CHECK_GL_ERROR;
 	}
 
@@ -1536,7 +1538,7 @@ namespace sibr
 	}
 
 	template<typename T_Type, unsigned int T_NumComp>
-	void Texture2DArray<T_Type, T_NumComp>::sendArray(const std::vector<typename PixelRT::Ptr> & RTs) {
+	void Texture2DArray<T_Type, T_NumComp>::sendRTarray(const std::vector<typename PixelRT::Ptr> & RTs) {
 		CHECK_GL_ERROR;
 		glBindTexture(GL_TEXTURE_2D_ARRAY, m_Handle);
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -1570,7 +1572,6 @@ namespace sibr
 
 	template<typename T_Type, unsigned int T_NumComp> template<typename ImageType>
 	void Texture2DArray<T_Type, T_NumComp>::createFromImages(const std::vector<ImageType> & images, uint w, uint h, uint flags) {
-		using ImgTypeInfo = GLTexFormat<ImageType, T_Type, T_NumComp>;
 		m_W = w;
 		m_H = h;
 		m_Depth = (uint)images.size();
@@ -1582,6 +1583,7 @@ namespace sibr
 	template<typename T_Type, unsigned int T_NumComp> template<typename ImageType>
 	void Texture2DArray<T_Type, T_NumComp>::updateFromImages(const std::vector<ImageType> & images) {
 		using ImgTypeInfo = GLTexFormat<ImageType, T_Type, T_NumComp>;
+
 		sibr::Vector2u maxSize(0, 0);
 		for (const auto & img : images) {
 			maxSize = maxSize.cwiseMax(sibr::Vector2u(ImgTypeInfo::width(img), ImgTypeInfo::height(img)));
@@ -1609,7 +1611,6 @@ namespace sibr
 		if ( m_W != maxSize[0] || m_H != maxSize[1]) {
 			m_W = maxSize[0];
 			m_H = maxSize[1];
-			createArray();
 		}
 
 		glBindTexture(GL_TEXTURE_2D_ARRAY, m_Handle);
@@ -1646,7 +1647,7 @@ namespace sibr
 		m_Depth = (uint)RTs.size();
 		m_Flags = flags;
 		createArray();
-		sendArray(RTs);
+		sendRTarray(RTs);
 	}
 
 	template<typename T_Type, unsigned int T_NumComp>

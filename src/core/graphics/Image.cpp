@@ -105,7 +105,8 @@ namespace sibr
 	SIBR_GRAPHICS_EXPORT sibr::ImageRGB32F convertRGBAtoRGB32F(const sibr::ImageRGBA & imgRGBA)
 	{
 		sibr::ImageRGB32F out(imgRGBA.w()/3, imgRGBA.h());
-		for (uint y = 0; y < out.h(); ++y) {
+#pragma omp parallel for
+		for (int y = 0; y < int(out.h()); ++y) {
 			for (uint x = 0; x < out.w(); ++x) {
 				for (int k = 0; k < 3; k++) {
 					unsigned char * p = reinterpret_cast<unsigned char *>(&out(x, y)[k]);
