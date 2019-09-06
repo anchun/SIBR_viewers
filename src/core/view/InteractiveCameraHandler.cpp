@@ -291,7 +291,7 @@ namespace sibr {
 		if (!_interpPath.empty()) {
 			unsigned int nearestCam = (i == -1 ? findNearestCamera(_interpPath) : i);
 			nearestCam = sibr::clamp(nearestCam, unsigned int(0), unsigned int(_interpPath.size() - 1));
-			fromTransform(_interpPath[nearestCam].transform());
+			fromCamera(_interpPath[nearestCam]);
 		}
 	}
 
