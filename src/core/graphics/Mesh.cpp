@@ -1438,7 +1438,7 @@ namespace sibr
 			zCenter += ((triz1 + triz2 + triz3) / 3) * currentArea;
 		}
 
-		outCenter = Vector3f((float)xCenter / totalArea, (float)yCenter / totalArea, (float)zCenter / totalArea);
+		outCenter = Vector3f(float(xCenter / totalArea), float(yCenter / totalArea), float(zCenter / totalArea));
 
 
 		outRadius = 0.f;

@@ -137,7 +137,7 @@ namespace sibr
 		_labelShader.begin();
 		// Bind the ImGui font texture.
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, (GLuint)ImGui::GetFont()->ContainerAtlas->TexID);
+		glBindTexture(GL_TEXTURE_2D, (GLuint)(intptr_t)(ImGui::GetFont()->ContainerAtlas->TexID));
 		_labelShaderViewport.set(Vector2f(vp.finalWidth(), vp.finalHeight()));
 
 		for (const auto & camInfos : cams_info) {
@@ -162,7 +162,7 @@ namespace sibr
 			label.mesh->renderSubMesh(0, label.splitIndex, false, false);
 			// Render the text label.
 			_labelShaderScale.set(1.0f*_labelScale);
-			label.mesh->renderSubMesh(label.splitIndex, label.mesh->triangles().size() * 3, false, false);
+			label.mesh->renderSubMesh(label.splitIndex, int(label.mesh->triangles().size()) * 3, false, false);
 
 		}
 		_labelShader.end();
@@ -418,7 +418,7 @@ namespace sibr
 
 					std::cout << ratio_dst << " " << ratio_src << std::endl;
 
-					InputCamera cam = InputCamera(_cameras[i].cam, size[0], size[1]);
+					InputCamera cam = InputCamera(_cameras[i].cam, int(size[0]), int(size[1]));
 			
 					if (true) {
 						//matching fov_w for better viewport coverage
@@ -487,5 +487,3 @@ namespace sibr
 	}
 
 } // namespace
-
-

@@ -218,7 +218,7 @@ namespace sibr
 		Arg<bool> no_gui = { "nogui" };
 	};
 
-	struct WindowAppArgs : 
+	struct SIBR_SYSTEM_EXPORT WindowAppArgs :
 		virtual AppArgs, virtual WindowArgs {
 	};
 
@@ -235,7 +235,7 @@ namespace sibr
 		RequiredArg<std::string> dataset_path = { "path" };
 	};
 
-	struct BasicIBRAppArgs : 
+	struct SIBR_SYSTEM_EXPORT BasicIBRAppArgs :
 		virtual WindowAppArgs, virtual BasicDatasetArgs, virtual RenderingArgs {
 	};
 

@@ -132,7 +132,7 @@ namespace sibr {
 			else {
 				const float w = _viewport.finalWidth();
 				const float h = _viewport.finalHeight();
-				idealCam.size(w, h);
+				idealCam.size(uint(w), uint(h));
 				idealCam.aspect(w / h);
 			}
 		}
@@ -151,7 +151,7 @@ namespace sibr {
 		_trackball.fromCamera(idealCam, _viewport, _radius);
 
 		_currentCamera = idealCam;
-		_cameraFovDeg = _currentCamera.fovy() * 180.0f / M_PI;
+		_cameraFovDeg = _currentCamera.fovy() * 180.0f / float(M_PI);
 
 		if (!interpolate) {
 			_previousCamera = _currentCamera;
@@ -382,7 +382,7 @@ namespace sibr {
 				_cameraRecorder.save(filename);
 				_cameraRecorder.saveAsBundle(filename + ".out", _currentCamera.h());
 				if (_fribrExport) {
-					const int height = std::floor(1920.0f * (float(_currentCamera.h()) / float(_currentCamera.w())));
+					const int height = int(std::floor(1920.0f / _currentCamera.aspect()));
 					_cameraRecorder.saveAsFRIBRBundle(filename + "_fribr/", 1920, height);
 				}
 				_cameraRecorder.stop();
@@ -400,7 +400,7 @@ namespace sibr {
 				_cameraRecorder.playback();
 				_cameraRecorder.saveAsBundle(filename + ".out", _currentCamera.h());
 				if (_fribrExport) {
-					const int height = std::floor(1920.0f * (float(_currentCamera.h()) / float(_currentCamera.w())));
+					const int height = int(std::floor(1920.0f / _currentCamera.aspect()));
 					_cameraRecorder.saveAsFRIBRBundle(filename + "_fribr/", 1920, height);
 				}
 			}
@@ -465,11 +465,15 @@ namespace sibr {
 	void InteractiveCameraHandler::onGUI(const std::string & suffix) {
 
 		const std::string fullName = (suffix);
+		
+
 		// Saving camera.
 		if (ImGui::Begin(fullName.c_str())) {
+
+			ImGui::PushScaledItemWidth(130);
 			ImGui::Combo("Mode", (int*)&_currentMode, "FPS\0Orbit\0Interp.\0Trackball\0None\0\0");
 			switchMode(_currentMode);
-
+			ImGui::SameLine();
 			if (ImGui::Button("Load camera")) {
 				std::string selectedFile;
 				if (sibr::showFilePicker(selectedFile, Default)) {
@@ -483,7 +487,7 @@ namespace sibr {
 			}
 			
 			ImGui::SameLine();
-			if (ImGui::Button("Save camera")) {
+			if (ImGui::Button("Save camera (bin)")) {
 				std::string selectedFile;
 				if (sibr::showFilePicker(selectedFile, Save)) {
 					if (!selectedFile.empty()) {
@@ -496,27 +500,30 @@ namespace sibr {
 				}
 			}
 			
+			
 			ImGui::Separator();
 			if (ImGui::Button("Snap to closest")) {
 				_currentCamId = findNearestCamera(_interpPath);
 				snapToCamera(_currentCamId);
 			}
+			ImGui::SameLine();
 			if (ImGui::InputInt("Snap to", &_currentCamId, 1, 10)) {
 				_currentCamId = sibr::clamp(_currentCamId, 0, int(_interpPath.size()) - 1);
 				snapToCamera(_currentCamId);
 			}
-			ImGui::Separator();
+			
 			if (_currentMode == TRACKBALL) {
+				ImGui::SameLine();
 				ImGui::Checkbox("Show trackball", &_trackball.drawThis);
 			}
 
 			if (ImGui::InputFloat("Fov Y", &_cameraFovDeg, 1.0f, 5.0f)) {
 				_cameraFovDeg = sibr::clamp(_cameraFovDeg, 1.0f, 180.0f);
-				_currentCamera.fovy(_cameraFovDeg * M_PI / 180.0f);
+				_currentCamera.fovy(_cameraFovDeg * float(M_PI) / 180.0f);
 				// Synchronize internal cameras.
 				fromCamera(_currentCamera, _shouldSmooth);
 			}
-			ImGui::PushScaledItemWidth(130);
+			ImGui::SameLine();
 			if(ImGui::InputFloat("Near", &_clippingPlanes[0], 1.0f, 10.0f)) {
 				_currentCamera.znear(_clippingPlanes[0]);
 				fromCamera(_currentCamera);
@@ -526,12 +533,9 @@ namespace sibr {
 				_currentCamera.zfar(_clippingPlanes[1]);
 				fromCamera(_currentCamera);
 			}
-			ImGui::PopItemWidth();
-
-
-
+			
 			ImGui::Separator();
-
+			ImGui::PopItemWidth();
 		}
 		ImGui::End();
 
@@ -540,6 +544,7 @@ namespace sibr {
 			std::string selectedFile;
 
 			if (ImGui::Begin(fullName.c_str())) {
+				ImGui::PushScaledItemWidth(130);
 
 				if (ImGui::Button("Play")) {
 					_cameraRecorder.playback();
@@ -553,13 +558,18 @@ namespace sibr {
 				if (ImGui::Button("Stop")) {
 					_cameraRecorder.stop();
 				}
+				ImGui::SameLine();
+				if(ImGui::InputFloat("Speed##CamRecorder", &_cameraRecorder.speed(), 0.1f)) {
+					_cameraRecorder.speed() = sibr::clamp(_cameraRecorder.speed(), 0.0f, 1.0f);
+				}
+
 				if (ImGui::Button("Load path")) {
 					if (sibr::showFilePicker(selectedFile, Default)) {
 						if (!selectedFile.empty()) {
 							SIBR_LOG << "Loading" << std::endl;
 							_cameraRecorder.reset();
 							if (boost::filesystem::extension(selectedFile) == ".out")
-								_cameraRecorder.loadBundle(selectedFile);
+								_cameraRecorder.loadBundle(selectedFile, 1280, 800);
 							else
 								_cameraRecorder.load(selectedFile);
 							_cameraRecorder.playback();
@@ -567,7 +577,7 @@ namespace sibr {
 
 					}
 				}
-
+				
 				ImGui::SameLine();
 				if (ImGui::Button("Save path")) {
 					_cameraRecorder.stop();
@@ -577,19 +587,15 @@ namespace sibr {
 							_cameraRecorder.save(selectedFile + ".path");
 							_cameraRecorder.saveAsBundle(selectedFile + ".out", _currentCamera.h());
 							if (_fribrExport) {
-								const int height = std::floor(1920.0f * (float(_currentCamera.h()) / float(_currentCamera.w())));
+								const int height = int(std::floor(1920.0f / _currentCamera.aspect()));
 								_cameraRecorder.saveAsFRIBRBundle(selectedFile + "_fribr/", 1920, height);
 							}
 						}
 					}
 				}
-
-				if(ImGui::InputFloat("Speed##CamRecorder", &_cameraRecorder.speed(), 0.1f)) {
-					_cameraRecorder.speed() = sibr::clamp(_cameraRecorder.speed(), 0.0f, 1.0f);
-				}
-
-				bool saveFrameOld = _saveFrame;
-				ImGui::Checkbox("Save frame Playing", (&_saveFrame));
+				ImGui::SameLine();
+				const bool saveFrameOld = _saveFrame;
+				ImGui::Checkbox("Save frame playing", (&_saveFrame));
 				if (_saveFrame && !saveFrameOld) {
 					if (sibr::showFilePicker(selectedFile, Save)) {
 						if (!selectedFile.empty()) {
@@ -604,14 +610,17 @@ namespace sibr {
 				else if (!_saveFrame && saveFrameOld) {
 					_cameraRecorder.stopSaving();
 				}
-
-				ImGui::Checkbox("Fribr export", &_fribrExport);
+				//ImGui::SameLine();
+				//ImGui::Checkbox("Fribr export", &_fribrExport);
 				ImGui::Separator();
+				ImGui::PopItemWidth();
 			}
 			ImGui::End();
 		}
 		// add the FPS camera controls in the same ImGui window.
 		_fpsCamera.onGUI(suffix);
+		
+
 	}
 
 }

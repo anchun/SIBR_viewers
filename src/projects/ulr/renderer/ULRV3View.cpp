@@ -22,7 +22,7 @@ sibr::ULRV3View::ULRV3View(const sibr::BasicIBRScene::Ptr & ibrScene, uint rende
 	const auto & cams = ibrScene->cameras()->inputCameras();
 	for(size_t cid = 0; cid < cams.size(); ++cid) {
 		if(cams[cid].isActive()) {
-			imgs_ulr.push_back(cid);
+			imgs_ulr.push_back(uint(cid));
 		}
 	}
 	_scene->cameras()->debugFlagCameraAsUsed(imgs_ulr);
@@ -48,7 +48,7 @@ void sibr::ULRV3View::setScene(const sibr::BasicIBRScene::Ptr & newScene) {
 	const auto & cams = newScene->cameras()->inputCameras();
 	for (size_t cid = 0; cid < cams.size(); ++cid) {
 		if (cams[cid].isActive()) {
-			imgs_ulr.push_back(cid);
+			imgs_ulr.push_back(uint(cid));
 		}
 	}
 	_scene->cameras()->debugFlagCameraAsUsed(imgs_ulr);
@@ -155,7 +155,7 @@ void sibr::ULRV3View::updateCameras(bool allowResetToDefault) {
 		// We use all active cameras apart from the one given.
 		for (size_t cid = 0; cid < cams.size(); ++cid) {
 			if (cid != (size_t)_singleCamId && cams[cid].isActive()) {
-				imgs_ulr.push_back(cid);
+				imgs_ulr.push_back(uint(cid));
 			}
 		}
 	}
@@ -163,14 +163,14 @@ void sibr::ULRV3View::updateCameras(bool allowResetToDefault) {
 		// We pick one camera every N
 		for (size_t cid = 0; cid < cams.size(); ++cid) {
 			if ((cid % _everyNCamStep == 0) && cams[cid].isActive()) {
-				imgs_ulr.push_back(cid);
+				imgs_ulr.push_back(uint(cid));
 			}
 		}
 	} else if(allowResetToDefault){
 		// We use all active cameras.
 		for (size_t cid = 0; cid < cams.size(); ++cid) {
 			if (cams[cid].isActive()) {
-				imgs_ulr.push_back(cid);
+				imgs_ulr.push_back(uint(cid));
 			}
 		}
 	}

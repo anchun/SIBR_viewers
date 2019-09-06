@@ -5,7 +5,7 @@ namespace sibr {
 	{
 		// Select one method
 		return selectCamerasAngleWeight(cams, eye, count);
-		//return selectCamerasSimpleDist(eye, count);
+		//return selectCamerasSimpleDist(cams, eye, count);
 	}
 
 	std::vector<uint> IBRBasicUtils::selectCamerasSimpleDist(const std::vector<InputCamera>& cams, const sibr::Camera & eye, uint count)

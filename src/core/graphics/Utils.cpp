@@ -47,29 +47,29 @@ namespace sibr
 	}
 
 	float sRGB2LinF(float inF) {
-		if (inF < 0.04045) {
-			return inF / 12.92;
+		if (inF < 0.04045f) {
+			return inF / 12.92f;
 		}
 		else {
-			return pow((inF + 0.055) / (1.055), 2.4);
+			return std::pow((inF + 0.055f) / (1.055f), 2.4f);
 		}
 	}
 
 	float lin2sRGBF(float inF) {
 
-		if (inF < 0.0031308) {
-			return std::max(0.0, std::min(1.0, 12.92*inF));
+		if (inF < 0.0031308f) {
+			return std::max(0.0f, std::min(1.0f, 12.92f*inF));
 		}
 		else {
-			return std::max(0.0, std::min(1.0, 1.055*pow(inF, 1.0 / 2.4) - 0.055));
+			return std::max(0.0f, std::min(1.0f, 1.055f*std::pow(inF, 1.0f / 2.4f) - 0.055f));
 		}
 
 	}
 
 	void sRGB2Lin(sibr::ImageRGB32F& img) {
 #pragma omp parallel for
-		for (int j = 0; j < img.h(); j++) {
-			for (int i = 0; i < img.w(); i++) {
+		for (int j = 0; j < int(img.h()); j++) {
+			for (int i = 0; i < int(img.w()); i++) {
 				for (int c = 0; c < 3; c++) {
 					img(i, j)[c] = sRGB2LinF(img(i, j)[c]);
 				}
@@ -80,8 +80,8 @@ namespace sibr
 
 	void lin2sRGB(sibr::ImageRGB32F& img) {
 #pragma omp parallel for
-		for (int j = 0; j < img.h(); j++) {
-			for (int i = 0; i < img.w(); i++) {
+		for (int j = 0; j < int(img.h()); j++) {
+			for (int i = 0; i < int(img.w()); i++) {
 				for (int c = 0; c < 3; c++) {
 					img(i, j)[c] = lin2sRGBF(img(i, j)[c]);
 				}

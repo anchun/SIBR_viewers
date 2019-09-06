@@ -3,7 +3,6 @@
 #include <fstream>
 #include <sstream>
 #include <vector>
-#include <cstdarg>
 #include <Windows.h>
 #include <nfd.h>
 #include "core/system/Utils.hpp"
@@ -15,8 +14,7 @@ namespace sibr
 		std::ifstream file(fname.c_str(), std::ios::binary);
 		if (!file || !file.is_open()) {
 			SIBR_ERR << "File not found: " << fname << std::endl;
-			//std::string message = "[sibr::loadFile] file '" + fname + "' not found";
-			//throw std::runtime_error(message);
+			return "";
 		}
 		file.seekg(0, std::ios::end);
 
@@ -28,20 +26,6 @@ namespace sibr
 		file.close();
 
 		return std::string(buffer.begin(), buffer.end());
-	}
-
-	std::vector<std::string>	split(const std::string& str, char delim)
-	{
-		std::stringstream	ss(str);
-		std::string			to;
-		std::vector<std::string>	out;
-
-		if (str.empty())
-			return out;
-
-		while (std::getline(ss, to, delim))
-			out.push_back(to);
-		return out;
 	}
 
 	void			makeDirectory(const std::string& path)
@@ -263,38 +247,6 @@ namespace sibr
 		GlobalMemoryStatusEx(&statex);
 		return static_cast<size_t>(statex.ullAvailPhys) / DIV;
 	}
-
-	/// Wrapper around sibr::sprintf that returns a string
-	std::string sprint(const char *msg, ...)
-	{
-#define TEMP_STR_SIZE 4096
-		va_list args;
-		va_start(args, msg);
-		char s_StrSingle[TEMP_STR_SIZE];
-#ifdef WIN32
-		vsprintf_s(s_StrSingle, TEMP_STR_SIZE, msg, args);
-#else
-		vsnprintf(s_StrSingle, TEMP_STR_SIZE, msg, args);
-#endif
-		va_end(args);
-		return std::string(s_StrSingle);
-#undef TEMP_STR_SIZE
-	}
-
-	int 		sprintf(char* buffer, size_t size, const char* format, ...)
-	{
-		va_list args;
-		int ret = 0;
-		va_start(args, format);
-#ifdef WIN32
-		ret = vsprintf_s(buffer, size, format, args);
-#else
-		ret = vsnprintf(buffer, size, format, args);
-#endif
-		va_end(args);
-		return ret;
-	}
-
 
 	bool showFilePicker(std::string & selectedElement,
 		const FilePickerMode mode, const std::string & directoryPath, const std::string & extensionsAllowed) {

@@ -6,7 +6,7 @@ namespace sibr {
 	void ProxyMesh::loadFromData(const ParseData::Ptr & data)
 	{
 		_proxy.reset(new Mesh());
-		if (!_proxy->load(data->meshPath())) {
+		if (!_proxy->load(data->meshPath()) && !_proxy->load(data->meshPath() + ".ply") && !_proxy->load(data->meshPath() + ".obj")) {
 			SIBR_ERR << "proxy model not found at " << data->meshPath() << std::endl;
 		}
 		if (!_proxy->hasNormals()) {

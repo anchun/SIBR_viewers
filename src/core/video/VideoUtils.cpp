@@ -575,7 +575,7 @@ namespace sibr {
 					auto f = flow.at<cv::Vec2f>(i, j);
 					if (isfinite(f[0]) && isfinite(f[1])) {
 						if (cv::norm(f) > 0.5) {
-							cv::line(viz, cv::Point(j, i), cv::Point(j + f[1], i + f[0]), { 255,0,255 }, 2);
+							cv::line(viz, cv::Point(j, i), cv::Point(int(j + f[1]), int(i + f[0])), { 255,0,255 }, 2);
 						}
 					} else {
 						cv::circle(viz, cv::Point(j, i), 3, { 0,0,0 }, 2);

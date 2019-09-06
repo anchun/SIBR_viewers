@@ -1,7 +1,7 @@
 #pragma once
 
 #include "core/view/Config.hpp"
-#include "core/graphics/Mesh.hpp"
+#include "core/graphics/MaterialMesh.hpp"
 #include "core/view/ParseData.hpp"
 
 namespace sibr {
