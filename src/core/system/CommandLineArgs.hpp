@@ -4,8 +4,6 @@
 # include <vector>
 # include <map>
 
-//temp replacement of sibr::Vector
-# include <array>
 # include "Config.hpp"
 # include <core/system/Vector.hpp>
 
@@ -21,12 +19,11 @@ namespace sibr
 	template<>
 	constexpr uint NumberOfArg<bool> = 0;
 
-
 	template<>
 	constexpr uint NumberOfArg<Switch> = 0;
 
 	template<typename T, uint N>
-	constexpr uint NumberOfArg<std::array<T, N>> = N * NumberOfArg<T>;
+	constexpr uint NumberOfArg<sibr::Vector<T, N>> = N * NumberOfArg<T>;
 
 	/// Getter helper, return the n-th T from vector of strings
 	template<typename T> struct ValueGetter {
@@ -183,10 +180,11 @@ namespace sibr
 	class RequiredArg<std::string> : public RequiredArgBase<std::string> {
 		//RequiredArg(const RequiredArg &) = delete;
 		//RequiredArg & operator=(const RequiredArg &) = delete;
-		
-		using RequiredArgBase<std::string>::RequiredArgBase;
-		
+	
 	public:
+		using RequiredArgBase<std::string>::RequiredArgBase;
+		std::string & operator=(const std::string & t) { value = t; wasInit = true; return value; }
+
 		operator const char*() const { checkInit(); return value.c_str(); }
 	};
 
@@ -226,7 +224,7 @@ namespace sibr
 
 	struct SIBR_SYSTEM_EXPORT RenderingArgs {
 		Arg<std::string> scene_metadata_filename = { "scene", "scene_metadata.txt" };
-		Arg<std::array<int, 2>> rendering_size = { "rendering-size", { 0, 0 } };
+		Arg<Vector2i> rendering_size = { "rendering-size", { 0, 0 } };
 		Arg<int> texture_width = { "texture-width", 0 };
 		Arg<float> texture_ratio = { "texture-ratio", 1.0f };
 		Arg<int> rendering_mode = { "rendering-mode", RENDERMODE_MONO };
