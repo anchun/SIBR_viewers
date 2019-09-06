@@ -57,7 +57,38 @@ namespace sibr
 		// http://www.cs.cornell.edu/~snavely/bundler/bundler-v0.4-manual.html#S6
 		// Do pos = -R' * t
 		const sibr::Matrix3f orientation = matRotation.transpose();
-		Camera::position(-orientation * t);
+		sibr::Vector3f position = -orientation * t;
+		Camera::position(position);
+		Camera::rotation(Quaternionf(orientation));
+
+		_id = id;
+		_name = "";
+	}
+
+	InputCamera::InputCamera(int id, int w, int h, sibr::Vector3f & position, sibr::Matrix3f & orientation, float focal, float k1, float k2, bool active) :
+		_active(active)
+	{
+		
+
+		_w = w;
+		_h = h;
+
+		_focal = focal;
+		_k1 = k1;
+		_k2 = k2;
+
+		float fov = 2.0f * atan(0.5f*h / _focal);
+		float aspect = float(w) / float(h);
+
+		
+
+		Camera::aspect(aspect);
+		Camera::fovy(fov);
+
+		// http://www.cs.cornell.edu/~snavely/bundler/bundler-v0.4-manual.html#S6
+		// Do pos = -R' * t
+		
+		Camera::position(position);
 		Camera::rotation(Quaternionf(orientation));
 
 		_id = id;

@@ -50,6 +50,7 @@ namespace sibr
 
 		//_cams->sibr::CalibratedCameras::setupFromData(_data);
 			
+		//_cams->sibr::CalibratedCameras::setupFromData(_data);
 		if (_data->datasetType() != ParseData::Type::NVM) {
 			_cams->sibr::CalibratedCameras::setupFromData(_data);
 		}

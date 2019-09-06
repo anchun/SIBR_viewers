@@ -337,7 +337,7 @@ namespace sibr {
 				//older format for compability
 				Quaternionf quat((float)q[0], (float)q[1], (float)q[2], (float)q[3]);
 				
-				matRotation = quat.toRotationMatrix().transpose() * converter;
+				matRotation = converter * quat.toRotationMatrix();
 				finCam = -(matRotation * posCam);
 			}
 
@@ -512,7 +512,8 @@ namespace sibr {
 			orientation.row(0) = rows[0];
 			orientation.row(1) = rows[1];
 			orientation.row(2) = rows[2];
-			orientation = converter * orientation.transpose();
+			orientation =  orientation * converter;
+			//orientation.transposeInPlace();
 
 			for (int i = 0; i < 9; i++) {
 				m(3 + i) = orientation(i);
@@ -525,7 +526,7 @@ namespace sibr {
 				m(3 + ii) = orientation(ii);
 			}
 
-			const sibr::Vector3f finTrans = -orientation * position;
+			const sibr::Vector3f finTrans = -orientation.transpose() * position;
 			for (int ii = 0; ii < 3; ii++) {
 				m(12 + ii) = finTrans[ii];
 			}
