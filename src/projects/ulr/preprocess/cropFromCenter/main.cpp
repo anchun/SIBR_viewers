@@ -89,7 +89,7 @@ int main(const int argc, const char** argv)
 
 	bool scaleDown = (scaleDownFactor > 0);
 	//cv::Size resizedSize (finalResolution[0], cropResolution[1] * ((float)(finalResolution[0]) / cropResolution[0]));
-	cv::Size resizedSize(cropResolution[0] * scaleDownFactor, cropResolution[1] * scaleDownFactor);
+	cv::Size resizedSize(int(cropResolution[0] * scaleDownFactor), int(cropResolution[1] * scaleDownFactor));
 
 
 	if (!boost::filesystem::exists(outputFolder))
@@ -107,20 +107,21 @@ int main(const int argc, const char** argv)
 	std::vector<sibr::CropScaleImageUtility::Image> listOfImagesScaledDown(scaleDown ? pathToImgs.size() : 0);
 
 	// calculate nr batches
-	unsigned nrBatches = static_cast<int>(ceil((float)(pathToImgs.size()) / PROCESSING_BATCH_SIZE));
+	const int nrBatches = static_cast<int>(ceil((float)(pathToImgs.size()) / PROCESSING_BATCH_SIZE));
 
 	std::chrono::time_point <std::chrono::system_clock> start, end;
 	start = std::chrono::system_clock::now();
 
+	const int batchSize = int(PROCESSING_BATCH_SIZE);
 	// run batches sequentially
-	for (unsigned batchId = 0; batchId < nrBatches; batchId++) {
+	for (int batchId = 0; batchId < nrBatches; batchId++) {
 
-		unsigned nrItems = (batchId != nrBatches - 1) ? PROCESSING_BATCH_SIZE : ((nrBatches * PROCESSING_BATCH_SIZE != pathToImgs.size()) ? (pathToImgs.size() - (PROCESSING_BATCH_SIZE * batchId)) : PROCESSING_BATCH_SIZE);
+		const int nrItems = (batchId != nrBatches - 1) ? batchSize : ((nrBatches * batchSize != int(pathToImgs.size())) ? (int(pathToImgs.size()) - (batchSize * batchId)) : batchSize);
 
 		#pragma omp parallel for
 		for (int localImgIndex = 0; localImgIndex < nrItems; localImgIndex++) {
 
-			unsigned globalImgIndex = (batchId * PROCESSING_BATCH_SIZE) + localImgIndex;
+			const int globalImgIndex = (batchId * batchSize) + localImgIndex;
 
 			// using next code will keep filename in output directory
 			boost::filesystem::path boostPath(pathToImgs[globalImgIndex]);
@@ -161,7 +162,7 @@ int main(const int argc, const char** argv)
 
 	std::cout << TAG << " elapsed time=" << elapsedTime << "s.\n";
 
-	appUtility.logExecution(avgInitialResolution, pathToImgs.size(), elapsedTime, scaleDown, LOG_FILE_NAME);
+	appUtility.logExecution(avgInitialResolution, int(pathToImgs.size()), elapsedTime, scaleDown, LOG_FILE_NAME);
 
 	// write list_images.txt
 	appUtility.writeListImages((outputFolder / "list_images.txt").string(), listOfImages);

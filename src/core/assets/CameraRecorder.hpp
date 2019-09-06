@@ -21,8 +21,8 @@ namespace sibr
 		/**
 		Default constructor.
 		*/
-		CameraRecorder( void ) :
-			_pos(0), _recording(false), _playing(false), _saving(false), _savingPath(""){
+		CameraRecorder(void) :
+			_pos(0), _recording(false), _playing(false), _saving(false), _savingPath(""), _speed(1.0f), _interp(0.0f) {
 				//load();
 		}
 		/**
@@ -128,6 +128,11 @@ namespace sibr
 		*/
 		std::vector<Camera>& cams() { return _cameras;  }
 
+		/**
+		 * \return the interpolation speed
+		*/
+		float & speed() { return _speed; }
+
 	private:
 		uint					_pos;
 		std::vector<Camera>		_cameras;
@@ -135,6 +140,8 @@ namespace sibr
 		bool					_playing;	
 		bool					_saving;
 		std::string				_savingPath;
+		float					_speed;
+		float					_interp;
 	};
 
 	///// DEFINITIONS /////

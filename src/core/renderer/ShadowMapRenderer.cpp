@@ -1,7 +1,7 @@
 # include "ShadowMapRenderer.hpp"
 # include "core/graphics/RenderUtility.hpp"
 
-float SUN_APP_DIAM = 0.5358;
+float SUN_APP_DIAM = 0.5358f;
 
 namespace sibr
 {

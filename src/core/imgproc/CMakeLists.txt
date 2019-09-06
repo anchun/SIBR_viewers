@@ -3,7 +3,10 @@ project(sibr_imgproc)
 file(GLOB SOURCES "*.cpp" "*.h" "*.hpp")
 source_group("Source Files" FILES ${SOURCES})
 
-file(GLOB SOURCES "*.cpp" "*.h" "*.hpp" 
+file(GLOB SOURCES "mrf/*.h" "mrf/*.cpp" "mrf/*.inc")
+source_group("Source Files\\mrf" FILES ${SOURCES})
+
+file(GLOB SOURCES "*.cpp" "*.h" "*.hpp" "mrf/*.h" "mrf/*.cpp" "mrf/*.inc"
 	) 
 
 ## Specify target rules

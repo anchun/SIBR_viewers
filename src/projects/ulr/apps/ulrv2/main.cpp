@@ -92,8 +92,6 @@ int main(int ac, char** av) {
 	sibr::InteractiveCameraHandler::Ptr generalCamera(new InteractiveCameraHandler());
 	generalCamera->setup(scene->cameras()->inputCameras(), Viewport(0, 0, (float)usedResolution.x(), (float)usedResolution.y()), raycaster);
 
-
-
 	// Add views to mvm.
 	MultiViewManager        multiViewManager(window, false);
 	multiViewManager.addIBRSubView("ULR view", ulrView, usedResolution, ImGuiWindowFlags_ResizeFromAnySide);
@@ -102,13 +100,6 @@ int main(int ac, char** av) {
 	// Top view
 	const std::shared_ptr<sibr::SceneDebugView> topView(new sibr::SceneDebugView(scene, multiViewManager.getViewport(), generalCamera, myArgs));
 	multiViewManager.addSubView("Top view", topView, usedResolution);
-
-
-	//test grid view - can be removed
-	if (getCommandLineArgs().contains("test-grid")) {
-		DatasetView::Ptr datasetView(new DatasetView(*scene, usedResolution));
-		multiViewManager.addSubMultiView("subMulti", datasetView);
-	}
 
 	CHECK_GL_ERROR;
 

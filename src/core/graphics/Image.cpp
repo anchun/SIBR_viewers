@@ -73,7 +73,7 @@ namespace sibr
 	{
 		sibr::ImageL32F out(imgRGBA.w(), imgRGBA.h());
 #pragma omp parallel for
-		for (int y = 0; y < out.h(); ++y) {
+		for (int y = 0; y < int(out.h()); ++y) {
 			for (uint x = 0; x < out.w(); ++x) {
 				unsigned char * p = reinterpret_cast<unsigned char *>(&out(x, y).x());
 				for (std::size_t i = 0; i != sizeof(float); ++i) {
@@ -88,7 +88,7 @@ namespace sibr
 	{
 		sibr::ImageRGBA out(3*imgF.w(), imgF.h());
 #pragma omp parallel for
-		for (int y = 0; y < imgF.h(); ++y) {
+		for (int y = 0; y < int(imgF.h()); ++y) {
 			for (uint x = 0; x < imgF.w(); ++x) {
 				for (int k = 0; k < 3; k++) {
 					unsigned char const * p = reinterpret_cast<unsigned char const *>(&imgF(x, y)[k]);
@@ -105,7 +105,8 @@ namespace sibr
 	SIBR_GRAPHICS_EXPORT sibr::ImageRGB32F convertRGBAtoRGB32F(const sibr::ImageRGBA & imgRGBA)
 	{
 		sibr::ImageRGB32F out(imgRGBA.w()/3, imgRGBA.h());
-		for (uint y = 0; y < out.h(); ++y) {
+#pragma omp parallel for
+		for (int y = 0; y < int(out.h()); ++y) {
 			for (uint x = 0; x < out.w(); ++x) {
 				for (int k = 0; k < 3; k++) {
 					unsigned char * p = reinterpret_cast<unsigned char *>(&out(x, y)[k]);

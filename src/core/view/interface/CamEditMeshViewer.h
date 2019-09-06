@@ -155,7 +155,18 @@ namespace sibr {
 	  //!
 	  void writeCameras();
 
+	  //!
+	  //! Allows to write the validated lights in a file
+	  //! @return void
+	  //!
 	  void writeLights();
+
+	  //!
+	  //! Allows to write the validated lights on several files
+	  //! => one light by file
+	  //! @return void
+	  //!
+	  void writeLightsSeparatively();
 
 	  //!
 	  //! Allows to listen the keyboard and do actions
@@ -195,6 +206,11 @@ namespace sibr {
 	  std::vector<LightSphere> _lightSpheresValidated;
 
 	  std::vector<LightSphere> _currentLightSpheres;
+
+	  float _initialDeltaLight;
+	  float _currentDeltaLight;
+	  float _currentRadius = 1.f;
+	  float _currentRadiance = 1.f;
 
 	  std::string _name; //!< the name of the scene
 						 //!<

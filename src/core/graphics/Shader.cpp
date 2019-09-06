@@ -1,6 +1,7 @@
 
 # include "core/graphics/Shader.hpp"
 # include "core/system/Matrix.hpp"
+#include "core/system/String.hpp"
 
 
 # ifndef SIBR_MAXIMIZE_INLINE
@@ -267,7 +268,7 @@ namespace sibr
 		if (file.empty())
 			return file;
 
-		std::vector<std::string>	lines = split(file, '\n');
+		std::vector<std::string>	lines = sibr::split(file, '\n');
 		for ( const GLShader::Define& define : defines )
 		{
 			std::string tag = "#define"+define.nameToSearch;

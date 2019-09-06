@@ -33,6 +33,7 @@ namespace sibr {
 
 	void MeshData::renderGeometry() const
 	{
+		CHECK_GL_ERROR;
 		if (!meshPtr) {
 			return;
 		}
@@ -41,6 +42,7 @@ namespace sibr {
 		} else {
 			meshPtr->render(depthTest, backFaceCulling, renderMode, frontFaceCulling, invertDepthTest);
 		}
+		CHECK_GL_ERROR;
 	}
 
 	void MeshData::onGUI(const std::string & name)

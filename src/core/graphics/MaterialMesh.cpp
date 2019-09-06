@@ -22,6 +22,8 @@ namespace sibr
 {
 	bool	MaterialMesh::load(const std::string& filename)
 	{
+
+		srand(static_cast <unsigned> (time(0)));
 		Assimp::Importer	importer;
 		importer.SetPropertyBool(AI_CONFIG_PP_FD_REMOVE, true);
 		// cause Assimp to remove all degenerated faces as soon as they are detected
@@ -31,14 +33,14 @@ namespace sibr
 
 		if (!scene)
 		{
-			SIBR_LOG << "error: can't load mesh '" << filename
+			SIBR_WRG << "error: can't load mesh '" << filename
 				<< "' (" << importer.GetErrorString() << ")." << std::endl;
 			return false;
 		}
 
 		if (scene->mNumMeshes == 0)
 		{
-			SIBR_LOG << "error: the loaded model file ('" << filename
+			SIBR_WRG << "error: the loaded model file ('" << filename
 				<< "') contains zero or more than one mesh. Number of meshes : " <<
 				scene->mNumMeshes << std::endl;
 			return false;
@@ -47,18 +49,24 @@ namespace sibr
 		auto convertVec = [](const aiVector3D& v) {
 			return Vector3f(v.x, v.y, v.z); };
 		_triangles.clear();
-
+		
 		uint offsetVertices = 0;
 		uint offsetFaces = 0;
 		uint matId = 0; // Material
 		std::map<std::string, int> matName2Id; // Material
 
+		_maxMeshId = size_t(int(scene->mNumMeshes) - 1);
+
+		SIBR_LOG << "Mesh with " << scene->mNumMeshes << " elements." << std::endl;
 		for (uint meshId = 0; meshId < scene->mNumMeshes; ++meshId) {
 			const aiMesh* mesh = scene->mMeshes[meshId];
 
 			_vertices.resize(offsetVertices + mesh->mNumVertices);
-			for (uint i = 0; i < mesh->mNumVertices; ++i)
+			_meshIds.resize(offsetVertices + mesh->mNumVertices);
+			for (uint i = 0; i < mesh->mNumVertices; ++i) {
 				_vertices[offsetVertices + i] = convertVec(mesh->mVertices[i]);
+				_meshIds[offsetVertices + i] = meshId;
+			}
 
 			if (mesh->HasVertexColors(0) && mesh->mColors[0])
 			{
@@ -93,13 +101,34 @@ namespace sibr
 
 			}
 
+			bool randomUV = true;
+
 			if (mesh->HasTextureCoords(0))
 			{
 				_texcoords.resize(offsetVertices + mesh->mNumVertices);
-				for (uint i = 0; i < mesh->mNumVertices; ++i)
+				for (uint i = 0; i < mesh->mNumVertices; ++i) {
 					_texcoords[offsetVertices + i] =
-					convertVec(mesh->mTextureCoords[0][i]).xy();
+						convertVec(mesh->mTextureCoords[0][i]).xy();
+					if (convertVec(mesh->mTextureCoords[0][i]).xy().x() != 0.f ||
+						convertVec(mesh->mTextureCoords[0][i]).xy().y() != 0.f)
+					{
+						randomUV = false;
+					}
+				}
+			
 			}
+
+			if (randomUV) {
+				std::cout << "Random" << std::endl;
+				_texcoords.resize(offsetVertices + mesh->mNumVertices);
+				for (uint i = 0; i < mesh->mNumVertices; ++i) {
+					float u = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+					float v = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+					_texcoords[offsetVertices + i] =
+						 Vector2f(u * 5.f,v * 5.f);
+				}
+			}
+
 
 			if (meshId == 0) {
 				SIBR_LOG << "Mesh contains: colors: " << mesh->HasVertexColors(0)
@@ -113,12 +142,12 @@ namespace sibr
 
 			if (AI_SUCCESS != scene->mMaterials[mesh->mMaterialIndex]->
 				Get(AI_MATKEY_NAME, aiMatName)) {
-				std::cout << "material not found " << mesh->mMaterialIndex
+				SIBR_LOG << "material not found " << mesh->mMaterialIndex
 					<< std::endl;
 			}
 
 			std::string matName = aiMatName.C_Str();
-			std::cout << matName << std::endl;
+			
 			if (matName2Id.find(matName) == matName2Id.end()) {
 
 				matName2Id[matName] = matId;
@@ -139,7 +168,7 @@ namespace sibr
 			{
 				const aiFace* f = &mesh->mFaces[i];
 				if (f->mNumIndices != 3)
-					SIBR_LOG << "warning: discarding a face (not a triangle, num indices: "
+					SIBR_WRG << "Discarding a face (not a triangle, num indices: "
 					<< f->mNumIndices << ")" << std::endl;
 				else
 				{
@@ -147,7 +176,7 @@ namespace sibr
 					if (tri[0] < 0 || tri[0] >= _vertices.size()
 						|| tri[1] < 0 || tri[1] >= _vertices.size()
 						|| tri[2] < 0 || tri[2] >= _vertices.size())
-						SIBR_WRG << "face num [" << i << "] contains invalid vertex id(s)" << std::endl;
+						SIBR_WRG << "Face num [" << i << "] contains invalid vertex id(s)" << std::endl;
 					else {
 						_triangles.push_back(tri);
 						_matIds.push_back(currentMatId);  //material
@@ -164,16 +193,15 @@ namespace sibr
 
 		SIBR_LOG << "Mesh '" << filename << " successfully loaded. " << scene->mNumMeshes << " meshes were loaded with a total of "
 			<< " (" << _triangles.size() << ") faces and "
-			<< " (" << _vertices.size() << ") vertices detected. Init GL ..." << std::endl;
-		SIBR_LOG << "Init material part complete " << std::endl;
-		SIBR_LOG << "Init GL mesh complete " << std::endl;
-
+			<< " (" << _vertices.size() << ") vertices detected." << std::endl;
+		SIBR_LOG << "Init material part complete." << std::endl;
+		
 		_gl.dirtyBufferGL = true;
 		return true;
 	}
 
 
-	bool	MaterialMesh::loadMtsXML(const std::string & xmlFile)
+	bool	MaterialMesh::loadMtsXML(const std::string& xmlFile, bool loadTextures)
 	{
 		srand(static_cast <unsigned> (time(0)));
 		bool allLoaded = true;
@@ -191,8 +219,7 @@ namespace sibr
 			if (strcmp(node->first_attribute()->name(), "type") == 0 &&
 				strcmp(node->first_attribute()->value(), "shapegroup") == 0) {
 
-				std::cout << "Found : " << node->first_attribute("id")->value()
-					<< std::endl;
+				//std::cout << "Found : " << node->first_attribute("id")->value() << std::endl;
 
 				std::string id = node->first_attribute("id")->value();
 				std::string filename = node->first_node("shape")
@@ -225,8 +252,7 @@ namespace sibr
 
 					}
 
-					std::cout << "Adding one instance of : " << filename
-						<< std::endl;
+					SIBR_LOG << "Adding one instance of: " << filename << std::endl;
 
 					rapidxml::xml_node<> *nodeTrans = node->first_node("transform");
 					if (nodeTrans) {
@@ -279,9 +305,9 @@ namespace sibr
 
 				}
 				else if (strcmp(browserAttributes->name(), "type") == 0 &&
-					(strcmp(browserAttributes->value(), "obj") == 0 ||
+						(strcmp(browserAttributes->value(), "obj") == 0 ||
 						strcmp(browserAttributes->value(), "ply") == 0)) {
-					std::cout << "Obj or ply finded" << std::endl;
+					
 					rapidxml::xml_node<> *nodeRef = node->first_node("string");
 					const std::string filename = nodeRef->first_attribute("value")
 						->value();
@@ -294,12 +320,12 @@ namespace sibr
 						}
 						if (meshes[filename].matIds().size() == 0)
 						{
-							std::cout << "Material not present ..." << std::endl;
+							SIBR_WRG << "Material (" << filename << ") not present ..." << std::endl;
 						}
 
 					}
 
-					std::cout << "Here Adding one instance of : " << filename
+					SIBR_LOG << "Adding one instance of: " << filename
 						<< std::endl;
 
 					rapidxml::xml_node<> *nodeRefMat = node->first_node("ref");
@@ -403,6 +429,8 @@ namespace sibr
 			}
 		}
 
+		SIBR_LOG << "Loaded mesh: " << vertices().size() << " verts, " << meshIds().size() << " ids." << std::endl;
+
 		for (rapidxml::xml_node<> *node = nodeScene->first_node("bsdf");
 			node; node = node->next_sibling("bsdf"))
 		{
@@ -414,12 +442,8 @@ namespace sibr
 
 				bool breakBool = false;
 
-				//auto attributeTest = [&]() {
-
-
-			   //On regarde si on trouve une texture dans notre noeud avec diffuse reflectance,
-			   //si on en trouve pas, on rendre dans toute les brdf jusqu"� ce qu'on le trouve
-
+			    // Check if a texture exists in our node with diffuse reflectance
+				// If none is found, explore each BRDF until found.
 				std::vector <rapidxml::xml_node<>*> queue;
 				queue.push_back(node);
 
@@ -440,8 +464,7 @@ namespace sibr
 								"specularReflectance") == 0
 							)
 						{
-							std::cout << "DiffuseReflectance Texture finded"
-								<< std::endl;
+							//std::cout << "DiffuseReflectance Texture found" << std::endl;
 							rapidxml::xml_node<> *firstTexture = nodeTexture->
 								first_node("texture");
 							if (firstTexture == nullptr) {
@@ -455,24 +478,22 @@ namespace sibr
 								std::string textureName =
 									nodeString->first_attribute("value")->value();
 								sibr::ImageRGB::Ptr texture(new sibr::ImageRGB());
-								if (texture->load(pathFolder + "/" + textureName)) {
-									//show(*texture);
-									std::cout << "Diffuse " << pathFolder + "/"
-										+ textureName << std::endl;
+								// If we skip loading the textures, still set them as empty images.
+								if(!loadTextures || texture->load(pathFolder + "/" + textureName)) {
+									/*std::cout << "Diffuse " << pathFolder + "/"
+										+ textureName << std::endl;*/
 									_diffuseMaps[nameMat] = texture;
 									breakBool = true;
 									break;
 								}
 								else {
-									std::cout << "Diffuse layer for: " <<
+									SIBR_ERR << "Diffuse layer for: " <<
 										nameMat << " not found" << std::endl;
-									SIBR_ERR;
 								}
 
 							}
 							if (breakBool)
 								break;
-							//breakBool = true;
 						}
 					}
 
@@ -498,8 +519,8 @@ namespace sibr
 										"specularReflectance") == 0
 									)
 								{
-									std::cout << "DiffuseReflectance Color finded"
-										<< std::endl;
+									/*std::cout << "DiffuseReflectance Color found"
+										<< std::endl;*/
 									rapidxml::xml_node<> *firstTexture = nodeTexture->
 										first_node(colorsFormat.c_str());
 									if (firstTexture == nullptr) {
@@ -518,23 +539,20 @@ namespace sibr
 									sibr::ImageRGB::Ptr texture(new sibr::ImageRGB(
 										1, 1, color));
 									if (texture) {
-										//show(*texture);
-										std::cout << "Diffuse color : " <<
+										/*std::cout << "Diffuse color : " <<
 											redComponent << ", " << blueComponent <<
-											", " << greenComponent << ", " << std::endl;
+											", " << greenComponent << ", " << std::endl;*/
 										_diffuseMaps[nameMat] = texture;
 										breakBool = true;
 										break;
 									}
 									else {
-										std::cout << "Diffuse layer for: " << nameMat
+										SIBR_ERR << "Diffuse layer for: " << nameMat
 											<< " not found" << std::endl;
-										SIBR_ERR;
 									}
 
 									if (breakBool)
 										break;
-									//breakBool = true;
 								}
 							}
 					}
@@ -552,8 +570,8 @@ namespace sibr
 						);
 						sibr::ImageRGB::Ptr texture(new sibr::ImageRGB(
 							1, 1, color));
-						std::cout << "Warning: No color and no texture finded, " <<
-							"material will be choosen randomly " << std::endl;
+						SIBR_WRG << "Warning: No color and no texture found for " << nameMat << ", " <<
+							"material will be chosen randomly." << std::endl;
 						_diffuseMaps[nameMat] = texture;
 					}
 
@@ -572,6 +590,7 @@ namespace sibr
 
 			}
 		}
+		
 		bool breakBool = false;
 		for (rapidxml::xml_node<> *node = nodeScene->first_node("bsdf");
 			node; node = node->next_sibling("bsdf"))
@@ -591,7 +610,7 @@ namespace sibr
 						nodeTexture->first_attribute("type") &&
 						strcmp(nodeTexture->first_attribute("type")->value(),
 							"scale") == 0) {
-						std::cout << "Found opacity mask:" << nameMat << std::endl;
+						//std::cout << "Found opacity mask:" << nameMat << std::endl;
 
 						for (rapidxml::xml_node<> *nodeString = nodeTexture->
 							first_node("texture")->first_node("string");
@@ -601,16 +620,14 @@ namespace sibr
 							std::string textureName = nodeString->
 								first_attribute("value")->value();
 							sibr::ImageRGB::Ptr texture(new sibr::ImageRGB());
-							if (texture->load(pathFolder + "/" + textureName)) {
-								//show(*texture);
+							if (!loadTextures || texture->load(pathFolder + "/" + textureName)) {
 								_opacityMaps[nameMat] = texture;
 								breakBool = true;
 								break;
 							}
 							else {
-								std::cout << "Opacity layer for: " <<
+								SIBR_ERR << "Opacity layer for: " <<
 									nameMat << " not found" << std::endl;
-								SIBR_ERR;
 							}
 
 
@@ -628,6 +645,7 @@ namespace sibr
 				}
 			}
 		}
+		
 		createSubMeshes();
 		return true;
 
@@ -692,7 +710,7 @@ namespace sibr
 		{
 			if (matIds().at(i) == material) {
 
-				int v1, v2, v3;
+				uint v1, v2, v3;
 				v1 = triangles().at(i)[0];
 				v2 = triangles().at(i)[1];
 				v3 = triangles().at(i)[2];
@@ -794,6 +812,7 @@ namespace sibr
 			sibr::Mesh::Normals newNormals(normals());
 			sibr::Mesh::UVs newTexCoords(texCoords());
 			sibr::Mesh::Vertices newVertices(vertices());
+			sibr::MaterialMesh::MeshIds newMeshIds(meshIds());
 
 			sibr::Mesh::Triangles newTriangles;
 			sibr::MaterialMesh::MatIds newMatIds;
@@ -851,6 +870,12 @@ namespace sibr
 					if (hasTexCoords()) {
 						newTexCoords.push_back(newTexCoord);
 					}
+
+					if(hasMeshIds()) {
+						// Pick the first referenced vertex as the provoking vertex.
+						newMeshIds.push_back(meshIds().at(t.x()));
+					}
+
 					int newIndexVertex = static_cast<int> (newVertices.size()) - 1;
 					newTriangles.push_back(sibr::Vector3u(t.x(),
 						t.y(),
@@ -878,6 +903,7 @@ namespace sibr
 			texCoords(newTexCoords);
 			triangles(newTriangles);
 			matIds(newMatIds);
+			meshIds(newMeshIds);
 		}
 	}
 
@@ -890,10 +916,14 @@ namespace sibr
 			sibr::Mesh::Normals newNormals(normals());
 			sibr::Mesh::UVs newTexCoords(texCoords());
 			sibr::Mesh::Vertices newVertices(vertices());
+			sibr::MaterialMesh::MeshIds newMeshIds(meshIds());
 
 			sibr::Mesh::Triangles newTriangles;
 			sibr::MaterialMesh::MatIds newMatIds;
+			
+
 			std::cout << triangles().size() << " triangles" << std::endl;
+
 			for (unsigned int i = 0; i < triangles().size(); i++) {
 				sibr::Vector3u t = triangles().at(i);
 
@@ -998,6 +1028,12 @@ namespace sibr
 					if (hasTexCoords()) {
 						newTexCoords.push_back(newTexCoord);
 					}
+
+					if (hasMeshIds()) {
+						// Use the first referenced vertex as the provoking vertex.
+						newMeshIds.push_back(meshIds().at(t.x()));
+					}
+
 					int newIndexVertex = static_cast<int> (newVertices.size()) - 1;
 					if (i < matIds().size()) {
 						newMatIds.push_back(tMatId);
@@ -1040,6 +1076,7 @@ namespace sibr
 			texCoords(newTexCoords);
 			triangles(newTriangles);
 			matIds(newMatIds);
+			meshIds(newMeshIds);
 		}
 		// We can now subdivide the large triangles with sub-Triangles
 	}
@@ -1071,7 +1108,7 @@ namespace sibr
 			}
 
 
-			auto areaHeronsFormula = [](sibr::Vector3f A, sibr::Vector3f B,
+			const auto areaHeronsFormula = [](sibr::Vector3f A, sibr::Vector3f B,
 				sibr::Vector3f C) -> float {
 				float a = distance(A, B);
 				float b = distance(B, C);
@@ -1116,44 +1153,51 @@ namespace sibr
 	void	MaterialMesh::initAlbedoTextures(void) {
 
 		//Creates textures for albedo
-		if (!_albedoTexturesInitialized) {
-			_albedoTextures.resize(matId2Name().size());
-			_idTextures.resize(matId2Name().size());
-			_opacityTextures.resize(matId2Name().size());
-			_idTexturesOpacity.resize(matId2Name().size());
-			unsigned int i = 0;
-			for (auto it = matId2Name().begin();
-				it != matId2Name().end();
-				++it)
-			{
-				sibr::ImageRGB::Ptr texturePtr = diffuseMap(*it);
-				if (texturePtr) {
-					//sibr::Texture2DRGB diffuseTexture(*texturePtr);
-					_albedoTextures[i] = std::shared_ptr<sibr::Texture2DRGB>(
-						new sibr::Texture2DRGB(*texturePtr));
-					_idTextures[i] = _albedoTextures[i]->handle();
-				}
-				else {
-					_albedoTextures[i] = std::shared_ptr<sibr::Texture2DRGB>(
-						new sibr::Texture2DRGB());
-					_idTextures[i] = _albedoTextures[i]->handle();
-				}
-
-				sibr::ImageRGB::Ptr texturePtrOpacity = opacityMap(*it);
-				if (texturePtrOpacity && texturePtr) {
-					//sibr::Texture2DRGB diffuseTexture(*texturePtr);
-					_opacityTextures[i] = std::shared_ptr<sibr::Texture2DRGB>(
-						new sibr::Texture2DRGB(*texturePtrOpacity));
-					_idTexturesOpacity[i] = _opacityTextures[i]->handle();
-				}
-				else {
-					_opacityTextures[i] = std::shared_ptr<sibr::Texture2DRGB>(
-						new sibr::Texture2DRGB());
-					_idTexturesOpacity[i] = _opacityTextures[i]->handle();
-				}
-				i++;
-			}
+		if(_albedoTexturesInitialized) {
+			return;
 		}
+		
+		_albedoTextures.resize(matId2Name().size());
+		_idTextures.resize(matId2Name().size());
+		_opacityTextures.resize(matId2Name().size());
+		_idTexturesOpacity.resize(matId2Name().size());
+		unsigned int i = 0;
+		for (auto it = matId2Name().begin();
+			it != matId2Name().end();
+			++it)
+		{
+			sibr::ImageRGB::Ptr texturePtr = diffuseMap(*it);
+			if (texturePtr) {
+				_albedoTextures[i] = std::shared_ptr<sibr::Texture2DRGB>(
+					new sibr::Texture2DRGB(*texturePtr));
+				_idTextures[i] = _albedoTextures[i]->handle();
+			}
+			else {
+				_albedoTextures[i] = std::shared_ptr<sibr::Texture2DRGB>(
+					new sibr::Texture2DRGB());
+				_idTextures[i] = _albedoTextures[i]->handle();
+			}
+
+			sibr::ImageRGB::Ptr texturePtrOpacity = opacityMap(*it);
+			if (texturePtrOpacity && texturePtr) {
+				_opacityTextures[i] = std::shared_ptr<sibr::Texture2DRGB>(
+					new sibr::Texture2DRGB(*texturePtrOpacity));
+				_idTexturesOpacity[i] = _opacityTextures[i]->handle();
+			}
+			else {
+				_opacityTextures[i] = std::shared_ptr<sibr::Texture2DRGB>(
+					new sibr::Texture2DRGB());
+				_idTexturesOpacity[i] = _opacityTextures[i]->handle();
+			}
+			i++;
+		}
+		if (_hasTagsFile) {
+			sibr::ImageRGB::Ptr texturePtr = _tagsMap;
+			_tagTexture = std::shared_ptr<sibr::Texture2DRGB>(
+				new sibr::Texture2DRGB(*texturePtr));
+			_idTagTexture = _tagTexture->handle();
+		}
+
 		_albedoTexturesInitialized = true;
 	}
 
@@ -1161,25 +1205,32 @@ namespace sibr
 		RenderMode mode, bool frontFaceCulling, bool invertDepthTest) const
 	{
 
-		if (!_subMeshes.empty()) {
-			unsigned int i = 0;
-			for (auto it = matId2Name().begin();
-				it != matId2Name().end();
-				++it)
-			{
-				if (_albedoTextures[i] != nullptr) {
-					//sibr::Texture2DRGB diffuseTexture(*texturePtr);
-					glActiveTexture(GL_TEXTURE0);
-					glBindTexture(GL_TEXTURE_2D, _idTextures[i]);
-
-					glActiveTexture(GL_TEXTURE2);
-					glBindTexture(GL_TEXTURE_2D, _idTexturesOpacity[i]);
-					_subMeshes[i].render(depthTest, backFaceCulling, mode,
-						frontFaceCulling, invertDepthTest);
-				}
-				i++;
-			}
+		if (_subMeshes.empty()) {
+			return;
 		}
+		unsigned int i = 0;
+		for (auto it = matId2Name().begin();
+			it != matId2Name().end();
+			++it)
+		{
+			if (_albedoTextures[i] != nullptr) {
+				//sibr::Texture2DRGB diffuseTexture(*texturePtr);
+				glActiveTexture(GL_TEXTURE0);
+				glBindTexture(GL_TEXTURE_2D, _idTextures[i]);
+
+				if (_hasTagsFile && _tagTexture != nullptr) {
+				glActiveTexture(GL_TEXTURE1);
+				glBindTexture(GL_TEXTURE_2D, _idTagTexture);
+				}
+
+				glActiveTexture(GL_TEXTURE2);
+				glBindTexture(GL_TEXTURE_2D, _idTexturesOpacity[i]);
+				_subMeshes[i].render(depthTest, backFaceCulling, mode,
+					frontFaceCulling, invertDepthTest);
+			}
+			i++;
+		}
+		
 	}
 
 	void	MaterialMesh::renderThreeSixty(bool depthTest, bool backFaceCulling,
@@ -1218,62 +1269,90 @@ namespace sibr
 		if (_vertices.empty())
 		{
 			this->operator = (other);
+			return;
 		}
-		else
-		{
-			sibr::Mesh::merge(other);
 
-			uint		matIdsOffset = static_cast<unsigned int> (_matId2Name.size());
-			MatIds		matIds = other.matIds();
-			MatId2Name	matId2Name;
+		const size_t oldVerticesCount = vertices().size();
+		const bool thisHasIds = hasMeshIds();
 
-			unsigned int nbOfSimilarity = 0;
-			for (unsigned int i = 0; i < other.matId2Name().size(); ++i) {
-				bool findedSimilarity = false;
-				unsigned int indexSimilarMaterial;
-				for (unsigned int j = 0; j < _matId2Name.size()
-					&& !findedSimilarity; ++j) {
+		sibr::Mesh::merge(other);
 
-					if (other.matId2Name().at(i).compare(_matId2Name.at(j)) == 0) {
-						//We find a similar material present on the two meshes
-						//Now we modify all triangles ids corresponding to this 
-						// material	
-						findedSimilarity = true;
-						nbOfSimilarity++;
-						indexSimilarMaterial = j;
-					}
+		uint		matIdsOffset = static_cast<unsigned int> (_matId2Name.size());
+		MatIds		matIds = other.matIds();
+		MatId2Name	matId2Name;
+
+		unsigned int nbOfSimilarity = 0;
+		for (unsigned int i = 0; i < other.matId2Name().size(); ++i) {
+			bool foundSimilarity = false;
+			unsigned int indexSimilarMaterial = 0;
+			for (unsigned int j = 0; j < _matId2Name.size()
+				&& !foundSimilarity; ++j) {
+
+				if (other.matId2Name().at(i).compare(_matId2Name.at(j)) == 0) {
+					//We find a similar material present on the two meshes
+					//Now we modify all triangles ids corresponding to this 
+					// material	
+					foundSimilarity = true;
+					nbOfSimilarity++;
+					indexSimilarMaterial = j;
 				}
-				if (!findedSimilarity) {
-					//It's a new material.
-					//We have found a new material, We will merge it in our list
-					//of materials later
-					matId2Name.push_back(other.matId2Name().at(i));
-					//We substract the number of similarity to avoid
-					//the "gap" about the materials index
-					for (unsigned int j = 0; j < other.matIds().size();++j) {
-						unsigned int id = other.matIds().at(j);
-						if (id == i) {
-							matIds[j] = id + matIdsOffset - nbOfSimilarity;
-						}
-					}
-				}
-				else {
-					for (unsigned int j = 0; j < other.matIds().size();++j) {
-						unsigned int id = other.matIds().at(j);
-						if (id == i) {
-							matIds[j] = indexSimilarMaterial;
-						}
+			}
+			if (!foundSimilarity) {
+				//It's a new material.
+				//We have found a new material, We will merge it in our list
+				//of materials later
+				matId2Name.push_back(other.matId2Name().at(i));
+				//We substract the number of similarity to avoid
+				//the "gap" about the materials index
+				for (unsigned int j = 0; j < other.matIds().size();++j) {
+					unsigned int id = other.matIds().at(j);
+					if (id == i) {
+						matIds[j] = id + matIdsOffset - nbOfSimilarity;
 					}
 				}
 			}
+			else {
+				for (unsigned int j = 0; j < other.matIds().size();++j) {
+					unsigned int id = other.matIds().at(j);
+					if (id == i) {
+						matIds[j] = indexSimilarMaterial;
+					}
+				}
+			}
+		}
 
-			_matIds.insert(_matIds.end(), matIds.begin(), matIds.end());
-			_matId2Name.insert(_matId2Name.end(), matId2Name.begin(),
-				matId2Name.end());
-			_opacityMaps.insert(other.opacityMaps().begin(),
-				other.opacityMaps().end());
-			_diffuseMaps.insert(other.diffuseMaps().begin(),
-				other.diffuseMaps().end());
+		_matIds.insert(_matIds.end(), matIds.begin(), matIds.end());
+		_matId2Name.insert(_matId2Name.end(), matId2Name.begin(),
+			matId2Name.end());
+		_opacityMaps.insert(other.opacityMaps().begin(),
+			other.opacityMaps().end());
+		_diffuseMaps.insert(other.diffuseMaps().begin(),
+			other.diffuseMaps().end());
+
+		// We have to shift all meshes ids.
+		const bool otherHasIds = other.hasMeshIds();
+		if(thisHasIds && otherHasIds) {
+			// Shift all other IDs by _maxMeshId+1.
+			_maxMeshId += 1;
+			MaterialMesh::MeshIds oIds(other.meshIds());
+			for(size_t vid = 0; vid < oIds.size(); ++vid) {
+				oIds[vid] = _maxMeshId + oIds[vid];
+			}
+			_meshIds.insert(_meshIds.end(), oIds.begin(), oIds.end());
+			_maxMeshId += other._maxMeshId;
+			
+
+		} else if(thisHasIds) {
+			// In that case other has no IDs.
+			_maxMeshId += 1;
+			MaterialMesh::MeshIds newMeshIds(other.vertices().size(), _maxMeshId);
+			_meshIds.insert(_meshIds.end(), newMeshIds.begin(), newMeshIds.end());
+
+		} else if(otherHasIds) {
+			// in that case give a new ID to the current mesh and insert the other IDs.
+			_maxMeshId = other._maxMeshId + 1;
+			_meshIds = MaterialMesh::MeshIds(oldVerticesCount, _maxMeshId);
+			_meshIds.insert(_meshIds.end(), other.meshIds().begin(), other.meshIds().end());
 
 		}
 	}
@@ -1285,6 +1364,10 @@ namespace sibr
 			_matIds = MatIds(triangles().size(), 0);
 			_matIdsVertices = MatIds(vertices().size(), 0);
 			_matId2Name.push_back("emptyMat");
+		}
+		if(!hasMeshIds()) {
+			_meshIds = MatIds(vertices().size(), 0);
+			_maxMeshId = 0;
 		}
 	}
 
@@ -1300,15 +1383,19 @@ namespace sibr
 
 	sibr::MaterialMesh::Ptr MaterialMesh::invertedFacesMesh2() const
 	{
-		auto invertedFacesMesh = sibr::Mesh::invertedFacesMesh2();
+		const auto invertedFacesMesh = sibr::Mesh::invertedFacesMesh2();
 		auto invertedFacesMaterialMesh = std::make_shared<MaterialMesh>
 			(*invertedFacesMesh);
+		// If we have some mesh IDs, just clone them as-is, no need for doubling.
+		if (hasMeshIds()) {
+			invertedFacesMaterialMesh->meshIds(meshIds());
+		}
 
-		int nVertices = (int)vertices().size();
-		int nTriangles = (int)triangles().size();
+		const int nVertices = (int)vertices().size();
+		const int nTriangles = (int)triangles().size();
 
 		Mesh::Triangles Ntriangles(2 * nTriangles);
-		MaterialMesh::MatIds NmatIds(hasMatIds() ? 2 * nTriangles : 0);
+		MaterialMesh::MatIds NmatIds(hasMatIds() ? (2 * nTriangles) : 0);
 
 		int v_id = 0;
 		sibr::Vector3u shift(nVertices, nVertices, nVertices);
@@ -1328,6 +1415,7 @@ namespace sibr
 				++m_id;
 			}
 		}
+		
 		invertedFacesMaterialMesh->matIds(NmatIds);
 		invertedFacesMaterialMesh->matId2Name(_matId2Name);
 		invertedFacesMaterialMesh->opacityMaps(_opacityMaps);
@@ -1350,11 +1438,12 @@ namespace sibr
 		if (forcedCenterZ) center.z() = *forcedCenterZ;
 		if (forcedRadius) radius = *forcedRadius;
 
-		std::vector<std::string> partsOfSphere;
-		partsOfSphere.push_back("bottom");
-		partsOfSphere.push_back("up");
+		//std::vector<std::string> partsOfSphere;
+		std::vector<PartOfSphere> partsOfSphere = { PartOfSphere::BOTTOM, PartOfSphere::UP };
+		//partsOfSphere.push_back("bottom");
+		//partsOfSphere.push_back("up");
 
-		for (std::string part : partsOfSphere) {
+		for (PartOfSphere part : partsOfSphere) {
 			std::shared_ptr<Mesh> pSphere = getEnvSphere(center, radius,
 				Vector3f(0.f, 1.f, 0.f),
 				Vector3f(1.f, 0.f, 0.f),
@@ -1366,7 +1455,11 @@ namespace sibr
 			MatId2Name materialNames;
 			MatIds materialIds;
 
-			std::string matName("SibrSkyEmissive" + part);
+			std::string matName;
+			if (part == PartOfSphere::BOTTOM)
+				matName = std::string("SibrSkyEmissivebottom");
+			else
+				matName = std::string("SibrSkyEmissiveup");
 			materialNames.push_back(matName);
 
 			std::vector<int> matIdsSphere;

@@ -120,7 +120,7 @@ namespace sibr
 	private: // STATIC //
 
 		/// Will be called by embree whenever an error occurs
-		static void rtcErrorCallback( RTCError code, const char* msg );
+		static void rtcErrorCallback(void* userPtr, RTCError code, const char* msg);
 
 		/// Used to initialize flag of registers used by SSE
 		static bool g_initRegisterFlag; // = false
@@ -129,7 +129,6 @@ namespace sibr
 	private: // MEMBER //
 
 		RTCScenePtr		_scene;		///< scene storing raycastable meshes
-	public: /// \todo TODO for debugging only -- remove !
 		RTCScenePtr	scene() 	{ return _scene; }
 		RTCDevicePtr	_devicePtr;	///< embree device (context for a raycaster)
 	};

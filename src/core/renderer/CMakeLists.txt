@@ -3,10 +3,10 @@ project(sibr_renderer)
 file(GLOB SOURCES "*.cpp" "*.h" "*.hpp")
 source_group("Source Files" FILES ${SOURCES})
 
-file(GLOB SHADERS "shaders/*.frag" "shaders/*.vert" "shaders/*.geom")
+file(GLOB SHADERS "shaders/*.frag" "shaders/*.vert" "shaders/*.geom" "shaders/*.fp" "shaders/*.gp" "shaders/*.vp")
 source_group("Source Files\\shaders" FILES ${SHADERS})
 
-file(GLOB SOURCES "*.cpp" "*.h" "*.hpp" "shaders/*.frag" "shaders/*.vert" "shaders/*.geom")
+file(GLOB SOURCES "*.cpp" "*.h" "*.hpp" "shaders/*.frag" "shaders/*.vert" "shaders/*.geom" "shaders/*.fp" "shaders/*.gp" "shaders/*.vp")
 
 
 ## Specify target rules

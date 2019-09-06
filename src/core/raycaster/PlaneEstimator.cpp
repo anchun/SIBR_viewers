@@ -28,8 +28,8 @@ PlaneEstimator::PlaneEstimator(const std::vector<sibr::Vector3f> & vertices, boo
 		std::uniform_real_distribution<double> dist(0.0, 1.0);
 
 		for (const auto & v : vertices) {
-			float random = dist(mt);
-			if (random < 200000.0f / vertices.size()) {
+			double random = dist(mt);
+			if (random < 200000.0 / double(vertices.size())) {
 				if (!excludeBB || (boxScaled.exteriorDistance(v)==0) )
 					_Points.push_back(v);
 				else if (excludeBB && boxScaled.exteriorDistance(v) > 0) {
@@ -279,6 +279,7 @@ sibr::Vector4f PlaneEstimator::estimateGroundPlane(sibr::Vector3f roughUp)
 	else {
 		std::cout << "Error : Plane not computed, you should call computePlanes first" << std::endl;
 		SIBR_ERR;
+		return { 0.0f, 0.0f, 0.0f, 0.0f };
 	}
 }
 
@@ -301,7 +302,7 @@ sibr::Vector3f PlaneEstimator::estimateMedianVec(const std::vector<sibr::Vector3
 	std::sort(medUpY.begin(), medUpY.end());
 	std::sort(medUpZ.begin(), medUpZ.end());
 
-	int medPos = medUpX.size() / 2;
+	const size_t medPos = medUpX.size() / 2;
 
 	sibr::Vector3f upMed(medUpX[medPos], medUpY[medPos], medUpZ[medPos]);
 	upMed.normalize();
