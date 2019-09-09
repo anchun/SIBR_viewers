@@ -326,21 +326,21 @@ namespace sibr
 			int i = 0;
 			for (std::string line; std::getline(in, line); i++)
 			{
-				int w = 1920, h = 1280;
+				int w = 1024, h = 768;
 				if (wh.size() > 0) {
 					int whI = std::min(i, (int)wh.size() - 1);
 					w = wh[whI].x();
 					h = wh[whI].y();
 				}
 				else {
-					std::cout << "Warning default image size of 1920*1280 is supposed for camera" << std::endl;
+					std::cout << "Warning default image size of 1024*768 is supposed for camera" << std::endl;
 				}
 
 				std::string camName = line.substr(0, line.find(" "));
 				size_t originPos = line.find("-D origin=") + 10;
 				size_t targetPos = line.find("-D target=") + 10;
 				size_t upPos = line.find("-D up=") + 6;
-				size_t fovPos = line.find("-D fov=") + 7;
+				size_t fovPos = line.find("-D fovy=") + 8;
 				size_t clipPos = line.find("-D clip=") + 8;
 				size_t endPos = line.size();
 
@@ -381,7 +381,7 @@ namespace sibr
 				mLook(3, 3) = 1;
 
 				float fovRad = fov * float(M_PI) / 180;
-				float sibr_focal = 0.5f*h / tan(fovRad / 2.0f); //float fov = 2.0f * atan(0.5f*h / m(0));
+				float sibr_focal = 0.5f*h / tan(fovRad / 2.0f); //Lookat file contain the vertical field of view now
 
 				Eigen::Matrix4f r(mLook);
 				/*float m[15] = {

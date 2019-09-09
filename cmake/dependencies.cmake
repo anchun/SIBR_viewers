@@ -205,7 +205,7 @@ endif()
         )
     elseif (MSVC14)
         set(assimp_set_arguments 
-            CHECK_CACHED_VAR ASSIMP_DIR PATH "Assimp-3.3.1"
+            CHECK_CACHED_VAR ASSIMP_DIR PATH "Assimp-4.1.0"
         )
     else ()
         message("There is no provided ASSIMP library for your version of MSVC")
@@ -214,7 +214,7 @@ endif()
 win3rdParty(ASSIMP #VERBOSE ON
         MSVC11 "win3rdParty/MSVC11/ASSIMP" "https://gforge.inria.fr/frs/download.php/file/35212/Assimp_3.1_fix.7z"
         MSVC12 "win3rdParty/MSVC12/ASSIMP" "https://gforge.inria.fr/frs/download.php/file/35212/Assimp_3.1_fix.7z"
-        MSVC14 "win3rdParty/MSVC14/ASSIMP" "https://gforge.inria.fr/frs/download.php/file/36955/Assimp-3.3.1.7z"
+        MSVC14 "win3rdParty/MSVC14/ASSIMP" "https://gforge.inria.fr/frs/download.php/file/38122/Assimp-4.1.0.7z"
         SET ${assimp_set_arguments}
 )
 find_package(ASSIMP REQUIRED)
@@ -865,9 +865,9 @@ endif()
 
 if (BUILD_IBR_TORCHGL_INTEROP)
     sibr_addlibrary(
-        NAME torchgl_interop
-        MSVC11 "https://gforge.inria.fr/frs/download.php/file/38119/libtorch.7z"
-        MSVC14 "https://gforge.inria.fr/frs/download.php/file/38119/libtorch.7z"  
+        NAME libtorch
+        MSVC11 "https://gforge.inria.fr/frs/download.php/file/38120/libtorch.7z"
+        MSVC14 "https://gforge.inria.fr/frs/download.php/file/38120/libtorch.7z"  
         REQUIREDFOR BUILD_IBR_TORCHGL_INTEROP
     )
 endif()
