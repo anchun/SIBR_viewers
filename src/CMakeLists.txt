@@ -85,6 +85,7 @@ SUBDIRLIST(SUBDIRS ${SIBR_PROJECTS_FOLDER})
 
 FOREACH(subdir ${SUBDIRS})
 
+  message("project ${subdir} found")
   set(PROJECT_NAME "BUILD_IBR_${subdir}")
   string(TOUPPER ${PROJECT_NAME} PROJECT_NAME)
   if(${${PROJECT_NAME}})
