@@ -37,7 +37,9 @@ namespace sibr
 
 		typedef std::map<std::string, sibr::ImageRGB::Ptr>		OpacityMaps;
 		typedef std::map<std::string, sibr::ImageRGB::Ptr>		DiffuseMaps;
+
 		typedef sibr::ImageRGB::Ptr								TagsMap;
+		typedef sibr::ImageRGB::Ptr								TagsCoveringMap;
 
 		typedef std::vector<Mesh>								SubMeshes;
 		typedef std::vector<sibr::ImageRGB>						AlbedoTextures;
@@ -201,6 +203,14 @@ namespace sibr
 		inline void tagsMap(const TagsMap & map);
 		/// get the tagsMap
 		inline const TagsMap& tagsMap(void) const;
+		///set the tagsCoveringFile boolean
+		inline void hasTagsCoveringFile(bool hasOrNot);
+		///get the tagsFile boolean
+		inline const bool hasTagsCoveringFile(void) const;
+		/// Set the tagsMap
+		inline void tagsCoveringMap(const TagsMap & map);
+		/// get the tagsMap
+		inline const TagsMap& tagsCoveringMap(void) const;
 		/// set the subMeshes 
 		inline void subMeshes(const SubMeshes& subMeshes);
 		/// get the subMeshes 
@@ -300,7 +310,10 @@ namespace sibr
 
 		OpacityMaps _opacityMaps;
 		DiffuseMaps _diffuseMaps;
+
 		TagsMap		_tagsMap;
+		TagsMap		_tagsCoveringMap;
+		std::vector<std::string> uniformColorMtlList;
 
 		// We have to gen one mesh per material to render them separately
 		SubMeshes	_subMeshes;
@@ -316,6 +329,10 @@ namespace sibr
 		bool _hasTagsFile = false;
 		sibr::Texture2DRGB::Ptr _tagTexture;
 		GLuint _idTagTexture;
+
+		bool _hasTagsCoveringFile = false;
+		sibr::Texture2DRGB::Ptr _tagCoveringTexture;
+		GLuint _idTagCoveringTexture;
 
 		//AO attributes
 		AmbientOcclusion _ambientOcclusion;
@@ -384,6 +401,16 @@ namespace sibr
 		return _hasTagsFile;
 	}
 
+	void MaterialMesh::hasTagsCoveringFile(bool hasOrNot) 
+	{
+		_hasTagsCoveringFile = hasOrNot;
+	}
+
+	const bool MaterialMesh::hasTagsCoveringFile(void) const 
+	{
+		return _hasTagsCoveringFile;
+	}
+
 	void MaterialMesh::opacityMaps(const OpacityMaps& maps)
 	{
 		_opacityMaps = maps;
@@ -395,6 +422,14 @@ namespace sibr
 
 	const MaterialMesh::TagsMap& MaterialMesh::tagsMap(void) const {
 		return _tagsMap;
+	}
+
+	void MaterialMesh::tagsCoveringMap(const TagsMap & map) {
+		_tagsCoveringMap = map;
+	}
+
+	const MaterialMesh::TagsMap& MaterialMesh::tagsCoveringMap(void) const {
+		return _tagsCoveringMap;
 	}
 
 	ImageRGB::Ptr MaterialMesh::diffuseMap(const std::string& matName) const

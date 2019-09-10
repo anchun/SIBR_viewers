@@ -440,15 +440,16 @@ namespace sibr
 
 				std::string nameMat = attribute->value();
 
-				bool breakBool = false;
 
 			    // Check if a texture exists in our node with diffuse reflectance
 				// If none is found, explore each BRDF until found.
 				std::vector <rapidxml::xml_node<>*> queue;
 				queue.push_back(node);
 
+				bool breakBool = false;
 
 				while (!queue.empty()) {
+
 
 					//Texture Case
 					for (rapidxml::xml_node<> *nodeTexture =
@@ -543,6 +544,7 @@ namespace sibr
 											redComponent << ", " << blueComponent <<
 											", " << greenComponent << ", " << std::endl;*/
 										_diffuseMaps[nameMat] = texture;
+										uniformColorMtlList.push_back(nameMat);
 										breakBool = true;
 										break;
 									}
@@ -557,24 +559,6 @@ namespace sibr
 							}
 					}
 
-					if (_diffuseMaps[nameMat].get() == nullptr) {
-
-						float r = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-						float g = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-						float b = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-
-						const sibr::ImageRGB::Pixel color(
-							static_cast<const unsigned char>(r * 255),
-							static_cast<const unsigned char>(g * 255),
-							static_cast<const unsigned char>(b * 255)
-						);
-						sibr::ImageRGB::Ptr texture(new sibr::ImageRGB(
-							1, 1, color));
-						SIBR_WRG << "Warning: No color and no texture found for " << nameMat << ", " <<
-							"material will be chosen randomly." << std::endl;
-						_diffuseMaps[nameMat] = texture;
-					}
-
 					queue.erase(queue.begin());
 
 					for (rapidxml::xml_node<> *node = queue.front()->
@@ -584,6 +568,24 @@ namespace sibr
 						queue.push_back(node);
 					}
 
+				}
+				if (_diffuseMaps[nameMat].get() == nullptr) {
+
+					float r = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+					float g = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+					float b = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+
+					const sibr::ImageRGB::Pixel color(
+						static_cast<const unsigned char>(r * 255),
+						static_cast<const unsigned char>(g * 255),
+						static_cast<const unsigned char>(b * 255)
+					);
+					sibr::ImageRGB::Ptr texture(new sibr::ImageRGB(
+						1, 1, color));
+					SIBR_WRG << "Warning: No color and no texture found for " << nameMat << ", " <<
+						"material will be chosen randomly." << std::endl;
+					_diffuseMaps[nameMat] = texture;
+					uniformColorMtlList.push_back(nameMat);
 				}
 
 
@@ -1198,6 +1200,13 @@ namespace sibr
 			_idTagTexture = _tagTexture->handle();
 		}
 
+		if (_hasTagsCoveringFile) {
+			sibr::ImageRGB::Ptr texturePtr = _tagsCoveringMap;
+			_tagCoveringTexture = std::shared_ptr<sibr::Texture2DRGB>(
+				new sibr::Texture2DRGB(*texturePtr));
+			_idTagCoveringTexture = _tagCoveringTexture->handle();
+		}
+
 		_albedoTexturesInitialized = true;
 	}
 
@@ -1218,7 +1227,13 @@ namespace sibr
 				glActiveTexture(GL_TEXTURE0);
 				glBindTexture(GL_TEXTURE_2D, _idTextures[i]);
 
-				if (_hasTagsFile && _tagTexture != nullptr) {
+				if (_hasTagsCoveringFile && _tagCoveringTexture != nullptr
+					&& (std::find(uniformColorMtlList.begin(), uniformColorMtlList.end(),*it)
+					 != uniformColorMtlList.end())) {
+				glActiveTexture(GL_TEXTURE1);
+				glBindTexture(GL_TEXTURE_2D, _idTagCoveringTexture);
+				}
+				else if (_hasTagsFile && _tagTexture != nullptr) {
 				glActiveTexture(GL_TEXTURE1);
 				glBindTexture(GL_TEXTURE_2D, _idTagTexture);
 				}

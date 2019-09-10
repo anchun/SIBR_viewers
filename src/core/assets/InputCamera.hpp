@@ -31,6 +31,8 @@ namespace sibr
 
 		InputCamera(float f, float k1, float k2, int w, int h, int id);
 
+		InputCamera(int id, int w, int h, sibr::Vector3f & position, sibr::Matrix3f & rotation, float focal, float k1, float k2, bool active);
+
 		/** Constructor, initialize the input camera.
 		* \param id ID of input image
 		* \param w  width of input image
