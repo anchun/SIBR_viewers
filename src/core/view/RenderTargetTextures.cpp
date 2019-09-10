@@ -135,7 +135,7 @@ namespace sibr {
 			loadFile(Resources::Instance()->getResourceFilePathName("depthonly.vp")),
 			loadFile(Resources::Instance()->getResourceFilePathName("depthonly.fp")));
 
-		const uint interpFlag = (SIBR_SCENE_LINEAR_SAMPLING & SIBR_SCENE_LINEAR_SAMPLING) ? SIBR_GPU_LINEAR_SAMPLING : 0;
+		const uint interpFlag = (flags & SIBR_SCENE_LINEAR_SAMPLING) ? SIBR_GPU_LINEAR_SAMPLING : 0;
 
 		RenderTargetLum32F depthRT(_width, _height, interpFlag);
 

@@ -90,7 +90,10 @@ namespace sibr
 		SIBR_CLASS_PTR(SceneDebugView);
 
 	public:
-		SceneDebugView(const std::shared_ptr<BasicIBRScene> & scene, const Viewport & viewport, const InteractiveCameraHandler::Ptr & camHandler, const BasicDatasetArgs & myArgs);
+
+		enum CameraInfoDisplay { SIZE, FOCAL, FOV_Y, ASPECT };
+
+		SceneDebugView(const std::shared_ptr<BasicIBRScene> & scene, const Viewport & viewport, const InteractiveCameraHandler::Ptr & camHandler, const BasicIBRAppArgs & myArgs);
 
 
 		virtual void onUpdate(Input & input, const float deltaTime, const Viewport & viewport = Viewport(0.0f, 0.0f, 0.0f, 0.0f));
@@ -131,6 +134,8 @@ namespace sibr
 
 		std::shared_ptr<BasicIBRScene> _scene;
 		std::vector<CameraInfos> _cameras;
+
+		CameraInfoDisplay cam_info_option = SIZE;
 
 		std::string camera_path;
 
