@@ -13,12 +13,6 @@ namespace sibr {
 	TrackBall::TrackBall( bool _verbose ) : hasBeenInitialized(false), shadersCompiled(false), state(TrackBallState::IDLE), verbose(_verbose),
 		fixedCamera(InputCamera()), tempCamera(InputCamera()), isActive(true)
 	{
-		mouseCurrentStates[0] = false;
-		mouseCurrentStates[1] = false;
-		mouseLastStates[0] = false;
-		mouseLastStates[1] = false;
-		wasPressedStates[0] = false;
-		wasPressedStates[1] = false;
 		drawThis = true;
 	}
 
@@ -191,19 +185,15 @@ namespace sibr {
 
 	void TrackBall::update( const Input & input , const Viewport & viewport ,  std::shared_ptr<Raycaster> raycaster )
 	{
-		if( !hasBeenInitialized || !isActive) { return; }
+		if( !hasBeenInitialized || !isActive || input.empty()) { return; }
 		
 		updateTrackBallCameraSize(viewport);
-
-		updateMouseStates(input);
 
 		updateTrackBallStatus( input, viewport );
 
 		updateTrackBallCamera(input,viewport,raycaster);
 
 		updateFromKeyboard(input);
-
-		swapMouseStates();
 	}
 
 	void TrackBall::updateAspectWithViewport(const Viewport & viewport)
@@ -226,7 +216,7 @@ namespace sibr {
 		}
 		if( input.key().isActivated(Key::LeftControl) ){
 			state = TrackBallState::IDLE;	
-		} else if ( isPressed(TrackBallMouseKey::RIGHT) ){
+		} else if ( input.mouseButton().isPressed(Mouse::Right) ){
 			lastPoint2D = currentPoint2D;
 			tempCamera = fixedCamera;
 			tempCenter = fixedCenter;
@@ -235,7 +225,7 @@ namespace sibr {
 			} else {
 				state = TrackBallState::TRANSLATION_Z;
 			}
-		} else if( isPressed(TrackBallMouseKey::LEFT) ){
+		} else if(input.mouseButton().isPressed(Mouse::Left)){
 			lastPoint2D = currentPoint2D;
 			tempCamera = fixedCamera;
 			if( isInTrackBall2dRegion( lastPoint2D, viewport ) ){
@@ -243,7 +233,7 @@ namespace sibr {
 			} else {
 				state = TrackBallState::ROTATION_ROLL;
 			}		
-		} else if( isReleased(TrackBallMouseKey::RIGHT) || isReleased(TrackBallMouseKey::LEFT) ){
+		} else if(input.mouseButton().isReleased(Mouse::Right) || input.mouseButton().isReleased(Mouse::Left) ){
 			if( state!= TrackBallState::IDLE){
 				state = TrackBallState::IDLE;
 				fixedCamera = tempCamera;
@@ -276,7 +266,7 @@ namespace sibr {
 	void TrackBall::updateBallCenter( const Input & input, std::shared_ptr<Raycaster> raycaster )
 	{
 
-		if( raycaster.get()==nullptr || !isPressed(TrackBallMouseKey::LEFT) ){ 
+		if( raycaster.get()==nullptr || !input.mouseButton().isPressed(Mouse::Left) ){
 			return; 
 		}
 
@@ -336,7 +326,7 @@ namespace sibr {
 	{
 		if( !isInTrackBall2dRegion( input.mousePosition(), viewport ) ) { return; }
 
-		if( isPressed(TrackBallMouseKey::RIGHT) ){
+		if( input.mouseButton().isPressed(Mouse::Right) ){
 			Vector3f dir( CameraRaycaster::computeRayDir( fixedCamera, input.mousePosition().cast<float>() ) );
 			Vector3f pointOnPlane = fixedCenter;
 			if( raycaster.get() != nullptr ){
@@ -504,36 +494,6 @@ namespace sibr {
 		return v.dot(uOrtho) >= 0;
 	}
 
-	bool TrackBall::isPressed( const TrackBallMouseKey & key ) const
-	{
-		return mouseCurrentStates[(int)key] && !mouseLastStates[(int)key];
-	}
-
-	bool TrackBall::isReleased( const TrackBallMouseKey & key ) const
-	{
-		return !mouseCurrentStates[(int)key] && mouseLastStates[(int)key];
-	}
-
-	bool TrackBall::wasPressed(const TrackBallMouseKey & key) const
-	{
-		return wasPressedStates[(int)key];
-	}
-
-	void TrackBall::updateMouseStates(const Input & input)
-	{
-		wasPressedStates[0] = false;
-		wasPressedStates[1] = false;
-		mouseCurrentStates[0] = input.mouseButton().isActivated(Mouse::Code::Left);
-		mouseCurrentStates[1] = input.mouseButton().isActivated(Mouse::Code::Right);
-	}
-
-	void TrackBall::swapMouseStates(void)
-	{
-		wasPressedStates[0] = isPressed(sibr::TrackBallMouseKey::LEFT);
-		wasPressedStates[1] = isPressed(sibr::TrackBallMouseKey::RIGHT);
-		mouseLastStates[0] = mouseCurrentStates[0];
-		mouseLastStates[1] = mouseCurrentStates[1];
-	}
 
 	void TrackBall::initTrackBallShader( void )
 	{

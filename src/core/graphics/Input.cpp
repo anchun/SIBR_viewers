@@ -8,6 +8,7 @@ namespace sibr
 	{
 		/// \todo TODO: add warning if no windows have been created
 		static Input	instance;
+		instance._empty = false;
 		return instance;
 	}
 

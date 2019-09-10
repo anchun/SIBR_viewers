@@ -337,14 +337,19 @@ namespace sibr
 			_mouseScroll = v;
 		}
 
+		bool empty() const {
+			return _empty;
+		}
+
 	private:
 
 		Keyboard			_keyboard;
 		MouseButton			_mouseButton;
 
-		Vector2i			_mousePos;
-		Vector2i			_mousePrevPos;
-		double				_mouseScroll;
+		Vector2i			_mousePos = {0, 0};
+		Vector2i			_mousePrevPos = { 0, 0 };
+		double				_mouseScroll = 0.0;
+		bool				_empty = true;
 
 	};
 

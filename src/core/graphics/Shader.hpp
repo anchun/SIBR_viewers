@@ -139,7 +139,6 @@ namespace sibr
 		GLuniform() = default;
 
 		void init(sibr::GLShader& shader, std::string name) {
-			// \todo We could restore the parameter value if the shader was already init.
 			parameter.init(shader, name);
 		}
 
