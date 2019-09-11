@@ -13,12 +13,6 @@
 
 namespace sibr
 {
-
-	//template <typename T_Type, unsigned T_NumComp>
-	//static void		show(const Image<T_Type, T_NumComp> & img, const std::string& windowTitle = "sibr::show()", bool closeWindow = true) {
-	//}
-
-
 	/**	Note that the windowTitle name must be different from all other window
 	*
 	*   Returns TRUE if window is focused (useful for managing interactions).
@@ -31,15 +25,7 @@ namespace sibr
 	*/
 	SIBR_GRAPHICS_EXPORT void 		fitImageToDisplayRegion(const Vector2f & imgSize, const Vector2i & regionSize, Vector2f& offset, Vector2f& size);
 	
-	//template <typename T_Type, unsigned T_NumComp>
-	//static void		show(const RenderTarget<T_Type, T_NumComp> & rt, uint layer = 0, const std::string& windowTitle = "sibr::show()", bool closeWindow = true) {
-	//	sibr::Image<T_Type, T_NumComp>	img(rt.w(), rt.h());
-	//	rt.readBack(img, layer);
-	//	show(img, windowTitle, closeWindow);
-	//}
-	
 	SIBR_GRAPHICS_EXPORT Mesh::Ptr generateMeshForText(const std::string & text, unsigned int & separationIndex);
-
 
 } // namespace sibr
 
