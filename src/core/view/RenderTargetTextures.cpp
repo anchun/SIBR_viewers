@@ -53,7 +53,7 @@ namespace sibr {
 
 		for (uint i = 0; i < imgs->inputImages().size(); i++) {
 			if (cams->inputCameras()[i].isActive()) {
-				ImageRGB img = std::move(imgs->inputImages()[i].clone());
+				ImageRGB img = std::move(imgs->inputImages()[i]->clone());
 				img.flipH();
 
 				std::shared_ptr<Texture2DRGB> rawInputImage(new Texture2DRGB(img, interpFlag));
@@ -178,7 +178,7 @@ namespace sibr {
 	void RGBInputTextureArray::initRGBTextureArrays(InputImages::Ptr imgs, int flags)
 	{
 		if (!isInit()) {
-			initSize(imgs->inputImages()[_initActiveCam].w(), imgs->inputImages()[_initActiveCam].h());
+			initSize(imgs->inputImages()[_initActiveCam]->w(), imgs->inputImages()[_initActiveCam]->h());
 		}
 
 		_inputRGBArrayPtr.reset(new Texture2DArrayRGB(imgs->inputImages(), _width, _height, flags));
