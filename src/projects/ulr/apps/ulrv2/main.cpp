@@ -11,7 +11,6 @@
 #include <core/raycaster/Raycaster.hpp>
 #include <core/view/SceneDebugView.hpp>
 
-#include <core/view/DatasetView.hpp>
 
 #define PROGRAM_NAME "sibr_ulr_app"
 using namespace sibr;
