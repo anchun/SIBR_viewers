@@ -93,7 +93,7 @@ namespace sibr
 
 		enum CameraInfoDisplay { SIZE, FOCAL, FOV_Y, ASPECT };
 
-		SceneDebugView(const std::shared_ptr<BasicIBRScene> & scene, const Viewport & viewport, const InteractiveCameraHandler::Ptr & camHandler, const BasicIBRAppArgs & myArgs);
+		SceneDebugView(const std::shared_ptr<BasicIBRScene> & scene, const Viewport & viewport, const InteractiveCameraHandler::Ptr & camHandler, const BasicDatasetArgs & myArgs);
 
 
 		virtual void onUpdate(Input & input, const float deltaTime, const Viewport & viewport = Viewport(0.0f, 0.0f, 0.0f, 0.0f));
