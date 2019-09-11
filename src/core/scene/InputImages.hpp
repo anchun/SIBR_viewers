@@ -1,10 +1,11 @@
 #pragma once
-# include "core/view/ParseData.hpp"
 
+# include "core/scene/ParseData.hpp"
+#include "core/scene/Config.hpp"
 
 namespace sibr
 {
-	class SIBR_VIEW_EXPORT InputImages {
+	class SIBR_SCENE_EXPORT InputImages {
 		SIBR_DISALLOW_COPY(InputImages);
 	public:
 

@@ -24,6 +24,7 @@ glfw3
 sibr_system
 sibr_view
 sibr_assets
+sibr_scene
 )
 
 #define postfix for various debug/release

@@ -1,11 +1,11 @@
 #pragma once
-# include "core/view/ParseData.hpp"
-
+# include "core/scene/ParseData.hpp"
+#include "core/scene/Config.hpp"
 
 namespace sibr
 {
 
-	class SIBR_VIEW_EXPORT CalibratedCameras {
+	class SIBR_SCENE_EXPORT CalibratedCameras {
 	public:
 
 		/**

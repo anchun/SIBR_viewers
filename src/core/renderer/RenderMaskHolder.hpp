@@ -7,7 +7,7 @@
 # include <core/graphics/Shader.hpp>
 # include <core/graphics/Texture.hpp>
 # include <core/graphics/Image.hpp>
-# include <core/view/BasicIBRScene.hpp>
+# include <core/scene/BasicIBRScene.hpp>
 
 namespace sibr { 
 	/// \todo TODO: I don't think we need RenderTarget;

@@ -1,6 +1,6 @@
 
 #include <core/renderer/RenderMaskHolder.hpp>
-#include <core/view/Resources.hpp>
+#include <core/assets/Resources.hpp>
 
 namespace sibr { 
 	void	RenderMaskHolder::setMasks( const std::vector<MaskPtr>& masks )
