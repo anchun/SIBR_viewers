@@ -137,7 +137,7 @@ namespace sibr
 		_labelShader.begin();
 		// Bind the ImGui font texture.
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, (GLuint)ImGui::GetFont()->ContainerAtlas->TexID);
+		glBindTexture(GL_TEXTURE_2D, (GLuint)(intptr_t)(ImGui::GetFont()->ContainerAtlas->TexID));
 		_labelShaderViewport.set(Vector2f(vp.finalWidth(), vp.finalHeight()));
 
 		for (const auto & camInfos : cams_info) {
@@ -162,7 +162,7 @@ namespace sibr
 			label.mesh->renderSubMesh(0, label.splitIndex, false, false);
 			// Render the text label.
 			_labelShaderScale.set(1.0f*_labelScale);
-			label.mesh->renderSubMesh(label.splitIndex, label.mesh->triangles().size() * 3, false, false);
+			label.mesh->renderSubMesh(label.splitIndex, int(label.mesh->triangles().size()) * 3, false, false);
 
 		}
 		_labelShader.end();
@@ -200,7 +200,7 @@ namespace sibr
 	}
 
 	SceneDebugView::SceneDebugView(const BasicIBRScene::Ptr & scene, const Viewport & viewport,
-		const InteractiveCameraHandler::Ptr & camHandler, const BasicIBRAppArgs & myArgs)
+		const InteractiveCameraHandler::Ptr & camHandler, const BasicDatasetArgs & myArgs)
 	{
 		initImageCamShaders();
 		setupLabelsManagerShader();
@@ -348,6 +348,18 @@ namespace sibr
 		}
 	}
 
+	void SceneDebugView::updateActiveCams(const std::vector<uint>& cams_id)
+	{
+		for (auto & cam : _cameras) {
+			cam.highlight = false;
+		}
+		for (const uint id : cams_id) {
+			if (id < _cameras.size()) {
+				_cameras[id].highlight = true;
+			}
+		}
+	}
+
 	void SceneDebugView::gui_options()
 	{
 
@@ -481,11 +493,9 @@ namespace sibr
 	{
 		addMesh("proxy", _scene->proxies()->proxyPtr());
 
-		//guizmo
+		//gizmo
 		addMeshAsLines("guizmo", RenderUtility::createAxisGizmoPtr())
 			.setDepthTest(false).setColorMode(MeshData::ColorMode::VERTEX);
 	}
 
 } // namespace
-
-

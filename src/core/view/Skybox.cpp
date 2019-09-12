@@ -1,5 +1,5 @@
 
-# include "core/view/Resources.hpp"
+# include "core/assets/Resources.hpp"
 # include "core/view/Skybox.hpp"
 
 namespace sibr

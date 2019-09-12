@@ -314,6 +314,35 @@ namespace sibr
 		static const uint type = GLType<ScalarType>::type;
 	};
 
+	template<typename ScalarType, uint N > struct GLTexFormat<ImagePtr<ScalarType, N>, ScalarType, N > {
+		using ImageType = ImagePtr<ScalarType, N>;
+
+		static ImageType flip(const ImageType & img) {
+			ImageType temp = ImageType::fromImg(*img);
+			temp->flipH();
+			return temp;
+		}
+		static ImageType resize(const ImageType & img, uint w, uint h) {
+			return ImageType::fromImg(img->resized(w, h));
+		}
+		static uint width(const ImageType & img) {
+			return img->w();
+		}
+		static uint height(const ImageType & img) {
+			return img->h();
+		}
+		static const void * data(const ImageType & img) {
+			return img->data();
+		}
+
+		static const uint internal_format = GLFormat<ScalarType, N>::internal_format;
+		static const uint format = GLFormat<ScalarType, N>::format;
+		static const uint int_internal_format = GLFormat<ScalarType, N>::int_internal_format;
+		static const uint int_format = GLFormat<ScalarType, N>::int_format;
+		static const uint isdepth = GLFormat<ScalarType, N>::isdepth;
+		static const uint type = GLType<ScalarType>::type;
+	};
+
 	template<typename ScalarType, uint N > struct GLTexFormat<cv::Mat, ScalarType, N> {
 		static_assert(std::is_same_v<ScalarType, uchar> && (N == 3 || N == 4 || N == 1) , "GLTexFormat with cv::Mat currently only defined for 3U8 or 4U8");
 

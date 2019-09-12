@@ -1,5 +1,5 @@
 # include "Config.hpp"
-# include <core/view/Resources.hpp>
+# include <core/assets/Resources.hpp>
 # include <projects/ulr/renderer/ULRRenderer.hpp>
 
 namespace sibr { 

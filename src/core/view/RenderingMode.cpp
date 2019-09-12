@@ -1,7 +1,7 @@
 
 #include "core/graphics/RenderUtility.hpp"
 #include "core/view/RenderingMode.hpp"
-#include "core/view/Resources.hpp"
+#include "core/assets/Resources.hpp"
 #include "core/graphics/Image.hpp"
 
 namespace sibr

@@ -1,6 +1,6 @@
 #pragma once
-#include "core/view/picojson/picojson.hpp"
-#include "core/view/Config.hpp"
+#include "core/system/picojson/picojson.hpp"
+#include "core/scene/Config.hpp"
 #include "core/system/CommandLineArgs.hpp"
 #
 #include "core/system/Matrix.hpp"
@@ -15,10 +15,6 @@
 
 namespace sibr{
 
-
-	
-
-
 	/**
 	* Class used to hold the data required for defining an IBR Scene
 	* 
@@ -29,10 +25,10 @@ namespace sibr{
 	* - 
 	* - 
 	*
-	* \ingroup sibr_view
+	* \ingroup sibr_assets
 	*/
 
-	class SIBR_VIEW_EXPORT ParseData{
+	class SIBR_SCENE_EXPORT ParseData{
 		
 	public:
 

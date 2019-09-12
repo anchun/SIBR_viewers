@@ -8,13 +8,13 @@
 # include "core/graphics/Camera.hpp"
 # include "core/graphics/Window.hpp"
 # include "core/graphics/RenderUtility.hpp"
-# include "core/view/Resources.hpp"
+# include "core/assets/Resources.hpp"
 # include "core/graphics/Shader.hpp"
 # include "core/graphics/Mesh.hpp"
 # include "core/view/InteractiveCameraHandler.hpp"
 # include "core/view/ViewBase.hpp"
 # include "core/view/FPSCamera.hpp"
-# include "core/view/BasicIBRScene.hpp"
+# include "core/scene/BasicIBRScene.hpp"
 # include "core/system/CommandLineArgs.hpp"
 #include "ViewUtils.hpp"
 
@@ -93,7 +93,7 @@ namespace sibr
 
 		enum CameraInfoDisplay { SIZE, FOCAL, FOV_Y, ASPECT };
 
-		SceneDebugView(const std::shared_ptr<BasicIBRScene> & scene, const Viewport & viewport, const InteractiveCameraHandler::Ptr & camHandler, const BasicIBRAppArgs & myArgs);
+		SceneDebugView(const std::shared_ptr<BasicIBRScene> & scene, const Viewport & viewport, const InteractiveCameraHandler::Ptr & camHandler, const BasicDatasetArgs & myArgs);
 
 
 		virtual void onUpdate(Input & input, const float deltaTime, const Viewport & viewport = Viewport(0.0f, 0.0f, 0.0f, 0.0f));

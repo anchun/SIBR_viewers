@@ -4,7 +4,7 @@
 # include "Config.hpp"
 # include <core/system/Config.hpp>
 # include <core/graphics/Mesh.hpp>
-# include <core/view/BasicIBRScene.hpp>
+# include <core/scene/BasicIBRScene.hpp>
 # include <core/renderer/CopyRenderer.hpp>
 # include <projects/ulr/renderer/ULRRenderer.hpp>
 # include <core/view/ViewBase.hpp>
