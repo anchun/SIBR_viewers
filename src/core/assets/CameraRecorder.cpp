@@ -22,8 +22,15 @@ namespace sibr
 			const float k = std::min(std::max(_interp, 1e-6f), 1.0f - 1e-6f);
 			sibr::Camera & camStart = _cameras[std::min(int(_pos), int(_cameras.size()) - 1)];
 			sibr::Camera & camNext = _cameras[std::min(int(_pos) + 1, int(_cameras.size())-1)];
+			// Preserve the znear and zfar.
+			const float znear = cam.znear();
+			const float zfar = cam.zfar();
+
 			cam = sibr::Camera::interpolate(camStart, camNext, k);
-			
+			cam.znear(znear);
+			cam.zfar(zfar);
+
+
 			_interp += _speed;
 
 			if (_saving) {

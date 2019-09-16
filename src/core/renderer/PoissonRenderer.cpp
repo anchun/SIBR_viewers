@@ -7,7 +7,7 @@
 #include <utility>
 #include <algorithm>
 
-#include <core/view/Resources.hpp>
+#include <core/assets/Resources.hpp>
 #include <core/graphics/RenderUtility.hpp>
 
 #include <core/renderer/PoissonRenderer.hpp>

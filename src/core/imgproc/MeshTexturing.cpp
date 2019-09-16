@@ -61,7 +61,7 @@ namespace sibr {
 		normal = (wCoord * normals[tri[0]] + uCoord * normals[tri[1]] + vCoord * normals[tri[2]]).normalized();
 	}
 
-	void MeshTexturing::reproject(const std::vector<InputCamera> & cameras, const std::vector<sibr::ImageRGB> & images) {
+	void MeshTexturing::reproject(const std::vector<InputCamera> & cameras, const std::vector<sibr::ImageRGB::Ptr> & images) {
 		// We need a mesh for reprojection.
 		if (!_mesh) {
 			SIBR_WRG << "[Texturing] No mesh available." << std::endl;
@@ -119,7 +119,7 @@ namespace sibr {
 
 					// Reproject, read color.
 					const sibr::Vector2f pos = cam.projectImgSpaceInvertY(vertex).xy();
-					const sibr::Vector3f col = images[cid].bilinear(pos).cast<float>().xyz();
+					const sibr::Vector3f col = images[cid]->bilinear(pos).cast<float>().xyz();
 					// Angle-based weight for now.
 					const float angleWeight = std::max(-occDir.dot(normal), 0.0f);
 					const float weight = angleWeight;

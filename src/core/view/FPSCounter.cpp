@@ -2,7 +2,7 @@
 #include <memory>
 
 #include "core/view/FPSCounter.hpp"
-#include "core/view/Resources.hpp"
+#include "core/assets/Resources.hpp"
 
 #include <core/graphics/imgui/imgui.h>
 #include "core/graphics/GUI.hpp"

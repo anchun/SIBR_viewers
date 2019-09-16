@@ -11,8 +11,6 @@
 #include <core/renderer/DepthRenderer.hpp>
 #include <core/raycaster/Raycaster.hpp>
 #include <core/view/SceneDebugView.hpp>
-
-#include <core/view/DatasetView.hpp>
 #include <Windows.h>
 
 #define PROGRAM_NAME "sibr_ulr_app"

@@ -259,7 +259,9 @@ namespace sibr
 		
 		ImagePtr() { imPtr = std::shared_ptr<Image<T_Type, T_NumComp>>(); };
 		ImagePtr(Image<T_Type, T_NumComp>* imgPtr) { imPtr = std::shared_ptr<Image<T_Type, T_NumComp>>(imgPtr); };
-		ImagePtr(std::shared_ptr<Image<T_Type, T_NumComp>>& imgPtr)  {imPtr = std::shared_ptr<Image<T_Type, T_NumComp>>(imgPtr); };
+		ImagePtr(const std::shared_ptr<Image<T_Type, T_NumComp>>& imgPtr)  {imPtr = std::shared_ptr<Image<T_Type, T_NumComp>>(imgPtr); };
+
+		static ImagePtr fromImg(const ImageType & img) { return ImagePtr(std::make_shared<Image<T_Type, T_NumComp>>(img.clone())); }
 
 		void reset(ImageType * ptr) { imPtr.reset(ptr); }
 

@@ -1,15 +1,22 @@
-project(sibr_system)
+project(sibr_scene)
 
-file(GLOB SOURCES "*.cpp" "*.h" "*.hpp" "picojson/*.hpp" )
+file(GLOB SOURCES "*.cpp" "*.h" "*.hpp")
 source_group("Source Files" FILES ${SOURCES})
+
 
 ## Specify target rules
 add_library(${PROJECT_NAME} SHARED ${SOURCES})
 
 include_directories(${Boost_INCLUDE_DIRS})
 target_link_libraries(${PROJECT_NAME}
-${Boost_LIBRARIES}
-nfd
+  ${Boost_LIBRARIES}
+  ${ASSIMP_LIBRARIES}
+  ${GLEW_LIBRARIES}
+  ${OPENGL_LIBRARIES}
+  ${OpenCV_LIBRARIES}
+  sibr_assets
+  sibr_graphics
+  sibr_raycaster
 )
 
 #define postfix for various debug/release
@@ -19,7 +26,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 	MINSIZEREL_POSTFIX "_msr"
 )
 
-add_definitions( -DSIBR_SYSTEM_EXPORTS -DBOOST_ALL_DYN_LINK  )
+add_definitions( -DSIBR_SCENE_EXPORTS -DBOOST_ALL_DYN_LINK  )
 
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER ${SIBR_FOLDER})
 

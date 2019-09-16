@@ -1,5 +1,5 @@
 # include "Config.hpp"
-# include <core/view/Resources.hpp>
+# include <core/assets/Resources.hpp>
 # include <map>
 # include "ULRV2Renderer.hpp"
 #include "core/system/String.hpp"

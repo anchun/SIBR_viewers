@@ -6,7 +6,7 @@
 # include <core/graphics/Shader.hpp>
 # include <core/graphics/Mesh.hpp>
 # include <core/renderer/RenderMaskHolder.hpp>
-# include <core/view/BasicIBRScene.hpp>
+# include <core/scene/BasicIBRScene.hpp>
 
 namespace sibr { 
 	

@@ -291,7 +291,7 @@ namespace sibr {
 		if (!_interpPath.empty()) {
 			unsigned int nearestCam = (i == -1 ? findNearestCamera(_interpPath) : i);
 			nearestCam = sibr::clamp(nearestCam, unsigned int(0), unsigned int(_interpPath.size() - 1));
-			fromCamera(_interpPath[nearestCam]);
+			fromCamera(_interpPath[nearestCam], true, false);
 		}
 	}
 
@@ -307,6 +307,7 @@ namespace sibr {
 			fromCamera(_currentCamera, false, true);
 			_triggerCameraUpdate = false;
 		}
+
 		if (input.key().isReleased(sibr::Key::B)) {
 			switchMode(_currentMode == ORBIT ? FPS : ORBIT);
 		}

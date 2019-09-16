@@ -2,7 +2,7 @@
 #include <core/graphics/Window.hpp>
 #include <core/view/MultiViewManager.hpp>
 #include <projects/ulr/renderer/ULRView.hpp>
-#include <core/view/BasicIBRScene.hpp>
+#include <core/scene/BasicIBRScene.hpp>
 #include <core/raycaster/Raycaster.hpp>
 #include <core/view/SceneDebugView.hpp>
 

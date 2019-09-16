@@ -1,9 +1,8 @@
-
 #include <iostream>
 #include <fstream>
 #include <algorithm>
 #include <sstream>
-#include "core/view/Resources.hpp"
+#include "core/assets/Resources.hpp"
 
 /// \todo TODO: If you care about security (did someone want to hack/use your app
 /// to hide a virus/retrieve informations from this compiled code), comment

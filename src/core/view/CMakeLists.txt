@@ -1,6 +1,6 @@
 project(sibr_view)
 
-file(GLOB SOURCES "*.cpp" "*.h" "*.hpp" "picojson/*.hpp")
+file(GLOB SOURCES "*.cpp" "*.h" "*.hpp")
 source_group("Source Files" FILES ${SOURCES})
 
 file(GLOB SHADERS "shaders/*.frag" "shaders/*.vert" "shaders/*.geom" "shaders/*.fp" "shaders/*.vp" "shaders/*.gp")
@@ -12,7 +12,7 @@ source_group("Source Files\\interface" FILES ${INTERFACE_SOURCES})
 file(GLOB SOURCES
 	"*.cpp" "*.h" "*.hpp"
 	"shaders/*.frag" "shaders/*.vert" "shaders/*.geom"  "shaders/*.fp" "shaders/*.vp" "shaders/*.gp"
-	"interface/*.cpp" "interface/*.h" "picojson/*.hpp"
+	"interface/*.cpp" "interface/*.h"
 	)
 
 ## Specify target rules
@@ -25,6 +25,7 @@ target_link_libraries(${PROJECT_NAME}
 sibr_graphics
 sibr_assets
 sibr_raycaster
+sibr_scene
 )
 
 #define postfix for various debug/release

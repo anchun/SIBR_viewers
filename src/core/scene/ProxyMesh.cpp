@@ -1,5 +1,5 @@
 #include "ProxyMesh.hpp"
-#pragma once
+
 
 namespace sibr {
 

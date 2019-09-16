@@ -1,6 +1,6 @@
 # include "PositionRender.hpp"
 
-#include <core/view/Resources.hpp>
+#include <core/assets/Resources.hpp>
 
 namespace sibr
 {

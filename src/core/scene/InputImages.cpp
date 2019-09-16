@@ -6,16 +6,18 @@ namespace sibr
 	void InputImages::loadFromData(const ParseData::Ptr & data)
 	{
 		//InputImages out;
-		std::vector<sibr::ImageRGB> imgs;
 		_inputImages.resize(data->imgInfos().size());
 
-		
 		if (data->imgInfos().empty() == false)
 		{
 			#pragma omp parallel for
-			for (int i = 0; i < data->imgInfos().size(); ++i)
-				if (data->activeImages()[i])
-					_inputImages[i].load(data->basePathName() + "/images/" + data->imgInfos().at(i).filename, false);
+			for (int i = 0; i < data->imgInfos().size(); ++i) {
+				if (data->activeImages()[i]) {
+					_inputImages[i] = std::make_shared<ImageRGB>();
+					_inputImages[i]->load(data->basePathName() + "/images/" + data->imgInfos().at(i).filename, false);
+				}
+			}
+									
 		}
 		else
 			SIBR_WRG << "cannot load images (ImageListFile is empty. Did you use ImageListFile::load(...) before ?";
@@ -27,12 +29,15 @@ namespace sibr
 
 	void InputImages::loadFromExisting(const std::vector<sibr::ImageRGB::Ptr>& imgs)
 	{
+		_inputImages = imgs;
+	}
+
+	void InputImages::loadFromExisting(const std::vector<sibr::ImageRGB> & imgs)
+	{
 		_inputImages.resize(imgs.size());
 		for (size_t i = 0; i < imgs.size(); ++i) {
-			_inputImages[i] = imgs[i]->clone();
+			_inputImages[i].reset(new ImageRGB(imgs[i].clone()));
 		}
-
-		return;
 	}
 
 	void InputImages::loadFromPath(const ParseData::Ptr & data, const std::string & prefix, const std::string & postfix)
@@ -43,7 +48,7 @@ namespace sibr
 		for (int i = 0; i < data->imgInfos().size(); ++i) {
 			if (data->activeImages()[i]) {
 				std::string imgPath = data->basePathName()+ "/images/" + prefix + sibr::imageIdToString(i) + postfix;
-				if (!_inputImages[i].load(imgPath, false)) {
+				if (!_inputImages[i]->load(imgPath, false)) {
 					SIBR_WRG << "could not load input image : " << imgPath << std::endl;
 				}
 			}
@@ -55,11 +60,11 @@ namespace sibr
 	{
 		for (uint i = 0; i< _inputImages.size(); i++) {
 			// check size
-			if (_inputImages[i].w() != alphas[i].w() ||
-				_inputImages[i].h() != alphas[i].h())
-				alphas[i] = alphas[i].resized(_inputImages[i].w(), _inputImages[i].h());
-			for (uint x = 0; x<_inputImages[i].w(); x++)
-				for (uint y = 0; y<_inputImages[i].h(); y++) {
+			if (_inputImages[i]->w() != alphas[i].w() ||
+				_inputImages[i]->h() != alphas[i].h())
+				alphas[i] = alphas[i].resized(_inputImages[i]->w(), _inputImages[i]->h());
+			for (uint x = 0; x<_inputImages[i]->w(); x++)
+				for (uint y = 0; y<_inputImages[i]->h(); y++) {
 					ImageRGB::Pixel p = _inputImages[i](x, y);
 					ImageRGB::Pixel bp = back[i](x, y);
 					ImageRGB::Pixel a = alphas[i](x, y);

@@ -1,12 +1,13 @@
 #pragma once
 
 #include "core/graphics/Texture.hpp"
-#include "core/view/CalibratedCameras.hpp"
-#include "core/view/InputImages.hpp"
-#include "core/view/ProxyMesh.hpp"
-#include "core/view/Resources.hpp"
+#include "core/scene/CalibratedCameras.hpp"
+#include "core/scene/InputImages.hpp"
+#include "core/scene/ProxyMesh.hpp"
+#include "core/assets/Resources.hpp"
 # include "core/graphics/Shader.hpp"
 #include "core/graphics/Utils.hpp"
+#include "core/scene/Config.hpp"
 
 
 # define SIBR_SCENE_LINEAR_SAMPLING			4
@@ -15,7 +16,7 @@
 namespace sibr{
 
 
-	class SIBR_VIEW_EXPORT RTTextureSize {
+	class SIBR_SCENE_EXPORT RTTextureSize {
 
 	public:
 		RTTextureSize(uint w = 0) : _width(w) {}
@@ -33,7 +34,7 @@ namespace sibr{
 	};
 
 
-	class SIBR_VIEW_EXPORT RGBDInputTextures : public virtual RTTextureSize {
+	class SIBR_SCENE_EXPORT RGBDInputTextures : public virtual RTTextureSize {
 		SIBR_CLASS_PTR(RGBDInputTextures)
 	public:
 		const std::vector<RenderTargetRGBA32F::Ptr> & inputImagesRT() const;
@@ -47,7 +48,7 @@ namespace sibr{
 	};
 
 
-	class SIBR_VIEW_EXPORT DepthInputTextureArray : public virtual RTTextureSize {
+	class SIBR_SCENE_EXPORT DepthInputTextureArray : public virtual RTTextureSize {
 		SIBR_CLASS_PTR(DepthInputTextureArray)
 	public:
 		void initDepthTextureArrays(CalibratedCameras::Ptr cams, ProxyMesh::Ptr proxies, bool facecull, int flags = SIBR_GPU_LINEAR_SAMPLING);
@@ -58,7 +59,7 @@ namespace sibr{
 
 	};
 
-	class SIBR_VIEW_EXPORT RGBInputTextureArray : public virtual RTTextureSize {
+	class SIBR_SCENE_EXPORT RGBInputTextureArray : public virtual RTTextureSize {
 
 		SIBR_CLASS_PTR(RGBInputTextureArray)
 
@@ -72,7 +73,7 @@ namespace sibr{
 	};
 
 
-	class SIBR_VIEW_EXPORT RenderTargetTextures :
+	class SIBR_SCENE_EXPORT RenderTargetTextures :
 		public virtual RGBDInputTextures,
 		public virtual DepthInputTextureArray,
 		public virtual RGBInputTextureArray 

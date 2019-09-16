@@ -17,8 +17,7 @@ namespace sibr {
 	class Raycaster;
 
 	enum class TrackBallState { IDLE, TRANSLATION_PLANE, TRANSLATION_Z, ROTATION_SPHERE, ROTATION_ROLL };
-	enum class TrackBallMouseKey { LEFT, RIGHT };
-
+	
 	/**
 	* \ingroup sibr_view
 	*/
@@ -40,10 +39,6 @@ namespace sibr {
 
 		/// Legacy method, will be removed soon. Use onRender(viewport) instead.
 		void draw( const Viewport & viewport );
-
-		bool isPressed(const TrackBallMouseKey & key) const;
-		bool isReleased(const TrackBallMouseKey & key) const;
-		bool wasPressed(const TrackBallMouseKey & key) const;
 
 		bool						isActive;
 		bool						drawThis;
@@ -89,8 +84,6 @@ namespace sibr {
 		void updateTrackBallStatus( const Input & input, const Viewport & viewport );
 		void updateTrackBallCamera( const Input & input, const Viewport & viewport ,  std::shared_ptr<Raycaster> raycaster = std::shared_ptr<Raycaster>() );
 
-		void updateMouseStates(const Input & input);
-		void swapMouseStates(void);
 
 		InputCamera					fixedCamera;	
 		InputCamera					tempCamera;
@@ -105,9 +98,6 @@ namespace sibr {
 
 		TrackBallState				state;
 
-		bool						mouseCurrentStates[2];
-		bool						mouseLastStates[2];
-		bool						wasPressedStates[2]; 
 		bool						hasBeenInitialized;
 		bool						verbose;
 
