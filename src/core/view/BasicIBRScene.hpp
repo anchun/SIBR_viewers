@@ -134,7 +134,7 @@ namespace sibr {
 		ProxyMesh::Ptr								_proxies;
 		RenderTargetTextures::Ptr					_renderTargets;
 		sibr::InputCamera							_userCamera;
-
+		
 	};
 
 	///// INLINE DEFINITIONS /////
@@ -179,6 +179,5 @@ namespace sibr {
 		_userCamera = cam;
 	}
 
-	
 
 }

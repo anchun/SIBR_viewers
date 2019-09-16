@@ -5,8 +5,8 @@ namespace sibr {
 	BlurRenderer::BlurRenderer( void )
 	{
 		_shader.init("BlurShader",
-			sibr::loadFile("./shaders_rsc/texture.vert"),
-			sibr::loadFile("./shaders_rsc/blur.frag"));
+			sibr::loadFile(sibr::getBinDirectory() + "/shaders_rsc/texture.vert"),
+			sibr::loadFile(sibr::getBinDirectory() + "/shaders_rsc/blur.frag"));
 		_paramImgSize.init(_shader, "in_image_size");
 	}
 

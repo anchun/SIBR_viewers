@@ -19,9 +19,9 @@ namespace sibr
 	public:
 		struct Z {
 			Z() {}
-			Z(float f, float n) : far(f), near(n) {}
 			float far;
 			float near;
+			Z(float f, float n) : far(f), near(n) {}
 		};
 
 		// Default constructor for Cameras.

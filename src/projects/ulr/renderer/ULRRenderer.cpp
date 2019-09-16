@@ -9,14 +9,14 @@ ULRRenderer::ULRRenderer(const uint w, const uint h)
     std::cerr << "\n[ULRenderer] initializing" << std::endl;
     std::cerr << "\n[ULRenderer] loading shaders" << std::endl;
     _ulrShaderPass1 .init("ULR1",
-			sibr::loadFile("./shaders_rsc/ulr.vert"),
-			sibr::loadFile("./shaders_rsc/ulr1.frag"));
+			sibr::loadFile(sibr::getBinDirectory() + "/shaders_rsc/ulr.vert"),
+			sibr::loadFile(sibr::getBinDirectory() + "/shaders_rsc/ulr1.frag"));
     _ulrShaderPass2 .init("ULR2",
-			sibr::loadFile("./shaders_rsc/ulr.vert"),
-			sibr::loadFile("./shaders_rsc/ulr2.frag"));
+			sibr::loadFile(sibr::getBinDirectory() + "/shaders_rsc/ulr.vert"),
+			sibr::loadFile(sibr::getBinDirectory() + "/shaders_rsc/ulr2.frag"));
     _depthShader.init("Depth",
-			sibr::loadFile("./shaders_rsc/ulr_intersect.vert"),
-			sibr::loadFile("./shaders_rsc/ulr_intersect.frag"));
+			sibr::loadFile(sibr::getBinDirectory() + "/shaders_rsc/ulr_intersect.vert"),
+			sibr::loadFile(sibr::getBinDirectory() + "/shaders_rsc/ulr_intersect.frag"));
 
     _ulrShaderPass1_nCamPos .init(_ulrShaderPass1, "nCamPos");
     _ulrShaderPass1_iCamPos .init(_ulrShaderPass1, "iCamPos");

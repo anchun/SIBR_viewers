@@ -16,8 +16,8 @@ namespace sibr {
 
 	public:
 		CopyRenderer(
-			const std::string& vertFile = "./shaders_rsc/noproj.vert",
-			const std::string& fragFile = "./shaders_rsc/copy.frag"
+			const std::string& vertFile = sibr::getBinDirectory() + "/shaders_rsc/noproj.vert",
+			const std::string& fragFile = sibr::getBinDirectory() + "/shaders_rsc/copy.frag"
 		);
 
 		// Copy input texture to the output texture

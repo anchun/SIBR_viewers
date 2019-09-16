@@ -29,11 +29,11 @@ namespace sibr {
 	PoissonRenderer ::PoissonRenderer ( uint w, uint h ) :
 		_size(w, h)
 	{
-		std::string vp = sibr::loadFile("./shaders_rsc/texture.vert");
-		_jacobiShader  .init("Jacobi",  vp, sibr::loadFile("./shaders_rsc/poisson_jacobi.frag"));
-		_restrictShader.init("Restrict",vp, sibr::loadFile("./shaders_rsc/poisson_restrict.frag"));
-		_interpShader  .init("Interp",  vp, sibr::loadFile("./shaders_rsc/poisson_interp.frag"));
-		_divergShader  .init("Diverg",  vp, sibr::loadFile("./shaders_rsc/poisson_diverg.frag"));
+		std::string vp = sibr::loadFile(sibr::getBinDirectory() + "/shaders_rsc/texture.vert");
+		_jacobiShader  .init("Jacobi",  vp, sibr::loadFile(sibr::getBinDirectory() + "/shaders_rsc/poisson_jacobi.frag"));
+		_restrictShader.init("Restrict",vp, sibr::loadFile(sibr::getBinDirectory() + "/shaders_rsc/poisson_restrict.frag"));
+		_interpShader  .init("Interp",  vp, sibr::loadFile(sibr::getBinDirectory() + "/shaders_rsc/poisson_interp.frag"));
+		_divergShader  .init("Diverg",  vp, sibr::loadFile(sibr::getBinDirectory() + "/shaders_rsc/poisson_diverg.frag"));
 
 		// GLParameters
 		_jacobi_weights.init(_jacobiShader,   "weights");

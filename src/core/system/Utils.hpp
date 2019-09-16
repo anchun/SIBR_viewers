@@ -4,6 +4,7 @@
 
 # include <vector>
 # include "core/system/Config.hpp"
+# include "core/system/String.hpp"
 
 namespace sibr
 {
@@ -41,6 +42,9 @@ namespace sibr
 
 	/** Return the available memory on windows system in Ko*/
 	SIBR_SYSTEM_EXPORT size_t			getAvailableMem();
+
+	/** Return the binary directory on windows system*/
+	SIBR_SYSTEM_EXPORT std::string			getBinDirectory();
 
 	/** Selection mode for the file picker. */
 	enum FilePickerMode {

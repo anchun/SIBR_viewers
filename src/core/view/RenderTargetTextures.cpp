@@ -130,6 +130,9 @@ namespace sibr {
 			return;
 		}
 
+		SIBR_LOG << "Depth vertex shader location: " << Resources::Instance()->getResourceFilePathName("depthonly.vp") << std::endl;
+		SIBR_LOG << "Depth fragment shader location: " << Resources::Instance()->getResourceFilePathName("depthonly.fp") << std::endl;
+
 		GLShader depthOnlyShader;
 		depthOnlyShader.init("DepthOnly",
 			loadFile(Resources::Instance()->getResourceFilePathName("depthonly.vp")),

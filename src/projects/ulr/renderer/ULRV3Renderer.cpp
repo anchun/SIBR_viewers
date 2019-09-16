@@ -54,12 +54,13 @@ void sibr::ULRV3Renderer::setupShaders(const std::string & fShader, const std::s
 	GLShader::Define::List defines;
 	defines.emplace_back("NUM_CAMS", _maxNumCams);
 	defines.emplace_back("ULR_STREAMING", 0);
+
 	_ulrShader.init("ULRV3",
-		sibr::loadFile("./shaders_rsc/" + vShader + ".vert"),
-		sibr::loadFile("./shaders_rsc/" + fShader + ".frag", defines));
+		sibr::loadFile(sibr::getBinDirectory() + "/shaders_rsc/" + vShader + ".vert"),
+		sibr::loadFile(sibr::getBinDirectory() + "/shaders_rsc/" + fShader + ".frag", defines));
 	_depthShader.init("ULRV3Depth",
-		sibr::loadFile("./shaders_rsc/ulr_intersect.vert"),
-		sibr::loadFile("./shaders_rsc/ulr_intersect.frag", defines));
+		sibr::loadFile(sibr::getBinDirectory() + "/shaders_rsc/ulr_intersect.vert"),
+		sibr::loadFile(sibr::getBinDirectory() + "/shaders_rsc/ulr_intersect.frag", defines));
 
 	// Setup uniforms.
 	_nCamProj.init(_depthShader, "proj");
