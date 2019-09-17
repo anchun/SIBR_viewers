@@ -54,6 +54,10 @@ int main(const int argc, const char** argv)
 				if (nearFar[0] > 0 && nearFar[1] > 0) {
 					file << nearFar[0] << ' ' << nearFar[1] << std::endl;
 				}
+				else {
+					/** \todo [SP]Temporary fix. Ideally we should exclude these images. */
+					file << "0.1 100.0" << std::endl;
+				}
 			}
 			file.close();
 		}
