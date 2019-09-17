@@ -35,6 +35,7 @@ namespace sibr
 			0, 0, src.w(), src.h(),
 			0, 0, dst.w(), dst.h(),
 			mask, filter);
+
 		glDeleteFramebuffers(1, &sourceFrameBuffer);
 	}
 
