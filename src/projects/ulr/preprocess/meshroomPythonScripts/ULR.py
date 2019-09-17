@@ -1,21 +1,27 @@
 __version__ = "3.0"
 
 from meshroom.core import desc
-
+import os
 
 class ULR(desc.CommandLineNode):
     commandLine = 'SIBR_ulrv2_app_rwdi {allParams}'
 
+    print(os.path.abspath('.'))
     cpu = desc.Level.INTENSIVE
     ram = desc.Level.INTENSIVE
 
     inputs = [
-        desc.File(
+        desc.ListAttribute(
+            elementDesc = desc.File(
+                name = "path",
+                label = "Cache folder",
+                description = "",
+                value = desc.Node.internalFolder + "../..",
+                uid=[0],
+            ),
             name='path',
             label='Input Folder',
-            description='MeshroomCache folder containing the StructureFromMotion folder, PrepareDenseScene folder, and Texturing folder.',
-            value=desc.Node.internalFolder + '/../../',
-            uid=[0],
+            description='MeshroomCache folder containing the StructureFromMotion folder, PrepareDenseScene folder, and Texturing folder.'
         ),
         desc.ChoiceParam(
             name='texture-width',
