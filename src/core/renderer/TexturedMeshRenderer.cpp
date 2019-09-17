@@ -6,12 +6,12 @@ namespace sibr {
 	{	
 		if(flipY)
 		_shader.init("TexturedMesh",
-			sibr::loadFile("./shaders_rsc/textured_mesh_flipY.vert"),
-			sibr::loadFile("./shaders_rsc/textured_mesh.frag"));
+			sibr::loadFile(sibr::getBinDirectory() + "/shaders_rsc/textured_mesh_flipY.vert"),
+			sibr::loadFile(sibr::getBinDirectory() + "/shaders_rsc/textured_mesh.frag"));
 		else
 		_shader.init("TexturedMesh",
-			sibr::loadFile("./shaders_rsc/textured_mesh.vert"),
-			sibr::loadFile("./shaders_rsc/textured_mesh.frag"));
+			sibr::loadFile(sibr::getBinDirectory() + "/shaders_rsc/textured_mesh.vert"),
+			sibr::loadFile(sibr::getBinDirectory() + "/shaders_rsc/textured_mesh.frag"));
 		_paramMVP.init(_shader,"MVP");
 	}
 

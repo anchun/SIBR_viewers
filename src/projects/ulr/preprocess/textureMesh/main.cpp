@@ -3,7 +3,7 @@
 #include "core/graphics/Image.hpp"
 #include "core/graphics/Mesh.hpp"
 #include "core/imgproc/MeshTexturing.hpp"
-#include "core/view/BasicIBRScene.hpp"
+#include "core/scene/BasicIBRScene.hpp"
 
 using namespace sibr;
 

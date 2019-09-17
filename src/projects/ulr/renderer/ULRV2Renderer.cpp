@@ -1,5 +1,5 @@
 # include "Config.hpp"
-# include <core/view/Resources.hpp>
+# include <core/assets/Resources.hpp>
 # include <map>
 # include "ULRV2Renderer.hpp"
 #include "core/system/String.hpp"
@@ -42,11 +42,11 @@ namespace sibr {
 			GLShader::Define::List defines;
 			defines.emplace_back("NUM_CAMS", _numCams);
 			_ulrShader.init("ULRV2",
-				sibr::loadFile("./shaders_rsc/" + vShader + ".vert"),
-				sibr::loadFile("./shaders_rsc/" + fShader + ".frag", defines));
+				sibr::loadFile(sibr::getBinDirectory() + "/shaders_rsc/" + vShader + ".vert"),
+				sibr::loadFile(sibr::getBinDirectory() + "/shaders_rsc/" + fShader + ".frag", defines));
 			_depthShader.init("ULRV2Depth",
-				sibr::loadFile("./shaders_rsc/ulr_intersect.vert"),
-				sibr::loadFile("./shaders_rsc/ulr_intersect.frag", defines));
+				sibr::loadFile(sibr::getBinDirectory() + "/shaders_rsc/ulr_intersect.vert"),
+				sibr::loadFile(sibr::getBinDirectory() + "/shaders_rsc/ulr_intersect.frag", defines));
 
 			_proj.init(_depthShader, "proj");
 			_ncamPos.init(_ulrShader, "ncam_pos");

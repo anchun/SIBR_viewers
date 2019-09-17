@@ -1,12 +1,12 @@
 #pragma once
 
-#include "core/view/Config.hpp"
+#include "core/scene/Config.hpp"
 #include "core/graphics/MaterialMesh.hpp"
-#include "core/view/ParseData.hpp"
+#include "core/scene/ParseData.hpp"
 
 namespace sibr {
 
-	class SIBR_VIEW_EXPORT ProxyMesh {
+	class SIBR_SCENE_EXPORT ProxyMesh {
 		SIBR_DISALLOW_COPY(ProxyMesh);
 	public:
 		typedef std::shared_ptr<ProxyMesh>					Ptr;

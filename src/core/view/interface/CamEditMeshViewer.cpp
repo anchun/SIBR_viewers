@@ -4,7 +4,7 @@
 #include <core/raycaster/Raycaster.hpp>
 #include <core/view/InteractiveCameraHandler.hpp>
 #include <core/raycaster/CameraRaycaster.hpp>
-#include <core/view/Resources.hpp>
+#include <core/assets/Resources.hpp>
 
 #include <cmath>
 

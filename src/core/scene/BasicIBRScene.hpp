@@ -1,8 +1,9 @@
 #pragma once
-#include "core/view/Config.hpp"
+
 #include <core/system/CommandLineArgs.hpp>
-#include "core/view/RenderTargetTextures.hpp"
 #include "core/raycaster/CameraRaycaster.hpp"
+#include "core/scene/RenderTargetTextures.hpp"
+#include "core/scene/Config.hpp"
 
 namespace sibr {
 
@@ -16,10 +17,10 @@ namespace sibr {
 	* - ProxyMesh
 	* - RenderTargetTextures
 	* 
-	* \ingroup sibr_view
+	* \ingroup sibr_scene
 	*/
 
-	class SIBR_VIEW_EXPORT BasicIBRScene
+	class SIBR_SCENE_EXPORT BasicIBRScene
 	{
 		
 	public:
@@ -134,7 +135,7 @@ namespace sibr {
 		ProxyMesh::Ptr								_proxies;
 		RenderTargetTextures::Ptr					_renderTargets;
 		sibr::InputCamera							_userCamera;
-
+		
 	};
 
 	///// INLINE DEFINITIONS /////
@@ -179,6 +180,5 @@ namespace sibr {
 		_userCamera = cam;
 	}
 
-	
 
 }

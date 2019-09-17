@@ -2,7 +2,7 @@
 #include "core/graphics/Shader.hpp"
 #include "core/graphics/RenderUtility.hpp"
 #include "core/graphics/Window.hpp"
-#include <core/view/Resources.hpp>
+#include <core/assets/Resources.hpp>
 
 #include "ViewUtils.hpp"
 #include "interface/InterfaceUtils.h"

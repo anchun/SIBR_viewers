@@ -87,6 +87,8 @@ function(sibr_addlibrary)
     # and lib/ directories
 
     # TODO SV: paths not matching with current hierarchy. example: libraw/libraw-0.17.1/include
+    # SR:	The link directories will also be used to lookup for dependency DLLs to copy in the install directory.
+    #		Some libraries put the DLLs in the bin/ directory, so we include those.
     file(GLOB subdirs RELATIVE ${LIB_PACKAGE_FOLDER} ${LIB_PACKAGE_FOLDER}/*)
     set(dirlist "")
     foreach(dir ${subdirs})
@@ -95,6 +97,7 @@ function(sibr_addlibrary)
         # message("adding ${LIB_PACKAGE_FOLDER}/${dir}/lib[64] to the link directories")
         link_directories("${LIB_PACKAGE_FOLDER}/${dir}/lib/")
         link_directories("${LIB_PACKAGE_FOLDER}/${dir}/lib64/")
+        link_directories("${LIB_PACKAGE_FOLDER}/${dir}/bin/")
     endforeach()
 
 endfunction()

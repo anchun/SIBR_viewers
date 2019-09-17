@@ -6,7 +6,7 @@
 # include "core/graphics/Texture.hpp"
 # include "core/graphics/Camera.hpp"
 # include "core/graphics/RenderUtility.hpp"
-# include "core/view/Resources.hpp"
+# include "core/assets/Resources.hpp"
 # include "core/graphics/Shader.hpp"
 # include "core/graphics/Mesh.hpp"
 

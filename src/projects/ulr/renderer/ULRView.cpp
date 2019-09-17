@@ -1,6 +1,6 @@
 /// \todo TODO: make shorter
 #include "Config.hpp"
-#include <core/view/Resources.hpp>
+#include <core/assets/Resources.hpp>
 #include <projects/ulr/renderer/ULRView.hpp>
 #include <core/system/Vector.hpp>
 #include <core/graphics/Texture.hpp>

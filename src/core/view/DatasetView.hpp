@@ -3,7 +3,7 @@
 #include "MultiViewManager.hpp"
 #include "SceneDebugView.hpp"
 #include "ImagesGrid.hpp"
-#include "BasicIBRScene.hpp"
+#include "core/scene/BasicIBRScene.hpp"
 
 namespace sibr {
 

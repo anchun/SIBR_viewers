@@ -383,7 +383,7 @@ namespace sibr {
 
 	void MultiMeshManager::initShaders()
 	{
-		const std::string folder = "./shaders_rsc/";
+		const std::string folder = sibr::getBinDirectory() + "/shaders_rsc/";
 
 		colored_mesh_shader.initShader("colored_mesh_shader",
 			loadFile(folder + "alpha_colored_mesh.vert"), 

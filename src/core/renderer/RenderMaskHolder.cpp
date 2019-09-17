@@ -1,6 +1,5 @@
-
 #include <core/renderer/RenderMaskHolder.hpp>
-#include <core/view/Resources.hpp>
+#include <core/assets/Resources.hpp>
 
 namespace sibr { 
 	void	RenderMaskHolder::setMasks( const std::vector<MaskPtr>& masks )
@@ -23,7 +22,7 @@ namespace sibr {
 		sibr::GLShader textureShader;
 		textureShader.init("Texture",
 			sibr::loadFile(sibr::Resources::Instance()->getResourceFilePathName("texture.vp")), 
-			invert ? sibr::loadFile("./shaders_rsc/texture-invert.frag") : sibr::loadFile("./shaders_rsc/texture.frag"));
+			invert ? sibr::loadFile(sibr::getBinDirectory() + "/shaders_rsc/texture-invert.frag") : sibr::loadFile(sibr::getBinDirectory() + "/shaders_rsc/texture.frag"));
 
 		std::shared_ptr<sibr::RenderTargetLum> maskRTPtr;
 		maskRTPtr.reset(new sibr::RenderTargetLum(img.w(), img.h()));
