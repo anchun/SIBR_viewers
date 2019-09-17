@@ -103,6 +103,11 @@ namespace sibr {
 		const sibr::Vector2f& uv1 = { 1, 1 }
 	);
 
+	SIBR_GRAPHICS_EXPORT void ImageWithZoom(
+		GLuint texture,
+		const sibr::Vector2i & displaySize,
+		ZoomInterraction & zoom
+	);
 
 
 }

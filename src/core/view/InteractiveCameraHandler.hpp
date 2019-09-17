@@ -171,6 +171,10 @@ namespace sibr {
 		/** \return if the handler has been entirely setup */
 		const sibr::Viewport & getViewport() const { return _viewport; }
 
+
+		/** \return radius used for trackball*/
+		float & getRadius() { return _radius; }
+
 	private:
 
 		int _currentCamId;
