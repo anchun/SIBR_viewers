@@ -44,7 +44,7 @@ FIND_PATH(ASSIMP_INCLUDE_DIR
 		"$ENV{PROGRAMFILES}/Assimp"
 		"$ENV{${PROGRAMFILESx86}}/Assimp"
 		"$ENV{ProgramW6432}/Assimp"
-	PATH_SUFFIXES "include"
+	PATH_SUFFIXES include
 )
 
 
