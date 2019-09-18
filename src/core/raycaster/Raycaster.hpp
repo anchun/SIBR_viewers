@@ -117,6 +117,11 @@ namespace sibr
 		/// \param hit intersection basic information
 		static sibr::Vector3f smoothColor(const sibr::Mesh & mesh, const RayHit & hit);
 
+		/// \return smooth texcoords from a hit (barycentric interpolation), assuming the mesh has UVs
+		/// \param mesh sibr::Mesh used by raycaster
+		/// \param hit intersection basic information
+		static sibr::Vector2f smoothUV(const sibr::Mesh & mesh, const RayHit & hit);
+
 	private: // STATIC //
 
 		/// Will be called by embree whenever an error occurs

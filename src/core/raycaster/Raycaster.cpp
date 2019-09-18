@@ -301,8 +301,8 @@ namespace sibr
 		const sibr::Mesh::Normals& normals = mesh.normals();
 		const sibr::Vector3u& tri = mesh.triangles()[hit.primitive().triID];
 
-		float ucoord = hit.barycentricCoord().u;
-		float vcoord = hit.barycentricCoord().v;
+		const float ucoord = hit.barycentricCoord().u;
+		const float vcoord = hit.barycentricCoord().v;
 		float wcoord = 1.f - ucoord - vcoord;
 		wcoord = (wcoord >= 0.0f ? (wcoord <= 1.0f ? wcoord : 1.0f) : 0.0f);
 
@@ -317,12 +317,28 @@ namespace sibr
 		const sibr::Mesh::Colors& colors = mesh.colors();
 		const sibr::Vector3u& tri = mesh.triangles()[hit.primitive().triID];
 
-		float ucoord = hit.barycentricCoord().u;
-		float vcoord = hit.barycentricCoord().v;
+		const float ucoord = hit.barycentricCoord().u;
+		const float vcoord = hit.barycentricCoord().v;
 		float wcoord = 1.f - ucoord - vcoord;
 		wcoord = (wcoord >= 0.0f ? (wcoord <= 1.0f ? wcoord : 1.0f) : 0.0f);
 
 		return wcoord * colors[tri[0]] + ucoord * colors[tri[1]] + vcoord * colors[tri[2]];
+	}
+
+	sibr::Vector2f Raycaster::smoothUV(const sibr::Mesh & mesh, const RayHit & hit)
+	{
+		if (!mesh.hasTexCoords()) {
+			SIBR_ERR << " cannot compute UV if the mesh does not have texcoords " << std::endl;
+		}
+		const sibr::Mesh::UVs& uvs = mesh.texCoords();
+		const sibr::Vector3u& tri = mesh.triangles()[hit.primitive().triID];
+
+		const float ucoord = hit.barycentricCoord().u;
+		const float vcoord = hit.barycentricCoord().v;
+		float wcoord = 1.f - ucoord - vcoord;
+		wcoord = (wcoord >= 0.0f ? (wcoord <= 1.0f ? wcoord : 1.0f) : 0.0f);
+
+		return wcoord * uvs[tri[0]] + ucoord * uvs[tri[1]] + vcoord * uvs[tri[2]];
 	}
 
 } // namespace sibr
