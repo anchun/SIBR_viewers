@@ -485,13 +485,7 @@ scene_metadata = scene_metadata + "\n\n// Always specify active/exclude images a
 #         scene_metadata = scene_metadata + str(line) + " "
 
 scene_metadata = scene_metadata + "\n\n\n[other parameters]"
-################################################################################
 
-for filename in os.listdir(path_data):
-    src = os.path.join(path_data, filename)
-    dst = os.path.join(path_dest, raw_data)
-    if not os.path.isdir(src):
-        shutil.move(src, dst)
 
 # rename pmvs_recon.ply to recon.ply
 if (os.path.exists(os.path.join(path_dest, pmvs_model_dir, "pmvs_recon.ply"))):
@@ -502,5 +496,13 @@ path_scene_metadata = os.path.join(path_dest, "scene_metadata.txt")
 scene_metadata_file = open(path_scene_metadata, "w")
 scene_metadata_file.write(scene_metadata)
 scene_metadata_file.close()
+
+################################################################################
+
+for filename in os.listdir(path_data):
+    src = os.path.join(path_data, filename)
+    dst = os.path.join(path_dest, raw_data)
+    if not os.path.isdir(src):
+        shutil.move(src, dst)
 
 print("Fin.")

@@ -107,6 +107,9 @@ namespace sibr
 		/// Delete geometry
 		void	deleteGeom(geomId id) { rtcDeleteGeometry((_scene.get()), id); rtcUpdate(_scene.get(), id); rtcCommit(_scene.get());} 
 
+		/// clears RTCScenePtr
+		void clearGeometry();
+
 		/// returns the normalized smooth normal (shading normal) from a hit, assuming the mesh has normals
 		/// \param mesh sibr::Mesh used by raycaster
 		/// \param hit intersection basic information

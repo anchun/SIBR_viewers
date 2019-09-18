@@ -293,6 +293,11 @@ namespace sibr
 		return res;
 	}
 
+	void Raycaster::clearGeometry()
+	{
+		_scene.reset();
+	}
+
 	sibr::Vector3f Raycaster::smoothNormal(const sibr::Mesh & mesh, const RayHit & hit)
 	{
 		if (!mesh.hasNormals()) {

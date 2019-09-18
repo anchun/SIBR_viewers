@@ -6,8 +6,8 @@ namespace sibr {
 	ColoredMeshRenderer::ColoredMeshRenderer( void )
 	{
 		_shader.init("ColoredMesh",
-			sibr::loadFile("./shaders_rsc/colored_mesh.vert"),
-			sibr::loadFile("./shaders_rsc/colored_mesh.frag"));
+			sibr::loadFile(sibr::getBinDirectory() + "/shaders_rsc/colored_mesh.vert"),
+			sibr::loadFile(sibr::getBinDirectory() + "/shaders_rsc/colored_mesh.frag"));
 		_paramMVP.init(_shader,"MVP");
 	}
 

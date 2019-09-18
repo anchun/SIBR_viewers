@@ -2,6 +2,7 @@
 
 #include <core/graphics/Window.hpp>
 #include <core/view/MultiViewManager.hpp>
+#include <core/system/String.hpp>
 
 #include "projects/ulr/renderer/ULRView.hpp"
 #include <projects/ulr/renderer/ULRV2View.hpp>
@@ -10,7 +11,7 @@
 #include <core/renderer/DepthRenderer.hpp>
 #include <core/raycaster/Raycaster.hpp>
 #include <core/view/SceneDebugView.hpp>
-
+#include <Windows.h>
 
 #define PROGRAM_NAME "sibr_ulr_app"
 using namespace sibr;
@@ -23,13 +24,13 @@ const char* usage = ""
 int legacyV1main(ULRAppArgs & myArgs);
 int legacyV2main(ULRAppArgs & myArgs);
 
+
 int main(int ac, char** av) {
 
 	// Parse Commad-line Args
 	CommandLineArgs::parseMainArgs(ac, av);
 	ULRAppArgs myArgs;
-
-
+	
 	if (myArgs.version == 2) {
 		return legacyV2main(myArgs);
 	}

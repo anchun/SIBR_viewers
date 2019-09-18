@@ -248,6 +248,18 @@ namespace sibr
 		return static_cast<size_t>(statex.ullAvailPhys) / DIV;
 	}
 
+	SIBR_SYSTEM_EXPORT std::string getBinDirectory()
+	{
+		char exePath[4095];
+
+		unsigned int len = GetModuleFileNameA(GetModuleHandleA(0x0), exePath, MAX_PATH);
+		if (len == 0) // memory not sufficient or general error occured
+		{
+			SIBR_ERR << "Can't find binary folder! Please specify as command-line option using --appPath option!" << std::endl;
+		}
+		return parentDirectory(exePath);
+	}
+
 	bool showFilePicker(std::string & selectedElement,
 		const FilePickerMode mode, const std::string & directoryPath, const std::string & extensionsAllowed) {
 		nfdchar_t *outPath = NULL;
