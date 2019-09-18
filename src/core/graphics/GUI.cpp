@@ -306,6 +306,12 @@ namespace sibr
 		}
 	}
 
+	void ImageWithZoom(GLuint texture, const sibr::Vector2i & displaySize, ZoomInterraction & zoom)
+	{
+		ImageWithCallback(texture, displaySize, zoom.callBackData, zoom.zoomData.topLeft(), zoom.zoomData.bottomRight());
+		zoom.updateZoom(displaySize.template cast<float>());
+	}
+
 } // namespace sibr
 
 

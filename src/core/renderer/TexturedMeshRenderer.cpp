@@ -1,18 +1,18 @@
 
 #include <core/renderer/TexturedMeshRenderer.hpp>
 
-namespace sibr {
-	TexturedMeshRenderer::TexturedMeshRenderer(bool flipY)
-	{
-		if (flipY)
-			_shader.init("TexturedMesh",
-				sibr::loadFile("./shaders_rsc/textured_mesh_flipY.vert"),
-				sibr::loadFile("./shaders_rsc/textured_mesh.frag"));
+namespace sibr { 
+	TexturedMeshRenderer::TexturedMeshRenderer( bool flipY )
+	{	
+		if(flipY)
+		_shader.init("TexturedMesh",
+			sibr::loadFile(sibr::getBinDirectory() + "/shaders_rsc/textured_mesh_flipY.vert"),
+			sibr::loadFile(sibr::getBinDirectory() + "/shaders_rsc/textured_mesh.frag"));
 		else
-			_shader.init("TexturedMesh",
-				sibr::loadFile("./shaders_rsc/textured_mesh.vert"),
-				sibr::loadFile("./shaders_rsc/textured_mesh.frag"));
-		_paramMVP.init(_shader, "MVP");
+		_shader.init("TexturedMesh",
+			sibr::loadFile(sibr::getBinDirectory() + "/shaders_rsc/textured_mesh.vert"),
+			sibr::loadFile(sibr::getBinDirectory() + "/shaders_rsc/textured_mesh.frag"));
+		_paramMVP.init(_shader,"MVP");
 	}
 
 	void	TexturedMeshRenderer::process(const Mesh& mesh, const Camera& eye, uint textureID, IRenderTarget& dst, bool backfaceCull)

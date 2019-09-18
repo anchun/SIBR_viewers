@@ -222,6 +222,16 @@ namespace sibr {
 		}
 
 	public:
+
+		template<typename T_Type, unsigned int T_NumComp>
+		void addImageLayer(const std::vector<sibr::ImagePtr<T_Type, T_NumComp> > & images, const std::string & name = "") {
+			std::vector<sibr::Image<T_Type, T_NumComp> > imgs(images.size());
+			for (int i = 0; i < (int)images.size(); ++i) {
+				imgs[i] = images[i]->clone();
+ 			}
+			addImageLayer(imgs, name);
+		}
+
 		template<typename T_Type, unsigned int T_NumComp>
 		void addImageLayer(const std::vector<sibr::Image<T_Type, T_NumComp> > & images, const std::string & name = "")
 		{

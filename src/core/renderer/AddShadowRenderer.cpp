@@ -5,8 +5,8 @@ namespace sibr {
 	AddShadowRenderer::AddShadowRenderer( void )
 	{
 		_shader.init("AddShadowShader",
-			sibr::loadFile("./shaders_rsc/texture.vert"),
-			sibr::loadFile("./shaders_rsc/addshadow.frag"));
+			sibr::loadFile(sibr::getBinDirectory() + "/shaders_rsc/texture.vert"),
+			sibr::loadFile(sibr::getBinDirectory() + "/shaders_rsc/addshadow.frag"));
 		_paramInvProj.init(_shader, "in_inv_proj");
 		_paramImgSize.init(_shader, "in_image_size");
 	}

@@ -1,6 +1,6 @@
 ## Included once for all sub project.
 ## It contain the whole cmake instructions to find necessary common dependencies.
-## 3rdParty (provided by win3rdParty or from external packages) are then available in cmake sub projects.
+## 3rdParty (provided by sibr_addlibrary win3rdParty or from external packages) are then available in cmake sub projects.
 ##
 ## Do not include this file more than once but you can modify it to fit to your own project.
 ## So please, read it carefully because you can use on of these dependencies for your project or appen new one.
@@ -859,6 +859,9 @@ if (BUILD_IBR_TFGL_INTEROP)
         NAME tfgl_interop
         MSVC11 "https://gforge.inria.fr/frs/download.php/file/37881/tfinterop.7z"
         MSVC14 "https://gforge.inria.fr/frs/download.php/file/37881/tfinterop.7z"  
+        # If you need CUDA10, you can use this version instead.
+        # TODO: find a way to check the CUDA version automatically, looking at CUDA_VERSION.
+        # MSVC14 "https://gforge.inria.fr/frs/download.php/file/38123/tfinterop_cuda10.7z"
         REQUIREDFOR BUILD_IBR_TFGL_INTEROP
     )
 endif()

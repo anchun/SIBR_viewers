@@ -1350,8 +1350,9 @@ namespace sibr
 			// Shift all other IDs by _maxMeshId+1.
 			_maxMeshId += 1;
 			MaterialMesh::MeshIds oIds(other.meshIds());
+			const int shift = int(_maxMeshId);
 			for(size_t vid = 0; vid < oIds.size(); ++vid) {
-				oIds[vid] = _maxMeshId + oIds[vid];
+				oIds[vid] = shift + oIds[vid];
 			}
 			_meshIds.insert(_meshIds.end(), oIds.begin(), oIds.end());
 			_maxMeshId += other._maxMeshId;
@@ -1360,13 +1361,13 @@ namespace sibr
 		} else if(thisHasIds) {
 			// In that case other has no IDs.
 			_maxMeshId += 1;
-			MaterialMesh::MeshIds newMeshIds(other.vertices().size(), _maxMeshId);
+			MaterialMesh::MeshIds newMeshIds(other.vertices().size(), int(_maxMeshId));
 			_meshIds.insert(_meshIds.end(), newMeshIds.begin(), newMeshIds.end());
 
 		} else if(otherHasIds) {
 			// in that case give a new ID to the current mesh and insert the other IDs.
 			_maxMeshId = other._maxMeshId + 1;
-			_meshIds = MaterialMesh::MeshIds(oldVerticesCount, _maxMeshId);
+			_meshIds = MaterialMesh::MeshIds(oldVerticesCount, int(_maxMeshId));
 			_meshIds.insert(_meshIds.end(), other.meshIds().begin(), other.meshIds().end());
 
 		}

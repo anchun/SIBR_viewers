@@ -207,6 +207,7 @@ namespace sibr
 
 		std::string appName;
 		std::string appPath;
+		Arg<std::string> custom_app_path = { "appPath", "./" };
 	};
 
 	struct SIBR_SYSTEM_EXPORT WindowArgs {
