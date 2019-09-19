@@ -14,6 +14,10 @@ if (BUILD_IBR_TFGL_INTEROP)
   find_package(CUDA REQUIRED)
 endif()
 
+if (BUILD_IBR_TORCHGL_INTEROP)
+  find_package(CUDA REQUIRED)
+endif()
+
 ## DEPS ##
 include(dependencies)		## Map/bind 3rdParty/external dependencies packages to cmake
 include(FindOpenMP)

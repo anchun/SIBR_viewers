@@ -736,7 +736,7 @@ namespace sibr
 		glBindTexture(GL_TEXTURE_2D,id);
 
 		std::vector<PixelImage> flippedMipArray;
-		bool flip = m_Flags & SIBR_FLIP_TEXTURE;
+		bool flip = flags & SIBR_FLIP_TEXTURE;
 		if (flip) {
 			flippedMipArray.resize(miparray.size());
 #pragma omp parallel for
