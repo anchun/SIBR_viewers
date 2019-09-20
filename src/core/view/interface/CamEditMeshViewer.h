@@ -2,6 +2,7 @@
 #include "core/view/interface/MeshViewer.h"
 #include <core/graphics/MaterialMesh.hpp>
 #include <core/assets/InputCamera.hpp>
+#include <core/view/interface/LibGizmo-win64/LibGizmo-master/inc/IGizmo.h>
 #include <random>
 
 namespace sibr {
@@ -83,6 +84,7 @@ namespace sibr {
 	  //!
 	  void renderLights();
 
+	  void renderGizmo();
 
 
 	  //!
@@ -238,6 +240,11 @@ namespace sibr {
 	  CamEditMeshViewer::TypeOfApp _typeOfApp = CamEditMeshViewer::TypeOfApp::CamEditor;
 
 	  sibr::MaterialMesh _materialMesh;
+
+	  //Gizmo
+	  IGizmo* gizmoMove = CreateMoveGizmo();
+	  float* sharedDataGizmo = new float[16];
+	  bool gizmoIsUsing = false;
 
 	  //Shaders
 	  sibr::GLShader _shaderAlbedo;

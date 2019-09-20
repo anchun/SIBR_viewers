@@ -5,7 +5,6 @@
 #include <core/view/InteractiveCameraHandler.hpp>
 #include <core/raycaster/CameraRaycaster.hpp>
 #include <core/assets/Resources.hpp>
-
 #include <cmath>
 
 sibr::CamEditMeshViewer::CamEditMeshViewer()
@@ -27,7 +26,6 @@ sibr::CamEditMeshViewer::CamEditMeshViewer(const sibr::Vector2i & screenRes,
 	Vector3f center;
 	float radius;
 	mesh.getBoundingSphere(center, radius);
-
 	InputCamera currentInteractCam(interactCam->getCamera());
 	currentInteractCam.zfar(10.f * radius);
 	currentInteractCam.znear(radius / 1000.f);
@@ -120,7 +118,6 @@ void sibr::CamEditMeshViewer::renderMaterialMesh(const sibr::Camera& eye,
 	bool renderCameras) {
 
 	renderer->resetMeshes();
-
 	if (_materialMesh.typeOfRender() ==
 		MaterialMesh::RenderCategory::diffuseMaterials)
 	{
@@ -167,7 +164,7 @@ void sibr::CamEditMeshViewer::render(const sibr::Viewport & viewport,
 		viewport.clear(sibr::Vector3f(0.9f, 0.9f, 0.9f));
 
 		renderMaterialMesh(eye);
-
+		
 		interactCam->onRender(viewport);
 
 		fpsCounter.update(true);
@@ -192,13 +189,13 @@ void sibr::CamEditMeshViewer::render()
 {
 	if (window.get()) {
 		render(window->viewport(), interactCam->getCamera());
+		renderGizmo();
 		window->swapBuffer();
 	}
 }
 
 void sibr::CamEditMeshViewer::renderLoop(sibr::Window & window)
 {
-
 	bool doLoop = true;
 
 	while (doLoop && window.isOpened()) {
@@ -256,15 +253,16 @@ void sibr::CamEditMeshViewer::renderLoop(const std::function
 				window->close();
 			}
 		}
+		
 
+		listenKey();
+		if (!gizmoIsUsing)
 		interactCam->update(input, 1 / 60.0f, window->viewport());
 
 		f(this);
 		onGUI();
-		listenKey();
 		renderCameras();
 		renderLights();
-
 		if (!customRendering) {
 			render();
 		}
@@ -602,6 +600,24 @@ void sibr::CamEditMeshViewer::onGUI() {
 					LightSphere(camera.position() + camera.dir() * _currentDeltaLight
 						, _currentRadius, _currentRadiance)
 				);
+
+				float* viewMat = interactCam->getCamera().view().data();
+				float* projMat = interactCam->getCamera().proj().data();
+				//gizmoMove->SetLocation(IGizmo::LOCATE_WORLD);
+				gizmoMove->SetScreenDimension(window->w(),
+					window->h());
+				gizmoMove->SetCameraMatrix(viewMat, projMat);
+				Transform3f posLight;
+				posLight.position(_currentLightSpheres.back()._position);
+				Matrix4f mLight(posLight.matrix());
+				float* dataMLight = mLight.data();
+				float* dataMLightT= mLight.transpose().data();
+
+				for (int i = 0; i < 16; i++) {
+					sharedDataGizmo[i] = dataMLightT[i];
+				}
+
+				gizmoMove->SetEditMatrix(sharedDataGizmo);
 			}
 			if (ImGui::Button("Validate")) {
 				_lightSpheresValidated.insert(
@@ -843,6 +859,58 @@ void sibr::CamEditMeshViewer::renderLights()
 	
 }
 
+void sibr::CamEditMeshViewer::renderGizmo() {
+	if (_currentLightSpheres.size() > 0) {
+
+		float* viewMat = interactCam->getCamera().view().data();
+		float* projMat = interactCam->getCamera().proj().data();
+
+		glMatrixMode(GL_PROJECTION);						// Select The Projection Matrix
+		glLoadIdentity();									// Reset The Projection Matrix
+
+		// Calculate The Aspect Ratio Of The Window
+		gluPerspective(interactCam->getCamera().fovy(), 
+					   interactCam->getCamera().aspect(),
+					   interactCam->getCamera().znear(),
+					   interactCam->getCamera().zfar()
+		);
+
+		glMatrixMode(GL_MODELVIEW);							// Select The Modelview Matrix
+		glLoadIdentity();									// Reset The Modelview Matrix
+		gluLookAt(
+			interactCam->getCamera().position().x(),
+			interactCam->getCamera().position().y(),
+			interactCam->getCamera().position().z(),
+			interactCam->getCamera().dir().x(),
+			interactCam->getCamera().dir().y(),
+			interactCam->getCamera().dir().z(),
+			interactCam->getCamera().up().x(),
+			interactCam->getCamera().up().y(),
+			interactCam->getCamera().up().z()
+		);
+
+
+
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+		glLoadMatrixf(projMat);
+
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
+		glLoadMatrixf(viewMat);
+
+
+
+//		renderer->shaderLines.begin();
+		gizmoMove->SetScreenDimension( window->w(),
+				window->h() );
+		gizmoMove->SetCameraMatrix(viewMat, projMat);
+		gizmoMove->Draw();
+//		renderer->shaderLines.end();
+	}
+}
+
+
 unsigned int sibr::CamEditMeshViewer::getNumberOfCameras() {
 
 	unsigned int count = 0;
@@ -859,7 +927,6 @@ void sibr::CamEditMeshViewer::validateSpline() {
 	// To validate a set, it's necessary that one the lists must be not empty
 	if (!_interpolatedCameras.empty() || !_currentList.empty()) {
 		float dist = std::max(0.8f, 1.05f*interactCam->getCamera().znear());
-
 		std::vector<InputCamera>* camerasToValidate;
 		// if several cameras are created thanks to interpolation tool,
 		// we validate them
@@ -1305,6 +1372,31 @@ void sibr::CamEditMeshViewer::listenKey() {
 		InputCamera camToAdd = interactCam->getCamera();
 		InputCamera& refToCam = camToAdd;
 		addCamera(refToCam);
+	}
+	if (input.global().mouseButton().isPressed(sibr::Mouse::Button1)) {
+		Vector2i posMouse = input.global().mousePosition();
+		if (gizmoMove->OnMouseDown(posMouse.x(), posMouse.y()))
+			gizmoIsUsing = true;
+	}
+	if (input.global().mouseButton().isReleased(sibr::Mouse::Button1)) {
+		Vector2i posMouseA = input.global().mousePosition();
+		gizmoMove->OnMouseUp(posMouseA.x(), posMouseA.y());
+		gizmoIsUsing = false;
+	}
+
+	if (_currentLightSpheres.size() > 0) {
+		Vector2i pos = input.global().mousePosition();
+		gizmoMove->OnMouseMove(pos.x(), pos.y());
+		Transform3f newTranslation;
+		newTranslation.position(sharedDataGizmo[12],
+			sharedDataGizmo[13],
+			sharedDataGizmo[14]);
+		Matrix4f mTranslation = newTranslation.matrix();
+
+
+		_currentLightSpheres.back()._position = Vector3f(sharedDataGizmo[12],
+			sharedDataGizmo[13],
+			sharedDataGizmo[14]);
 	}
 }
 
