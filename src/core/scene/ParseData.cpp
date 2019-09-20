@@ -618,7 +618,7 @@ namespace sibr {
 						}
 						else {
 							nearFar.near = 0.1f;
-							nearFar.far = 1.0f;
+							nearFar.far = 100.0f;
 						}
 						_imgInfos.push_back(infos);
 						_nearsFars.push_back(nearFar);

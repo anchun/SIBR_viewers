@@ -128,7 +128,7 @@ void sibr::CamEditMeshViewer::renderMaterialMesh(const sibr::Camera& eye,
 		_illuminanceAoCoefficient_layer.set(
 			_materialMesh.ambientOcclusion().IlluminanceCoefficient);
 		_materialMesh.initAlbedoTextures();
-		_materialMesh.render();
+		_materialMesh.render(true,false);
 		_shaderAlbedo.end();
 
 		if (renderCameras)
@@ -1029,6 +1029,7 @@ std::string sibr::CamEditMeshViewer::getInformationsList(
 }
 
 std::string sibr::CamEditMeshViewer::getInformationsCam(InputCamera& cam) {
+
 	std::string infos = std::string(" -D origin=") +
 		std::to_string(cam.position()[0]) +
 		std::string(",") +
@@ -1050,7 +1051,7 @@ std::string sibr::CamEditMeshViewer::getInformationsCam(InputCamera& cam) {
 		std::to_string(cam.up()[1]) +
 		std::string(",") +
 		std::to_string(cam.up()[2]) +
-		std::string(" -D fov=") +
+		std::string(" -D fovy=") +
 		std::to_string(cam.fovy()) +
 		std::string(" -D clip=") +
 		std::to_string(cam.znear()) +
