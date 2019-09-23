@@ -118,7 +118,7 @@ namespace sibr {
 		std::vector<num_t> outDists(count);
 		const size_t foundCount = _index->knnSearch(&pos[0], count, &outIds[0], &outDists[0]);
 		idDistSqs.resize(foundCount);
-		for(size_t i = 0; i < idDistSqs; ++i) {
+		for(size_t i = 0; i < idDistSqs.size(); ++i) {
 			idDistSqs[i] = std::make_pair(outIds[foundCount], outDists[foundCount]);
 		}
 	}
