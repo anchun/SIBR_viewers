@@ -14,6 +14,10 @@ if (BUILD_IBR_TFGL_INTEROP)
   find_package(CUDA REQUIRED)
 endif()
 
+if (BUILD_IBR_TORCHGL_INTEROP)
+  find_package(CUDA REQUIRED)
+endif()
+
 ## DEPS ##
 include(dependencies)		## Map/bind 3rdParty/external dependencies packages to cmake
 include(FindOpenMP)
@@ -104,7 +108,7 @@ FOREACH(subdir ${SUBDIRS})
       set(DOXY_APP_SPECIFIC_IMG_PATH_LOCAL "${DOXY_APP_SPECIFIC_IMG_PATH_LOCAL} ${SIBR_PROJECTS_FOLDER}/${subdir}/documentation/")
     endif()
   else()
-    if(EXISTS "${SIBR_PROJECTS_FOLDER}/${subdir}/renderer/" OR "${SIBR_PROJECTS_FOLDER}/${subdir}/apps/")
+    if(EXISTS "${SIBR_PROJECTS_FOLDER}/${subdir}/renderer/" OR EXISTS "${SIBR_PROJECTS_FOLDER}/${subdir}/apps/")
       option(${PROJECT_NAME} ON)
       message(STATUS ${PROJECT_NAME} " is OFF")
     endif()

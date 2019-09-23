@@ -321,8 +321,8 @@ namespace sibr
 			return false;
 		}
 		Assimp::Importer	importer;
-		importer.SetPropertyBool(AI_CONFIG_PP_FD_REMOVE, true); // cause Assimp to remove all degenerated faces as soon as they are detected
-		const aiScene* scene = importer.ReadFile(filename, aiProcess_Triangulate | aiProcess_JoinIdenticalVertices | aiProcess_FindDegenerates);
+		//importer.SetPropertyBool(AI_CONFIG_PP_FD_REMOVE, true); // cause Assimp to remove all degenerated faces as soon as they are detected
+		const aiScene* scene = importer.ReadFile(filename,  aiProcess_Triangulate | aiProcess_JoinIdenticalVertices | aiProcess_FindDegenerates);
 
 		if (!scene)
 		{

@@ -618,7 +618,7 @@ namespace sibr {
 						}
 						else {
 							nearFar.near = 0.1f;
-							nearFar.far = 1.0f;
+							nearFar.far = 100.0f;
 						}
 						_imgInfos.push_back(infos);
 						_nearsFars.push_back(nearFar);
@@ -731,7 +731,7 @@ namespace sibr {
 	void ParseData::getParsedMeshroomData(const std::string & dataset_path, const std::string & customPath)
 	{
 		
-		_basePathName = dataset_path;// +"/MeshroomCache/";
+		_basePathName = dataset_path;
 
 		if (!parseMeshroomData(_basePathName + "/StructureFromMotion/")) {
 			SIBR_ERR << "Meshroom cameras.sfm file does not exist at /" + _basePathName + "/StructureFromMotion/<cache_dir>/." << std::endl;
@@ -767,23 +767,28 @@ namespace sibr {
 	void ParseData::getParsedData(const BasicIBRAppArgs & myArgs, const std::string & customPath)
 	{
 		std::string bundler = myArgs.dataset_path.get() + customPath + "/cameras/bundle.out";
-		std::string nvmscene = myArgs.dataset_path.get() + customPath + "/nvm/";
-		std::string colmap = myArgs.dataset_path.get() + "/colmap/stereo/sparse/";
-		std::string meshroom = myArgs.dataset_path.get() + "/StructureFromMotion/";
+		std::string nvmscene = myArgs.dataset_path.get() + customPath + "/nvm/scene.nvm";
+		std::string colmap = myArgs.dataset_path.get() + "/colmap/stereo/sparse/images.txt";
+		std::string meshroom = myArgs.dataset_path.get() + "/../../StructureFromMotion/";
+		std::string meshroom_sibr = myArgs.dataset_path.get() + "/StructureFromMotion/";
 
 
 		if (sibr::fileExists(bundler)) {
 			getParsedBundlerData(myArgs.dataset_path, customPath, myArgs.scene_metadata_filename);
 			_datasetType = Type::SIBR;
-		}else if (sibr::directoryExists(colmap)) {
+		}else if (sibr::fileExists(colmap)) {
 			getParsedColmapData(myArgs.dataset_path);
 			_datasetType = Type::COLMAP;
 		}
-		else if (sibr::directoryExists(nvmscene)) {
+		else if (sibr::fileExists(nvmscene)) {
 			getParsedNVMData(myArgs.dataset_path, customPath, "/nvm/");
 			_datasetType = Type::NVM;
 		}
 		else if (sibr::directoryExists(meshroom)) {
+			getParsedMeshroomData(myArgs.dataset_path.get() + "/../../");
+			_datasetType = Type::MESHROOM;
+		}
+		else if (sibr::directoryExists(meshroom_sibr)) {
 			getParsedMeshroomData(myArgs.dataset_path);
 			_datasetType = Type::MESHROOM;
 		}
