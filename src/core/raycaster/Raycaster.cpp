@@ -68,7 +68,7 @@ namespace sibr
 		if (_scene == nullptr)
 			SIBR_LOG << "Cannot create an embree scene" << std::endl;
 		else {
-			SIBR_LOG << "Embree device and scene created" << std::endl;
+			//SIBR_LOG << "Embree device and scene created" << std::endl;
 			return true; // Success
 		}
 		return false; // Fail

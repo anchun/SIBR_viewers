@@ -394,6 +394,10 @@ namespace sibr
 	void SceneDebugView::gui_cameras()
 	{
 		if (ImGui::CollapsingHeader("Cameras##SceneDebugView")) {
+			
+			ImGui::SliderInt("Camera ID info", &_camera_id_info_gui, 0, static_cast<int>(_cameras.size()) - 1);
+
+
 			ImGui::Columns(4); // 0 name | snapto | active| size 
 
 			ImGui::Separator();
@@ -401,7 +405,7 @@ namespace sibr
 			ImGui::Text("SnapTo"); ImGui::NextColumn();
 			ImGui::Text("Active"); ImGui::NextColumn();
 
-			static std::vector<std::string> cam_info_option_str = { "size", "focal", "fov_y"," aspect" };
+			static std::vector<std::string> cam_info_option_str = { "size", "focal", "fov_y","aspect" };
 			if (ImGui::BeginCombo("Info", cam_info_option_str[cam_info_option].c_str())) {
 				for (int i = 0; i < (int)cam_info_option_str.size(); ++i) {
 					if (ImGui::Selectable(cam_info_option_str[i].c_str(), cam_info_option == i)) {
@@ -412,48 +416,51 @@ namespace sibr
 			}
 			ImGui::NextColumn();
 			ImGui::Separator();
-			for (uint i = 0; i < _cameras.size(); ++i) {
-				std::string name = "cam_" + intToString<4>(i);
+	
+			//for (uint i = 0; i < _cameras.size(); ++i) 
+			{
+				std::string name = "cam_" + intToString<4>(_camera_id_info_gui);
 				ImGui::Text(name.c_str());
 				ImGui::NextColumn();
 
 				if (ImGui::Button(("SnapTo##" + name).c_str())) {
-					const auto & input_cam = _scene->cameras()->inputCameras()[0];	
+					const auto & input_cam = _scene->cameras()->inputCameras()[0];
 
 					auto size = camera_handler.getViewport().finalSize();
 					float ratio_dst = size[0] / size[1];
 					float ratio_src = input_cam.w() / (float)input_cam.h();
-					InputCamera cam = InputCamera(_cameras[i].cam, (int)size[0], (int)size[1]);
-			
+					InputCamera cam = InputCamera(_cameras[_camera_id_info_gui].cam, (int)size[0], (int)size[1]);
+
 					if (ratio_src < ratio_dst) {
 						float fov_h = 2 * atan(tan(input_cam.fovy() / 2) * ratio_src / ratio_dst);
 						cam.fovy(fov_h);
 					} else {
 						cam.fovy(input_cam.fovy());
 					}
-				
+
 					cam.znear(0.0001f);
-					camera_handler.fromCamera(cam, true, false);				
+					camera_handler.fromCamera(cam, true, false);
 				}
 				ImGui::NextColumn();
 
-				ImGui::Checkbox(("##is_valid" + name).c_str(), &_cameras[i].highlight);
+				ImGui::Checkbox(("##is_valid" + name).c_str(), &_cameras[_camera_id_info_gui].highlight);
 				ImGui::NextColumn();
 
-				const auto & cam = _cameras[i].cam;
+				const auto & cam = _cameras[_camera_id_info_gui].cam;
 				std::stringstream tmp;
 				switch (cam_info_option)
 				{
-				case SIZE: tmp << cam.w() << " x " << cam.h(); break;
-				case FOCAL: tmp << cam.focal(); break;
-				case FOV_Y: tmp << cam.fovy(); break;
-				case ASPECT: tmp << cam.aspect(); break;
-				default: break;
+					case SIZE: tmp << cam.w() << " x " << cam.h(); break;
+					case FOCAL: tmp << cam.focal(); break;
+					case FOV_Y: tmp << cam.fovy(); break;
+					case ASPECT: tmp << cam.aspect(); break;
+					default: break;
 				}
 				ImGui::Text(tmp.str().c_str());
-				ImGui::NextColumn();
+
+				ImGui::Columns(1);
 			}
-			ImGui::Columns(1);
+			
 		}
 	}
 

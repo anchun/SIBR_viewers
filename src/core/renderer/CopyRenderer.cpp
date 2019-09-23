@@ -7,6 +7,8 @@ namespace sibr {
 		_shader.init("CopyShader",
 			sibr::loadFile(vertFile),
 			sibr::loadFile(fragFile));
+
+		_flip.init(_shader, "flip");
 	}
 
 	void	CopyRenderer::process( uint textureID, IRenderTarget& dst, bool disableTest )
@@ -17,6 +19,8 @@ namespace sibr {
 			glEnable(GL_DEPTH_TEST);
 
 		_shader.begin();
+		_flip.send();
+
 		dst.clear();
 		dst.bind();
 
