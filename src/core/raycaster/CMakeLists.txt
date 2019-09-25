@@ -13,7 +13,7 @@ add_library(${PROJECT_NAME} SHARED ${SOURCES} ${LIBS_SOURCES})
 
 include_directories(${Boost_INCLUDE_DIRS})
 target_link_libraries(${PROJECT_NAME}
-embree
+embree3
 sibr_graphics
 sibr_assets
 )

@@ -3,8 +3,8 @@
 # define __SIBR_RAYCASTER_RAYCASTER_HPP__
 
 # pragma warning(push, 0)
-#  include <embree2/rtcore.h>
-#  include <embree2/rtcore_ray.h>
+#  include <embree3/rtcore.h>
+#  include <embree3/rtcore_ray.h>
 #  include <xmmintrin.h>	// functions for setting the control register
 #  include <pmmintrin.h>	// functions for setting the control register
 # pragma warning(pop)
@@ -38,8 +38,8 @@ namespace sibr
 	class SIBR_RAYCASTER_EXPORT Raycaster
 	{
 	public:
-		typedef std::shared_ptr<__RTCDevice>	RTCDevicePtr;
-		typedef std::shared_ptr<__RTCScene>		RTCScenePtr;
+		typedef std::shared_ptr<RTCDevice>	RTCDevicePtr;
+		typedef std::shared_ptr<RTCScene>		RTCScenePtr;
 		typedef std::shared_ptr<Raycaster>		Ptr;
 
 		typedef	uint	geomId;
@@ -54,7 +54,7 @@ namespace sibr
 		/// Called automatically whenever you call a member that need this
 		/// instance to be init. However, you can call it manually to check
 		/// error on init.
-		bool	init( RTCSceneFlags sceneType = RTC_SCENE_STATIC, RTCAlgorithmFlags intersectType = RTC_INTERSECT1);
+		bool	init(RTCSceneFlags sceneType = RTC_SCENE_FLAG_NONE );
 
 		/// Add a triangulate mesh to the raycast scene. Return the id
 		/// of the geometry added so you can track your mesh (and compare
@@ -66,7 +66,7 @@ namespace sibr
 		geomId	addDynamicMesh( const sibr::Mesh& mesh );
 
 		/// Like addMesh but with a switch for DYNAMIC or STATIC geometry
-		geomId	addGenericMesh( const sibr::Mesh& mesh, RTCGeometryFlags type );
+		geomId	addGenericMesh( const sibr::Mesh& mesh, RTCBuildQuality type );
 
 		/// Transform the vertices of a mesh by sibr::Matrix4f mat
 		/// Note that the original positions are always stored *unchanged* in mesh.vertices -- 
@@ -98,14 +98,14 @@ namespace sibr
 
 		/// Disable geometry to avoid ray tracing it (eg background
 		/// when only intersecting a foreground object). \todo TODO -- doesnt work
-		void	disableGeom(geomId id) { rtcDisable((_scene.get()), id); rtcUpdate(_scene.get(), id); rtcCommit(_scene.get()); }
+		void	disableGeom(geomId id) { rtcDisableGeometry(rtcGetGeometry((*_scene.get()),id)); rtcCommitGeometry(rtcGetGeometry(*_scene.get(),id)); rtcCommitScene(*_scene.get()); }
 
 		/// Enable geometry to avoid ray tracing it (eg background
 		/// when only intersecting a foreground object). \todo TODO -- doesnt work
-		void	enableGeom(geomId id) { rtcEnable((_scene.get()), id); rtcUpdate(_scene.get(), id); rtcCommit(_scene.get());}
+		void	enableGeom(geomId id) { rtcEnableGeometry(rtcGetGeometry((*_scene.get()),id)); rtcCommitGeometry(rtcGetGeometry(*_scene.get(),id)); rtcCommitScene(*_scene.get());}
 
 		/// Delete geometry
-		void	deleteGeom(geomId id) { rtcDeleteGeometry((_scene.get()), id); rtcUpdate(_scene.get(), id); rtcCommit(_scene.get());} 
+		void	deleteGeom(geomId id) { rtcReleaseGeometry(rtcGetGeometry((*_scene.get()),id)); rtcCommitGeometry(rtcGetGeometry(*_scene.get(),id)); rtcCommitScene(*_scene.get());} 
 
 		/// clears RTCScenePtr
 		void clearGeometry();

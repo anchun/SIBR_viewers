@@ -259,12 +259,12 @@ sibr_addlibrary(
 )
 
 ###################
-## Find embree2
+## Find embree3
 ###################
 sibr_addlibrary(
-    NAME embree2
+    NAME embree3
     MSVC11 "https://gforge.inria.fr/frs/download.php/file/35964/embree2.7.0.x64.windows.7z"
-    MSVC14 "https://gforge.inria.fr/frs/download.php/file/38041/embree-2.17.7.x64.windows.zip"     # TODO SV: provide a valid version if required
+    MSVC14 "https://gforge.inria.fr/frs/download.php/file/38140/embree-3.6.1.x64.vc14.windows.7z"     # TODO SV: provide a valid version if required
     REQUIREDFOR BUILD_SIBR
 )
 
@@ -443,14 +443,14 @@ find_package(TIFF REQUIRED)
 include_directories(${TIFF_INCLUDE_DIR})
 
 ##############
-## Find Embree (v2)
+## Find Embree (v3)
 ##############
 if (BUILD_MVIIR)
 	win3rdParty(EMBREE #VERBOSE ON
         	MSVC11 "win3rdParty/MSVC11/embree" "https://gforge.inria.fr/frs/download.php/file/35275/embree-2.7.0.x64.windows.7z"
         	MSVC12 "win3rdParty/MSVC11/embree" "https://gforge.inria.fr/frs/download.php/file/35275/embree-2.7.0.x64.windows.7z"
-        	MSVC14 "win3rdParty/MSVC14/embree" "https://gforge.inria.fr/frs/download.php/file/35275/embree-2.7.0.x64.windows.7z"    # TODO SV: provide a valid version if required
-        	SET CHECK_CACHED_VAR EMBREE_DIR PATH "embree-2.7.0.x64.windows"
+        	MSVC14 "win3rdParty/MSVC14/embree3" "https://gforge.inria.fr/frs/download.php/file/38140/embree-3.6.1.x64.vc14.windows.7z"    # TODO SV: provide a valid version if required
+        	SET CHECK_CACHED_VAR EMBREE_DIR PATH "embree-3.6.1.x64.vc14.windows"
 			)
 	find_package(Embree REQUIRED)
 	include_directories(${EMBREE_INCLUDE_DIR})
