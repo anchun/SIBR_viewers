@@ -18,6 +18,7 @@
 # include "core/view/ViewBase.hpp"
 # include "core/graphics/Shader.hpp"
 # include "core/view/FPSCounter.hpp"
+#include "core/video/FFmpegVideoEncoder.hpp"
 #include "InteractiveCameraHandler.hpp"
 #include <random>
 #include <map>
@@ -279,7 +280,7 @@ namespace sibr
 											const IBRViewUpdateFonc updateFunc, const Vector2u & res, 
 											const ImGuiWindowFlags flags, const bool defaultFuncUsed);
 
-		void				renderSubView(SubView & subview) const;
+		void				renderSubView(SubView & subview);
 
 		static void				captureView(const SubView & view, const std::string & path = "./screenshots", const std::string & filename = "");
 		
@@ -288,8 +289,12 @@ namespace sibr
 		std::map<std::string, IBRSubView> _ibrSubViews;
 		std::map<std::string, std::shared_ptr<MultiViewBase> > _subMultiViews;
 
+
 		Vector2i _defaultViewResolution;
 		std::string _exportPath;
+		std::string _vdoPath;
+		bool _savingVideo;
+		std::vector<cv::Mat> _videoFrames;
 		std::chrono::time_point<std::chrono::steady_clock> _timeLastFrame;
 		float _deltaTime;
 		bool _showSubViewsGui = true;
@@ -331,6 +336,7 @@ namespace sibr
 		Window& _window;
 		FPSCounter _fpsCounter;
 		bool _showGUI = true;
+
 	};
 
 	///// INLINE /////

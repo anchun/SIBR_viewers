@@ -15,6 +15,8 @@ namespace sibr
 		_timeLastFrame = std::chrono::steady_clock::now();
 		_deltaTime = 0.0;
 		_exportPath = "./screenshots";
+		_vdoPath = "./video.mp4";
+		_savingVideo = false;
 	}
 
 	void MultiViewBase::onUpdate(Input& input)
@@ -196,49 +198,73 @@ namespace sibr
 		return _subViews.begin()->second.viewport;
 	}
 
-	void MultiViewBase::renderSubView(SubView & subview) const
+	void MultiViewBase::renderSubView(SubView & subview) 
 	{
 		bool invalidTexture = false;
-
+		
 		if (!_onPause) {
 
 			/// \todo Offline video dumping.
-			//int camIdDump = 0;
-			//// This requires a scene, a handler and the save flag on the camera. (TODO: move flag to the handler).
-			//if (subview.handler != NULL && subview.handler->getCamera().needSave() && subview.view->getScenePtr()) {
+			int camIdDump = 0;
+			
+			// This requires a scene, a handler and the save flag on the camera. (TODO: move flag to the handler).
+			//if (subview.handler != NULL && subview.handler->getCamera().needSave() /*&& subview.view->getScenePtr()*/) {
 			//	// Change size.
-			//	w = subview.view->scene().args().win_width;
-			//	h = subview.view->scene().args().win_height;
+			//	int w = subview.view->getResolution().x();
+			//	int h = subview.view->getResolution().y();
+
 			//	// If we furthermore have to leave an image out, disable it in the scene.
-			//	if (subview.view->scene().args().dumpLeave1Out) {
-			//		// Get closest camera (should be the same camera)
-			//		camIdDump = subview.view->scene().selectCameras(subview.handler->getCamera(), 1)[0];
-			//		std::cout << "Leaving out image number " << camIdDump << std::endl;
-			//		subview.view->scene().deactivateCamera(camIdDump);
-			//		// Readjust the size using the reference camera.
-			//		const auto & refCam = subview.view->scene().inputCameras()[camIdDump];
-			//		w = std::min(1920,(int)refCam.w());
-			//		h = (unsigned int)((float)w/ refCam.w())*refCam.h();
-			//	}
+			//	//if (subview.view->scene().args().dumpLeave1Out) {
+			//	//	// Get closest camera (should be the same camera)
+			//	//	camIdDump = subview.view->scene().selectCameras(subview.handler->getCamera(), 1)[0];
+			//	//	std::cout << "Leaving out image number " << camIdDump << std::endl;
+			//	//	subview.view->scene().deactivateCamera(camIdDump);
+			//	//	// Readjust the size using the reference camera.
+			//	//	const auto & refCam = subview.view->scene().inputCameras()[camIdDump];
+			//	//	w = std::min(1920,(int)refCam.w());
+			//	//	h = (unsigned int)((float)w/ refCam.w())*refCam.h();
+			//	//}
 			//}
 
 			const Viewport renderViewport(0.0, 0.0, (float)subview.rt->w(), (float)subview.rt->h());
 			subview.render(_renderingMode, renderViewport);
 
 			// Offline video dumping, continued. We ignore additional rendering as those often are GUI overlays.
-			//if (subview.handler != NULL && subview.handler->getCamera().needSave()) {
-			//	ImageRGB frame;
-			//	subview.rt->readBack(frame);
-			//	frame.save(subview.handler->getCamera().savePath());
-			//	// Restore the disabled camera.
-			//	if (subview.view->getScenePtr() && subview.view->scene().args().dumpLeave1Out) {
-			//		subview.view->scene().activateCamera(camIdDump);
-			//	}
-			//}
+			if (subview.handler != NULL && subview.handler->getCamera().needSave()) {
+				
+
+				ImageRGB frame;
+
+				subview.rt->readBack(frame);
+				//frame.save(subview.handler->getCamera().savePath());
+				_videoFrames.push_back(frame.toOpenCVBGR());
+				
+				// Restore the disabled camera.
+				/*if (subview.view->getScenePtr() && subview.view->scene().args().dumpLeave1Out) {
+					subview.view->scene().activateCamera(camIdDump);
+				}*/
+			}
 			//else if (subview.handler != NULL && subview.view->getScenePtr() &&(subview.view->scene().args().dumpLeave1Out || subview.view->scene().args().dumpPath != "")) {
 			//	// We were asked to dump the video, but we don't need anymore: job done, we should signal the window that we want to exit.
 			//	_window.close();
 			//}
+
+			if (_savingVideo) {
+
+				if (_videoFrames.size() > 0) {
+					std::cout << "Exporting video to : " << _vdoPath << std::endl;
+					FFVideoEncoder vdoEncoder(_vdoPath, 30, Vector2i(subview.rt->w(), subview.rt->h()));
+					for (int i = 0; i < _videoFrames.size(); i++) {
+						vdoEncoder << _videoFrames[i];
+					}
+					_videoFrames.clear();
+				}
+				else {
+					std::cout << "No frames to export!! Check save frames in camera options for the view you want to render and play the path and re-export!" << std::endl;
+				}
+				_savingVideo = false;
+				std::cout << "Fin!" << std::endl;
+			}
 
 			// Additional rendering.
 			subview.renderFunc(subview.view, renderViewport, std::static_pointer_cast<IRenderTarget>(subview.rt));
@@ -581,6 +607,15 @@ namespace sibr
 				for (auto & subview : _ibrSubViews) {
 					if (ImGui::MenuItem(subview.first.c_str())) {
 						captureView(subview.second, _exportPath);
+					}
+				}
+
+				if (ImGui::MenuItem("Export Video")) {
+					std::string saveFile;
+					if (showFilePicker(saveFile, FilePickerMode::Save)) {
+						std::cout << saveFile << std::endl;
+						_vdoPath = saveFile + ".mp4";
+						_savingVideo = true;
 					}
 				}
 

@@ -123,6 +123,7 @@ namespace sibr
 		*/
 		bool isSaving() const { return _saving; }
 
+
 		/**
 		\return A reference to the current stream of recorded cameras.
 		*/
@@ -140,6 +141,8 @@ namespace sibr
 		bool					_playing;	
 		bool					_saving;
 		std::string				_savingPath;
+		bool					_savingVideo;
+		std::string				_savingVideoPath;
 		float					_speed;
 		float					_interp;
 	};

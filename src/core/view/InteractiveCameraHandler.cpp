@@ -594,13 +594,15 @@ namespace sibr {
 						}
 					}
 				}
-				ImGui::SameLine();
+				
+
+				//ImGui::SameLine();
 				const bool saveFrameOld = _saveFrame;
-				ImGui::Checkbox("Save frame playing", (&_saveFrame));
+				ImGui::Checkbox("Save frames from playing", (&_saveFrame));
 				if (_saveFrame && !saveFrameOld) {
 					if (sibr::showFilePicker(selectedFile, Save)) {
 						if (!selectedFile.empty()) {
-							_cameraRecorder.saving(selectedFile + "/../");
+							_cameraRecorder.saving(selectedFile + "/");
 						}
 						else {
 							_cameraRecorder.stopSaving();
@@ -611,6 +613,7 @@ namespace sibr {
 				else if (!_saveFrame && saveFrameOld) {
 					_cameraRecorder.stopSaving();
 				}
+				
 				//ImGui::SameLine();
 				//ImGui::Checkbox("Fribr export", &_fribrExport);
 				ImGui::Separator();
