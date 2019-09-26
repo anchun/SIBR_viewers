@@ -55,6 +55,9 @@ namespace sibr
 		*/
 		void	saving(std::string savePath);
 
+
+		void	frameDebug(const bool debugFrame);
+
 		/**
 		Stop saving.
 		*/
@@ -141,7 +144,7 @@ namespace sibr
 		bool					_playing;	
 		bool					_saving;
 		std::string				_savingPath;
-		bool					_savingVideo;
+		bool					_savingImage;
 		std::string				_savingVideoPath;
 		float					_speed;
 		float					_interp;

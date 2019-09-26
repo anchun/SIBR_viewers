@@ -23,6 +23,7 @@ namespace sibr {
 		_radius = 100.0f;
 		_currentCamId = 0;
 		_saveFrame = 0;
+		_saveFrameDebug = 0;
 		_viewport = Viewport(0, 0, 0, 0);
 		_triggerCameraUpdate = false;
 		_isSetup = false;
@@ -598,7 +599,7 @@ namespace sibr {
 
 				//ImGui::SameLine();
 				const bool saveFrameOld = _saveFrame;
-				ImGui::Checkbox("Save frames from playing", (&_saveFrame));
+				ImGui::Checkbox("Save video (from playing)", (&_saveFrame));
 				if (_saveFrame && !saveFrameOld) {
 					if (sibr::showFilePicker(selectedFile, Save)) {
 						if (!selectedFile.empty()) {
@@ -613,6 +614,10 @@ namespace sibr {
 				else if (!_saveFrame && saveFrameOld) {
 					_cameraRecorder.stopSaving();
 				}
+
+				//ImGui::SameLine();
+				ImGui::Checkbox("Save frames and video (from playing)", (&_saveFrameDebug));
+				_cameraRecorder.frameDebug(_saveFrameDebug);
 				
 				//ImGui::SameLine();
 				//ImGui::Checkbox("Fribr export", &_fribrExport);

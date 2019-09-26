@@ -206,6 +206,7 @@ namespace sibr {
 
 		sibr::Vector2f _clippingPlanes;
 		bool _saveFrame;
+		bool _saveFrameDebug;
 		bool _triggerCameraUpdate;
 		bool _isSetup;
 		float _cameraFovDeg;
