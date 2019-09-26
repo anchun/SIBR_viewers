@@ -212,14 +212,14 @@ namespace sibr
 			subview.render(_renderingMode, renderViewport);
 
 			// Offline video dumping, continued. We ignore additional rendering as those often are GUI overlays.
-			if (subview.handler != NULL && subview.handler->getCamera().needSave()) {
+			if (subview.handler != NULL && (subview.handler->getCamera().needVideoSave() || subview.handler->getCamera().needSave())) {
 				
-				//std::cout << "Need video save: " << subview.handler->getCamera().needSave()<< "; Need Image save: " << subview.handler->getCamera().needImageSave() << std::endl;
+				//std::cout << "Need video save: " << subview.handler->getCamera().needVideoSave()<< "; Need Image and Video save: " << subview.handler->getCamera().needSave() << std::endl;
 				ImageRGB frame;
 
 				subview.rt->readBack(frame);
 				
-				if (subview.handler->getCamera().needImageSave()) {
+				if (subview.handler->getCamera().needSave()) {
 					frame.save(subview.handler->getCamera().savePath());
 				}
 				_videoFrames.push_back(frame.toOpenCVBGR());

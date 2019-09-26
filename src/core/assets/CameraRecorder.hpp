@@ -144,7 +144,7 @@ namespace sibr
 		bool					_playing;	
 		bool					_saving;
 		std::string				_savingPath;
-		bool					_savingImage;
+		bool					_savingVideo;
 		std::string				_savingVideoPath;
 		float					_speed;
 		float					_interp;

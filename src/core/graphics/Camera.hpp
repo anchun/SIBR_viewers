@@ -20,7 +20,7 @@ namespace sibr
 
 		Camera(void) :
 			_matViewProj(Matrix4f::Identity()), _invMatViewProj(Matrix4f::Identity()),
-			_dirtyViewProj(true), _savePath(""), _debugImage(false),
+			_dirtyViewProj(true), _savePath(""), _debugVideoFrames(false),
 			_fov(70.f), _aspect(1.f), _znear(0.01f), _zfar(1000.f),_isOrtho(false), _p(0.5f, 0.5f) { }
 
 		/////////////////////////////////////////////////////////////////
@@ -109,10 +109,10 @@ namespace sibr
 		void				saveViewProjMat(std::ofstream& outfile){ outfile << _matViewProj; };
 
 		bool				needSave() const { return _savePath!=""; }
-		bool				needImageSave() const { return _debugImage; }
+		bool				needVideoSave() const { return _debugVideoFrames; }
 		std::string			savePath() const { return _savePath; }
 		void				setSavePath(std::string savePath) { _savePath = savePath; }
-		void				toggleDebug() { _debugImage = !_debugImage; }
+		void				setDebugVideo(const bool debug) { _debugVideoFrames = debug; }
 		bool			_isOrtho;
 		float			_right;
 		float			_top;
@@ -120,7 +120,7 @@ namespace sibr
 		void				forceUpdateViewProj( void ) const;
 
 		std::string				_savePath;
-		bool					_debugImage;
+		bool					_debugVideoFrames;
 		mutable Matrix4f		_matViewProj;
 		mutable Matrix4f		_invMatViewProj;
 		mutable bool			_dirtyViewProj;

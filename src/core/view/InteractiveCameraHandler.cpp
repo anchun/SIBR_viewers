@@ -598,26 +598,31 @@ namespace sibr {
 				
 
 				//ImGui::SameLine();
-				const bool saveFrameOld = _saveFrame;
 				ImGui::Checkbox("Save video (from playing)", (&_saveFrame));
-				if (_saveFrame && !saveFrameOld) {
+				if (_saveFrame) {
+					_cameraRecorder.frameDebug(_saveFrame);
+				}
+				
+				ImGui::SameLine();
+				const bool saveFrameOld = _saveFrameDebug;
+				ImGui::Checkbox("Save frames (from playing)", (&_saveFrameDebug));
+				if (_saveFrameDebug && !saveFrameOld) {
 					if (sibr::showFilePicker(selectedFile, Save)) {
 						if (!selectedFile.empty()) {
 							_cameraRecorder.saving(selectedFile + "/");
+							_cameraRecorder.frameDebug(_saveFrameDebug);
 						}
 						else {
 							_cameraRecorder.stopSaving();
-							_saveFrame = false;
+							_saveFrameDebug = false;
+							_cameraRecorder.frameDebug(_saveFrameDebug);
 						}
 					}
 				}
-				else if (!_saveFrame && saveFrameOld) {
+				else if (!_saveFrameDebug && saveFrameOld) {
 					_cameraRecorder.stopSaving();
+					_cameraRecorder.frameDebug(_saveFrameDebug);
 				}
-
-				//ImGui::SameLine();
-				ImGui::Checkbox("Save frames and video (from playing)", (&_saveFrameDebug));
-				_cameraRecorder.frameDebug(_saveFrameDebug);
 				
 				//ImGui::SameLine();
 				//ImGui::Checkbox("Fribr export", &_fribrExport);
