@@ -108,8 +108,14 @@ namespace sibr {
 		 * \brief Getter for the pointer holding the render targets textures related to the scene.
 		 *
 		 */
-		const RenderTargetTextures::Ptr				renderTargets(void) const;
+		const RenderTargetTextures::Ptr	&			renderTargets(void) const;
 		
+		/**
+		 * \brief Getter for the pointer holding the render targets textures related to the scene.
+		 *
+		 */
+		RenderTargetTextures::Ptr &			renderTargets(void);
+
 		/**
 		 * \brief Getter for the pointer holding the user camera viewing the scene.
 		 * 
@@ -165,7 +171,12 @@ namespace sibr {
 		return _proxies;
 	}
 
-	inline const RenderTargetTextures::Ptr BasicIBRScene::renderTargets(void) const
+	inline const RenderTargetTextures::Ptr & BasicIBRScene::renderTargets(void) const
+	{
+		return _renderTargets;
+	}
+
+	inline RenderTargetTextures::Ptr & BasicIBRScene::renderTargets(void)
 	{
 		return _renderTargets;
 	}
