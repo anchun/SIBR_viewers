@@ -6,8 +6,7 @@
 ################################################################################
 
 include(CMakeDependentOption)
-option(BUILD_SIBR "Build core libs of SIBR (sibr_system, sibr_graphics, sibr_view and sibr_assets)" ON)
-option(BUILD_VIDEO "Build vbr lib in core of SIBR" OFF)
+option(BUILD_SIBR "Build core libs of SIBR (sibr_system, sibr_graphics, sibr_view, sibr_assets, ...)" ON)
 set(USE_RENDERER_API_GLUT ON)
 
 if (BUILD_IBR_TFGL_INTEROP)
@@ -79,9 +78,6 @@ if (BUILD_SIBR)
   add_subdirectory(core/scene)
   add_subdirectory(core/assets)
   add_subdirectory(core/imgproc)
-endif()
-
-if (BUILD_SIBR AND BUILD_VIDEO)
   add_subdirectory(core/video)
 endif()
 
