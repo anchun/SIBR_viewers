@@ -122,6 +122,8 @@ void main(void){
   vec4  color2 = vec4(0.0,0.0,0.0,INFTY_W);
   vec4  color3 = vec4(0.0,0.0,0.0,INFTY_W);
 
+  bool atLeastOneValid = false;
+  
   for(int i = 0; i < NUM_CAMS; i++){
 	if(i>=camsCount){
 		continue;
@@ -203,6 +205,7 @@ void main(void){
 			penaltyValue = weight;
 		}
 
+        atLeastOneValid = true;
 		color.w = penaltyValue;
 		  
 		// compare with best four candiates and insert at the
@@ -226,6 +229,10 @@ void main(void){
 			}
 		}
 	 }  
+   }
+   
+   if(!atLeastOneValid){
+        discard;
    }
    
    	if(winner_takes_all){

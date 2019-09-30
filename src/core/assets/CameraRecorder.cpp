@@ -41,6 +41,9 @@ namespace sibr
 				cam.setSavePath(_savingPath + "/" + ssZeroPad.str() + ".jpg");
 				//std::cout << "Saving frame as: " << cam.savePath() << std::endl;
 			}
+			if (_savingVideo) {
+				cam.setDebugVideo(true);
+			}
 			if (_pos >= _cameras.size())
 			{
 				stop();
@@ -49,6 +52,7 @@ namespace sibr
 		} else {
 			//std::cout << _playing << std::endl;
 			cam.setSavePath("");
+			cam.setDebugVideo(false);
 		}
 	}
 
@@ -71,6 +75,11 @@ namespace sibr
 		_saving = true;
 		_savingPath = filePath;
 		SIBR_LOG << "[CameraRecorder] - Recording" << std::endl;
+	}
+
+	void CameraRecorder::frameDebug(const bool debugFrame)
+	{
+		_savingVideo = debugFrame;
 	}
 
 	void sibr::CameraRecorder::stopSaving(void)

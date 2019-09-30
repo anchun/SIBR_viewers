@@ -55,6 +55,9 @@ namespace sibr
 		*/
 		void	saving(std::string savePath);
 
+
+		void	frameDebug(const bool debugFrame);
+
 		/**
 		Stop saving.
 		*/
