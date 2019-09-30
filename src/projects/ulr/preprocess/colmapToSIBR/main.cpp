@@ -26,7 +26,7 @@ int main(const int argc, const char** argv)
 
 	std::string pathScene = myArgs.dataset_path;
 
-	std::vector<std::string> dirs = { "cameras", "images", "meshes", "textures" };
+	std::vector<std::string> dirs = { "cameras", "images", "meshes"};
 
 	std::cout << "Generating SIBR scene." << std::endl;
 	BasicIBRScene scene(myArgs, true);
@@ -38,8 +38,8 @@ int main(const int argc, const char** argv)
 
 	for (auto dir : dirs) {
 		std::cout << dir << std::endl;
-		if (!boost::filesystem::exists(pathScene + "/" + dir.c_str())) {
-			sibr::makeDirectory(pathScene + "/" + dir.c_str());
+		if (!directoryExists(pathScene + "/" + dir.c_str())) {
+			makeDirectory(pathScene + "/" + dir.c_str());
 		}
 	}
 

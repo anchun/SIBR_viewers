@@ -215,6 +215,9 @@ namespace sibr
 
 		_showImages = true;
 		camera_path = myArgs.dataset_path.get() + "/cameras";
+		if (!directoryExists(camera_path)) {
+			makeDirectory(camera_path);
+		}
 
 		setup();
 	}
