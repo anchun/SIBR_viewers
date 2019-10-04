@@ -745,8 +745,9 @@ if(1)
 		set(Boost_REQUIRED_COMPONENTS ${Boost_NEEDED_COMPONENTS})
 	endif()
 
+
     if(Boost_NEEDED_COMPONENTS)
-        find_package(Boost REQUIRED COMPONENTS ${Boost_REQUIRED_COMPONENTS})
+        find_package(Boost 1.71.0 REQUIRED COMPONENTS ${Boost_REQUIRED_COMPONENTS})
     else()
         find_package(Boost)
     endif()
@@ -858,10 +859,10 @@ if (BUILD_IBR_TFGL_INTEROP)
     sibr_addlibrary(
         NAME tfgl_interop
         MSVC11 "https://gforge.inria.fr/frs/download.php/file/37881/tfinterop.7z"
-        MSVC14 "https://gforge.inria.fr/frs/download.php/file/37881/tfinterop.7z"  
+        #MSVC14 "https://gforge.inria.fr/frs/download.php/file/37881/tfinterop.7z"  
         # If you need CUDA10, you can use this version instead.
         # TODO: find a way to check the CUDA version automatically, looking at CUDA_VERSION.
-        # MSVC14 "https://gforge.inria.fr/frs/download.php/file/38123/tfinterop_cuda10.7z"
+        MSVC14 "https://gforge.inria.fr/frs/download.php/file/38123/tfinterop_cuda10.7z"
         REQUIREDFOR BUILD_IBR_TFGL_INTEROP
     )
 endif()
@@ -869,8 +870,8 @@ endif()
 if (BUILD_IBR_TORCHGL_INTEROP)
     sibr_addlibrary(
         NAME libtorch
-        MSVC11 "https://gforge.inria.fr/frs/download.php/file/38120/libtorch.7z"
-        MSVC14 "https://gforge.inria.fr/frs/download.php/file/38120/libtorch.7z"  
+        MSVC11 "https://gforge.inria.fr/frs/download.php/file/38148/libtorch.7z"
+        MSVC14 "https://gforge.inria.fr/frs/download.php/file/38148/libtorch.7z"  
         REQUIREDFOR BUILD_IBR_TORCHGL_INTEROP
     )
 endif()

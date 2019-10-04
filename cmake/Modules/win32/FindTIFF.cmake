@@ -56,6 +56,7 @@ FIND_LIBRARY(TIFF_LIBRARY
 	PATHS
 		${TIFF_DIR}/${TIFF_SEARCH_LIB}
 		${TIFF_DIR}/lib
+		${TIFF_DIR}/lib64
 		## linux
 		/usr/${TIFF_SEARCH_LIB}
 		/usr/local/${TIFF_SEARCH_LIB}
