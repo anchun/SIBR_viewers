@@ -223,7 +223,7 @@ include_directories(${ASSIMP_INCLUDE_DIR})
 ################
 ## Find FFMPEG
 ################
-if(BUILD_VIDEO OR BUILD_IBR_DYNAMIC) ## ffmpeg only needed with vbr projects
+if(BUILD_SIBR) ## ffmpeg only needed with vbr projects
 	win3rdParty(FFMPEG
 		MSVC11 "win3rdParty/MSVC11/ffmpeg" "https://gforge.inria.fr/frs/download.php/file/34916/ffmpeg.zip"
         MSVC12 "win3rdParty/MSVC12/ffmpeg" "https://gforge.inria.fr/frs/download.php/file/34916/ffmpeg.zip"

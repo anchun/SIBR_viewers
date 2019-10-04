@@ -111,6 +111,9 @@ namespace sibr {
 		/// Apply gamma correction to the output.
 		bool & gammaCorrection() { return _gammaCorrection.get(); }
 
+		/// Apply backface culling to the mesh.
+		bool & backfaceCull() { return _backFaceCulling; }
+
 		/** Resize the internal rendertargets.
 		 *\param w the new width
 		 *\param h the new height

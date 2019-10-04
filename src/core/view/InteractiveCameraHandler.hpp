@@ -98,6 +98,8 @@ namespace sibr {
 		*/
 		void fromTransform(const Transform3f & transform, bool interpolate = true, bool updateResolution = true);
 
+		void setClippingPlanes(float znear, float zfar);
+
 		/** Find the camera in a list closest to the current interactive camera position
 		\param inputCameras the list to search in
 		\return the index of the closest camera in the list, or -1
@@ -206,6 +208,7 @@ namespace sibr {
 
 		sibr::Vector2f _clippingPlanes;
 		bool _saveFrame;
+		bool _saveFrameDebug;
 		bool _triggerCameraUpdate;
 		bool _isSetup;
 		float _cameraFovDeg;

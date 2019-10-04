@@ -26,6 +26,7 @@ sibr_graphics
 sibr_assets
 sibr_raycaster
 sibr_scene
+sibr_video
 )
 
 #define postfix for various debug/release

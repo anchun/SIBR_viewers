@@ -7,7 +7,7 @@
 #include <core/system/Utils.hpp>
 
 
-#define PROGRAM_NAME "sibr_colmap_to_sibr"
+#define PROGRAM_NAME "sibr_nvm_to_sibr"
 using namespace sibr;
 
 const char* usage = ""
@@ -67,7 +67,7 @@ int main(const int argc, const char** argv)
 		ssZeroPad << std::setw(8) << std::setfill('0') << camIm.id();
 		std::string newFileName = ssZeroPad.str() + extensionFile;
 
-		boost::filesystem::copy_file(pathScene + "/colmap/stereo/images/" + camIm.name(), pathScene + "/images/" + newFileName, boost::filesystem::copy_option::overwrite_if_exists);
+		boost::filesystem::copy_file(pathScene + "/nvm/" + camIm.name(), pathScene + "/images/" + newFileName, boost::filesystem::copy_option::overwrite_if_exists);
 		outputBundleCam << camIm.toBundleString();
 		outputListIm << newFileName << " " << camIm.w() << " " << camIm.h() << std::endl;
 		outputSceneMetadata << newFileName << " " << camIm.w() << " " << camIm.h() << " " << camIm.znear() << " " << camIm.zfar() << std::endl;
