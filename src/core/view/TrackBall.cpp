@@ -318,7 +318,15 @@ namespace sibr {
 			Vector3f oldEye = -fixedCamera.dir().normalized();
 			Vector3f newEye = fixedCenter + radius * (rot*oldEye);
 
-			tempCamera.setLookAt(newEye, fixedCenter, fixedCamera.up());
+			if (tempCamera._isOrtho) {
+				SIBR_WRG << "Rotation with ortho cam is not fully functional, fuction to fix";
+				Vector3f newCenter = fixedCenter + radius*oldEye.dot((fixedCamera.position() - newEye).normalized())*(fixedCamera.position() - newEye);
+				Vector3f newEyeOrtho = radius*(newEye - newCenter).normalized()+newCenter;
+				tempCamera.setLookAt(newEyeOrtho, newCenter, fixedCamera.up());
+			}
+			else {
+				tempCamera.setLookAt(newEye, fixedCenter, fixedCamera.up());
+			}
 		}
 	}
 
@@ -441,15 +449,16 @@ namespace sibr {
 		if (!fixedCamera._isOrtho) {
 			float zoomIn = (input.mouseScroll() > 0 ? -1.0f : 1.0f);
 			float radius = (fixedCamera.position() - fixedCenter).norm();
-		Vector3f oldEye = -fixedCamera.dir().normalized();
+			Vector3f oldEye = -fixedCamera.dir().normalized();
 			radius = radius * pow(1.25f, zoomIn);
 			Vector3f newEye = fixedCenter + radius * oldEye;
-		fixedCamera.setLookAt(newEye, fixedCenter, fixedCamera.up());
-	}
+			fixedCamera.setLookAt(newEye, fixedCenter, fixedCamera.up());
+		}
 		else
 		{
 			float zoomIn = (input.mouseScroll() > 0.0f ? -1.0f : 1.0f);
-			fixedCamera.fovy(fixedCamera.fovy()*pow(1.25f, zoomIn));
+			fixedCamera.orthoRight(fixedCamera._right *pow(1.25f, zoomIn));
+			fixedCamera.orthoTop(fixedCamera._top *pow(1.25f, zoomIn));
 		}
 	}
 
