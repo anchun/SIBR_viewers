@@ -12,8 +12,8 @@
 namespace sibr { 
 
 	/**
-	 * \class ULRV3View
-	 * \brief Wrap a ULR renderer with additional parameters and information.
+	 * \class TexturedMeshView
+	 * \brief Wrap a Textured Mesh renderer with additional parameters and information.
 	 */
 	class SIBR_EXP_ULR_EXPORT TexturedMeshView : public sibr::ViewBase
 	{
@@ -50,7 +50,7 @@ namespace sibr {
 		void onGUI() override;
 
 		/// Obtain a reference to the renderer.
-		const TexturedMeshRenderer::Ptr & getULRrenderer() const { return _textureRenderer; }
+		const TexturedMeshRenderer::Ptr & getTexturedRenderer() const { return _textureRenderer; }
 
 		/// Get a ref to the scene.
 		const std::shared_ptr<sibr::BasicIBRScene> getScene() const { return _scene; }
@@ -58,7 +58,7 @@ namespace sibr {
 	protected:
 
 		/**
-		 * Update the camera informations in the ULR renderer based on the current rendering mode and selected index.
+		 * Update the camera informations in the Textured Mesh renderer based on the current rendering mode and selected index.
 		 * \param allowResetToDefault If true, when the rendering mode is ALL_CAMS, the cameras information will be updated.
 		 */
 		void updateCameras(bool allowResetToDefault);
