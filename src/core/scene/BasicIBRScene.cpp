@@ -83,6 +83,14 @@ namespace sibr
 				CameraRaycaster::computeClippingPlanes(_proxies->proxy(), inCams, nearsFars);
 				_cams->updateNearsFars(nearsFars);
 			}
+
+			//// Load the texture.
+			//sibr::ImageRGB inputTextureImg;
+			//if (sibr::fileExists(_data->texImgPath())) {
+			//	inputTextureImg.load(_data->texImgPath());
+			//	_inputMeshTexture.reset(new sibr::Texture2DRGB(inputTextureImg, SIBR_GPU_LINEAR_SAMPLING));
+			//}
+			
 		}
 
 
