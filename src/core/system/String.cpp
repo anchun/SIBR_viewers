@@ -1,6 +1,8 @@
 
 #include "core/system/String.hpp"
 #include <cstdarg>
+#include <chrono>
+#include <iomanip>
 
 namespace sibr
 {
@@ -88,6 +90,20 @@ namespace sibr
 #endif
 		va_end(args);
 		return ret;
+	}
+
+
+	std::string timestamp(const std::string & format) {
+		auto now = std::time(nullptr);
+#ifdef SIBR_OS_WINDOWS
+		tm ltm = { 0,0,0,0,0,0,0,0,0 };
+		localtime_s(&ltm, &now);
+#else
+		tm ltm = *(std::localtime(&now));
+#endif
+		std::stringstream buffer;
+		buffer << std::put_time(&ltm, format.c_str());
+		return buffer.str();
 	}
 
 } // namespace sirb
