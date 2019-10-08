@@ -39,7 +39,7 @@ int main(const int argc, const char** argv)
 	if (imageListFile.load(datasetPath + "/images/list_images.txt") == false && imageListFile.load(datasetPath + "/list_images.txt") == false)
 		return 1;
 
-	if ((proxy.load(datasetPath + "/meshes/pmvs_recon.ply") == false) && (proxy.load(datasetPath + "/pmvs_recon.ply") == false) && (proxy.load(datasetPath + "/recon.ply") == false) && (proxy.load(datasetPath + "/meshes/recon.ply") == false))
+	if ((proxy.load(datasetPath + "/meshes/pmvs_recon.ply") == false) && (proxy.load(datasetPath + "/meshes/mesh.ply") == false) && (proxy.load(datasetPath + "/pmvs_recon.ply") == false) && (proxy.load(datasetPath + "/recon.ply") == false) && (proxy.load(datasetPath + "/meshes/recon.ply") == false))
 		return 1;
 
 	const std::string clipping_planes_file_path = datasetPath + "/clipping_planes.txt";
