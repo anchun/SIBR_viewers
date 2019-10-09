@@ -478,7 +478,7 @@ namespace sibr
 							{
 								std::string textureName =
 									nodeString->first_attribute("value")->value();
-								sibr::ImageRGB::Ptr texture(new sibr::ImageRGB());
+								sibr::ImageRGBA::Ptr texture(new sibr::ImageRGBA());
 								// If we skip loading the textures, still set them as empty images.
 								if(!loadTextures || texture->load(pathFolder + "/" + textureName)) {
 									/*std::cout << "Diffuse " << pathFolder + "/"
@@ -533,11 +533,12 @@ namespace sibr
 									float redComponent, greenComponent, blueComponent;
 									sscanf_s(colorString.c_str(), "%f, %f, %f",
 										&redComponent, &greenComponent, &blueComponent);
-									const sibr::ImageRGB::Pixel color(
+									const sibr::ImageRGBA::Pixel color(
 										static_cast<const unsigned char>(redComponent * 255),
 										static_cast<const unsigned char>(greenComponent * 255),
-										static_cast<const unsigned char>(blueComponent * 255));
-									sibr::ImageRGB::Ptr texture(new sibr::ImageRGB(
+										static_cast<const unsigned char>(blueComponent * 255),
+										255);
+									sibr::ImageRGBA::Ptr texture(new sibr::ImageRGBA(
 										1, 1, color));
 									if (texture) {
 										/*std::cout << "Diffuse color : " <<
@@ -575,12 +576,13 @@ namespace sibr
 					float g = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
 					float b = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
 
-					const sibr::ImageRGB::Pixel color(
+					const sibr::ImageRGBA::Pixel color(
 						static_cast<const unsigned char>(r * 255),
 						static_cast<const unsigned char>(g * 255),
-						static_cast<const unsigned char>(b * 255)
+						static_cast<const unsigned char>(b * 255),
+						static_cast<const unsigned char> (255)
 					);
-					sibr::ImageRGB::Ptr texture(new sibr::ImageRGB(
+					sibr::ImageRGBA::Ptr texture(new sibr::ImageRGBA(
 						1, 1, color));
 					SIBR_WRG << "Warning: No color and no texture found for " << nameMat << ", " <<
 						"material will be chosen randomly." << std::endl;
@@ -1168,15 +1170,15 @@ namespace sibr
 			it != matId2Name().end();
 			++it)
 		{
-			sibr::ImageRGB::Ptr texturePtr = diffuseMap(*it);
+			sibr::ImageRGBA::Ptr texturePtr = diffuseMap(*it);
 			if (texturePtr) {
-				_albedoTextures[i] = std::shared_ptr<sibr::Texture2DRGB>(
-					new sibr::Texture2DRGB(*texturePtr));
+				_albedoTextures[i] = std::shared_ptr<sibr::Texture2DRGBA>(
+					new sibr::Texture2DRGBA(*texturePtr));
 				_idTextures[i] = _albedoTextures[i]->handle();
 			}
 			else {
-				_albedoTextures[i] = std::shared_ptr<sibr::Texture2DRGB>(
-					new sibr::Texture2DRGB());
+				_albedoTextures[i] = std::shared_ptr<sibr::Texture2DRGBA>(
+					new sibr::Texture2DRGBA());
 				_idTextures[i] = _albedoTextures[i]->handle();
 			}
 
@@ -1485,10 +1487,11 @@ namespace sibr
 			sphere.matId2Name(materialNames);
 			sphere.matIds(matIdsSphere);
 
-			const sibr::ImageRGB::Pixel color(0,
+			const sibr::ImageRGBA::Pixel color(0,
+				255,
 				255,
 				255);
-			sibr::ImageRGB::Ptr textureDiffuse(new sibr::ImageRGB(1, 1, color));
+			sibr::ImageRGBA::Ptr textureDiffuse(new sibr::ImageRGBA(1, 1, color));
 			_diffuseMaps[matName] = textureDiffuse;
 
 			const sibr::ImageRGB::Pixel opacityAlpha(255, 255, 255);

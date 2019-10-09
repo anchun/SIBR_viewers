@@ -36,7 +36,7 @@ namespace sibr
 
 
 		typedef std::map<std::string, sibr::ImageRGB::Ptr>		OpacityMaps;
-		typedef std::map<std::string, sibr::ImageRGB::Ptr>		DiffuseMaps;
+		typedef std::map<std::string, sibr::ImageRGBA::Ptr>		DiffuseMaps;
 
 		typedef sibr::ImageRGB::Ptr								TagsMap;
 		typedef sibr::ImageRGB::Ptr								TagsCoveringMap;
@@ -110,13 +110,14 @@ namespace sibr
 			"	//out_color = texture(texArray,vec3(uvCoords.x,1.0-uvCoords.y,n));\n"
 			"	//out_color = vec4(normal,1.0);\n"
 			"	opacityColor = texture(opacity,vec2(uvCoords.x,1.0-uvCoords.y));\n"
-			"	if (opacityColor.x < 0.1f) discard;						\n"
-			"	if (AoIsActive ) {						\n"
-			"	out_color = texture(tex,vec2(uvCoords.x,1.0-uvCoords.y))* vec4(colorsModified,1);\n"
-			"	out_color = vec4(out_color.x,out_color.y,out_color.z,opacityColor.x);\n}"
-			"	else /*(colors.x == 0 && colors.y == 0 && colors.z == 0)*/	\n"
+			"	if (opacityColor.x < 0.1f && opacityColor.y < 0.1f && opacityColor.z < 0.1f ) discard;\n"
+			"							\n"
 			"	out_color = texture(tex,vec2(uvCoords.x,1.0-uvCoords.y));\n"
-			"	//out_color = vec4(colors,1);										\n"
+			"	if (out_color.w < 0.1f ) discard; \n"
+			"							\n"
+			"	if (AoIsActive ) {						\n"
+			"	out_color = out_color * vec4(colorsModified,1);\n}"
+			"	out_color = vec4(out_color.x,out_color.y,out_color.z,opacityColor.x);\n"
 			"}																	\n";
 
 
@@ -126,6 +127,7 @@ namespace sibr
 			"layout(binding = 1) uniform sampler2D tags;				\n"
 			"layout(binding = 2) uniform sampler2D opacity;				\n"
 			"uniform int layer;													\n"
+			"uniform float scaleTags;													\n"
 			"uniform bool AoIsActive;													\n"
 			"uniform vec2 grid;												\n"
 			"uniform float IlluminanceCoefficient;												\n"
@@ -142,10 +144,14 @@ namespace sibr
 			"	colorsModified.y = lighter_ao;\n"
 			"	colorsModified.z = lighter_ao;\n"
 			"	opacityColor = texture(opacity,vec2(uvCoords.x,1.0-uvCoords.y));\n"
-			"	if (opacityColor.x < 0.1f) discard;						\n"
+			"	if (opacityColor.x < 0.1f && opacityColor.y < 0.1f && opacityColor.z < 0.1f ) discard;\n"
 			"							\n"
 			"							\n"
-			"	out_color = texture(tags,vec2((uvCoords.x/3.f),1.0-(uvCoords.y/3.f)));\n"
+			"	out_color = texture(tex,vec2(uvCoords.x,1.0-uvCoords.y));\n"
+			"	if (out_color.w < 0.1f ) discard; \n"
+			"							\n"
+			"	out_color = texture(tags,vec2((uvCoords.x)*scaleTags,(1.0-(uvCoords.y))*scaleTags));\n"
+			"							\n"
 			"	if (out_color.x == 1.f && out_color.y == 1.f && out_color.z == 1.f)		\n"
 			"	out_color = texture(tex,vec2(uvCoords.x,1.0-uvCoords.y));\n"
 			"							\n"
@@ -190,7 +196,7 @@ namespace sibr
 		inline const OpacityMaps& opacityMaps(void) const;
 
 		/// Return the pointer to oppacity texture if it exist
-		inline sibr::ImageRGB::Ptr diffuseMap(const std::string& matName) const;
+		inline sibr::ImageRGBA::Ptr diffuseMap(const std::string& matName) const;
 		/// Set the diffuseMaps
 		inline void diffuseMaps(const DiffuseMaps & maps);
 		/// get the diffuseMaps
@@ -320,7 +326,7 @@ namespace sibr
 		RenderCategory _typeOfRender = RenderCategory::diffuseMaterials;
 
 		bool _albedoTexturesInitialized = false;
-		std::vector<sibr::Texture2DRGB::Ptr> _albedoTextures;
+		std::vector<sibr::Texture2DRGBA::Ptr> _albedoTextures;
 		std::vector<GLuint> _idTextures;
 
 		std::vector<sibr::Texture2DRGB::Ptr> _opacityTextures;
@@ -432,7 +438,7 @@ namespace sibr
 		return _tagsCoveringMap;
 	}
 
-	ImageRGB::Ptr MaterialMesh::diffuseMap(const std::string& matName) const
+	ImageRGBA::Ptr MaterialMesh::diffuseMap(const std::string& matName) const
 	{
 		auto & el = _diffuseMaps.find(matName);
 		if (el != _diffuseMaps.end()) {

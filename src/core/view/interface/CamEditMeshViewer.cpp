@@ -91,6 +91,8 @@ sibr::CamEditMeshViewer::CamEditMeshViewer(const sibr::Vector2i & screenRes,
 	_positionDepth_layer.init(_shaderThreeSixtyDepth, "pos");
 	_positionMaterials_layer.init(_shaderThreeSixtyMaterials, "pos");
 	CHECK_GL_ERROR;
+	_tagsScaleFactor_layer.init(_shaderAlbedo, "scaleTags");
+	CHECK_GL_ERROR;
 	_typeOfMesh = CamEditMeshViewer::TypeOfMesh::materialMesh;
 	_outputPath = outputPath;
 
@@ -125,6 +127,7 @@ void sibr::CamEditMeshViewer::renderMaterialMesh(const sibr::Camera& eye,
 		_MVP_layer.set(eye.viewproj());
 		_activeAoColors_layer.set(_materialMesh.ambientOcclusion()
 			.AoIsActive);
+		_tagsScaleFactor_layer.set(_tagsScaleFactor);
 		_illuminanceAoCoefficient_layer.set(
 			_materialMesh.ambientOcclusion().IlluminanceCoefficient);
 		_materialMesh.initAlbedoTextures();
@@ -348,10 +351,14 @@ void sibr::CamEditMeshViewer::onGUI() {
 					InputCamera camToAdd = interactCam->getCamera();
 					InputCamera& refToCam = camToAdd;
 					addCamera(refToCam);
+					std::cout << _currentList.size() << " cameras in the current set"
+						<< std::endl;
 				}
 				ImGui::SameLine();
 				if (ImGui::Button("Interpolate")) {
 					interpolate_cameras(_numberInterpolations, 0.5f);
+					std::cout << _currentList.size() << " cameras in the current set"
+						<< std::endl;
 				}
 				ImGui::SameLine();
 				if (ImGui::Button("Make cameras around")) {
@@ -474,7 +481,13 @@ void sibr::CamEditMeshViewer::onGUI() {
 				}
 
 
+
 			}
+				ImGui::Separator();
+				if (ImGui::CollapsingHeader("Tags options")) {
+					ImGui::SliderFloat("Tags scale factor",
+						&_tagsScaleFactor, 0.05f, 3.f);
+				}
 			ImGui::Separator();
 			if (ImGui::CollapsingHeader("360 Options")) {
 
@@ -542,12 +555,10 @@ void sibr::CamEditMeshViewer::onGUI() {
 
 							rt.bind();
 							glViewport(0, 0, rt.w(), rt.h());
-
-
 							InputCamera camResized(cam);
-							camResized.size(widthExport, heightExport);
-							camResized.aspect(static_cast<float> (widthExport) /
-								static_cast<float> (heightExport));
+							//camResized.size(widthExport, heightExport);
+							//camResized.aspect(static_cast<float> (widthExport) /
+							//	static_cast<float> (heightExport));
 
 							renderMaterialMesh(camResized, false);
 
@@ -635,7 +646,7 @@ void sibr::CamEditMeshViewer::onGUI() {
 				if (!_currentLightSpheres.empty()) _currentLightSpheres.pop_back();
 			}
 			ImGui::SliderFloat("Delta camera",
-				&_currentDeltaLight, _initialDeltaLight/100.f, _initialDeltaLight*20.f);
+				&_currentDeltaLight, _initialDeltaLight/100.f, _initialDeltaLight*5.f);
 		}
 
 		//static unsigned int currentSetToSnapping = 0;
@@ -1052,7 +1063,7 @@ std::string sibr::CamEditMeshViewer::getInformationsCam(InputCamera& cam) {
 		std::string(",") +
 		std::to_string(cam.up()[2]) +
 		std::string(" -D fovy=") +
-		std::to_string(cam.fovy()) +
+		std::to_string(180*cam.fovy()/M_PI) +
 		std::string(" -D clip=") +
 		std::to_string(cam.znear()) +
 		std::string(",") +
