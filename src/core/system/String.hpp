@@ -74,6 +74,13 @@ namespace sibr
 	 */
 	SIBR_SYSTEM_EXPORT int 		sprintf(char* buffer, size_t size, const char* format, ...);
 
+	/** Write the current timestamp to a string.
+	 * \param format the formatting to use for the timestamp (see default value for an example)
+	 * \return a string containing the timestamp
+	 */
+	SIBR_SYSTEM_EXPORT std::string timestamp(const std::string & format = "%Y_%m_%d_%H_%M_%S");
+
+
 	/*** @} */
 
 } // namespace sibr
