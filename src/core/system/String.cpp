@@ -37,6 +37,12 @@ namespace sibr
 		return str.substr(0, pos1);
 	}
 
+	SIBR_SYSTEM_EXPORT std::string getFileName(const std::string & str)
+	{
+		const std::string::size_type pos = str.find_last_of("/\\");
+		return str.substr(pos+1);
+	}
+
 	bool strContainsOnlyDigits(const std::string& str)
 	{
 		for (char c : str)
