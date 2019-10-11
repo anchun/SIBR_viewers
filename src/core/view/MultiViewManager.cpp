@@ -424,7 +424,7 @@ namespace sibr
 		MultiViewBase::onUpdate(input);
 
 		if (input.key().isActivated(Key::LeftControl) && input.key().isActivated(Key::LeftAlt) && input.key().isReleased(Key::G)) {
-			toggleSubViewsGUI();
+			toggleGUI();
 		}
 	}
 
@@ -569,6 +569,9 @@ namespace sibr
 	void MultiViewManager::toggleGUI()
 	{
 		_showGUI = !_showGUI;
+		if (!_showGUI) {
+			SIBR_LOG << "[MultiViewManager] GUI is now hidden, use Ctrl+Alt+G to toggle it back on." << std::endl;
+		}
 		toggleSubViewsGUI();
 	}
 
