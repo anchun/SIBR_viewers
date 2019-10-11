@@ -583,7 +583,7 @@ namespace sibr {
 							SIBR_LOG << "Loading" << std::endl;
 							_cameraRecorder.reset();
 							if (boost::filesystem::extension(selectedFile) == ".out")
-								_cameraRecorder.loadBundle(selectedFile, 1280, 800);
+								_cameraRecorder.loadBundle(selectedFile, 1920, 1080);
 							else
 								_cameraRecorder.load(selectedFile);
 							_cameraRecorder.playback();
