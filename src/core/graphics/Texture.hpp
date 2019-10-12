@@ -421,7 +421,8 @@ namespace sibr
 	public:
 		virtual ~IRenderTarget( void ) { }
 
-		virtual GLuint texture( uint t = 0 ) const = 0;
+		virtual GLuint texture( uint t = 0 ) const = 0; // Deprecated, use texture() instead.
+		virtual GLuint handle( uint t = 0 ) const = 0;
 		virtual void bind( void ) = 0;
 		virtual void unbind( void ) = 0;
 		virtual void clear( void ) = 0;
