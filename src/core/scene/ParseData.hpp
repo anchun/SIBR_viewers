@@ -152,11 +152,16 @@ namespace sibr{
 		const std::string&								texImgPath(void) const;
 
 		/**
-		* \brief Getter for the mesh path where the dataset is located.
+		* \brief Getter for the dataset type.
 		*
 		*/
 		const ParseData::Type&								datasetType(void) const;
 
+		/**
+		* \brief Setter for the dataset type.
+		*
+		*/
+		void												datasetType(ParseData::Type dataType);
 
 
 	public:
@@ -257,8 +262,13 @@ namespace sibr{
 		return _texImgPath;
 	}
 
+	inline void		ParseData::datasetType(ParseData::Type dataType) {
+		_datasetType = dataType;
+	}
+
 	inline const ParseData::Type & ParseData::datasetType(void) const
 	{
 		return _datasetType;
 	}
+
 }

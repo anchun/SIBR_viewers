@@ -6,6 +6,7 @@ namespace sibr
 {
 	
 	BasicIBRScene::BasicIBRScene() {
+		_data.reset(new ParseData());
 		_cams.reset(new CalibratedCameras());
 		_imgs.reset(new InputImages());
 		_proxies.reset(new ProxyMesh());
