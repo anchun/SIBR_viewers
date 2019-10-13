@@ -124,13 +124,13 @@ namespace sibr
 		static GLfloat Ftcoord[] = { 0, 0, 1, 0, 1, 1, 0, 1 };
 		static GLuint  Find[] = { 0,1,2,  0,2,3 };
 		static GLuint FindexVBO, FVAO, FvertTexVBO;
-		//static bool FfirstTime = true;
+		static bool FfirstTime = true;
 		static int lastContextId = -1;
 
 		//std::cout << lastContextId << " " << Window::contextId << std::endl;
-		if (lastContextId != Window::contextId) {
+		if (lastContextId != Window::contextId || FfirstTime) {
 			lastContextId = Window::contextId;
-			//FfirstTime = false;
+			FfirstTime = false;
 
 			glGenVertexArrays(1, &FVAO);
 			glBindVertexArray(FVAO);
