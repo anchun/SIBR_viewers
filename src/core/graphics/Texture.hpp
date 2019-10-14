@@ -380,6 +380,13 @@ namespace sibr
 		static const uint type = GLType<ScalarType>::type;
 	};
 
+
+	template<typename ScalarType, uint N >
+	struct GLTexFormat<cv::Mat_<cv::Vec<ScalarType, N> >, ScalarType, N> 
+		: GLTexFormat<cv::Mat, ScalarType, N>
+	{
+	};
+
 	//-------------------------------------
 
 
@@ -421,7 +428,8 @@ namespace sibr
 	public:
 		virtual ~IRenderTarget( void ) { }
 
-		virtual GLuint texture( uint t = 0 ) const = 0;
+		virtual GLuint texture( uint t = 0 ) const = 0; // Deprecated, use texture() instead.
+		virtual GLuint handle( uint t = 0 ) const = 0;
 		virtual void bind( void ) = 0;
 		virtual void unbind( void ) = 0;
 		virtual void clear( void ) = 0;

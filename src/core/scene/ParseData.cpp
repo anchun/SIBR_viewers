@@ -723,7 +723,7 @@ namespace sibr {
 		}
 		// Default mesh path if none found in the metadata file.
 		if (_meshPath.empty()) {
-			_meshPath = _basePathName + "/meshes/recon";
+			_meshPath = _basePathName + "/meshes/recon.ply";
 		}
 
 	}
