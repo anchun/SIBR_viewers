@@ -739,7 +739,7 @@ namespace sibr
 		Pixel p;
 		for (uint y = 0; y < h(); ++y) {
 			for (uint x = 0; x < w(); ++x) {
-				Pixel v = pixel(x, y);
+				Pixel v = operator()(x, y);
 				for (uint c = 0; c < T_NumComp; ++c) {
 					minImage[c] = std::min(v[c], minImage[c]);
 					maxImage[c] = std::max(v[c], maxImage[c]);
@@ -758,7 +758,7 @@ namespace sibr
 		Pixel p;
 		for (uint y = 0; y < h(); ++y) {
 			for (uint x = 0; x < w(); ++x) {
-				Pixel v = pixel(x, y);
+				Pixel v = operator()(x, y);
 				for (uint i = 0; i < T_NumComp; ++i)
 					p[i] = minVal[i] + ((maxVal[i] - minVal[i])*(v[i] - minImage[i])) / (maxImage[i] - minImage[i]);
 				pixel(x, y, p);
@@ -827,7 +827,7 @@ namespace sibr
 		for (int i = 0; i < 4; ++i) {
 			for (int j = 0; j < 4; ++j) {
 				const sibr::Vector2i pixelPosition = cornerPixel + offsets[i][j];
-				colorsGrid[i].col(j) = pixel(sibr::clamp(pixelPosition, topLeft, bottomRight)).cast<float>();
+				colorsGrid[i].col(j) = operator()(sibr::clamp(pixelPosition, topLeft, bottomRight)).cast<float>();
 			}
 		}
 

@@ -4,6 +4,7 @@
 #include "core/raycaster/CameraRaycaster.hpp"
 #include "core/scene/RenderTargetTextures.hpp"
 #include "core/scene/Config.hpp"
+#include "core/system/String.hpp"
 
 namespace sibr {
 
@@ -117,6 +118,12 @@ namespace sibr {
 		RenderTargetTextures::Ptr &			renderTargets(void);
 
 		/**
+		 * \brief Getter for the pointer holding the mesh textures related to the mesh loaded for the scene.
+		 *
+		 */
+		Texture2DRGB::Ptr &					inputMeshTextures(void);
+
+		/**
 		 * \brief Getter for the pointer holding the user camera viewing the scene.
 		 * 
 		 * \todo Move to somwhere more appropriate.
@@ -139,8 +146,9 @@ namespace sibr {
 		CalibratedCameras::Ptr						_cams;
 		InputImages::Ptr							_imgs;
 		ProxyMesh::Ptr								_proxies;
+		Texture2DRGB::Ptr							_inputMeshTexture;
 		RenderTargetTextures::Ptr					_renderTargets;
-		sibr::InputCamera							_userCamera;
+		InputCamera									_userCamera;
 		
 	};
 
@@ -179,6 +187,11 @@ namespace sibr {
 	inline RenderTargetTextures::Ptr & BasicIBRScene::renderTargets(void)
 	{
 		return _renderTargets;
+	}
+
+	inline Texture2DRGB::Ptr & BasicIBRScene::inputMeshTextures(void)
+	{
+		return _inputMeshTexture;
 	}
 
 	inline const sibr::InputCamera & BasicIBRScene::userCamera(void)

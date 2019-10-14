@@ -169,6 +169,18 @@ namespace sibr {
 		fromCamera(camCopy, interpolate, updateResolution);
 	}
 
+	void InteractiveCameraHandler::setClippingPlanes(float znear, float zfar) {
+		if (znear > 0.0f) {
+			_clippingPlanes[0] = znear;
+		}
+		if (zfar > 0.0f) {
+			_clippingPlanes[1] = zfar;
+		}
+		_currentCamera.znear(_clippingPlanes[0]);
+		_currentCamera.zfar(_clippingPlanes[1]);
+		fromCamera(_currentCamera);
+	}
+
 	void InteractiveCameraHandler::switchMode(const InteractionMode mode) {
 		if (_currentMode == mode) {
 			return;
@@ -571,7 +583,7 @@ namespace sibr {
 							SIBR_LOG << "Loading" << std::endl;
 							_cameraRecorder.reset();
 							if (boost::filesystem::extension(selectedFile) == ".out")
-								_cameraRecorder.loadBundle(selectedFile, 1280, 800);
+								_cameraRecorder.loadBundle(selectedFile, 1920, 1080);
 							else
 								_cameraRecorder.load(selectedFile);
 							_cameraRecorder.playback();

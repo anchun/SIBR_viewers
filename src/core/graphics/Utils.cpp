@@ -75,7 +75,6 @@ namespace sibr
 				}
 			}
 		}
-
 	}
 
 	void lin2sRGB(sibr::ImageRGB32F& img) {

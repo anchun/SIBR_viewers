@@ -423,12 +423,19 @@ namespace sibr {
 	void TrackBall::updateRadius(  const Input & input )
 	{
 		if( !sibr::KeyCombination() ){ return; }
-		float zoomIn = (  input.mouseScroll() > 0 ? -1.0f : 1.0f );
-		float radius = (fixedCamera.position()-fixedCenter).norm();
-		Vector3f oldEye = -fixedCamera.dir().normalized();
-		radius = radius * pow( 1.25f, zoomIn ); 
-		Vector3f newEye = fixedCenter + radius*oldEye;
-		fixedCamera.setLookAt(newEye, fixedCenter, fixedCamera.up());
+		if (!fixedCamera._isOrtho) {
+			float zoomIn = (input.mouseScroll() > 0 ? -1.0f : 1.0f);
+			float radius = (fixedCamera.position() - fixedCenter).norm();
+			Vector3f oldEye = -fixedCamera.dir().normalized();
+			radius = radius * pow(1.25f, zoomIn);
+			Vector3f newEye = fixedCenter + radius * oldEye;
+			fixedCamera.setLookAt(newEye, fixedCenter, fixedCamera.up());
+		}
+		else
+		{
+			float zoomIn = (input.mouseScroll() > 0.0f ? -1.0f : 1.0f);
+			fixedCamera.fovy(fixedCamera.fovy()*pow(1.25f, zoomIn));
+		}
 	}
 
 	void TrackBall::updateZnearZFar( const Input & input )
