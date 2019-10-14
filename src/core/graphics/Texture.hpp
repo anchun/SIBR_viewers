@@ -380,6 +380,13 @@ namespace sibr
 		static const uint type = GLType<ScalarType>::type;
 	};
 
+
+	template<typename ScalarType, uint N >
+	struct GLTexFormat<cv::Mat_<cv::Vec<ScalarType, N> >, ScalarType, N> 
+		: GLTexFormat<cv::Mat, ScalarType, N>
+	{
+	};
+
 	//-------------------------------------
 
 
