@@ -235,7 +235,7 @@ namespace sibr {
 
 	  float _maximumAngle = 20.f; //!< the maximum angle variation between the basic camera
 										//!< and the camera created around it
-       float _tagsScaleFactor = 1.f; //!< The scale factor of the tags covering textures
+      std::vector<float> _tagsScaleFactor; //!< The scale factor of the tags covering textures
 
 	  CamEditMeshViewer::TypeOfMesh _typeOfMesh = CamEditMeshViewer::TypeOfMesh::mesh;
 	  CamEditMeshViewer::TypeOfApp _typeOfApp = CamEditMeshViewer::TypeOfApp::CamEditor;

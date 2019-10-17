@@ -39,7 +39,7 @@ namespace sibr
 		typedef std::map<std::string, sibr::ImageRGBA::Ptr>		DiffuseMaps;
 
 		typedef sibr::ImageRGB::Ptr								TagsMap;
-		typedef sibr::ImageRGB::Ptr								TagsCoveringMap;
+		typedef std::map<std::string, sibr::ImageRGB::Ptr>		TagsCoveringMaps;
 
 		typedef std::vector<Mesh>								SubMeshes;
 		typedef std::vector<sibr::ImageRGB>						AlbedoTextures;
@@ -105,19 +105,15 @@ namespace sibr
 			"	colorsModified.x = lighter_ao;\n"
 			"	colorsModified.y = lighter_ao;\n"
 			"	colorsModified.z = lighter_ao;\n"
-			"	//int n = int (material);	 \n"
-			"	//out_color = mix(out_color, texture(texArray,vec3(uvCoords.x,uvCoords.y,n)), 0.9);\n"
-			"	//out_color = texture(texArray,vec3(uvCoords.x,1.0-uvCoords.y,n));\n"
-			"	//out_color = vec4(normal,1.0);\n"
 			"	opacityColor = texture(opacity,vec2(uvCoords.x,1.0-uvCoords.y));\n"
 			"	if (opacityColor.x < 0.1f && opacityColor.y < 0.1f && opacityColor.z < 0.1f ) discard;\n"
 			"							\n"
 			"	out_color = texture(tex,vec2(uvCoords.x,1.0-uvCoords.y));\n"
-			"	if (out_color.w < 0.1f ) discard; \n"
-			"							\n"
+			//"	if (out_color.a != 0.f ) discard; \n"
+			//"							\n"
 			"	if (AoIsActive ) {						\n"
 			"	out_color = out_color * vec4(colorsModified,1);\n}"
-			"	out_color = vec4(out_color.x,out_color.y,out_color.z,opacityColor.x);\n"
+			"	out_color = vec4(out_color.x,out_color.y,out_color.z,1);\n"
 			"}																	\n";
 
 
@@ -139,7 +135,7 @@ namespace sibr
 			"	vec4 opacityColor;												\n"
 			"	vec3 colorsModified = colors;\n"
 			"	float lighter_ao = colors.x * IlluminanceCoefficient; \n"
-			"	if (lighter_ao > 1.f ) lighter_ao = 1.f;\n"
+			"	if (lighter_ao >= 1.f ) lighter_ao = 1.f;\n"
 			"	colorsModified.x = lighter_ao;\n"
 			"	colorsModified.y = lighter_ao;\n"
 			"	colorsModified.z = lighter_ao;\n"
@@ -148,8 +144,8 @@ namespace sibr
 			"							\n"
 			"							\n"
 			"	out_color = texture(tex,vec2(uvCoords.x,1.0-uvCoords.y));\n"
-			"	if (out_color.w < 0.1f ) discard; \n"
-			"							\n"
+			//"	if (out_color.a < 0.1f ) discard; \n"
+			//"							\n"
 			"	out_color = texture(tags,vec2((uvCoords.x)*scaleTags,(1.0-(uvCoords.y))*scaleTags));\n"
 			"							\n"
 			"	if (out_color.x == 1.f && out_color.y == 1.f && out_color.z == 1.f)		\n"
@@ -159,7 +155,7 @@ namespace sibr
 			"							\n"
 			"	if (AoIsActive ) {						\n"
 			"	out_color = out_color * vec4(colorsModified,1);\n}"
-			"	out_color = vec4(out_color.x,out_color.y,out_color.z,opacityColor.x);\n"
+			"	out_color = vec4(out_color.x,out_color.y,out_color.z,1);\n"
 			"}																	\n";
 
 	public:
@@ -214,9 +210,11 @@ namespace sibr
 		///get the tagsFile boolean
 		inline const bool hasTagsCoveringFile(void) const;
 		/// Set the tagsMap
-		inline void tagsCoveringMap(const TagsMap & map);
+		inline void tagsCoveringMaps(const TagsCoveringMaps & map);
 		/// get the tagsMap
-		inline const TagsMap& tagsCoveringMap(void) const;
+		inline const TagsCoveringMaps& tagsCoveringMaps(void) const;
+		/// Return the pointer to oppacity texture if it exist
+		inline sibr::ImageRGB::Ptr tagsCoveringMap(const std::string& matName) const;
 		/// set the subMeshes 
 		inline void subMeshes(const SubMeshes& subMeshes);
 		/// get the subMeshes 
@@ -244,6 +242,8 @@ namespace sibr
 		/// Load a material mesh from a mitsuba XML files.
 		/// It allows handling instances used several times.
 		bool	loadMtsXML(const std::string& xmlFile, bool loadTextures = true);
+
+		void	loadCoveringTagsTexture(const std::vector<std::string>& listFilesTags);
 
 		void	fillColorsWithIndexMaterials(void);
 
@@ -290,7 +290,9 @@ namespace sibr
 			bool backFaceCulling = true,
 			RenderMode mode = FillRenderMode,
 			bool frontFaceCulling = false,
-			bool invertDepthTest = false
+			bool invertDepthTest = false,
+			bool specificMaterial = false,
+			std::string nameOfSpecificMaterial = ""
 		) const;
 
 		void	renderThreeSixty(
@@ -317,9 +319,9 @@ namespace sibr
 		OpacityMaps _opacityMaps;
 		DiffuseMaps _diffuseMaps;
 
-		TagsMap		_tagsMap;
-		TagsMap		_tagsCoveringMap;
-		std::vector<std::string> uniformColorMtlList;
+		TagsMap						_tagsMap;
+		TagsCoveringMaps			_tagsCoveringMaps;
+		//std::vector<std::string>	_uniformColorMtlList;
 
 		// We have to gen one mesh per material to render them separately
 		SubMeshes	_subMeshes;
@@ -337,8 +339,9 @@ namespace sibr
 		GLuint _idTagTexture;
 
 		bool _hasTagsCoveringFile = false;
-		sibr::Texture2DRGB::Ptr _tagCoveringTexture;
-		GLuint _idTagCoveringTexture;
+		std::vector<sibr::ImageRGB::Ptr> _listCoveringImagesTags;
+		std::map<std::string,sibr::Texture2DRGB::Ptr> _tagsCoveringTexture;
+		std::map<std::string,GLuint> _idTagsCoveringTexture;
 
 		//AO attributes
 		AmbientOcclusion _ambientOcclusion;
@@ -430,12 +433,20 @@ namespace sibr
 		return _tagsMap;
 	}
 
-	void MaterialMesh::tagsCoveringMap(const TagsMap & map) {
-		_tagsCoveringMap = map;
+	void MaterialMesh::tagsCoveringMaps(const TagsCoveringMaps & map) {
+		_tagsCoveringMaps = map;
 	}
 
-	const MaterialMesh::TagsMap& MaterialMesh::tagsCoveringMap(void) const {
-		return _tagsCoveringMap;
+	const MaterialMesh::TagsCoveringMaps& MaterialMesh::tagsCoveringMaps(void) const {
+		return _tagsCoveringMaps;
+	}
+
+	sibr::ImageRGB::Ptr MaterialMesh::tagsCoveringMap(const std::string& matName) const {
+		auto & el = _tagsCoveringMaps.find(matName);
+		if (el != _tagsCoveringMaps.end()) {
+			return el->second;
+		}
+		else return nullptr;
 	}
 
 	ImageRGBA::Ptr MaterialMesh::diffuseMap(const std::string& matName) const
@@ -444,7 +455,7 @@ namespace sibr
 		if (el != _diffuseMaps.end()) {
 			return el->second;
 		}
-		return nullptr;
+		else return nullptr;
 	}
 
 	/*ImageRGB MaterialMesh::diffuseMap(const std::string& matName)

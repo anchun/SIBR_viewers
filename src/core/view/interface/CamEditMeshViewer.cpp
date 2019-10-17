@@ -42,7 +42,8 @@ sibr::CamEditMeshViewer::CamEditMeshViewer(const sibr::Vector2i & screenRes,
 	const std::string name,
 	const std::string outputPath)
 	: MeshViewer(screenRes, mesh, launchRenderingLoop),
-	_name(name), _materialMesh(mesh)
+	_name(name), _materialMesh(mesh), 
+	_tagsScaleFactor(std::vector<float>(mesh.matId2Name().size(),1.f))
 {
 	CHECK_GL_ERROR;
 	if (mesh.hasTagsFile()) {
@@ -127,11 +128,19 @@ void sibr::CamEditMeshViewer::renderMaterialMesh(const sibr::Camera& eye,
 		_MVP_layer.set(eye.viewproj());
 		_activeAoColors_layer.set(_materialMesh.ambientOcclusion()
 			.AoIsActive);
-		_tagsScaleFactor_layer.set(_tagsScaleFactor);
 		_illuminanceAoCoefficient_layer.set(
 			_materialMesh.ambientOcclusion().IlluminanceCoefficient);
 		_materialMesh.initAlbedoTextures();
-		_materialMesh.render(true,false);
+
+		unsigned int counter = 0;
+		for (auto it = _materialMesh.matId2Name().begin();
+			it != _materialMesh.matId2Name().end(); ++it) {
+			_tagsScaleFactor_layer.set(_tagsScaleFactor[counter]);
+			_materialMesh.renderAlbedo(true, false, sibr::Mesh::FillRenderMode, false, false,
+				true, *it);
+			counter++;
+		}
+
 		_shaderAlbedo.end();
 
 		if (renderCameras)
@@ -484,9 +493,23 @@ void sibr::CamEditMeshViewer::onGUI() {
 
 			}
 				ImGui::Separator();
+				static float factorTagAll = 1.f;
+				if (ImGui::Button("Apply scale on all")) {
+					for (unsigned int i = 0; i < _tagsScaleFactor.size(); i++) {
+						_tagsScaleFactor[i] = factorTagAll;
+					}
+				}
+				ImGui::Separator();
 				if (ImGui::CollapsingHeader("Tags options")) {
-					ImGui::SliderFloat("Tags scale factor",
-						&_tagsScaleFactor, 0.05f, 3.f);
+					std::string tagScaleString = "Tags scale factor ALL";
+					ImGui::SliderFloat(tagScaleString.c_str(),
+						&factorTagAll, 0.01f, 3.f);
+					for (unsigned int i = 0; i < _tagsScaleFactor.size(); i++) {
+						std::string tagScaleString = "Tags scale factor" + std::to_string(i) +
+							" : " + _materialMesh.matId2Name().at(i);
+						ImGui::SliderFloat(tagScaleString.c_str(),
+							&_tagsScaleFactor[i], 0.01f, 3.f);
+					}
 				}
 			ImGui::Separator();
 			if (ImGui::CollapsingHeader("360 Options")) {
