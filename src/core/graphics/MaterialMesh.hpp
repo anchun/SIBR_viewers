@@ -113,7 +113,7 @@ namespace sibr
 			//"							\n"
 			"	if (AoIsActive ) {						\n"
 			"	out_color = out_color * vec4(colorsModified,1);\n}"
-			"	out_color = vec4(out_color.x,out_color.y,out_color.z,1);\n"
+			"	out_color = vec4(out_color.x,out_color.y,out_color.z,out_color.a);\n"
 			"}																	\n";
 
 
@@ -155,7 +155,7 @@ namespace sibr
 			"							\n"
 			"	if (AoIsActive ) {						\n"
 			"	out_color = out_color * vec4(colorsModified,1);\n}"
-			"	out_color = vec4(out_color.x,out_color.y,out_color.z,1);\n"
+			"	out_color = vec4(out_color.x,out_color.y,out_color.z,out_color.a);\n"
 			"}																	\n";
 
 	public:
