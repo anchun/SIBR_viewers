@@ -137,6 +137,15 @@ namespace sibr {
 			return out;
 		}
 
+		VideoVolume concatH(const VideoVolume & other) const {
+			VideoVolume out(l, w + other.w, h);
+#pragma omp parallel for
+			for (int t = 0; t < l; ++t) {
+				cv::hconcat(std::vector<cv::Mat_<CVpixel>>{frame(t), other.frame(t)}, out.frame(t));
+			}
+			return out;
+		}
+
 		VideoVolume applyMaskBinary(const Volume1u & mask) {
 			VideoVolume out = VideoVolume(l, w, h, 0);
 			for (int t = 0; t < l; ++t) {
@@ -421,6 +430,16 @@ namespace sibr {
 
 		VideoVolume subVolume(int t_start, int t_end) const {
 			return VideoVolume(mat.rowRange(t_start, t_end).clone(), w, h);
+		}
+
+		VideoVolume subVolumeSpatial(int x, int y, int w, int h) const {
+			VideoVolume out(l, w, h);
+			cv::Rect rec(x, y, w, h);
+#pragma omp parallel for
+			for (int t = 0; t < l; ++t) {
+				frame(t)(rec).copyTo(out.frame(t));
+			}
+			return out;
 		}
 
 		VideoVolume subVolume_i(int i_start, int i_end) const {
