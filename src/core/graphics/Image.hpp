@@ -388,7 +388,7 @@ namespace sibr
 					for (; i < T_NumComp && i < 3; ++i)
 						p[i] = p[0];
 					for (; i < T_NumComp && i < 4; ++i)
-						p[i] = opencv::imageTypeRange<T_Type>();
+						p[i] = static_cast<T_Type>(opencv::imageTypeRange<T_Type>());
 
 					_pixels.at<cv::Vec<T_Type, T_NumComp>>(y, x) = p;
 				}
