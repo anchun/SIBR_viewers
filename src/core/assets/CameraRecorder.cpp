@@ -38,7 +38,7 @@ namespace sibr
 			if (_saving) {
 				std::ostringstream ssZeroPad;
 				ssZeroPad << std::setw(8) << std::setfill('0') << (_pos - 1);
-				cam.setSavePath(_savingPath + "/" + ssZeroPad.str() + ".jpg");
+				cam.setSavePath(_savingPath + "/" + ssZeroPad.str() + ".png");
 				//std::cout << "Saving frame as: " << cam.savePath() << std::endl;
 			}
 			if (_savingVideo) {

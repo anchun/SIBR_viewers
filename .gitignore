@@ -24,6 +24,7 @@ docs/doxygen/CompiledDocs/
 *.ini
 *.idea/
 *.log
+*.sh
 
 hs_err_*
 
