@@ -93,6 +93,15 @@ namespace sibr
 			return finalTr;
 		}
 
+		bool operator==(const Transform3 & other) const {
+			static const float eps = 1e-3;
+			return (_position-other._position).norm()/ _position.norm() < eps && std::abs(_rotation.dot(other._rotation)) > ( 1 - eps);
+		}
+
+		bool operator!=(const Transform3 & other) const {
+			return !(*this == other);
+		}
+
 	private:
 		Vector3		    _position;
 		Quaternion		_rotation;

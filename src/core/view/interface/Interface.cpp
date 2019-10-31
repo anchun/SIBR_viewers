@@ -188,7 +188,9 @@ namespace sibr {
 			if (currentActivePos.isDefined) {
 				//std::cout << imagesPtr[currentLayer][currentActivePos.im] << std::endl;
 				//std::cout << imagesPtr[currentLayer][currentActivePos.im]->size() << std::endl;
-				ImGui::Text(imagesPtr[currentLayer][currentActivePos.im]->pixelStr(currentActivePos.pos).c_str());
+/*				if (imagesPtr[currentLayer][currentActivePos.im]) {
+					ImGui::Text(imagesPtr[currentLayer][currentActivePos.im]->pixelStr(currentActivePos.pos).c_str());
+				}	*/		
 			}
 			ImGui::Separator();
 		}
