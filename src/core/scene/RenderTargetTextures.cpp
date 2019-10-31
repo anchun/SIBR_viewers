@@ -212,6 +212,12 @@ namespace sibr {
 		}
 	}
 
+	void RenderTargetTextures::initRGBandDepthTextureArrays(CalibratedCameras::Ptr cams, InputImages::Ptr imgs, ProxyMesh::Ptr proxies, int textureFlags, int texture_width, bool faceCull)
+	{
+		_width = texture_width;
+		initRGBandDepthTextureArrays(cams, imgs, proxies, textureFlags, faceCull);
+	}
+
 	void RenderTargetTextures::initRGBandDepthTextureArrays(CalibratedCameras::Ptr cams, InputImages::Ptr imgs, ProxyMesh::Ptr proxies, int textureFlags, bool faceCull)
 	{
 		if (!isInit()) {
