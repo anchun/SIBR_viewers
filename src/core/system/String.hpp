@@ -29,6 +29,13 @@ namespace sibr
 	SIBR_SYSTEM_EXPORT std::string removeExtension(const std::string& str);
 
 	/**
+	* Process a string (a filename or path) to extract the file extension if it exists.
+	* \param str the string to get the extension from
+	* \return the extension string (without the leading dot)
+	*/
+	SIBR_SYSTEM_EXPORT std::string getExtension(const std::string& str);
+
+	/**
 	* Process a string (a path) to return the parent directory.
 	* \param str the string to process
 	* \return the string with the last component removed

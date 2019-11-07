@@ -23,6 +23,15 @@ namespace sibr
 		return  str.substr(0, str.find_last_of('.'));
 	}
 
+	std::string getExtension(const std::string & str)
+	{
+		const std::string::size_type dotPos = str.find_last_of('.');
+		if(dotPos == std::string::npos) {
+			return "";
+		}
+		return str.substr(dotPos+1);
+	}
+
 	std::string parentDirectory(const std::string & str)
 	{
 		const std::string::size_type pos = str.find_last_of("/\\");
