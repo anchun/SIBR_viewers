@@ -75,6 +75,7 @@ namespace sibr
 
 		// From IRenderTarget
 		inline GLuint	texture(uint t = 0) const;
+		inline GLuint	handle(uint t = 0) const;
 		inline GLuint	fbo(void) const;
 		inline void		bind(void);
 		inline void		unbind(void);
@@ -135,8 +136,12 @@ namespace sibr
 
 	}
 
-	inline GLuint	Window::texture(uint /*t (not used*/) const {
-		SIBR_ERR << "Your try to bind the Window's backbuffer (You are supposed to use glBlitFramebuffer())." << std::endl;
+	inline GLuint	Window::texture(uint /*t*/) const {
+		SIBR_ERR << "You are trying to read the Window's backbuffer (use sibr::blit instead)." << std::endl;
+		return 0;
+	}
+	inline GLuint	Window::handle(uint /*t*/) const {
+		SIBR_ERR << "You are trying to read the Window's backbuffer (use sibr::blit instead)." << std::endl;
 		return 0;
 	}
 	inline GLuint	Window::fbo(void) const {

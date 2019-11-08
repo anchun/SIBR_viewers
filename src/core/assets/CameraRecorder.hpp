@@ -89,6 +89,8 @@ namespace sibr
 		void	save( const std::string& filename=SIBR_CAMERARECORDER_DEFAULTFILE );
 
 
+		bool safeLoad(const std::string& filename, int w = 1920, int h = 1080);
+
 		/**
 		Load a recording stream saved as a bundle file (useful for path from FRIBR).
 		\param filePath Path to the bundle file to write to.

@@ -38,7 +38,7 @@ namespace sibr
 			if (_saving) {
 				std::ostringstream ssZeroPad;
 				ssZeroPad << std::setw(8) << std::setfill('0') << (_pos - 1);
-				cam.setSavePath(_savingPath + "/" + ssZeroPad.str() + ".jpg");
+				cam.setSavePath(_savingPath + "/" + ssZeroPad.str() + ".png");
 				//std::cout << "Saving frame as: " << cam.savePath() << std::endl;
 			}
 			if (_savingVideo) {
@@ -111,6 +111,9 @@ namespace sibr
 			return false;
 
 		int32 num = 0;
+
+		std::cout << " CameraRecorder::load " << num << std::endl;
+
 		stream >> num;
 		while (num > 0)
 		{
@@ -133,6 +136,21 @@ namespace sibr
 
 		stream.saveToFile(filename);
 		SIBR_LOG << "[CameraRecorder] - Saved " << num << " cameras to " << filename << std::endl;
+	}
+
+	bool CameraRecorder::safeLoad(const std::string & filename, int w, int h)
+	{
+		Path path = Path(filename);
+
+		if (path.extension().string() == ".out") {
+			loadBundle(filename, w, h);
+			return true;
+		} else if (path.extension().string() == ".path") {
+			return load(filename);
+		} else {
+			SIBR_WRG << std::endl;
+			return false;
+		}
 	}
 
 	void CameraRecorder::loadBundle(const std::string & filePath, int w, int h)

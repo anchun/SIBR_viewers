@@ -4,12 +4,12 @@ This script converts a Reality Capture dataset to SIBR template dataset which ca
 
 Parameters: -h help,
             -i <path to input directory which is the output from RC> <default: ${CMAKE_INSTALL_DIR}/bin/datasets/rc_out/>,
-            -d <path to output directory which can be fed into SIBR apps> <default: input directory> [optional],
+            -o <path to output directory which can be fed into SIBR apps> <default: input directory> [optional],
             -r use release w/ debug symbols executables
 
 Usage: python ibr_preprocess_rc_to_sibr.py -r
                                            -i <path_to_sibr>\sibr\install\bin\datasets\museum_sibr_new_preproc_template_RCOut
-                                           -d <path_to_sibr>\sibr\install\bin\datasets\museum_sibr_new_preproc2
+                                           -o <path_to_sibr>\sibr\install\bin\datasets\museum_sibr_new_preproc2
 
 """
 
@@ -224,7 +224,7 @@ settings = load_settings(settings_filename)
 # 0. Paths, commands and options
 
 def main(argv, path_dest):
-    opts, args = getopt.getopt(argv, "hi:rd:", ["idir=", "bin="])
+    opts, args = getopt.getopt(argv, "hi:ro:", ["idir=", "bin="])
     executables_suffix = ""
     executables_folder = ""
     path_data = ""
@@ -238,7 +238,7 @@ def main(argv, path_dest):
         elif opt == '-r':
             executables_suffix = "_rwdi"
             print("Using rwdi executables.")
-        elif opt == '-d':
+        elif opt == '-o':
             path_dest = arg
             print(['Setting path_dest to ', path_dest])
         elif opt in ('-bin', '--bin'):
@@ -276,9 +276,8 @@ raw_data = "raw/"
 cameras_dir = "cameras/"
 images_dir = "images/"
 pmvs_model_dir	= "meshes/"
-textures_dir = "textures/"
 
-dirs_to_create = [ raw_data, cameras_dir, images_dir, pmvs_model_dir, textures_dir]
+dirs_to_create = [ raw_data, cameras_dir, images_dir, pmvs_model_dir]
 
 for dir_to_create in dirs_to_create:
     path_to_dir = os.path.join(path_dest, dir_to_create)
@@ -413,11 +412,12 @@ path_list_images = os.path.join(path_dest, images_dir, "list_images.txt")
 # shutil.copy( path_list_images, os.path.join(path_data, 'list_images.txt'))
 files_to_move = [   #['pmvs/models/pmvs_recon.ply',''],
                     ['pmvs_recon.ply', pmvs_model_dir],
+                    ['mesh.ply', pmvs_model_dir],
                     ['recon.ply', pmvs_model_dir],
                     ['rc_out.csv', path_dest],
                     [textured_mesh_base_name + ".obj", pmvs_model_dir],
-                    [textured_mesh_base_name + ".mtl", textures_dir],
-                    [textured_mesh_base_name + "_u1_v1.png", textures_dir] ]
+                    [textured_mesh_base_name + ".mtl", pmvs_model_dir],
+                    [textured_mesh_base_name + "_u1_v1.png", pmvs_model_dir] ]
 for filename, directory_name in files_to_move:
     source_file = os.path.join (path_data, filename)
     destination_file = os.path.join (os.path.join (path_dest, directory_name), filename)
@@ -490,6 +490,9 @@ scene_metadata = scene_metadata + "\n\n\n[other parameters]"
 # rename pmvs_recon.ply to recon.ply
 if (os.path.exists(os.path.join(path_dest, pmvs_model_dir, "pmvs_recon.ply"))):
     shutil.move(os.path.join(path_dest, pmvs_model_dir, "pmvs_recon.ply"), os.path.join(path_dest, pmvs_model_dir, "recon.ply"))
+
+if (os.path.exists(os.path.join(path_dest, pmvs_model_dir, "mesh.ply"))):
+    shutil.move(os.path.join(path_dest, pmvs_model_dir, "mesh.ply"), os.path.join(path_dest, pmvs_model_dir, "recon.ply"))
 
 path_scene_metadata = os.path.join(path_dest, "scene_metadata.txt")
 

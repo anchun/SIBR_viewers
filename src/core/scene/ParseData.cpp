@@ -426,7 +426,7 @@ namespace sibr {
 		picojson::array& intrinsincs = v.get("intrinsics").get<picojson::array>();
 		picojson::array& poses = v.get("poses").get<picojson::array>();
 
-		_numCameras = poses.size();
+		_numCameras = int(poses.size());
 
 		sibr::Matrix3f converter;
 		converter << 1.0f, 0, 0,
@@ -494,7 +494,7 @@ namespace sibr {
 			//split(splitS, filename, is_any_of("."));
 
 			//infos.camId = stoi(splitS[0]);
-			infos.camId = i;
+			infos.camId = uint(i);
 
 			picojson::array& center = poses[pose_idx].get("pose").get("transform").get("center").get<picojson::array>();
 			picojson::array& rotation = poses[pose_idx].get("pose").get("transform").get("rotation").get<picojson::array>();

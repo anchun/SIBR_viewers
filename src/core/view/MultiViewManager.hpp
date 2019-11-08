@@ -136,6 +136,10 @@ namespace sibr
 			const Vector2u & res = Vector2u(0, 0),
 			const ImGuiWindowFlags flags = 0);
 
+		/** Add another multi-view manager as a subsystem of this one.
+		 * \param title a name for the manager
+		 * \param multiview the manager to add as a subview
+		 */
 		void	addSubMultiView(const std::string & title, MultiViewBase::Ptr multiview);
 
 		/**
@@ -198,22 +202,23 @@ namespace sibr
 		void addAdditionalRenderingForView(const std::string & name, const AdditionalRenderFonc renderFunc);
 
 		/**
-		* \brief Count NOT recursively the number of subViews
+		* \brief Count NOT recursively the number of subviews.
 		*/
 		int numSubViews() const;
 
+		/** Place all subviews on a regular grid in the given viewport.
+		 * \param vp the region in which the views should be layed out.
+		 */
 		void mosaicLayout(const Viewport & vp);
 
+		/** Toggle the display of sub-managers GUIs. */
 		void toggleSubViewsGUI();
 
 		/**
 		* \brief Set the export path.
 		* \param path path to the directory to use.
 		*/
-		void setExportPath(const std::string & path) {
-			_exportPath = path;
-			sibr::makeDirectory(path);
-		}
+		void setExportPath(const std::string & path);
 
 	protected:
 

@@ -337,21 +337,12 @@ namespace sibr
 			finalPath.append(filename);
 		}
 		else {
-			auto now = std::time(nullptr);
-#ifdef SIBR_OS_WINDOWS
-			tm ltm = { 0,0,0,0,0,0,0,0,0 };
-			localtime_s(&ltm, &now);
-#else
-			tm ltm = *(std::localtime(&now));
-#endif
-			std::stringstream buffer;
-			buffer << std::put_time(&ltm, "%Y_%m_%d_%H_%M_%S");
-			const std::string autoName = view.name + "_" + buffer.str();
+			const std::string autoName = view.name + "_" + sibr::timestamp();
 			finalPath.append(autoName + ".png");
 		}
 
 		makeDirectory(path);
-		renderingImg.save(finalPath, false);
+		renderingImg.save(finalPath, true);
 	}
 
 	void MultiViewBase::mosaicLayout(const Viewport & vp)
@@ -392,6 +383,7 @@ namespace sibr
 		}
 
 	}
+	
 	void MultiViewBase::toggleSubViewsGUI()
 	{
 		_showSubViewsGui = !_showSubViewsGui;
@@ -399,6 +391,11 @@ namespace sibr
 		for (auto & view : _subMultiViews) {
 			view.second->toggleSubViewsGUI();
 		}
+	}
+
+	void MultiViewBase::setExportPath(const std::string & path) {
+		_exportPath = path;
+		sibr::makeDirectory(path);
 	}
 
 	MultiViewManager::MultiViewManager(Window& window, bool resize)
@@ -427,7 +424,7 @@ namespace sibr
 		MultiViewBase::onUpdate(input);
 
 		if (input.key().isActivated(Key::LeftControl) && input.key().isActivated(Key::LeftAlt) && input.key().isReleased(Key::G)) {
-			toggleSubViewsGUI();
+			toggleGUI();
 		}
 	}
 
@@ -536,7 +533,6 @@ namespace sibr
 				if (ImGui::MenuItem("Set export directory...")) {
 					std::string selectedDirectory;
 					if (showFilePicker(selectedDirectory, FilePickerMode::Directory)) {
-						std::cout << selectedDirectory << std::endl;
 						if (!selectedDirectory.empty()) {
 							_exportPath = selectedDirectory;
 						}
@@ -573,6 +569,9 @@ namespace sibr
 	void MultiViewManager::toggleGUI()
 	{
 		_showGUI = !_showGUI;
+		if (!_showGUI) {
+			SIBR_LOG << "[MultiViewManager] GUI is now hidden, use Ctrl+Alt+G to toggle it back on." << std::endl;
+		}
 		toggleSubViewsGUI();
 	}
 

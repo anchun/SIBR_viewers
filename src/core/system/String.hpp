@@ -29,12 +29,27 @@ namespace sibr
 	SIBR_SYSTEM_EXPORT std::string removeExtension(const std::string& str);
 
 	/**
+	* Process a string (a filename or path) to extract the file extension if it exists.
+	* \param str the string to get the extension from
+	* \return the extension string (without the leading dot)
+	*/
+	SIBR_SYSTEM_EXPORT std::string getExtension(const std::string& str);
+
+	/**
 	* Process a string (a path) to return the parent directory.
 	* \param str the string to process
 	* \return the string with the last component removed
 	* \note Will return the empty string if no separator was found.
 	*/
 	SIBR_SYSTEM_EXPORT std::string parentDirectory(const std::string& str);
+
+	/**
+	* Process a string (a path) to return the parent directory.
+	* \param str the string to process
+	* \return the string with the last component removed
+	* \note Will return the empty string if no separator was found.
+	*/
+	SIBR_SYSTEM_EXPORT std::string getFileName(const std::string& str);
 
 	/**
 	* Check if a string only contains digits.
@@ -65,6 +80,13 @@ namespace sibr
 	 * \return a status code similar to sprintf
 	 */
 	SIBR_SYSTEM_EXPORT int 		sprintf(char* buffer, size_t size, const char* format, ...);
+
+	/** Write the current timestamp to a string.
+	 * \param format the formatting to use for the timestamp (see default value for an example)
+	 * \return a string containing the timestamp
+	 */
+	SIBR_SYSTEM_EXPORT std::string timestamp(const std::string & format = "%Y_%m_%d_%H_%M_%S");
+
 
 	/*** @} */
 

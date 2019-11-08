@@ -1,6 +1,8 @@
 
 #include "core/system/String.hpp"
 #include <cstdarg>
+#include <chrono>
+#include <iomanip>
 
 namespace sibr
 {
@@ -21,6 +23,15 @@ namespace sibr
 		return  str.substr(0, str.find_last_of('.'));
 	}
 
+	std::string getExtension(const std::string & str)
+	{
+		const std::string::size_type dotPos = str.find_last_of('.');
+		if(dotPos == std::string::npos) {
+			return "";
+		}
+		return str.substr(dotPos+1);
+	}
+
 	std::string parentDirectory(const std::string & str)
 	{
 		const std::string::size_type pos = str.find_last_of("/\\");
@@ -35,6 +46,12 @@ namespace sibr
 		// Else we have to look for the previous one.
 		const std::string::size_type pos1 = str.find_last_of("/\\", pos-1);
 		return str.substr(0, pos1);
+	}
+
+	SIBR_SYSTEM_EXPORT std::string getFileName(const std::string & str)
+	{
+		const std::string::size_type pos = str.find_last_of("/\\");
+		return str.substr(pos+1);
 	}
 
 	bool strContainsOnlyDigits(const std::string& str)
@@ -88,6 +105,20 @@ namespace sibr
 #endif
 		va_end(args);
 		return ret;
+	}
+
+
+	std::string timestamp(const std::string & format) {
+		auto now = std::time(nullptr);
+#ifdef SIBR_OS_WINDOWS
+		tm ltm = { 0,0,0,0,0,0,0,0,0 };
+		localtime_s(&ltm, &now);
+#else
+		tm ltm = *(std::localtime(&now));
+#endif
+		std::stringstream buffer;
+		buffer << std::put_time(&ltm, format.c_str());
+		return buffer.str();
 	}
 
 } // namespace sirb

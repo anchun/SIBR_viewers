@@ -105,6 +105,11 @@ namespace sibr
 		return A.cwiseMax(min).cwiseMin(max);
 	}
 
+	template <typename T, int N, int Options>
+	inline T cotan(const Eigen::Matrix<T, N, 1, Options>& A, const Eigen::Matrix<T, N, 1, Options>& B) {
+		return A.dot(B) / A.cross(B).norm();
+	}
+
 	SIBR_SYSTEM_EXPORT Eigen::Matrix<float, 3,	1, Eigen::DontAlign>  toColorFloat( Vector<unsigned char, 3> & colorUB );
 
 	SIBR_SYSTEM_EXPORT Eigen::Matrix<unsigned char, 3,1,Eigen::DontAlign> toColorUB( Vector<float,3> & colorFloat );

@@ -21,7 +21,7 @@ namespace sibr
 		Camera( void ):
 			_matViewProj(Matrix4f::Identity()), _invMatViewProj(Matrix4f::Identity()),
 			_dirtyViewProj(true), _savePath(""), _debugVideoFrames(false),
-			_fov(M_PI*70.f/180.0f), _aspect(1.f), _znear(0.01f), _zfar(1000.f),_isOrtho(false), _p(0.5f, 0.5f) { }
+			_fov(70.f/180.0f*float(M_PI)), _aspect(1.f), _znear(0.01f), _zfar(1000.f),_isOrtho(false), _p(0.5f, 0.5f) { }
 
 		/////////////////////////////////////////////////////////////////
 		///// ====================  Transform  ==================== /////
