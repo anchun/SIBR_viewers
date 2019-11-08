@@ -284,14 +284,27 @@ namespace sibr {
 			return;
 		}
 
-		Vector3f dir = CameraRaycaster::computeRayDir(fixedCamera, input.mousePosition().cast<float>()).normalized();
-		RayHit hit = raycaster->intersect(Ray(fixedCamera.position(), dir));
+		sibr::Vector3f worldPos, dir;
+		if(fixedCamera._isOrtho)
+		{
+			sibr::Vector2i clickPos = input.mousePosition();
+			worldPos = fixedCamera.position() +
+									(2.0f*clickPos.x() / (float)fixedCamera.w() - 1.0f)*fixedCamera._right*fixedCamera.right()
+									+ (2.0f*((float)fixedCamera.h() - 1 - clickPos.y()) / (float)fixedCamera.h() - 1.0f)*fixedCamera._top*fixedCamera.up();
+			dir = fixedCamera.dir();
+
+		}
+		else {
+			dir = CameraRaycaster::computeRayDir(fixedCamera, input.mousePosition().cast<float>()).normalized();
+			worldPos = fixedCamera.position();
+		}
+		RayHit hit = raycaster->intersect(Ray(worldPos, dir));
 
 		if (hit.hitSomething()) {
 			printMessage(" TrackBall::updateBallCenter : updating center from mesh ");
-			Vector3f intersection(fixedCamera.position() + hit.dist()*dir.normalized());
+			Vector3f intersection(worldPos + hit.dist()*dir.normalized());
 			fixedCenter = tempCenter = intersection;
-			fixedCamera.setLookAt(fixedCamera.position(), fixedCenter, fixedCamera.up());
+			fixedCamera.setLookAt(worldPos, fixedCenter, fixedCamera.up());
 		}
 		else {
 			printMessage(" TrackBall::updateBallCenter : could not intersect mesh ");
@@ -317,7 +330,8 @@ namespace sibr {
 			float radius = (fixedCamera.position() - fixedCenter).norm();
 			Vector3f oldEye = -fixedCamera.dir().normalized();
 			Vector3f newEye = fixedCenter + radius * (rot*oldEye);
-
+			tempCamera.setLookAt(newEye, fixedCenter, fixedCamera.up());
+			/*
 			if (tempCamera._isOrtho) {
 				SIBR_WRG << "Rotation with ortho cam is not fully functional, fuction to fix";
 				Vector3f newCenter = fixedCenter + radius*oldEye.dot((fixedCamera.position() - newEye).normalized())*(fixedCamera.position() - newEye);
@@ -326,7 +340,7 @@ namespace sibr {
 			}
 			else {
 				tempCamera.setLookAt(newEye, fixedCenter, fixedCamera.up());
-			}
+			}*/
 		}
 	}
 
@@ -350,12 +364,28 @@ namespace sibr {
 		if (!isInTrackBall2dRegion(input.mousePosition(), viewport)) { return; }
 
 		if (input.mouseButton().isPressed(Mouse::Right)) {
-			Vector3f dir(CameraRaycaster::computeRayDir(fixedCamera, input.mousePosition().cast<float>()));
+
+			sibr::Vector3f worldPos, dir;
+			if(fixedCamera._isOrtho)
+			{
+				sibr::Vector2i clickPos = input.mousePosition();
+				worldPos = fixedCamera.position() +
+										(2.0f*clickPos.x() / (float)fixedCamera.w() - 1.0f)*fixedCamera._right*fixedCamera.right()
+										+ (2.0f*((float)fixedCamera.h() - 1 - clickPos.y()) / (float)fixedCamera.h() - 1.0f)*fixedCamera._top*fixedCamera.up();
+				dir = fixedCamera.dir();
+			
+			}
+			else {
+				dir = CameraRaycaster::computeRayDir(fixedCamera, input.mousePosition().cast<float>()).normalized();
+				worldPos = fixedCamera.position();
+			}
+
+			//Vector3f dir(CameraRaycaster::computeRayDir(fixedCamera, input.mousePosition().cast<float>()));
 			Vector3f pointOnPlane = fixedCenter;
 			if (raycaster.get() != nullptr) {
-				RayHit hit = raycaster->intersect(Ray(fixedCamera.position(), dir));
+				RayHit hit = raycaster->intersect(Ray(worldPos, dir));
 				if (hit.hitSomething()) {
-					pointOnPlane = fixedCamera.position() + hit.dist()*dir;
+					pointOnPlane = worldPos + hit.dist()*dir;
 					//std::cout << "hit : " << pointOnPlane.transpose() << std::endl;
 				}
 			}
@@ -370,7 +400,7 @@ namespace sibr {
 		//std::cout << "current3DPosition : " << current3DPosition.transpose() << std::endl;
 		//std::cout << "shift3D : " << shift3D.transpose() << std::endl;
 
-		tempCenter = fixedCenter + shift3D;
+		tempCenter = fixedCenter + shift3D / zoom;
 		tempCamera.setLookAt(fixedCamera.position() + shift3D, tempCenter, fixedCamera.up());
 	}
 
@@ -386,7 +416,7 @@ namespace sibr {
 
 		float shift = 4.0f*(fixedCenter - fixedCamera.position()).norm()*(whichDir == 0 ? -1.0f : 1.0f)*shift2Df[whichDir];
 		Vector3f shift3D = shift * zAxis;
-		tempCenter = fixedCenter + shift3D;
+		tempCenter = fixedCenter + shift3D / zoom;
 		tempCamera.setLookAt(fixedCamera.position() + shift3D, tempCenter, fixedCamera.up());
 	}
 
@@ -459,6 +489,7 @@ namespace sibr {
 			float zoomIn = (input.mouseScroll() > 0.0f ? -1.0f : 1.0f);
 			fixedCamera.orthoRight(fixedCamera._right *pow(1.25f, zoomIn));
 			fixedCamera.orthoTop(fixedCamera._top *pow(1.25f, zoomIn));
+			zoom /= pow(1.25f, zoomIn);
 		}
 	}
 
@@ -514,7 +545,21 @@ namespace sibr {
 
 	Vector3f TrackBall::mapTo3Dplane(const Vector2i & pos2D) const
 	{
-		Eigen::ParametrizedLine<float, 3> line(fixedCamera.position(), CameraRaycaster::computeRayDir(fixedCamera, pos2D.cast<float>()));
+		sibr::Vector3f worldPos, dir;
+		if(fixedCamera._isOrtho)
+		{
+			worldPos = fixedCamera.position() +
+									(2.0f*pos2D.x() / (float)fixedCamera.w() - 1.0f)*fixedCamera._right*fixedCamera.right()
+									+ (2.0f*((float)fixedCamera.h() - 1 - pos2D.y()) / (float)fixedCamera.h() - 1.0f)*fixedCamera._top*fixedCamera.up();
+			dir = fixedCamera.dir();
+			
+		}
+		else {
+			dir = CameraRaycaster::computeRayDir(fixedCamera, pos2D.cast<float>()).normalized();
+			worldPos = fixedCamera.position();
+		}
+
+		Eigen::ParametrizedLine<float, 3> line(worldPos, dir);
 		return line.intersectionPoint(trackballPlane);
 	}
 
