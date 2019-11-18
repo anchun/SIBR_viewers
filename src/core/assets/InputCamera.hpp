@@ -186,6 +186,15 @@ namespace sibr
 		*/
 		static std::vector<InputCamera> loadBundle(const std::string& bundlerPath,  float zNear = 0.01f, float zFar = 1000.0f, const std::string & listImagePath = "");
 
+		/** Load cameras from a bundle file.
+		* \param bundlerPath path to the bundle file.
+		* \param zNear default near-plane value to use
+		* \param zFar default far-plane value to use.
+		* \param listImagePath path to the list_images.txt file. Will default to a file in the same directory as the bundle.out file.
+		* \returns the loaded cameras
+		*/
+		static std::vector<InputCamera> loadBundleFRIBR(const std::string& bundlerPath, float zNear = 0.01f, float zFar = 1000.0f, const std::string & listImagePath = "");
+
 		/** Load cameras from a Meshrrom SFM cameras.sfm txt file.
 		* \param meshroomSFMPath path to the Meshroom StructureFromMotion/{dd63cea98bda0e3b53ec76f17b0753b3e4dde589}/ directory, should contains cameras.sfm 
 		* \param zNear default near-plane value to use
