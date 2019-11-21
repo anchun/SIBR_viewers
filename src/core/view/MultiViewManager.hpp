@@ -18,6 +18,7 @@
 # include "core/view/ViewBase.hpp"
 # include "core/graphics/Shader.hpp"
 # include "core/view/FPSCounter.hpp"
+#include "core/video/FFmpegVideoEncoder.hpp"
 #include "InteractiveCameraHandler.hpp"
 #include <random>
 #include <map>
@@ -135,6 +136,10 @@ namespace sibr
 			const Vector2u & res = Vector2u(0, 0),
 			const ImGuiWindowFlags flags = 0);
 
+		/** Add another multi-view manager as a subsystem of this one.
+		 * \param title a name for the manager
+		 * \param multiview the manager to add as a subview
+		 */
 		void	addSubMultiView(const std::string & title, MultiViewBase::Ptr multiview);
 
 		/**
@@ -197,22 +202,23 @@ namespace sibr
 		void addAdditionalRenderingForView(const std::string & name, const AdditionalRenderFonc renderFunc);
 
 		/**
-		* \brief Count NOT recursively the number of subViews
+		* \brief Count NOT recursively the number of subviews.
 		*/
 		int numSubViews() const;
 
+		/** Place all subviews on a regular grid in the given viewport.
+		 * \param vp the region in which the views should be layed out.
+		 */
 		void mosaicLayout(const Viewport & vp);
 
+		/** Toggle the display of sub-managers GUIs. */
 		void toggleSubViewsGUI();
 
 		/**
 		* \brief Set the export path.
 		* \param path path to the directory to use.
 		*/
-		void setExportPath(const std::string & path) {
-			_exportPath = path;
-			sibr::makeDirectory(path);
-		}
+		void setExportPath(const std::string & path);
 
 	protected:
 
@@ -279,7 +285,7 @@ namespace sibr
 											const IBRViewUpdateFonc updateFunc, const Vector2u & res, 
 											const ImGuiWindowFlags flags, const bool defaultFuncUsed);
 
-		void				renderSubView(SubView & subview) const;
+		void				renderSubView(SubView & subview);
 
 		static void				captureView(const SubView & view, const std::string & path = "./screenshots", const std::string & filename = "");
 		
@@ -288,8 +294,12 @@ namespace sibr
 		std::map<std::string, IBRSubView> _ibrSubViews;
 		std::map<std::string, std::shared_ptr<MultiViewBase> > _subMultiViews;
 
+
 		Vector2i _defaultViewResolution;
 		std::string _exportPath;
+		std::string _vdoPath;
+		bool _savingVideo;
+		std::vector<cv::Mat> _videoFrames;
 		std::chrono::time_point<std::chrono::steady_clock> _timeLastFrame;
 		float _deltaTime;
 		bool _showSubViewsGui = true;
@@ -331,6 +341,7 @@ namespace sibr
 		Window& _window;
 		FPSCounter _fpsCounter;
 		bool _showGUI = true;
+
 	};
 
 	///// INLINE /////

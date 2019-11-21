@@ -12,6 +12,8 @@ namespace sibr
 		} else if (_playing && _pos < _cameras.size())
 		{
 		
+
+			//std::cout << _playing << std::endl;
 			// If we reach the last frame of the interpolation b/w two cameras, skip to next camera.
 			if (_interp >= (1.0f - _speed))
 			{
@@ -36,7 +38,11 @@ namespace sibr
 			if (_saving) {
 				std::ostringstream ssZeroPad;
 				ssZeroPad << std::setw(8) << std::setfill('0') << (_pos - 1);
-				cam.setSavePath(_savingPath + "/" + ssZeroPad.str() + ".jpg");
+				cam.setSavePath(_savingPath + "/" + ssZeroPad.str() + ".png");
+				//std::cout << "Saving frame as: " << cam.savePath() << std::endl;
+			}
+			if (_savingVideo) {
+				cam.setDebugVideo(true);
 			}
 			if (_pos >= _cameras.size())
 			{
@@ -44,7 +50,9 @@ namespace sibr
 				SIBR_LOG << "[CameraRecorder] - Playback Finished" << std::endl;
 			}
 		} else {
+			//std::cout << _playing << std::endl;
 			cam.setSavePath("");
+			cam.setDebugVideo(false);
 		}
 	}
 
@@ -67,6 +75,11 @@ namespace sibr
 		_saving = true;
 		_savingPath = filePath;
 		SIBR_LOG << "[CameraRecorder] - Recording" << std::endl;
+	}
+
+	void CameraRecorder::frameDebug(const bool debugFrame)
+	{
+		_savingVideo = debugFrame;
 	}
 
 	void sibr::CameraRecorder::stopSaving(void)
@@ -98,6 +111,9 @@ namespace sibr
 			return false;
 
 		int32 num = 0;
+
+		std::cout << " CameraRecorder::load " << num << std::endl;
+
 		stream >> num;
 		while (num > 0)
 		{
@@ -120,6 +136,21 @@ namespace sibr
 
 		stream.saveToFile(filename);
 		SIBR_LOG << "[CameraRecorder] - Saved " << num << " cameras to " << filename << std::endl;
+	}
+
+	bool CameraRecorder::safeLoad(const std::string & filename, int w, int h)
+	{
+		Path path = Path(filename);
+
+		if (path.extension().string() == ".out") {
+			loadBundle(filename, w, h);
+			return true;
+		} else if (path.extension().string() == ".path") {
+			return load(filename);
+		} else {
+			SIBR_WRG << std::endl;
+			return false;
+		}
 	}
 
 	void CameraRecorder::loadBundle(const std::string & filePath, int w, int h)

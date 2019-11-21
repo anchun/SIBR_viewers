@@ -2,7 +2,7 @@
 #include "core/view/interface/MeshViewer.h"
 #include <core/graphics/MaterialMesh.hpp>
 #include <core/assets/InputCamera.hpp>
-#include <core/view/interface/LibGizmo-win64/LibGizmo-master/inc/IGizmo.h>
+#include <libGizmo/IGizmo.h>
 #include <random>
 
 namespace sibr {

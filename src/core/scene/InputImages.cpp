@@ -40,6 +40,7 @@ namespace sibr
 		}
 	}
 
+	/// \todo UN-TESTED code!!!!
 	void InputImages::loadFromPath(const ParseData::Ptr & data, const std::string & prefix, const std::string & postfix)
 	{
 		_inputImages.resize(data->imgInfos().size());

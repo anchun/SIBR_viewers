@@ -119,7 +119,7 @@ namespace sibr
 			}
 
 			if (randomUV) {
-				std::cout << "Random" << std::endl;
+				SIBR_LOG << "using random UVs." << std::endl;
 				_texcoords.resize(offsetVertices + mesh->mNumVertices);
 				for (uint i = 0; i < mesh->mNumVertices; ++i) {
 					float u = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);

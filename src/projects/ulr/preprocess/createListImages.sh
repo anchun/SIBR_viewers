@@ -1,0 +1,1 @@
+for file in *.jpg;  do  Identify.exe -format "$file %w %h\n" $file >> list_images.txt;  done

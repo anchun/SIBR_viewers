@@ -4,6 +4,7 @@
 #include "core/raycaster/CameraRaycaster.hpp"
 #include "core/scene/RenderTargetTextures.hpp"
 #include "core/scene/Config.hpp"
+#include "core/system/String.hpp"
 
 namespace sibr {
 
@@ -108,8 +109,20 @@ namespace sibr {
 		 * \brief Getter for the pointer holding the render targets textures related to the scene.
 		 *
 		 */
-		const RenderTargetTextures::Ptr				renderTargets(void) const;
+		const RenderTargetTextures::Ptr	&			renderTargets(void) const;
 		
+		/**
+		 * \brief Getter for the pointer holding the render targets textures related to the scene.
+		 *
+		 */
+		RenderTargetTextures::Ptr &			renderTargets(void);
+
+		/**
+		 * \brief Getter for the pointer holding the mesh textures related to the mesh loaded for the scene.
+		 *
+		 */
+		Texture2DRGB::Ptr &					inputMeshTextures(void);
+
 		/**
 		 * \brief Getter for the pointer holding the user camera viewing the scene.
 		 * 
@@ -133,8 +146,9 @@ namespace sibr {
 		CalibratedCameras::Ptr						_cams;
 		InputImages::Ptr							_imgs;
 		ProxyMesh::Ptr								_proxies;
+		Texture2DRGB::Ptr							_inputMeshTexture;
 		RenderTargetTextures::Ptr					_renderTargets;
-		sibr::InputCamera							_userCamera;
+		InputCamera									_userCamera;
 		
 	};
 
@@ -165,9 +179,19 @@ namespace sibr {
 		return _proxies;
 	}
 
-	inline const RenderTargetTextures::Ptr BasicIBRScene::renderTargets(void) const
+	inline const RenderTargetTextures::Ptr & BasicIBRScene::renderTargets(void) const
 	{
 		return _renderTargets;
+	}
+
+	inline RenderTargetTextures::Ptr & BasicIBRScene::renderTargets(void)
+	{
+		return _renderTargets;
+	}
+
+	inline Texture2DRGB::Ptr & BasicIBRScene::inputMeshTextures(void)
+	{
+		return _inputMeshTexture;
 	}
 
 	inline const sibr::InputCamera & BasicIBRScene::userCamera(void)

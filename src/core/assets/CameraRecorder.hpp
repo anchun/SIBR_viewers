@@ -55,6 +55,9 @@ namespace sibr
 		*/
 		void	saving(std::string savePath);
 
+
+		void	frameDebug(const bool debugFrame);
+
 		/**
 		Stop saving.
 		*/
@@ -85,6 +88,8 @@ namespace sibr
 		*/
 		void	save( const std::string& filename=SIBR_CAMERARECORDER_DEFAULTFILE );
 
+
+		bool safeLoad(const std::string& filename, int w = 1920, int h = 1080);
 
 		/**
 		Load a recording stream saved as a bundle file (useful for path from FRIBR).
@@ -123,6 +128,7 @@ namespace sibr
 		*/
 		bool isSaving() const { return _saving; }
 
+
 		/**
 		\return A reference to the current stream of recorded cameras.
 		*/
@@ -140,6 +146,8 @@ namespace sibr
 		bool					_playing;	
 		bool					_saving;
 		std::string				_savingPath;
+		bool					_savingVideo;
+		std::string				_savingVideoPath;
 		float					_speed;
 		float					_interp;
 	};

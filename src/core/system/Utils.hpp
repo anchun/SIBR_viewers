@@ -62,6 +62,16 @@ namespace sibr
 	SIBR_SYSTEM_EXPORT bool showFilePicker(std::string & selectedElement,
 		const FilePickerMode mode, const std::string & directoryPath = "", const std::string & extensionsAllowed = "");
 
+
+	template<typename FunType, typename ...ArgsType>
+	void taskTiming(const std::string & s, FunType && f, ArgsType && ... args) {
+		auto start = std::chrono::high_resolution_clock::now();
+		f(args...);
+		auto end = std::chrono::high_resolution_clock::now();
+		std::cout << s << " : " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << " ms" << std::endl;
+	};
+
+
 	/*** @} */
 } // namespace sibr
 

@@ -143,6 +143,7 @@ namespace sibr
 		/// you will porbably get weird pixel.
 		/// TODO: try to print an error for this.
 		void		save(const std::string& filename, bool verbose = true) const;
+		void		saveHDR(const std::string& filename, bool verbose = true) const;
 		void		saveByteStream(const std::string& filename, bool verbose = true) const;
 
 		/*const Pixel&	pixel(uint x, uint y) const;
@@ -387,7 +388,7 @@ namespace sibr
 					for (; i < T_NumComp && i < 3; ++i)
 						p[i] = p[0];
 					for (; i < T_NumComp && i < 4; ++i)
-						p[i] = opencv::imageTypeRange<T_Type>();
+						p[i] = static_cast<T_Type>(opencv::imageTypeRange<T_Type>());
 
 					_pixels.at<cv::Vec<T_Type, T_NumComp>>(y, x) = p;
 				}
@@ -506,6 +507,51 @@ namespace sibr
 			double scale = 255.0 / (double)opencv::imageTypeRange<T_Type>();
 			img.convertTo(imageF_8UC3, CV_8UC3, scale);
 			finalImage = imageF_8UC3;
+		}
+
+		if (img.cols > 0 && img.rows > 0)
+		{
+			if (cv::imwrite(filename, finalImage) == false)
+				SIBR_ERR << "unknown error while saving image '" << filename << "'"
+				<< " (do the targeted file format manages correctly the bpc ?)" << std::endl;
+		}
+		else
+			SIBR_WRG << "failed to save (image is empty)" << std::endl;
+	}
+
+	template<typename T_Type, unsigned int T_NumComp>
+	void		Image<T_Type, T_NumComp>::saveHDR(const std::string& filename, bool verbose) const {
+		{ // Create the output dir if doesn't exists
+			boost::filesystem::path outdir = boost::filesystem::path(filename).parent_path();
+			if (outdir.empty() == false)
+				boost::filesystem::create_directories(outdir);
+		}
+
+		// Important Note:
+		// If you have a problem when saving an image (e.g. black image) then
+		// check the targeted image file format manages correctly the T_Type and
+		// T_NumpComp you provide.
+		// OpenCV doesn't seem to check always for such incompatibility (and just
+		// save empty pixels)
+
+		if (verbose)
+			SIBR_LOG << "Saving image file '" << filename << "'." << std::endl;
+
+		cv::Mat img = toOpenCVBGR();
+		
+
+		cv::Mat finalImage;
+		if (T_NumComp == 4) {
+			cv::Mat4f imageF_32FC4;
+			double scale = 1.0 / (double)opencv::imageTypeRange<T_Type>();
+			img.convertTo(imageF_32FC4, CV_32FC4, scale);
+			finalImage = imageF_32FC4;
+		}
+		else {
+			cv::Mat3f imageF_32FC3;
+			double scale = 1.0 / (double)opencv::imageTypeRange<T_Type>();
+			img.convertTo(imageF_32FC3, CV_32FC3, scale);
+			finalImage = imageF_32FC3;
 		}
 
 		if (img.cols > 0 && img.rows > 0)
@@ -741,7 +787,7 @@ namespace sibr
 		Pixel p;
 		for (uint y = 0; y < h(); ++y) {
 			for (uint x = 0; x < w(); ++x) {
-				Pixel v = pixel(x, y);
+				Pixel v = operator()(x, y);
 				for (uint c = 0; c < T_NumComp; ++c) {
 					minImage[c] = std::min(v[c], minImage[c]);
 					maxImage[c] = std::max(v[c], maxImage[c]);
@@ -760,7 +806,7 @@ namespace sibr
 		Pixel p;
 		for (uint y = 0; y < h(); ++y) {
 			for (uint x = 0; x < w(); ++x) {
-				Pixel v = pixel(x, y);
+				Pixel v = operator()(x, y);
 				for (uint i = 0; i < T_NumComp; ++i)
 					p[i] = minVal[i] + ((maxVal[i] - minVal[i])*(v[i] - minImage[i])) / (maxImage[i] - minImage[i]);
 				pixel(x, y, p);
@@ -829,7 +875,7 @@ namespace sibr
 		for (int i = 0; i < 4; ++i) {
 			for (int j = 0; j < 4; ++j) {
 				const sibr::Vector2i pixelPosition = cornerPixel + offsets[i][j];
-				colorsGrid[i].col(j) = pixel(sibr::clamp(pixelPosition, topLeft, bottomRight)).cast<float>();
+				colorsGrid[i].col(j) = operator()(sibr::clamp(pixelPosition, topLeft, bottomRight)).cast<float>();
 			}
 		}
 

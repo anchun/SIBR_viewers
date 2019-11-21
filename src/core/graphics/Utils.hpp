@@ -68,6 +68,13 @@ namespace sibr
 	//Inplace conversion of float image from linear space to sRGB.
 	SIBR_GRAPHICS_EXPORT void lin2sRGB(sibr::ImageRGB32F& img);
 
+	template<typename FunType, typename ...ArgsType>
+	void renderTask(const std::string & s, FunType && f, ArgsType && ... args) {
+		glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, s.c_str());
+		f(args...);
+		glPopDebugGroup();
+	};
+
 
 	inline float		lerp(float from, float to, float fac);
 	inline float		inverseLerp(float from, float to, float current);

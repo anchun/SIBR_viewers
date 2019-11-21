@@ -223,7 +223,7 @@ include_directories(${ASSIMP_INCLUDE_DIR})
 ################
 ## Find FFMPEG
 ################
-if(BUILD_VIDEO OR BUILD_IBR_DYNAMIC) ## ffmpeg only needed with vbr projects
+if(BUILD_SIBR) ## ffmpeg only needed with vbr projects
 	win3rdParty(FFMPEG
 		MSVC11 "win3rdParty/MSVC11/ffmpeg" "https://gforge.inria.fr/frs/download.php/file/34916/ffmpeg.zip"
         MSVC12 "win3rdParty/MSVC12/ffmpeg" "https://gforge.inria.fr/frs/download.php/file/34916/ffmpeg.zip"
@@ -456,9 +456,22 @@ if (BUILD_MVIIR)
 	include_directories(${EMBREE_INCLUDE_DIR})
 endif()
 
+
+##############
+## Find GIZMO
+##############
+win3rdParty(GIZMO #VERBOSE ON
+        MSVC11 "win3rdParty/MSVC11/gizmo" "https://gforge.inria.fr/frs/download.php/file/38211/libGizmo-win64.7z"
+        MSVC12 "win3rdParty/MSVC11/gizmo" "https://gforge.inria.fr/frs/download.php/file/38211/libGizmo-win64.7z"
+        MSVC14 "win3rdParty/MSVC14/gizmo" "https://gforge.inria.fr/frs/download.php/file/38211/libGizmo-win64.7z"    # TODO SV: provide a valid version if required
+        SET CHECK_CACHED_VAR GIZMO_DIR PATH "libGizmo-win64"
+		)
+find_package(GIZMO REQUIRED)
+include_directories(${GIZMO_INCLUDE_DIR})
+
 ##############
 
-if (BUILD_PREPROCESS OR BUILD_IBR_VIDEO_BLENDING)
+if (BUILD_PREPROCESS OR BUILD_IBR_VIDEO_BLENDING OR BUILD_IBR_SYNTHETIC_IBR)
 	# libigl
     # message("libigl win3rdparty dir: ${Libigl_WIN3RDPARTY_DIR}")
     # set(Libigl_WIN3RDPARTY_DIR "libigl-master")
@@ -793,7 +806,7 @@ sibr_addlibrary(
     NAME OpenMeshCore
     MSVC11 "https://gforge.inria.fr/frs/download.php/file/37429/OpenMesh.7z"
     MSVC14 "https://gforge.inria.fr/frs/download.php/file/37429/OpenMesh.7z"     # TODO SV: provide a valid version if required
-    REQUIREDFOR BUILD_IBR_DEPTHMESHER
+    REQUIREDFOR BUILD_IBR_DEPTHMESHER OR BUILD_IBR_SYNTHETIC_IBR
 )
 
 sibr_addlibrary(
@@ -875,6 +888,44 @@ if (BUILD_IBR_TORCHGL_INTEROP)
     )
 endif()
 
+if (BUILD_IBR_OPTIX)
+    find_package(CUDA REQUIRED)
+    find_package(OptiX REQUIRED VERSION 7.0)
+    if (CUDA_TOOLKIT_ROOT_DIR)
+        include_directories(${CUDA_TOOLKIT_ROOT_DIR}/include)
+    endif()
+    include_directories(${OptiX_INCLUDE})
+    find_program(CUDA_BIN2C bin2c DOC "Path to the cuda-sdk bin2c executable.")
+
+    # this macro defines cmake rules that execute the following four steps:
+    # 1) compile the given cuda file ${cuda_file} to an intermediary PTX file
+    # 2) use the 'bin2c' tool (that comes with CUDA) to
+    #    create a second intermediary (.c-)file which defines a const string variable
+    #    (named '${c_var_name}') whose (constant) value is the PTX output
+    #    from the previous step.
+    # 3) compile the given .c file to an intermediary object file (why thus has
+    #    that PTX string 'embedded' as a global constant.
+    # 4) assign the name of the intermediary .o file to the cmake variable
+    #    'output_var', which can then be added to cmake targets.
+    macro(cuda_compile_and_embed output_var cuda_file)
+      set(c_var_name ${output_var})
+      cuda_compile_ptx(ptx_files ${cuda_file})
+      list(GET ptx_files 0 ptx_file)
+      set(embedded_file ${ptx_file}_embedded.c)
+    #  message("adding rule to compile and embed ${cuda_file} to \"const char ${var_name}[];\"")
+      add_custom_command(
+        OUTPUT ${embedded_file}
+        COMMAND ${CUDA_BIN2C} -c --padd 0 --type char --name ${c_var_name} ${ptx_file} > ${embedded_file}
+        DEPENDS ${ptx_file}
+        COMMENT "compiling (and embedding ptx from) ${cuda_file}"
+        )
+      set(${output_var} ${embedded_file})
+    endmacro()
+
+    include_directories(${OptiX_INCLUDE})
+
+    add_definitions(-D__CUDA_INCLUDE_COMPILER_INTERNAL_HEADERS__=1)
+endif()
 
 if(BUILD_IS)
 	find_package(VRPN REQUIRED)

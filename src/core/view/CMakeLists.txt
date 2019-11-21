@@ -22,10 +22,12 @@ include_directories(${Boost_INCLUDE_DIRS})
 target_link_libraries(${PROJECT_NAME}
  ${Boost_LIBRARIES}
  ${OpenCV_LIBRARIES}
+ ${GIZMO_LIBRARIES}
 sibr_graphics
 sibr_assets
 sibr_raycaster
 sibr_scene
+sibr_video
 )
 
 #define postfix for various debug/release

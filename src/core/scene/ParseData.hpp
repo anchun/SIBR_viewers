@@ -146,11 +146,22 @@ namespace sibr{
 		const std::string&								meshPath(void) const;
 
 		/**
-		* \brief Getter for the mesh path where the dataset is located.
+		* \brief Getter for the mesh texture image path where the dataset is located.
+		*
+		*/
+		const std::string&								texImgPath(void) const;
+
+		/**
+		* \brief Getter for the dataset type.
 		*
 		*/
 		const ParseData::Type&								datasetType(void) const;
 
+		/**
+		* \brief Setter for the dataset type.
+		*
+		*/
+		void												datasetType(ParseData::Type dataType);
 
 
 	public:
@@ -196,6 +207,7 @@ namespace sibr{
 
 		std::string									_basePathName;
 		std::string									_meshPath;
+		std::string									_texImgPath;
 		std::vector<sibr::ImageListFile::Infos>		_imgInfos;
 		std::vector<bool>							_activeImages;
 		std::vector<bool>							_excludeImages;
@@ -245,8 +257,18 @@ namespace sibr{
 		return _meshPath;
 	}
 
+	inline const std::string & ParseData::texImgPath(void) const
+	{
+		return _texImgPath;
+	}
+
+	inline void		ParseData::datasetType(ParseData::Type dataType) {
+		_datasetType = dataType;
+	}
+
 	inline const ParseData::Type & ParseData::datasetType(void) const
 	{
 		return _datasetType;
 	}
+
 }

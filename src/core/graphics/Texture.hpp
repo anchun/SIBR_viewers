@@ -164,6 +164,17 @@ namespace sibr
 			isdepth             =  0};
 	};
 
+	template <> class GLFormat<float, 2> {
+	public:
+		enum {
+			internal_format = GL_RG32F,
+			format = GL_RG,
+			int_internal_format = -1,
+			int_format = -1,
+			isdepth = 0
+		};
+	};
+
 	template <> class GLFormat<float,3> {
 	public:
 		enum {
@@ -380,6 +391,13 @@ namespace sibr
 		static const uint type = GLType<ScalarType>::type;
 	};
 
+
+	template<typename ScalarType, uint N >
+	struct GLTexFormat<cv::Mat_<cv::Vec<ScalarType, N> >, ScalarType, N> 
+		: GLTexFormat<cv::Mat, ScalarType, N>
+	{
+	};
+
 	//-------------------------------------
 
 
@@ -421,7 +439,8 @@ namespace sibr
 	public:
 		virtual ~IRenderTarget( void ) { }
 
-		virtual GLuint texture( uint t = 0 ) const = 0;
+		virtual GLuint texture( uint t = 0 ) const = 0; // Deprecated, use texture() instead.
+		virtual GLuint handle( uint t = 0 ) const = 0;
 		virtual void bind( void ) = 0;
 		virtual void unbind( void ) = 0;
 		virtual void clear( void ) = 0;
@@ -1409,6 +1428,7 @@ namespace sibr
 	typedef Texture2DArray<short, 2>             Texture2DArrayUV16s;
 
 	typedef Texture2DArray<float, 1>             Texture2DArrayLum32F;
+	typedef Texture2DArray<float, 2>             Texture2DArrayRG32F;
 	typedef Texture2DArray<float, 3>             Texture2DArrayRGB32F;
 	typedef Texture2DArray<float, 4>             Texture2DArrayRGBA32F;
 

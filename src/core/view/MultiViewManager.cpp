@@ -15,6 +15,8 @@ namespace sibr
 		_timeLastFrame = std::chrono::steady_clock::now();
 		_deltaTime = 0.0;
 		_exportPath = "./screenshots";
+		_vdoPath = "./video.mp4";
+		_savingVideo = false;
 	}
 
 	void MultiViewBase::onUpdate(Input& input)
@@ -196,49 +198,50 @@ namespace sibr
 		return _subViews.begin()->second.viewport;
 	}
 
-	void MultiViewBase::renderSubView(SubView & subview) const
+	void MultiViewBase::renderSubView(SubView & subview) 
 	{
 		bool invalidTexture = false;
-
+		
 		if (!_onPause) {
 
 			/// \todo Offline video dumping.
-			//int camIdDump = 0;
-			//// This requires a scene, a handler and the save flag on the camera. (TODO: move flag to the handler).
-			//if (subview.handler != NULL && subview.handler->getCamera().needSave() && subview.view->getScenePtr()) {
-			//	// Change size.
-			//	w = subview.view->scene().args().win_width;
-			//	h = subview.view->scene().args().win_height;
-			//	// If we furthermore have to leave an image out, disable it in the scene.
-			//	if (subview.view->scene().args().dumpLeave1Out) {
-			//		// Get closest camera (should be the same camera)
-			//		camIdDump = subview.view->scene().selectCameras(subview.handler->getCamera(), 1)[0];
-			//		std::cout << "Leaving out image number " << camIdDump << std::endl;
-			//		subview.view->scene().deactivateCamera(camIdDump);
-			//		// Readjust the size using the reference camera.
-			//		const auto & refCam = subview.view->scene().inputCameras()[camIdDump];
-			//		w = std::min(1920,(int)refCam.w());
-			//		h = (unsigned int)((float)w/ refCam.w())*refCam.h();
-			//	}
-			//}
+			int camIdDump = 0;
+			
 
 			const Viewport renderViewport(0.0, 0.0, (float)subview.rt->w(), (float)subview.rt->h());
 			subview.render(_renderingMode, renderViewport);
 
 			// Offline video dumping, continued. We ignore additional rendering as those often are GUI overlays.
-			//if (subview.handler != NULL && subview.handler->getCamera().needSave()) {
-			//	ImageRGB frame;
-			//	subview.rt->readBack(frame);
-			//	frame.save(subview.handler->getCamera().savePath());
-			//	// Restore the disabled camera.
-			//	if (subview.view->getScenePtr() && subview.view->scene().args().dumpLeave1Out) {
-			//		subview.view->scene().activateCamera(camIdDump);
-			//	}
-			//}
-			//else if (subview.handler != NULL && subview.view->getScenePtr() &&(subview.view->scene().args().dumpLeave1Out || subview.view->scene().args().dumpPath != "")) {
-			//	// We were asked to dump the video, but we don't need anymore: job done, we should signal the window that we want to exit.
-			//	_window.close();
-			//}
+			if (subview.handler != NULL && (subview.handler->getCamera().needVideoSave() || subview.handler->getCamera().needSave())) {
+				
+				//std::cout << "Need video save: " << subview.handler->getCamera().needVideoSave()<< "; Need Image and Video save: " << subview.handler->getCamera().needSave() << std::endl;
+				ImageRGB frame;
+
+				subview.rt->readBack(frame);
+				
+				if (subview.handler->getCamera().needSave()) {
+					frame.save(subview.handler->getCamera().savePath());
+				}
+				_videoFrames.push_back(frame.toOpenCVBGR());
+				
+			}
+
+			if (_savingVideo) {
+
+				if (_videoFrames.size() > 0) {
+					std::cout << "Exporting video to : " << _vdoPath << std::endl;
+					FFVideoEncoder vdoEncoder(_vdoPath, 30, Vector2i(subview.rt->w(), subview.rt->h()));
+					for (int i = 0; i < _videoFrames.size(); i++) {
+						vdoEncoder << _videoFrames[i];
+					}
+					_videoFrames.clear();
+				}
+				else {
+					std::cout << "No frames to export!! Check save frames in camera options for the view you want to render and play the path and re-export!" << std::endl;
+				}
+				_savingVideo = false;
+				std::cout << "Fin!" << std::endl;
+			}
 
 			// Additional rendering.
 			subview.renderFunc(subview.view, renderViewport, std::static_pointer_cast<IRenderTarget>(subview.rt));
@@ -295,39 +298,6 @@ namespace sibr
 			_ibrSubViews.at(name).handler = cameraHandler;
 
 			SubView & subview = _ibrSubViews.at(name);
-
-			/*if (subview.handler != NULL && subview.view->getScenePtr())
-				if (InteractiveCameraHandler * handler = dynamic_cast<InteractiveCameraHandler *>(subview.handler.get())) {
-					if (subview.view->scene().args().dumpPath != "" || subview.view->scene().args().dumpLeave1Out) {
-						if (subview.view->scene().args().outputDir == "") {
-							std::cerr << "Can't dump Path or Rephotography, outPutDir must be specified" << std::endl;
-						}
-						else {
-
-							std::string dumpPath;
-							if (subview.view->scene().args().dumpPath != "") {
-								dumpPath = subview.view->scene().args().dumpPath;
-
-								if (boost::filesystem::extension(dumpPath) == ".out")
-									handler->cameraRecorder().loadBundle(dumpPath, subview.view->scene().args().win_width, subview.view->scene().args().win_height);
-								else
-									handler->cameraRecorder().load(dumpPath);
-							}
-							else if (subview.view->scene().args().dumpLeave1Out) {
-								handler->cameraRecorder().cams().clear();
-								for (const InputCamera & cam : subview.view->scene().inputCameras()) {
-									handler->cameraRecorder().cams().emplace_back(cam);
-								}
-							}
-
-							std::string outputDir = subview.view->scene().args().outputDir;
-
-							handler->cameraRecorder().playback();
-							handler->cameraRecorder().saving(outputDir + "/");
-						}
-
-					}
-				}*/
 		}
 		else {
 			SIBR_WRG << "No view named <" << name << "> found." << std::endl;
@@ -367,21 +337,12 @@ namespace sibr
 			finalPath.append(filename);
 		}
 		else {
-			auto now = std::time(nullptr);
-#ifdef SIBR_OS_WINDOWS
-			tm ltm = { 0,0,0,0,0,0,0,0,0 };
-			localtime_s(&ltm, &now);
-#else
-			tm ltm = *(std::localtime(&now));
-#endif
-			std::stringstream buffer;
-			buffer << std::put_time(&ltm, "%Y_%m_%d_%H_%M_%S");
-			const std::string autoName = view.name + "_" + buffer.str();
+			const std::string autoName = view.name + "_" + sibr::timestamp();
 			finalPath.append(autoName + ".png");
 		}
 
 		makeDirectory(path);
-		renderingImg.save(finalPath, false);
+		renderingImg.save(finalPath, true);
 	}
 
 	void MultiViewBase::mosaicLayout(const Viewport & vp)
@@ -422,6 +383,7 @@ namespace sibr
 		}
 
 	}
+	
 	void MultiViewBase::toggleSubViewsGUI()
 	{
 		_showSubViewsGui = !_showSubViewsGui;
@@ -429,6 +391,11 @@ namespace sibr
 		for (auto & view : _subMultiViews) {
 			view.second->toggleSubViewsGUI();
 		}
+	}
+
+	void MultiViewBase::setExportPath(const std::string & path) {
+		_exportPath = path;
+		sibr::makeDirectory(path);
 	}
 
 	MultiViewManager::MultiViewManager(Window& window, bool resize)
@@ -457,7 +424,7 @@ namespace sibr
 		MultiViewBase::onUpdate(input);
 
 		if (input.key().isActivated(Key::LeftControl) && input.key().isActivated(Key::LeftAlt) && input.key().isReleased(Key::G)) {
-			toggleSubViewsGUI();
+			toggleGUI();
 		}
 	}
 
@@ -566,7 +533,6 @@ namespace sibr
 				if (ImGui::MenuItem("Set export directory...")) {
 					std::string selectedDirectory;
 					if (showFilePicker(selectedDirectory, FilePickerMode::Directory)) {
-						std::cout << selectedDirectory << std::endl;
 						if (!selectedDirectory.empty()) {
 							_exportPath = selectedDirectory;
 						}
@@ -584,6 +550,15 @@ namespace sibr
 					}
 				}
 
+				if (ImGui::MenuItem("Export Video")) {
+					std::string saveFile;
+					if (showFilePicker(saveFile, FilePickerMode::Save)) {
+						std::cout << saveFile << std::endl;
+						_vdoPath = saveFile + ".mp4";
+						_savingVideo = true;
+					}
+				}
+
 				ImGui::EndMenu();
 			}
 
@@ -594,6 +569,9 @@ namespace sibr
 	void MultiViewManager::toggleGUI()
 	{
 		_showGUI = !_showGUI;
+		if (!_showGUI) {
+			SIBR_LOG << "[MultiViewManager] GUI is now hidden, use Ctrl+Alt+G to toggle it back on." << std::endl;
+		}
 		toggleSubViewsGUI();
 	}
 

@@ -140,6 +140,7 @@ namespace sibr
 		std::string camera_path;
 
 		int					_snapToImage = 0;
+		int					_camera_id_info_gui = 0;
 		bool				_showImages = true;
 		bool				_showLabels = false;
 

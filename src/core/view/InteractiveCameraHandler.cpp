@@ -23,6 +23,7 @@ namespace sibr {
 		_radius = 100.0f;
 		_currentCamId = 0;
 		_saveFrame = 0;
+		_saveFrameDebug = 0;
 		_viewport = Viewport(0, 0, 0, 0);
 		_triggerCameraUpdate = false;
 		_isSetup = false;
@@ -166,6 +167,18 @@ namespace sibr {
 		InputCamera camCopy = getCamera();
 		camCopy.transform(transform);
 		fromCamera(camCopy, interpolate, updateResolution);
+	}
+
+	void InteractiveCameraHandler::setClippingPlanes(float znear, float zfar) {
+		if (znear > 0.0f) {
+			_clippingPlanes[0] = znear;
+		}
+		if (zfar > 0.0f) {
+			_clippingPlanes[1] = zfar;
+		}
+		_currentCamera.znear(_clippingPlanes[0]);
+		_currentCamera.zfar(_clippingPlanes[1]);
+		fromCamera(_currentCamera);
 	}
 
 	void InteractiveCameraHandler::switchMode(const InteractionMode mode) {
@@ -570,7 +583,7 @@ namespace sibr {
 							SIBR_LOG << "Loading" << std::endl;
 							_cameraRecorder.reset();
 							if (boost::filesystem::extension(selectedFile) == ".out")
-								_cameraRecorder.loadBundle(selectedFile, 1280, 800);
+								_cameraRecorder.loadBundle(selectedFile, 1920, 1080);
 							else
 								_cameraRecorder.load(selectedFile);
 							_cameraRecorder.playback();
@@ -594,23 +607,35 @@ namespace sibr {
 						}
 					}
 				}
+				
+
+				//ImGui::SameLine();
+				ImGui::Checkbox("Save video (from playing)", (&_saveFrame));
+				if (_saveFrame) {
+					_cameraRecorder.frameDebug(_saveFrame);
+				}
+				
 				ImGui::SameLine();
-				const bool saveFrameOld = _saveFrame;
-				ImGui::Checkbox("Save frame playing", (&_saveFrame));
-				if (_saveFrame && !saveFrameOld) {
+				const bool saveFrameOld = _saveFrameDebug;
+				ImGui::Checkbox("Save frames (from playing)", (&_saveFrameDebug));
+				if (_saveFrameDebug && !saveFrameOld) {
 					if (sibr::showFilePicker(selectedFile, Save)) {
 						if (!selectedFile.empty()) {
-							_cameraRecorder.saving(selectedFile + "/../");
+							_cameraRecorder.saving(selectedFile + "/");
+							_cameraRecorder.frameDebug(_saveFrameDebug);
 						}
 						else {
 							_cameraRecorder.stopSaving();
-							_saveFrame = false;
+							_saveFrameDebug = false;
+							_cameraRecorder.frameDebug(_saveFrameDebug);
 						}
 					}
 				}
-				else if (!_saveFrame && saveFrameOld) {
+				else if (!_saveFrameDebug && saveFrameOld) {
 					_cameraRecorder.stopSaving();
+					_cameraRecorder.frameDebug(_saveFrameDebug);
 				}
+				
 				//ImGui::SameLine();
 				//ImGui::Checkbox("Fribr export", &_fribrExport);
 				ImGui::Separator();

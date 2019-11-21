@@ -32,8 +32,11 @@ namespace sibr {
 			/*input*/	uint textureID,
 			/*output*/	Window& dst);
 
+		bool & flip() { return _flip.get(); }
+
 	private:
 		GLShader			_shader;
+		GLuniform<bool>		_flip = false;
 	};
 
 } /*namespace sibr*/ 
