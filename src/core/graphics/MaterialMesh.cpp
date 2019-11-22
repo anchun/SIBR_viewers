@@ -681,6 +681,24 @@ namespace sibr
 		colors(colorsIdsMaterials);
 	}
 
+
+	void MaterialMesh::fillColorsWithMatIds()
+	{
+		sibr::Mesh::Colors colorsIdsMaterials(vertices().size());
+
+		for (unsigned int i = 0; i < _matIds.size(); i++)
+		{
+			const uint matId = uint(_matIds.at(i)+1);
+			const sibr::Vector3u col = {uchar(matId & 0xff), uchar((matId >> 8) & 0xff) , uchar((matId >> 16) & 0xff) };
+			const sibr::Vector3f finalCol = col.cast<float>()/255.0f;
+			colorsIdsMaterials.at(_triangles.at(i)[0]) = finalCol;
+			colorsIdsMaterials.at(_triangles.at(i)[1]) = finalCol;
+			colorsIdsMaterials.at(_triangles.at(i)[2]) = finalCol;
+		}
+
+		colors(colorsIdsMaterials);
+	}
+
 	Mesh MaterialMesh::generateSubMaterialMesh(int material) const
 	{
 
