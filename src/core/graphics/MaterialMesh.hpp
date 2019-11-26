@@ -44,6 +44,8 @@ namespace sibr
 		typedef std::vector<Mesh>								SubMeshes;
 		typedef std::vector<sibr::ImageRGB>						AlbedoTextures;
 
+		typedef std::map<std::string, bool>						SwitchTagsProperty;
+
 		SIBR_CLASS_PTR(MaterialMesh);
 
 		enum class RenderCategory
@@ -74,13 +76,17 @@ namespace sibr
 			"//out float material;			\n"
 			"layout (location = 3) out vec3 normal;									\n"
 			"out float ao ;									\n"
+			"out vec3 pos_vertex;									\n"
 			"layout (location = 1) out vec3 colors;									\n"
 			"uniform mat4 MVP;									\n"
+			"uniform bool lightIsPresent;									\n"
+			"uniform vec3 lightPos;									\n"
 			"void main(void) {									\n"
 			"	normal = in_normal;		\n"
 			"	ao = in_ao;		\n"
 			"	uvCoords = in_uvCoords;		\n"
 			"	colors= in_colors;		\n"
+			"	pos_vertex= in_vertex;		\n"
 			"	//material= float(in_material);		\n"
 			"	gl_Position = MVP*vec4(in_vertex,1) ;		\n"
 			"}													\n";
@@ -93,6 +99,8 @@ namespace sibr
 			"uniform bool AoIsActive;													\n"
 			"uniform vec2 grid;												\n"
 			"uniform float IlluminanceCoefficient;												\n"
+			"uniform bool lightIsPresent;									\n"
+			"uniform vec3 lightPos;									\n"
 			"layout (location = 2) in vec2 uvCoords;													\n"
 			"layout (location = 3) in vec3 normal ;									\n"
 			"layout (location = 1) in vec3 colors;									\n"
@@ -127,10 +135,14 @@ namespace sibr
 			"uniform bool AoIsActive;													\n"
 			"uniform vec2 grid;												\n"
 			"uniform float IlluminanceCoefficient;												\n"
+			"uniform bool lightIsPresent;									\n"
+			"uniform float intensityLight;									\n"
+			"uniform vec3 lightPos;									\n"
 			"layout (location = 2) in vec2 uvCoords;													\n"
 			"layout (location = 3) in vec3 normal ;									\n"
 			"layout (location = 1) in vec3 colors;									\n"
 			"out vec4 out_color;												\n"
+			"in vec3 pos_vertex;									\n"
 			"void main(void) {													\n"
 			"	vec4 opacityColor;												\n"
 			"	vec3 colorsModified = colors;\n"
@@ -153,6 +165,13 @@ namespace sibr
 			"							\n"
 			"							\n"
 			"							\n"
+			"	if (lightIsPresent) {						\n"
+			"	vec3 toLight = lightPos - pos_vertex;					\n"
+			"	normalize(toLight);					\n"
+			"	normalize(normal);					\n"
+			"	float localIntensity = max (0.5f , 0.5f +  dot( normal, toLight ) / 2.f ) ;					\n"
+			"	float finalIntensity = localIntensity * intensityLight;					\n"
+			"	out_color = out_color * vec4(finalIntensity ,finalIntensity , finalIntensity ,1); \n}"
 			"	if (AoIsActive ) {						\n"
 			"	out_color = out_color * vec4(colorsModified,1);\n}"
 			"	out_color = vec4(out_color.x,out_color.y,out_color.z,out_color.a);\n"
@@ -190,6 +209,11 @@ namespace sibr
 		inline void opacityMaps(const OpacityMaps & maps);
 		/// get the opacityMaps
 		inline const OpacityMaps& opacityMaps(void) const;
+
+		/// Set the switchTag 
+		inline void switchTag(const SwitchTagsProperty& switchTag);
+		/// get the switchTag 
+		inline const SwitchTagsProperty& switchTag(void) const;
 
 		/// Return the pointer to oppacity texture if it exist
 		inline sibr::ImageRGBA::Ptr diffuseMap(const std::string& matName) const;
@@ -343,6 +367,8 @@ namespace sibr
 		std::map<std::string,sibr::Texture2DRGB::Ptr> _tagsCoveringTexture;
 		std::map<std::string,GLuint> _idTagsCoveringTexture;
 
+		SwitchTagsProperty _switchTags;
+
 		//AO attributes
 		AmbientOcclusion _ambientOcclusion;
 		std::function<sibr::Mesh::Colors(sibr::MaterialMesh&, const int)> _aoFunction;
@@ -350,6 +376,7 @@ namespace sibr
 		bool _aoInitialized = false;
 		float _averageSize;
 		float _averageArea;
+
 	};
 
 	///// DEFINITION /////
@@ -447,6 +474,15 @@ namespace sibr
 			return el->second;
 		}
 		else return nullptr;
+	}
+
+	/// Set the switchTag 
+	void MaterialMesh::switchTag(const SwitchTagsProperty& switchTag) {
+		_switchTags = switchTag;
+	}
+	/// get the switchTag 
+	const MaterialMesh::SwitchTagsProperty& MaterialMesh::switchTag(void) const {
+		return _switchTags;
 	}
 
 	ImageRGBA::Ptr MaterialMesh::diffuseMap(const std::string& matName) const

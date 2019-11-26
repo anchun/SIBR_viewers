@@ -1237,6 +1237,8 @@ namespace sibr
 				_idTagsCoveringTexture[*it] = _tagsCoveringTexture[*it]->handle();
 			}
 
+			_switchTags[*it] = false;
+
 			i++;
 		}
 		if (_hasTagsFile) {
@@ -1259,7 +1261,24 @@ namespace sibr
 		if (_subMeshes.empty()) {
 			return;
 		}
+
 		unsigned int i = 0;
+		bool textureFound = false;
+		std::string  texName ;
+		for (auto it = matId2Name().begin(); it != matId2Name().end() || !textureFound; ++it) {
+
+			if (_albedoTextures[i] != nullptr) {
+
+					sibr::ImageRGB::Ptr coveringTagImage = tagsCoveringMap(*it);
+					if (_hasTagsCoveringFile && coveringTagImage
+						&& tagsCoveringMaps().find(*it) != tagsCoveringMaps().end()) {
+						texName = *it;
+						textureFound = true;
+					}
+			}
+		}
+
+		i = 0;
 		for (auto it = matId2Name().begin(); it != matId2Name().end(); ++it)
 		{
 			if (!specificMaterial || *it == nameOfSpecificMaterial)
@@ -1271,10 +1290,19 @@ namespace sibr
 					if (_hasTagsCoveringFile && coveringTagImage
 						&& tagsCoveringMaps().find(*it) != tagsCoveringMaps().end()) {
 						glActiveTexture(GL_TEXTURE1);
+						if ( _switchTags.find(*it) != _switchTags.end() && _switchTags.at(*it)
+							&& _hasTagsFile && _tagTexture)
+						glBindTexture(GL_TEXTURE_2D, _idTagTexture);
+						else 
 						glBindTexture(GL_TEXTURE_2D, _idTagsCoveringTexture.at(*it));
 					}
 					else if (_hasTagsFile && _tagTexture != nullptr) {
+
 						glActiveTexture(GL_TEXTURE1);
+						if ( _switchTags.find(*it) != _switchTags.end() && _switchTags.at(*it) 
+							&& _idTagsCoveringTexture.size() > 0)
+						glBindTexture(GL_TEXTURE_2D, _idTagsCoveringTexture.at(texName));
+						else
 						glBindTexture(GL_TEXTURE_2D, _idTagTexture);
 					}
 

@@ -255,6 +255,15 @@ namespace sibr {
 	  //uniform variable mtx
 	  sibr::GLParameter _MVP_layer;
 
+	  //uniform variable boolean to know if a light is placed
+	  sibr::GLParameter _lightIsPlaced_layer;
+	  //uniform variable boolean to know the position of the light is placed
+	  sibr::GLParameter _positionLight_layer;
+	  //uniform variable real to know the intensity of the placed light
+	  sibr::GLParameter _intensityLight_layer;
+
+
+
 	  //uniform variable  boolean of ao
 	  sibr::GLParameter _activeAoColors_layer;
 

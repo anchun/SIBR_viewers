@@ -94,6 +94,12 @@ sibr::CamEditMeshViewer::CamEditMeshViewer(const sibr::Vector2i & screenRes,
 	CHECK_GL_ERROR;
 	_tagsScaleFactor_layer.init(_shaderAlbedo, "scaleTags");
 	CHECK_GL_ERROR;
+	_lightIsPlaced_layer.init(_shaderAlbedo, "lightIsPresent");
+	CHECK_GL_ERROR;
+	_positionLight_layer.init(_shaderAlbedo, "lightPos");
+	CHECK_GL_ERROR;
+	_intensityLight_layer.init(_shaderAlbedo, "intensityLight");
+	CHECK_GL_ERROR;
 	_typeOfMesh = CamEditMeshViewer::TypeOfMesh::materialMesh;
 	_outputPath = outputPath;
 
@@ -140,6 +146,16 @@ void sibr::CamEditMeshViewer::renderMaterialMesh(const sibr::Camera& eye,
 				true, *it);
 			counter++;
 		}
+
+		if (_lightSpheresValidated.size() > 0) {
+			_lightIsPlaced_layer.set(true);
+			_positionLight_layer.set(_lightSpheresValidated.front()._position);
+			_intensityLight_layer.set(_lightSpheresValidated.front()._radiance);
+		}
+		else 
+			_lightIsPlaced_layer.set(false);
+
+
 
 		_shaderAlbedo.end();
 
@@ -504,11 +520,20 @@ void sibr::CamEditMeshViewer::onGUI() {
 					std::string tagScaleString = "Tags scale factor ALL";
 					ImGui::SliderFloat(tagScaleString.c_str(),
 						&factorTagAll, 0.01f, 3.f);
+
+					 MaterialMesh::SwitchTagsProperty switchList = _materialMesh.switchTag();
+
 					for (unsigned int i = 0; i < _tagsScaleFactor.size(); i++) {
 						std::string tagScaleString = "Tags scale factor" + std::to_string(i) +
 							" : " + _materialMesh.matId2Name().at(i);
 						ImGui::SliderFloat(tagScaleString.c_str(),
 							&_tagsScaleFactor[i], 0.01f, 3.f);
+						ImGui::SameLine();
+						std::string tagSwitchString = "Switch type of tag##" + std::to_string(i);
+						if (ImGui::Checkbox(tagSwitchString.c_str() , 
+							&switchList.at(_materialMesh.matId2Name().at(i)) )) {
+							_materialMesh.switchTag(switchList);
+						}
 					}
 				}
 			ImGui::Separator();
@@ -605,7 +630,6 @@ void sibr::CamEditMeshViewer::onGUI() {
 			}
 		}
 
-	if ( _typeOfApp == CamEditMeshViewer::TypeOfApp::CamEditor)
 	if (ImGui::Begin("Lights Editor")) {
 		if (ImGui::Button("Save lights")) {
 			writeLights();
