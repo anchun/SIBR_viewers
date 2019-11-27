@@ -985,7 +985,7 @@ std::string sibr::CamEditMeshViewer::getInformationsCam(InputCamera& cam) {
 		std::string(",") +
 		std::to_string(cam.up()[2]) +
 		std::string(" -D fovy=") +
-		std::to_string(cam.fovy()) +
+		std::to_string(180*cam.fovy()/M_PI) +
 		std::string(" -D clip=") +
 		std::to_string(cam.znear()) +
 		std::string(",") +
