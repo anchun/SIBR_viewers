@@ -1265,7 +1265,7 @@ namespace sibr
 		unsigned int i = 0;
 		bool textureFound = false;
 		std::string  texName ;
-		for (auto it = matId2Name().begin(); it != matId2Name().end() || !textureFound; ++it) {
+		for (auto it = matId2Name().begin(); it != matId2Name().end() && !textureFound; ++it) {
 
 			if (_albedoTextures[i] != nullptr) {
 
@@ -1276,6 +1276,7 @@ namespace sibr
 						textureFound = true;
 					}
 			}
+			i++;
 		}
 
 		i = 0;
