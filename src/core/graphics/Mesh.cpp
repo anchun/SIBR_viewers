@@ -20,7 +20,7 @@
 
 namespace sibr
 {
-	bool		Mesh::saveToObj(const std::string& filename, bool universal)  const
+	bool		Mesh::saveToObj(const std::string& filename)  const
 	{
 		aiScene scene;
 		scene.mRootNode = new aiNode();
@@ -43,17 +43,26 @@ namespace sibr
 
 		auto pMesh = scene.mMeshes[0];
 
-		const auto& vVertices = _vertices;
+		const auto& vVertices = _vertices; 
 
 		pMesh->mVertices = new aiVector3D[vVertices.size()];
-		pMesh->mNormals = new aiVector3D[vVertices.size()];
 		pMesh->mNumVertices = static_cast<unsigned int>(vVertices.size());
 
-		pMesh->mTextureCoords[0] = new aiVector3D[vVertices.size()];
-		pMesh->mNumUVComponents[0] = static_cast<unsigned int>(vVertices.size());
-
+		if(hasNormals()) {
+			pMesh->mNormals = new aiVector3D[vVertices.size()];
+		} else {
+			pMesh->mNormals = nullptr;
+		}
+		
+		if (hasTexCoords()) {
+			pMesh->mTextureCoords[0] = new aiVector3D[vVertices.size()];
+			pMesh->mNumUVComponents[0] = 2;
+		} else {
+			pMesh->mTextureCoords[0] = nullptr;
+			pMesh->mNumUVComponents[0] =0;
+		}
+		
 		int j = 0;
-		SIBR_LOG << "Has normals " << hasNormals() << " has textures " << hasTexCoords() << std::endl;
 		for (auto itr = vVertices.begin(); itr != vVertices.end(); ++itr)
 		{
 			pMesh->mVertices[itr - vVertices.begin()] = aiVector3D(vVertices[j].x(), vVertices[j].y(), vVertices[j].z());
@@ -588,15 +597,22 @@ namespace sibr
 		// This function is a just a switch (so we can change format details
 		// internally).
 
-		// If you encounter problem with the resulting mesh, you can switch
-		// to the ASCII version for easy reading
-		// Meshlab does not support uint16 colors, if you want see you mesh in such
-		// program, set 'universal' = true
-
-		if (universal)
-			saveToASCIIPLY(filename, true);
-		else
-			saveToBinaryPLY(filename, false);
+		const std::string ext = sibr::getExtension(filename);
+		if(ext == "obj") {
+			saveToObj(filename);
+		} else {
+			// If you encounter problem with the resulting mesh, you can switch
+			// to the ASCII version for easy reading
+			// Meshlab does not support uint16 colors, if you want to use the mesh in such
+			// program, set 'universal' = true
+			if (universal) {
+				saveToASCIIPLY(filename, true);
+			}
+			else {
+				saveToBinaryPLY(filename, false);
+			}
+		}
+		
 	}
 
 	void	Mesh::vertices(const std::vector<float>& vertices)

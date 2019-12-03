@@ -182,7 +182,7 @@ namespace sibr
 		/// Currently, only vertices and colors are saved.
 		bool		saveToASCIIPLY( const std::string& filename, bool universal=false, const std::string& textureName="TEXTURE_NAME_TO_PUT_IN_THE_FILE" ) const;
 
-		bool		saveToObj( const std::string& filename, bool universal=false ) const;
+		bool		saveToObj( const std::string& filename) const;
 
 		/** GL render function using VBOs */
 		void	render(
