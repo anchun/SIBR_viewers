@@ -9,10 +9,10 @@ using namespace sibr;
 
 
 struct TexturingAppArgs : virtual BasicIBRAppArgs {
-	RequiredArg<std::string> output_path = { "output" };
-	Arg<int> output_size = { "size", 8192 };
-	Arg<bool> flood_fill = { "flood" };
-	Arg<bool> poisson_fill = { "poisson" };
+	RequiredArg<std::string> output_path = { "output", "output texture path" };
+	Arg<int> output_size = { "size", 8192, "texture side" };
+	Arg<bool> flood_fill = { "flood", "perform flood fill" };
+	Arg<bool> poisson_fill = { "poisson", "perform Poisson filling (slow on large images)" };
 };
 
 int main(int ac, char** av) {
@@ -26,7 +26,7 @@ int main(int ac, char** av) {
 	if(!args.dataset_path.isInit() || !args.output_path.isInit()) {
 		std::cout << "Usage: " << std::endl;
 		std::cout << "\tRequired: --path path/to/dataset --output path/to/output/file.png" << std::endl;
-		std::cout << "\tOptional: --size 8192 --flip (vertical flip) --flood (flood fill) --poisson (poisson fill)" << std::endl;
+		std::cout << "\tOptional: --size 8192 --flood (flood fill) --poisson (poisson fill)" << std::endl;
 		return 0;
 	}
 
