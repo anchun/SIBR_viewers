@@ -28,6 +28,7 @@ namespace sibr
 	/// Getter helper, return the n-th T from vector of strings
 	template<typename T> struct ValueGetter {
 		static T get(const std::vector<std::string> & values, uint n);
+		static std::string toString(const T & value);
 	};
 
 	enum RenderingModes {
@@ -36,16 +37,18 @@ namespace sibr
 		RENDERMODE_STEREO_QUADBUFFER
 	};
 
-	/// Stores the command line parsed arguments
-	/// only a static instance exists, that must be init with parseMainArgs(argc,argv) right after main(argc,argv)
-	/// parses --key or --key with any number of value
+	/* Parse and store the command line arguments specified by the user.
+	* Only a static instance exists, that must be init with parseMainArgs(argc,argv) right after main(argc,argv)
+	* Parses -key or --key with any number of value.
+	*/
 	class SIBR_SYSTEM_EXPORT CommandLineArgs {
 
 	public:
 		static void parseMainArgs(const int argc, const char* const* argv);
 
-		//get the Nth parsed element following -key or --key as a T 
-		//if not available (key not found or not enough token), return default_val argument
+		/** Get the Nth parsed element following -key or --key as a T 
+		* If not available (key not found or not enough token), return default_val argument
+		* */
 		template<typename T, uint N = 0>
 		T get(const std::string & key, const T & default_val) const {
 			T out;
@@ -56,6 +59,9 @@ namespace sibr
 			}
 		}
 
+		/** Get the Nth parsed element following -key or --key as a T
+		* If not available (key not found or not enough token), an error is raised.
+		* */
 		template<typename T, uint N = 0>
 		T getRequired(const std::string & key) const {
 			T out;
@@ -65,14 +71,44 @@ namespace sibr
 			return out;
 		}
 
+		/** Register a command for the help message.
+		 * \param key the command
+		 * \param description a string describing the use of the command
+		 * \param defaultValue string representation of the default value
+		 */
+		void registerCommand(const std::string & key, const std::string & description, const std::string & defaultValue);
+
+		/** Register a mandatory command for the help message.
+		 * \param key the command
+		 * \param description a string describing the use of the command
+		 */
+		void registerRequiredCommand(const std::string & key, const std::string & description);
+
+		/** Check if a given argument was specified by the user.
+		 *\param key the argument to look for
+		 *\return whether the argument was specified
+		 */
 		bool contains(const std::string & key) const;
+
+		/** Count how many parameters were specified by the suer for a given argument.
+		 *\param key the argument to look for
+		 *\return the number of parameters
+		 */
 		int numArguments(const std::string & key) const;
 
-		static const CommandLineArgs & getGlobal();
+		/** Global instance getter. */
+		static CommandLineArgs & getGlobal();
+
+		/** Display an help message to stdout. */
+		void displayHelp() const;
 
 	protected:
-		CommandLineArgs() {};
 
+		CommandLineArgs() = default;
+
+		/** Get the Nth parsed element following -key or --key as a T
+		* If not available (key not found or not enough token), an error is raised.
+		* */
 		template<typename T, uint N = 0>
 		bool getInternal(const std::string & key, T & val) const {
 			if (contains(key) && (N + 1)*NumberOfArg<T> <= args.at(key).size()) {
@@ -83,14 +119,18 @@ namespace sibr
 			}
 		}
 
-		std::map<std::string, std::vector<std::string>> args;
-		bool init = false;
+		std::map<std::string, std::vector<std::string>> args; ///< List of arguments input by the user and their parameters.
+		std::map<std::string, std::string> commands; ///< List of registered commands to display the help.
+		bool init = false; ///< Have the arguments been parsed.
 
-		static CommandLineArgs global;	
+		static CommandLineArgs global;///< Singleton (because there is only one command line).
 	};
 
+	/** Getter for the command line args manager singleton.
+	 */
 	SIBR_SYSTEM_EXPORT const CommandLineArgs & getCommandLineArgs();
-	
+
+	/** Internal argument based interface. */
 	template<typename T>
 	class ArgBase {
 	public:
@@ -101,41 +141,47 @@ namespace sibr
 		T value;
 	};
 
-	/// Template Arg class, will init itself in the defaut ctor using the command line args (ie. --key value)
-	/// should be declared as some class member using Arg<T> myArg = { "key", some_default_value };
-	/// is implicitly convertible to the template type
-	/// \note Note : as multiple implicit conversion is not possible in cpp, you might have to use the .get() method to access the inner T value
+	/** Template Arg class, will init itself in the defaut ctor using the command line args (ie. --key value)
+	* Should be declared as some class/struct member using Arg<T> myArg = { "key", some_default_value };
+	* is implicitly convertible to the template type
+	* \note As multiple implicit conversion is not possible in cpp, you might have to use the .get() method to access the inner T value
+	* */
 	template<typename T>
 	class Arg : public ArgBase<T> {
 	public:
-		Arg(const std::string & key, const T & default_value) {
-			value = getCommandLineArgs().get<T>(key, default_value);
+		Arg(const std::string & key, const T & default_value, const std::string & description = "") {
+			value = CommandLineArgs::getGlobal().get<T>(key, default_value);
+			// \todo We could display default values if we had a common stringization method.
+			CommandLineArgs::getGlobal().registerCommand(key, description, ValueGetter<T>::toString(default_value));
 		}
 		using ArgBase<T>::operator=;
 	};
 
-	///specialization of Arg for Switch, default value get flipped if arg is present
+	/// Specialization of Arg for Switch, default value get flipped if arg is present
 	template<>
 	class Arg<Switch> : public ArgBase<bool> {
 	public:
-		Arg(const std::string & key, const bool & default_value) {
-			bool arg_is_present = getCommandLineArgs().get<bool>(key, false);
+		Arg(const std::string & key, const bool & default_value, const std::string & description = "") {
+			const bool arg_is_present = CommandLineArgs::getGlobal().get<bool>(key, false);
 			if (arg_is_present) {
 				value = !default_value;
 			} else {
 				value = default_value;
 			}
+			const std::string defaultDesc = (default_value ? "enabled" : "disabled");
+			CommandLineArgs::getGlobal().registerCommand(key, description, defaultDesc);
 		}	
 	};
 	using ArgSwitch = Arg<Switch>;
 
-	///specialization of Arg for bool, value is true if key is present and false otherwise
+	/// Specialization of Arg for bool, value is true if key is present and false otherwise
 	template<>
 	class Arg<bool> : public ArgBase<bool> {
 	public:
-		Arg(const std::string & key) {
-			bool arg_is_present = getCommandLineArgs().get<bool>(key, false);
+		Arg(const std::string & key, const std::string & description = "") {
+			const bool arg_is_present = CommandLineArgs::getGlobal().get<bool>(key, false);
 			value = arg_is_present;
+			CommandLineArgs::getGlobal().registerCommand(key, description, "disabled");
 		}
 	};
 
@@ -143,11 +189,12 @@ namespace sibr
 	template<typename T>
 	class RequiredArgBase {
 	public:
-		RequiredArgBase(const std::string & _key) : key(_key) {
-			if (getCommandLineArgs().contains(key)) {
-				value = getCommandLineArgs().get<T>(key, value);
+		RequiredArgBase(const std::string & _key, const std::string & description = "") : key(_key) {
+			if (CommandLineArgs::getGlobal().contains(key)) {
+				value = CommandLineArgs::getGlobal().get<T>(key, value);
 				wasInit = true;
 			}
+			CommandLineArgs::getGlobal().registerRequiredCommand(key, description);
 		}
 
 		operator const T &() const { checkInit(); return value; }
@@ -158,7 +205,8 @@ namespace sibr
 	protected:
 		void checkInit() const {
 			if (!wasInit) {
-				SIBR_ERR << "arg <" << key << "> is required " << std::endl;
+				CommandLineArgs::getGlobal().displayHelp();
+				SIBR_ERR << "Argument \"" << key << "\" is required." << std::endl;
 			}
 		}
 
@@ -201,22 +249,24 @@ namespace sibr
 	///		Arg<int> myParameter = { "my-arg", some_default_value };
 	///		RequiredArg<std::string> myRequiredParameter = { "important-param" };
 	/// }
-
 	struct SIBR_SYSTEM_EXPORT AppArgs {
 		AppArgs();
 
 		std::string appName;
 		std::string appPath;
-		Arg<std::string> custom_app_path = { "appPath", "./" };
+		Arg<std::string> custom_app_path = { "appPath", "./", "define a custom app path" };
+		Arg<bool> showHelp = {"help", "display this help message"};
+
+		void displayHelpIfRequired() const;
 	};
 
 	struct SIBR_SYSTEM_EXPORT WindowArgs {
-		Arg<int> win_width = { "width", 720 };
-		Arg<int> win_height = { "height", 480 };
-		Arg<int> vsync = { "vsync", 1 };
-		Arg<bool> fullscreen = { "fullscreen" };
-		Arg<bool> hdpi = { "hd" };
-		Arg<bool> no_gui = { "nogui" };
+		Arg<int> win_width = { "width", 720, "initial window width" };
+		Arg<int> win_height = { "height", 480, "initial window height" };
+		Arg<int> vsync = { "vsync", 1, "enable vertical sync" };
+		Arg<bool> fullscreen = { "fullscreen", "set the window to fullscreen" };
+		Arg<bool> hdpi = { "hd", "rescale UI elements for high-density screens" };
+		Arg<bool> no_gui = { "nogui", "do not use ImGui" };
 	};
 
 	struct SIBR_SYSTEM_EXPORT WindowAppArgs :
@@ -224,16 +274,16 @@ namespace sibr
 	};
 
 	struct SIBR_SYSTEM_EXPORT RenderingArgs {
-		Arg<std::string> scene_metadata_filename = { "scene", "scene_metadata.txt" };
-		Arg<Vector2i> rendering_size = { "rendering-size", { 0, 0 } };
-		Arg<int> texture_width = { "texture-width", 0 };
+		Arg<std::string> scene_metadata_filename = { "scene", "scene_metadata.txt", "scene metadata file" };
+		Arg<Vector2i> rendering_size = { "rendering-size", { 0, 0 }, "size at which rendering is performed" };
+		Arg<int> texture_width = { "texture-width", 0 , "size of the input data in memory"};
 		Arg<float> texture_ratio = { "texture-ratio", 1.0f };
-		Arg<int> rendering_mode = { "rendering-mode", RENDERMODE_MONO };
+		Arg<int> rendering_mode = { "rendering-mode", RENDERMODE_MONO, "select mono (0) or stereo (1) rendering mode" };
 		Arg<sibr::Vector3f> focal_pt = { "focal-pt", {0.0f, 0.0f, 0.0f} };
 	};
 
 	struct SIBR_SYSTEM_EXPORT BasicDatasetArgs {
-		RequiredArg<std::string> dataset_path = { "path" };
+		RequiredArg<std::string> dataset_path = { "path", "path to the dataset root" };
 	};
 
 	struct SIBR_SYSTEM_EXPORT BasicIBRAppArgs :
@@ -247,12 +297,18 @@ namespace sibr
 		static std::string get(const std::vector<std::string> & values, uint n) {
 			return values[n];
 		}
+		static std::string toString(const std::string & value) {
+			return "\"" + value + "\"";
+		}
 	};
 
 	template<>
 	struct ValueGetter<bool> {
 		static bool get(const std::vector<std::string> & values, uint n) {
 			return true;
+		}
+		static std::string toString(const bool & value) {
+			return value ? "true" : "false";
 		}
 	};
 
@@ -261,12 +317,18 @@ namespace sibr
 		static double get(const std::vector<std::string> & values, uint n) {
 			return std::stod(values[n]);
 		}
+		static std::string toString(const double & value) {
+			return std::to_string(value);
+		}
 	};
 
 	template<>
 	struct ValueGetter<float> {
 		static float get(const std::vector<std::string> & values, uint n) {
 			return std::stof(values[n]);
+		}
+		static std::string toString(const float & value) {
+			return std::to_string(value);
 		}
 	};
 
@@ -275,6 +337,9 @@ namespace sibr
 		static int get(const std::vector<std::string> & values, uint n) {
 			return std::stoi(values[n]);
 		}
+		static std::string toString(const int & value) {
+			return std::to_string(value);
+		}
 	};
 
 	template<>
@@ -282,12 +347,18 @@ namespace sibr
 		static char get(const std::vector<std::string> & values, uint n) {
 			return static_cast<char>(std::stoi(values[n]));
 		}
+		static std::string toString(const char & value) {
+			return std::to_string(value);
+		}
 	};
 
 	template<>
 	struct ValueGetter<uint> {
 		static uint get(const std::vector<std::string> & values, uint n) {
 			return static_cast<uint>(std::stoi(values[n]));
+		}
+		static std::string toString(const uint & value) {
+			return std::to_string(value);
 		}
 	};
 
@@ -300,6 +371,16 @@ namespace sibr
 			}
 			return out;
 		}
+		static std::string toString(const std::array<T, N> & value) {
+			std::string res = "(";
+			for (uint i = 0; i < N; ++i) {
+				res.append(ValueGetter<T>::toString(value[i]));
+				if (i != N - 1) {
+					res.append(",");
+				}
+			}
+			return res + ")";
+		}
 	};
 
 
@@ -311,6 +392,16 @@ namespace sibr
 				out[i] = ValueGetter<T>::get(values, n*N*NumberOfArg<T> + i);
 			}
 			return out;
+		}
+		static std::string toString(const sibr::Vector<T, N> & value) {
+			std::string res = "(";
+			for (uint i = 0; i < N; ++i) {
+				res.append(ValueGetter<T>::toString(value[i]));
+				if(i != N-1) {
+					res.append(",");
+				}
+			}
+			return res + ")";
 		}
 	};
 
