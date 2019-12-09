@@ -15,7 +15,7 @@ namespace sibr {
 			file.close();
 			xmlString = std::move(std::string(buffer.str()));
 			this->parse<0>(&xmlString[0]);
-			std::cout << "succes " << std::endl;
+			std::cout << "success " << std::endl;
 		}
 		else {
 			std::cout << "error, cant open file " << std::endl;
