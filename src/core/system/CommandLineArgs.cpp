@@ -11,7 +11,7 @@ namespace sibr
 		return CommandLineArgs::getGlobal();
 	}
 
-	const CommandLineArgs & CommandLineArgs::getGlobal()
+	CommandLineArgs & CommandLineArgs::getGlobal()
 	{
 		static bool first = true;
 		if (!global.init && first) {
@@ -29,7 +29,7 @@ namespace sibr
 
 		global.args["app_path"] = { std::string(argv[0])};
 
-		std::string current_arg = "";
+		std::string current_arg;
 		for (int i = 1; i < argc; ++i) {
 			std::string arg = std::string(argv[i]);
 			bool new_arg = false;
@@ -40,12 +40,12 @@ namespace sibr
 					break;
 				}
 			}
-			if (current_arg == "") {
+			if (current_arg.empty()) {
 				continue;
 			}
 			if (new_arg) {
 				if (global.args.count(current_arg) > 0) {
-					SIBR_WRG << "collision for argument : " << arg << std::endl;
+					SIBR_WRG << "Collision for argument : " << arg << std::endl;
 				} else {
 					global.args[current_arg] = {};
 				}				
@@ -71,11 +71,50 @@ namespace sibr
 		}
 	}
 
+	void CommandLineArgs::displayHelp() const {
+		// Find the maximum length.
+		size_t maxLength = 0;
+		for (const auto & command : commands) {
+			maxLength = std::max(maxLength, command.first.size());
+		}
+
+		const Path path = args.at("app_path")[0];
+		SIBR_LOG << "Help for " << path.filename().string() << ":" << std::endl;
+		for(const auto & command : commands) {
+			std::cout << "\t" << "--" << command.first;
+			// Pad to align everything.
+			std::cout << std::string(int(maxLength) - command.first.size() + 1, ' ');
+			std::cout << command.second << std::endl;
+		}
+		std::cout << std::endl;
+	}
+	
+	void CommandLineArgs::registerCommand(const std::string & key, const std::string & description, const std::string & defaultValue) {
+		// Register the command.
+		std::string defaultDesc = description.empty() ? "" : " ";
+		defaultDesc.append("(default: " + defaultValue + ")");
+		commands[key] = description + defaultDesc;
+	}
+
+	void CommandLineArgs::registerRequiredCommand(const std::string & key, const std::string & description) {
+		// Register the command.
+		std::string defaultDesc = description.empty() ? "" : " ";
+		defaultDesc.append("[required]");
+		commands[key] = description + defaultDesc;
+	}
+
+
 	AppArgs::AppArgs()
 	{
-		Path path = getCommandLineArgs().getRequired<std::string>("app_path");
+		Path path = CommandLineArgs::getGlobal().getRequired<std::string>("app_path");
 		appName = path.filename().string();
 		appPath = path.parent_path().string();
+	}
+
+	void AppArgs::displayHelpIfRequired() const {
+		if(showHelp.get()) {
+			getCommandLineArgs().displayHelp();
+		}
 	}
 
 } // namespace sirb

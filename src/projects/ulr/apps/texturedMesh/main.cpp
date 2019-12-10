@@ -16,8 +16,8 @@ const char* usage = ""
 
 struct TexturedMeshAppArgs :
 	virtual BasicIBRAppArgs {
-	Arg<std::string> textureImagePath = { "texture", "" };
-	Arg<std::string> meshPath = { "mesh", "" };
+	Arg<std::string> textureImagePath = { "texture", "" ,"texture path"};
+	Arg<std::string> meshPath = { "mesh", "", "mesh path" };
 };
 
 int main( int ac, char** av )
