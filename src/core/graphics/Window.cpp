@@ -236,9 +236,11 @@ namespace sibr
 		glfwSetCursorPosCallback(_glfwWin.get(), glfwCursorPosCallback);
 		glfwSetWindowSizeCallback(_glfwWin.get(), glfwResizeCallback);
 
-		// SR: we don't use it because you won't get callstack/file/line info.
-		// glEnable(GL_DEBUG_OUTPUT);
-		// glDebugMessageCallback(glErrorCallback, nullptr);
+		// SR: we don't use it by default because you won't get callstack/file/line info.
+		if(args.gl_debug) {
+			glEnable(GL_DEBUG_OUTPUT);
+			glDebugMessageCallback(glErrorCallback, nullptr);
+		}
 
 		//contextId
 		++Window::contextId;
