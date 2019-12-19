@@ -619,7 +619,7 @@ namespace sibr {
 				const bool saveFrameOld = _saveFrameDebug;
 				ImGui::Checkbox("Save frames (from playing)", (&_saveFrameDebug));
 				if (_saveFrameDebug && !saveFrameOld) {
-					if (sibr::showFilePicker(selectedFile, Save)) {
+					if (sibr::showFilePicker(selectedFile, Directory)) {
 						if (!selectedFile.empty()) {
 							_cameraRecorder.saving(selectedFile + "/");
 							_cameraRecorder.frameDebug(_saveFrameDebug);

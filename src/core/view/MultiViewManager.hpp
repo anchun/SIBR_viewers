@@ -92,7 +92,7 @@ namespace sibr
 						const ImGuiWindowFlags flags = 0);
 
 		/**
-		* \brief Register a standard subview (for instance a SceneDebugView). It will be rendered via a call to onRender(Viewport).
+		* \brief Register a standard subview (for instance a SceneDebugView). It will be rendered via a call to onRender(Viewport) in an implicit rendertarget managed by the MVM.
 		* \param title the title of the view.
 		* \param view a pointer to the view.
 		* \param updateFunc the function that will be called to update your view.
@@ -109,7 +109,7 @@ namespace sibr
 			const ImGuiWindowFlags flags = 0);
 
 		/**
-		* \brief Register an IBR subview (for instance an ULRView). It will be rendered via a call to onRenderIBR(rt,cam).
+		* \brief Register an IBR subview (for instance an ULRView). It will be rendered via a call to onRenderIBR(rt,cam,dst).
 		* \param title the title of the view.
 		* \param view a pointer to the view.
 		* \param res a custom resolution used for the internal rendering. If null, the default value is used.
@@ -120,7 +120,7 @@ namespace sibr
 						const ImGuiWindowFlags flags = 0);
 
 		/**
-		* \brief Register an IBR subview (for instance an ULRView). It will be rendered via a call to onRenderIBR(rt,cam).
+		* \brief Register an IBR subview (for instance an ULRView). It will be rendered via a call to onRenderIBR(rt,cam,dst).
 		* \param title the title of the view.
 		* \param view a pointer to the view.
 		* \param updateFunc the function that will be called to update your view.

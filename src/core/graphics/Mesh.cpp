@@ -1726,6 +1726,7 @@ namespace sibr
 
 		struct Edge {
 			sibr::Vector3f midPoint;
+			sibr::Vector3f midNormal;
 			std::vector<int> triangles_ids;
 			float length;
 			int v_ids[2];
@@ -1750,10 +1751,15 @@ namespace sibr
 				int v0 = t[k];
 				int v1 = t[(k + 1) % 3];
 				sibr::Vector3f midPoint = 0.5f*(vertices()[v0] + vertices()[v1]);
+				sibr::Vector3f midNormal(0.0f, 0.0f, 0.0f);
+				if(hasNormals()) {
+					midNormal = (0.5f*(normals()[v0] + normals()[v1])).normalized();
+				}
+				
 				float length = (vertices()[v0] - vertices()[v1]).norm();
 				if (mapEdges.count(midPoint) == 0) {
 					mapEdges[midPoint] = e_id;
-					Edge edge = { midPoint, {t_id}, length, {v0,v1} };
+					Edge edge = { midPoint, midNormal,{t_id}, length, {v0,v1} };
 					tris[t_id].edges_ids[k] = e_id;
 					edges.push_back(edge);
 					++e_id;
@@ -1772,6 +1778,7 @@ namespace sibr
 
 		int nOldVertices = (int)vertices().size();
 		sibr::Mesh::Vertices newVertices = vertices();
+		sibr::Mesh::Normals newNormals = normals();
 
 		std::vector<int> edge_to_divided_edges(edges.size(), -1);
 
@@ -1799,6 +1806,7 @@ namespace sibr
 					if (edge_to_divided_edges[e_id] < 0) {
 						edge_to_divided_edges[e_id] = num_divided_edges;
 						newVertices.push_back(edges[e_id].midPoint);
+						newNormals.push_back(edges[e_id].midNormal);
 						++num_divided_edges;
 					}
 
@@ -1853,6 +1861,9 @@ namespace sibr
 
 
 		subMeshPtr->vertices(newVertices);
+		if (hasNormals()) {
+			subMeshPtr->normals(newNormals);
+		}
 		subMeshPtr->triangles(newTriangles);
 
 		if (num_divided_edges > 0) {
