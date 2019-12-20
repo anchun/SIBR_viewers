@@ -267,6 +267,7 @@ namespace sibr
 		Arg<bool> fullscreen = { "fullscreen", "set the window to fullscreen" };
 		Arg<bool> hdpi = { "hd", "rescale UI elements for high-density screens" };
 		Arg<bool> no_gui = { "nogui", "do not use ImGui" };
+		Arg<bool> gl_debug = { "gldebug", "enable OpenGL error callback" };
 	};
 
 	struct SIBR_SYSTEM_EXPORT WindowAppArgs :
