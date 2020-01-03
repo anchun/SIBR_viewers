@@ -715,7 +715,7 @@ namespace sibr
 		bundle_file >> numImages;	// read first value (number of images)
 		getline(bundle_file, line);	// ignore the rest of the line
 
-		// Read all filenames
+									// Read all filenames
 		struct ImgInfos
 		{
 			std::string name;
@@ -753,6 +753,95 @@ namespace sibr
 			cameras[infosId].znear(zNear); cameras[infosId].zfar(zFar);
 
 			++infosId;
+		}
+
+		return cameras;
+	}
+
+	std::vector<InputCamera> InputCamera::loadBundleFRIBR(const std::string& bundlerPath, float zNear, float zFar, const std::string& listImagePath)
+	{
+		SIBR_LOG << "Loading input cameras." << std::endl;
+
+		// check bundler file
+		std::ifstream bundle_file(bundlerPath);
+		if (!bundle_file.is_open()) {
+			SIBR_ERR << "Unable to load bundle file at path \"" << bundlerPath << "\"." << std::endl;
+			return {};
+		}
+
+
+		// read number of images
+		std::string line;
+		getline(bundle_file, line);	// ignore first line - contains version
+		int numImages = 0;
+		bundle_file >> numImages;	// read first value (number of images)
+		getline(bundle_file, line);	// ignore the rest of the line
+
+		std::vector<InputCamera> cameras(numImages);
+
+		Eigen::Matrix3f to_cv, converter;
+		to_cv << 1.0f, 0.0f, 0.0f,
+			0.0f, -1.0f, 0.0f,
+			0.0f, 0.0f, -1.0f;
+		converter <<
+			1, 0, 0,
+			0, -1, 0,
+			0, 0, -1;
+		//  Parse bundle.out file for camera calibration parameters
+		for (int i = 0; i < numImages; i++) {
+
+			float f, k1, k2;
+			bundle_file >> f >> k1 >> k2;
+
+			float r00, r01, r02;
+			float r10, r11, r12;
+			float r20, r21, r22;
+			bundle_file >> r00 >> r01 >> r02
+				>> r10 >> r11 >> r12
+				>> r20 >> r21 >> r22;
+
+			Eigen::Matrix3f rotation;
+			rotation(0, 0) = r00;
+			rotation(0, 1) = r01;
+			rotation(0, 2) = r02;
+			rotation(1, 0) = r10;
+			rotation(1, 1) = r11;
+			rotation(1, 2) = r12;
+			rotation(2, 0) = r20;
+			rotation(2, 1) = r21;
+			rotation(2, 2) = r22;
+
+			sibr::Matrix3f orientation = (to_cv * rotation).transpose();
+
+			float tx, ty, tz;
+			bundle_file >> tx >> ty >> tz;
+			sibr::Vector3f position = -orientation * (to_cv * Eigen::Vector3f(tx, ty, tz));
+
+			std::stringstream pad_stream;
+			pad_stream << std::setfill('0') << std::setw(10) << i - 2 << ".png";
+			std::string     image_path = sibr::parentDirectory(bundlerPath) + "/" + listImagePath + pad_stream.str();
+
+			sibr::Vector2u resolution(2, 2);
+			sibr::ImageRGB temp;
+			temp.load(image_path);
+			resolution = temp.size();
+
+			if (resolution.x() < 0 || resolution.y() < 0)
+			{
+				std::cerr << "Could not get resolution for calibrated camera: " << image_path << std::endl;
+				return {};
+			}
+
+			float dx = resolution.x() * 0.5f;
+			float dy = resolution.y() * 0.5f;
+
+			orientation = /*converter.transpose() **/ orientation * converter;
+			position = /*converter.transpose() **/ position;
+
+			cameras[i] = InputCamera(i, resolution.x(), resolution.y(), position, orientation, f, k1, k2, true);
+			cameras[i].name(pad_stream.str());
+			cameras[i].znear(zNear); cameras[i].zfar(zFar);
+
 		}
 
 		return cameras;

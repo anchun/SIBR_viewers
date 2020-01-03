@@ -239,7 +239,11 @@ namespace sibr
 		/// It allows handling instances used several times.
 		bool	loadMtsXML(const std::string& xmlFile, bool loadTextures = true);
 
-		void	fillColorsWithIndexMaterials(void);
+		/** Attribute a random color at each vertex based on the material IDs of the faces it belongs to. */
+		void	fillColorsWithIndexMaterials();
+
+		/** Store the material ID of each vertex in its color attribute (R: bits 0-7, G: 8-15, B: 16-23). */
+		void	fillColorsWithMatIds();
 
 
 		sibr::Mesh::Colors genAO(const int spp);

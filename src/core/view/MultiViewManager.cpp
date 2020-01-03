@@ -524,8 +524,33 @@ namespace sibr
 				if (ImGui::MenuItem("Metrics", "", _fpsCounter.active())) {
 					_fpsCounter.toggleVisibility();
 				}
+				if (ImGui::BeginMenu("Front when focus"))
+				{
+					for (auto & subview : _subViews) {
+						const bool isLockedInBackground = subview.second.flags & ImGuiWindowFlags_NoBringToFrontOnFocus;
+						if (ImGui::MenuItem(subview.first.c_str(), "", !isLockedInBackground)) {
+							if(isLockedInBackground) {
+								subview.second.flags &= ~ImGuiWindowFlags_NoBringToFrontOnFocus;
+							} else {
+								subview.second.flags |= ImGuiWindowFlags_NoBringToFrontOnFocus;
+							}
+						}
+					}
+					for (auto & subview : _ibrSubViews) {
+						const bool isLockedInBackground = subview.second.flags & ImGuiWindowFlags_NoBringToFrontOnFocus;
+						if (ImGui::MenuItem(subview.first.c_str(), "", !isLockedInBackground)) {
+							if (isLockedInBackground) {
+								subview.second.flags &= ~ImGuiWindowFlags_NoBringToFrontOnFocus;
+							} else {
+								subview.second.flags |= ImGuiWindowFlags_NoBringToFrontOnFocus;
+							}
+						}
+					}
+					ImGui::EndMenu();
+				}
 				ImGui::EndMenu();
 			}
+
 
 			if (ImGui::BeginMenu("Capture"))
 			{

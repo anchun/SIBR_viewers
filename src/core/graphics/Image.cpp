@@ -101,6 +101,23 @@ namespace sibr
 		return out;
 	}
 
+	sibr::ImageRGBA convertUV32FtoRGBA(const sibr::ImageUV32F & imgF)
+	{
+		sibr::ImageRGBA out(2 * imgF.w(), imgF.h());
+#pragma omp parallel for
+		for (int y = 0; y < int(imgF.h()); ++y) {
+			for (uint x = 0; x < imgF.w(); ++x) {
+				for (int k = 0; k < 2; k++) {
+					unsigned char const * p = reinterpret_cast<unsigned char const *>(&imgF(x, y)[k]);
+					for (std::size_t i = 0; i != sizeof(float); ++i) {
+						out(k*imgF.w() + x, y)[i] = p[i];
+					}
+				}
+			}
+		}
+		return out;
+	}
+
 
 	SIBR_GRAPHICS_EXPORT sibr::ImageRGB32F convertRGBAtoRGB32F(const sibr::ImageRGBA & imgRGBA)
 	{
@@ -109,6 +126,23 @@ namespace sibr
 		for (int y = 0; y < int(out.h()); ++y) {
 			for (uint x = 0; x < out.w(); ++x) {
 				for (int k = 0; k < 3; k++) {
+					unsigned char * p = reinterpret_cast<unsigned char *>(&out(x, y)[k]);
+					for (std::size_t i = 0; i != sizeof(float); ++i) {
+						p[i] = imgRGBA(k*out.w() + x, y)[i];
+					}
+				}
+			}
+		}
+		return out;
+	}
+
+	SIBR_GRAPHICS_EXPORT sibr::ImageUV32F convertRGBAtoUV32F(const sibr::ImageRGBA & imgRGBA)
+	{
+		sibr::ImageUV32F out(imgRGBA.w() / 2, imgRGBA.h());
+#pragma omp parallel for
+		for (int y = 0; y < int(out.h()); ++y) {
+			for (uint x = 0; x < out.w(); ++x) {
+				for (int k = 0; k < 2; k++) {
 					unsigned char * p = reinterpret_cast<unsigned char *>(&out(x, y)[k]);
 					for (std::size_t i = 0; i != sizeof(float); ++i) {
 						p[i] = imgRGBA(k*out.w() + x, y)[i];

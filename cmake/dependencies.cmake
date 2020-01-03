@@ -458,7 +458,7 @@ endif()
 
 ##############
 
-if (BUILD_PREPROCESS OR BUILD_IBR_VIDEO_BLENDING)
+if (BUILD_PREPROCESS OR BUILD_IBR_VIDEO_BLENDING OR BUILD_IBR_SYNTHETIC_IBR)
 	# libigl
     # message("libigl win3rdparty dir: ${Libigl_WIN3RDPARTY_DIR}")
     # set(Libigl_WIN3RDPARTY_DIR "libigl-master")
@@ -794,7 +794,7 @@ sibr_addlibrary(
     NAME OpenMeshCore
     MSVC11 "https://gforge.inria.fr/frs/download.php/file/37429/OpenMesh.7z"
     MSVC14 "https://gforge.inria.fr/frs/download.php/file/37429/OpenMesh.7z"     # TODO SV: provide a valid version if required
-    REQUIREDFOR BUILD_IBR_DEPTHMESHER
+    REQUIREDFOR BUILD_IBR_DEPTHMESHER OR BUILD_IBR_SYNTHETIC_IBR
 )
 
 sibr_addlibrary(

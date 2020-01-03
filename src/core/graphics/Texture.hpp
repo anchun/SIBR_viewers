@@ -94,6 +94,17 @@ namespace sibr
 			isdepth             = 0};
 	};
 
+	template <> class GLFormat<unsigned char, 2> {
+	public:
+		enum {
+			internal_format = GL_RG8,
+			format = GL_RG,
+			int_internal_format = GL_RG8UI,
+			int_format = GL_RG_INTEGER,
+			isdepth = 0
+		};
+	};
+
 	template <> class GLFormat<unsigned char,3> {
 	public:
 		enum {
@@ -162,6 +173,17 @@ namespace sibr
 			int_internal_format = -1,
 			int_format          = -1,
 			isdepth             =  0};
+	};
+
+	template <> class GLFormat<float, 2> {
+	public:
+		enum {
+			internal_format = GL_RG32F,
+			format = GL_RG,
+			int_internal_format = -1,
+			int_format = -1,
+			isdepth = 0
+		};
 	};
 
 	template <> class GLFormat<float,3> {
@@ -587,6 +609,7 @@ namespace sibr
 
 	typedef Texture2D<float,3>             Texture2DRGB32F;
 	typedef Texture2D<float,4>             Texture2DRGBA32F;
+	typedef Texture2D<float,2>             Texture2DUV32F;
 	typedef Texture2D<float,1>             Texture2DLum32F;
 
 	typedef RenderTarget<unsigned char,3>  RenderTargetRGB;
@@ -1407,6 +1430,7 @@ namespace sibr
 	// -----------------------------------------------------------------------
 
 	typedef Texture2DArray<unsigned char, 1>     Texture2DArrayLum;
+	typedef Texture2DArray<unsigned char, 2>     Texture2DArrayUV;
 	typedef Texture2DArray<unsigned char, 3>     Texture2DArrayRGB;
 	typedef Texture2DArray<unsigned char, 4>     Texture2DArrayRGBA;
 
@@ -1417,6 +1441,7 @@ namespace sibr
 	typedef Texture2DArray<short, 2>             Texture2DArrayUV16s;
 
 	typedef Texture2DArray<float, 1>             Texture2DArrayLum32F;
+	typedef Texture2DArray<float, 2>             Texture2DArrayUV32F;
 	typedef Texture2DArray<float, 3>             Texture2DArrayRGB32F;
 	typedef Texture2DArray<float, 4>             Texture2DArrayRGBA32F;
 

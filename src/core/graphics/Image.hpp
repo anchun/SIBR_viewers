@@ -944,6 +944,7 @@ namespace sibr
 	typedef Image<float, 1>         ImageL32F;
 	typedef Image<float, 1>         ImageFloat1;
 	typedef Image<float, 2>         ImageFloat2;
+	typedef Image<float, 2>         ImageUV32F;
 	//typedef Image<half,3>          ImageRGB16F;
 	//typedef Image<half,4>          ImageRGBA16F;
 	//typedef Image<half,1>          ImageL16F;
@@ -954,6 +955,7 @@ namespace sibr
 	typedef Image<double, 4>        ImageDouble4;
 
 	typedef Image<int, 1>        ImageInt1;
+	typedef Image<int, 2>        ImageInt2;
 
 	/**
 	*convert a 1 channel 32 bits into a 4 channels 8 bits, useful to save float maps as png, and such get png compression for free
@@ -966,9 +968,12 @@ namespace sibr
 	SIBR_GRAPHICS_EXPORT sibr::ImageL32F convertRGBAtoL32F(const sibr::ImageRGBA  & imgRGBA);
 
 	SIBR_GRAPHICS_EXPORT sibr::ImageRGBA convertRGB32FtoRGBA(const sibr::ImageRGB32F & imgF);
-	//SIBR_GRAPHICS_EXPORT sibr::ImageRGBA convertRGB32FtoRGBA_2(const sibr::ImageRGB32F & imgF);
 
 	SIBR_GRAPHICS_EXPORT sibr::ImageRGB32F convertRGBAtoRGB32F(const sibr::ImageRGBA & imgF);
+
+	SIBR_GRAPHICS_EXPORT sibr::ImageRGBA convertUV32FtoRGBA(const sibr::ImageUV32F & imgF);
+
+	SIBR_GRAPHICS_EXPORT sibr::ImageUV32F convertRGBAtoUV32F(const sibr::ImageRGBA & imgF);
 
 	/**
 	*convert a normal map 3 channels bits into 2 channels 16 bits as 4 channels 8 bits, keeping theta and phi as half float
