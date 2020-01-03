@@ -30,7 +30,8 @@ int main(int ac, char** av) {
 	// Parse Commad-line Args
 	CommandLineArgs::parseMainArgs(ac, av);
 	ULRAppArgs myArgs;
-	
+	myArgs.displayHelpIfRequired();
+
 	if (myArgs.version == 2) {
 		return legacyV2main(myArgs);
 	}

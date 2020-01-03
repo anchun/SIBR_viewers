@@ -856,13 +856,16 @@ sibr_addlibrary(
 
 
 if (BUILD_IBR_TFGL_INTEROP)
+ 	find_package(CUDA REQUIRED)
+	## Select the right version of the library based on the version of CUDA
+	SET(SIBR_TF_CUDA_PATH "https://gforge.inria.fr/frs/download.php/file/37881/tfinterop.7z" INTERNAL)
+	if(CUDA_VERSION_MAJOR GREATER_EQUAL 10)
+		SET(SIBR_TF_CUDA_PATH "https://gforge.inria.fr/frs/download.php/file/38123/tfinterop_cuda10.7z" INTERNAL)
+	endif()
     sibr_addlibrary(
         NAME tfgl_interop
         MSVC11 "https://gforge.inria.fr/frs/download.php/file/37881/tfinterop.7z"
-        #MSVC14 "https://gforge.inria.fr/frs/download.php/file/37881/tfinterop.7z"  
-        # If you need CUDA10, you can use this version instead.
-        # TODO: find a way to check the CUDA version automatically, looking at CUDA_VERSION.
-        MSVC14 "https://gforge.inria.fr/frs/download.php/file/38123/tfinterop_cuda10.7z"
+        MSVC14 "${SIBR_TF_CUDA_PATH}"
         REQUIREDFOR BUILD_IBR_TFGL_INTEROP
     )
 endif()

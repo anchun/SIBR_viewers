@@ -20,7 +20,7 @@
 
 namespace sibr
 {
-	bool		Mesh::saveToObj(const std::string& filename, bool universal)  const
+	bool		Mesh::saveToObj(const std::string& filename)  const
 	{
 		aiScene scene;
 		scene.mRootNode = new aiNode();
@@ -43,17 +43,26 @@ namespace sibr
 
 		auto pMesh = scene.mMeshes[0];
 
-		const auto& vVertices = _vertices;
+		const auto& vVertices = _vertices; 
 
 		pMesh->mVertices = new aiVector3D[vVertices.size()];
-		pMesh->mNormals = new aiVector3D[vVertices.size()];
 		pMesh->mNumVertices = static_cast<unsigned int>(vVertices.size());
 
-		pMesh->mTextureCoords[0] = new aiVector3D[vVertices.size()];
-		pMesh->mNumUVComponents[0] = static_cast<unsigned int>(vVertices.size());
-
+		if(hasNormals()) {
+			pMesh->mNormals = new aiVector3D[vVertices.size()];
+		} else {
+			pMesh->mNormals = nullptr;
+		}
+		
+		if (hasTexCoords()) {
+			pMesh->mTextureCoords[0] = new aiVector3D[vVertices.size()];
+			pMesh->mNumUVComponents[0] = 2;
+		} else {
+			pMesh->mTextureCoords[0] = nullptr;
+			pMesh->mNumUVComponents[0] =0;
+		}
+		
 		int j = 0;
-		SIBR_LOG << "Has normals " << hasNormals() << " has textures " << hasTexCoords() << std::endl;
 		for (auto itr = vVertices.begin(); itr != vVertices.end(); ++itr)
 		{
 			pMesh->mVertices[itr - vVertices.begin()] = aiVector3D(vVertices[j].x(), vVertices[j].y(), vVertices[j].z());
@@ -588,15 +597,22 @@ namespace sibr
 		// This function is a just a switch (so we can change format details
 		// internally).
 
-		// If you encounter problem with the resulting mesh, you can switch
-		// to the ASCII version for easy reading
-		// Meshlab does not support uint16 colors, if you want see you mesh in such
-		// program, set 'universal' = true
-
-		if (universal)
-			saveToASCIIPLY(filename, true);
-		else
-			saveToBinaryPLY(filename, false);
+		const std::string ext = sibr::getExtension(filename);
+		if(ext == "obj") {
+			saveToObj(filename);
+		} else {
+			// If you encounter problem with the resulting mesh, you can switch
+			// to the ASCII version for easy reading
+			// Meshlab does not support uint16 colors, if you want to use the mesh in such
+			// program, set 'universal' = true
+			if (universal) {
+				saveToASCIIPLY(filename, true);
+			}
+			else {
+				saveToBinaryPLY(filename, false);
+			}
+		}
+		
 	}
 
 	void	Mesh::vertices(const std::vector<float>& vertices)
@@ -1803,6 +1819,7 @@ namespace sibr
 
 		struct Edge {
 			sibr::Vector3f midPoint;
+			sibr::Vector3f midNormal;
 			std::vector<int> triangles_ids;
 			float length;
 			int v_ids[2];
@@ -1827,10 +1844,15 @@ namespace sibr
 				int v0 = t[k];
 				int v1 = t[(k + 1) % 3];
 				sibr::Vector3f midPoint = 0.5f*(vertices()[v0] + vertices()[v1]);
+				sibr::Vector3f midNormal(0.0f, 0.0f, 0.0f);
+				if(hasNormals()) {
+					midNormal = (0.5f*(normals()[v0] + normals()[v1])).normalized();
+				}
+				
 				float length = (vertices()[v0] - vertices()[v1]).norm();
 				if (mapEdges.count(midPoint) == 0) {
 					mapEdges[midPoint] = e_id;
-					Edge edge = { midPoint, {t_id}, length, {v0,v1} };
+					Edge edge = { midPoint, midNormal,{t_id}, length, {v0,v1} };
 					tris[t_id].edges_ids[k] = e_id;
 					edges.push_back(edge);
 					++e_id;
@@ -1849,6 +1871,7 @@ namespace sibr
 
 		int nOldVertices = (int)vertices().size();
 		sibr::Mesh::Vertices newVertices = vertices();
+		sibr::Mesh::Normals newNormals = normals();
 
 		std::vector<int> edge_to_divided_edges(edges.size(), -1);
 
@@ -1876,6 +1899,7 @@ namespace sibr
 					if (edge_to_divided_edges[e_id] < 0) {
 						edge_to_divided_edges[e_id] = num_divided_edges;
 						newVertices.push_back(edges[e_id].midPoint);
+						newNormals.push_back(edges[e_id].midNormal);
 						++num_divided_edges;
 					}
 
@@ -1930,6 +1954,9 @@ namespace sibr
 
 
 		subMeshPtr->vertices(newVertices);
+		if (hasNormals()) {
+			subMeshPtr->normals(newNormals);
+		}
 		subMeshPtr->triangles(newTriangles);
 
 		if (num_divided_edges > 0) {

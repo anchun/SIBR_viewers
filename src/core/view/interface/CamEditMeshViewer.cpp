@@ -325,6 +325,12 @@ void sibr::CamEditMeshViewer::onGUI() {
 				//load();
 				SIBR_WRG << "Uninmplemented for now." << std::endl;
 			}
+			if (ImGui::Button("Set output directory")) {
+				std::string output;
+				if(sibr::showFilePicker(output, Directory, _outputPath) && !output.empty()) {
+					_outputPath = output;
+				}
+			}
 			if (ImGui::CollapsingHeader("Parameters")) {
 				ImGui::InputFloat("Size of cameras", &_scaleCam, 0.4f, 128.f);
 				ImGui::InputInt("Number of interpolations",

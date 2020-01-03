@@ -183,18 +183,6 @@ namespace sibr
 		_viewport = view;
 	}
 
-	struct SIBR_GRAPHICS_EXPORT WindowTest {
-
-		GLFWwindow *		_glfwWin;
-
-		WindowTest(int width, int height, const std::string& title, bool fullScreen, bool doVSync, bool useGUI);
-
-		void setup(int width, int height, const std::string& title, bool fullScreen, bool doVSync, bool useGUI);
-
-		GLFWwindow * GLFW(void);
-
-
-	};
 
 } // namespace sibr
 
