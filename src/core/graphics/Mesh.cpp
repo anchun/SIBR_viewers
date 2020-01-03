@@ -322,7 +322,7 @@ namespace sibr
 		}
 		Assimp::Importer	importer;
 		//importer.SetPropertyBool(AI_CONFIG_PP_FD_REMOVE, true); // cause Assimp to remove all degenerated faces as soon as they are detected
-		const aiScene* scene = importer.ReadFile(filename,  aiProcess_Triangulate | aiProcess_JoinIdenticalVertices | aiProcess_FindDegenerates);
+		const aiScene* scene = importer.ReadFile(filename, aiProcess_Triangulate | aiProcess_JoinIdenticalVertices | aiProcess_FindDegenerates);
 
 		if (!scene)
 		{
@@ -981,6 +981,99 @@ namespace sibr
 		}
 	}
 
+	void Mesh::adaptativeTaubinSmoothing(int numIter, bool updateNormals) {
+
+		if (numIter < 1) {
+			return;
+		}
+
+		/// Build neighbors information.
+		/// \todo TODO: we could also detect vertices on the edges of the mesh to preserve their positions.
+		std::vector<std::set<unsigned>> neighbors(_vertices.size());
+		std::map<int, std::map<int, std::set<float>>> cotanW;
+		for (const sibr::Vector3u & tri : _triangles) {
+			neighbors[tri[0]].emplace(tri[1]);
+			neighbors[tri[0]].emplace(tri[2]);
+			neighbors[tri[1]].emplace(tri[0]);
+			neighbors[tri[1]].emplace(tri[2]);
+			neighbors[tri[2]].emplace(tri[1]);
+			neighbors[tri[2]].emplace(tri[0]);
+
+			std::vector<sibr::Vector3f> vs;
+			for (int i = 0; i < 3; i++)
+				vs.push_back(_vertices[tri[i]]);
+
+			for (int i = 0; i < 3; i++) {
+				float angle = acos((vs[i] - vs[(i + 2) % 3]).normalized().dot((vs[(i + 1) % 3] - vs[(i + 2) % 3]).normalized()));
+				cotanW[tri[i]][tri[(i + 1) % 3]].emplace(1.0f / (tan(angle) + 0.00001f));
+				cotanW[tri[(i + 1) % 3]][tri[i]].emplace(1.0f / (tan(angle) + 0.00001f));
+			}
+
+		}
+
+		/// Smooth by averaging.
+		const size_t verticesSize = _vertices.size();
+
+		std::vector<sibr::Vector3f> newColors(verticesSize);
+		for (int it = 0; it < numIter; ++it) {
+			std::vector<sibr::Vector3f> newVertices(verticesSize);
+#pragma omp parallel for
+			for (int vid = 0; vid < verticesSize; ++vid) {
+				sibr::Vector3f v = _vertices[vid];
+				sibr::Vector3f dtV = sibr::Vector3f(0.0f, 0.0f, 0.f);
+				float totalW = 0;
+
+				std::vector<sibr::Vector3f> colorsLocal;
+				colorsLocal.push_back(_colors[vid]);
+				for (const auto & ovid : neighbors[vid]) {
+					float w = 0;
+					for (const auto & cot : cotanW[vid][ovid]) {
+						w += 0.5*cot;
+					}
+					totalW += w;
+					dtV += w * _vertices[ovid];
+					colorsLocal.push_back(_colors[ovid]);
+				}
+
+				sibr::Vector3f meanColor;
+				for (const auto & c : colorsLocal) {
+					meanColor += c;
+				}
+				meanColor /= colorsLocal.size();
+				sibr::Vector3f varColor;
+				for (const auto & c : colorsLocal) {
+					pow(c.x() - meanColor.x(), 2);
+					varColor += sibr::Vector3f(pow(c.x() - meanColor.x(), 2), pow(c.y() - meanColor.y(), 2), pow(c.z() - meanColor.z(), 2));
+				}
+				varColor /= colorsLocal.size();
+
+				newColors[vid] = varColor;
+
+				if (totalW > 0) {
+					dtV /= totalW;
+					dtV = dtV - v;
+					if (it % 2 == 0) {
+						newVertices[vid] = v + 0.25*dtV;
+					}
+					else {
+						//newVertices[vid] = v - 0.47203*dtV;
+						newVertices[vid] = v + 0.25*dtV;
+					}
+				}
+				//newVertices[vid] += _vertices[vid];
+			}
+
+			vertices(newVertices);
+		}
+
+		colors(newColors);
+		if (updateNormals) {
+			generateNormals();
+		}
+	}
+
+
+
 	Mesh Mesh::generateSubMesh(std::function<bool(int)> func) const
 	{
 
@@ -1476,20 +1569,20 @@ namespace sibr
 		sibr::Mesh::Triangles tri;
 
 		int highLimit = 0, lowLimit = 0;
-		switch(part)
+		switch (part)
 		{
-			case PartOfSphere::WHOLE:
-				highLimit = 90;
-				lowLimit = -90;
-				break;
-			case PartOfSphere::UP:
-				highLimit = 90;
-				lowLimit = 0;
-				break;
-			case PartOfSphere::BOTTOM:
-				highLimit = 0;
-				lowLimit = -90;
-				break;
+		case PartOfSphere::WHOLE:
+			highLimit = 90;
+			lowLimit = -90;
+			break;
+		case PartOfSphere::UP:
+			highLimit = 90;
+			lowLimit = 0;
+			break;
+		case PartOfSphere::BOTTOM:
+			highLimit = 0;
+			lowLimit = -90;
+			break;
 		}
 
 		for (int lat = lowLimit; lat <= highLimit; lat++) {

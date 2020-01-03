@@ -148,6 +148,7 @@ namespace sibr
 		void	generateSmoothNormalsDisconnected(int numIter);
 
 		void laplacianSmoothing(int numIter, bool updateNormals);
+		void adaptativeTaubinSmoothing(int numIter, bool updateNormals);
 
 		/// Generate a new mesh given a boolean function that
 		/// state if a vertex should be kept or not

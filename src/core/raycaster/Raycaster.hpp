@@ -125,6 +125,8 @@ namespace sibr
 		/// \param hit intersection basic information
 		static sibr::Vector2f smoothUV(const sibr::Mesh & mesh, const RayHit & hit);
 
+		bool isInit() { return g_device && _scene; }
+
 	private: // STATIC //
 
 		/// Will be called by embree whenever an error occurs

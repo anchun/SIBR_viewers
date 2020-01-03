@@ -137,6 +137,23 @@ namespace sibr
 		*/
 		std::vector<sibr::Vector2i> getImageCorners() const;
 
+		/** Return a new camera resized to the specified height
+		*/
+		sibr::InputCamera resizedH(int h) const;
+		/** Return a new camera resized to the specified height
+		*/
+		sibr::InputCamera resizedW(int w) const;
+
+		/** Return the lookat string of the camera
+		*/
+		std::string lookatString() const;
+		/** save a vector of cameras as lookat
+		*/
+		static void saveAsLookat(const std::vector<sibr::InputCamera> & cams, const std::string & fileName);
+		/** save a vector of cameras sizes to a file to be read by mitsuba rendering script
+		*/
+		static void saveImageSizes(const std::vector<sibr::InputCamera> & cams, const std::string & fileName);
+
 
 		/** Save a vector of cameras as a bundle file
 		*/

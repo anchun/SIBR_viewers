@@ -69,6 +69,8 @@ namespace sibr
 		_name = "";
 	}
 
+
+
 	InputCamera::InputCamera(int id, int w, int h, sibr::Vector3f& position, sibr::Matrix3f& orientation, float focal, float k1, float k2, bool active) :
 		_active(active)
 	{
@@ -130,6 +132,54 @@ namespace sibr
 	float InputCamera::focal() const { return _focal; };
 	float InputCamera::k1() const { return _k1; };
 	float InputCamera::k2() const { return _k2; };
+
+	InputCamera InputCamera::resizedH(int h) const {
+
+		int w = _aspect * h;
+
+		float sibr_focal = h * _focal / _h;
+		float k1 = _k1;
+		float k2 = _k2;
+		int id = _id;
+
+		sibr::Matrix4f m;
+
+		sibr::InputCamera cam(sibr_focal, k1, k2, w, h, id);
+
+		cam.rotation(rotation());
+		cam.position(position());
+
+		cam.znear(znear());
+		cam.zfar(zfar());
+		cam.name(name());
+
+		return cam;
+	}
+
+	InputCamera InputCamera::resizedW(int w) const {
+
+		int h = float(w) / _aspect;
+
+		float sibr_focal = h * _focal / _h;
+		float k1 = _k1;
+		float k2 = _k2;
+		int id = _id;
+
+		sibr::Matrix4f m;
+
+		sibr::InputCamera cam(sibr_focal, k1, k2, w, h, id);
+
+		cam.rotation(rotation());
+		cam.position(position());
+
+		cam.znear(znear());
+		cam.zfar(zfar());
+		cam.name(name());
+
+		return cam;
+	}
+
+
 
 	std::vector<InputCamera> InputCamera::load(const std::string& datasetPath, float zNear, float zFar, const std::string& bundleName, const std::string& listName)
 	{
@@ -382,9 +432,10 @@ namespace sibr
 					std::cout << "Warning: Fovy not found, backing to Fovx mode" << std::endl;
 					fovPos = line.find("-D fov=") + 7;
 					use_fovx = true;
-				delta_fov = 8;
+					delta_fov = 8;
 				}
 				size_t clipPos = line.find("-D clip=") + 8;
+				size_t aspectPos = line.find("-D aspect=") + 10;
 				size_t endPos = line.size();
 
 				std::string originStr = line.substr(originPos, targetPos - originPos - 11);
@@ -463,6 +514,63 @@ namespace sibr
 		return cameras;
 
 	}
+
+	std::string InputCamera::lookatString() const {
+		std::string infos = std::string(" -D origin=") +
+			std::to_string(position()[0]) +
+			std::string(",") +
+			std::to_string(position()[1]) +
+			std::string(",") +
+			std::to_string(position()[2]) +
+			std::string(" -D target=") +
+			std::to_string(position()[0] +
+				dir()[0]) +
+			std::string(",") +
+			std::to_string(position()[1] +
+				dir()[1]) +
+			std::string(",") +
+			std::to_string(position()[2] +
+				dir()[2]) +
+			std::string(" -D up=") +
+			std::to_string(up()[0]) +
+			std::string(",") +
+			std::to_string(up()[1]) +
+			std::string(",") +
+			std::to_string(up()[2]) +
+			std::string(" -D fovy=") +
+			std::to_string(180 * fovy() / M_PI) +
+			std::string(" -D clip=") +
+			std::to_string(znear()) +
+			std::string(",") +
+			std::to_string(zfar()) +
+			std::string("\n");
+		return infos;
+	}
+
+	void InputCamera::saveAsLookat(const std::vector<sibr::InputCamera> & cams, const std::string & fileName) {
+
+		std::ofstream fileRender(fileName, std::ios::out | std::ios::trunc);
+		for (const auto & cam : cams) {
+
+			fileRender << cam.name() << cam.lookatString();
+		}
+
+		fileRender.close();
+	}
+	
+	void InputCamera::saveImageSizes(const std::vector<sibr::InputCamera> & cams, const std::string & fileName) {
+
+		std::ofstream fileRender(fileName, std::ios::out | std::ios::trunc);
+		for (const auto & cam : cams) {
+
+			fileRender << cam.w() << "x" << cam.h() << "\n";
+		}
+
+		fileRender.close();
+	}
+
+
+
 
 	std::vector<InputCamera> InputCamera::loadColmap(const std::string& colmapSparsePath, const float zNear, const float zFar)
 	{
