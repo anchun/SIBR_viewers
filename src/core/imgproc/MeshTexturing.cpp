@@ -207,7 +207,7 @@ namespace sibr {
 
 		SIBR_LOG << "[Texturing] Flood filling..." << std::endl;
 		// Perform filling.
-		// We need the zeros pixels marked as non zeros.
+		// We need the empty pixels marked as non zeros, and the filled marked as zeros.
 		cv::Mat1b flipMask = mask.toOpenCV();
 		flipMask = 255 - flipMask;
 		cv::Mat1f dummyDist(flipMask.rows, flipMask.cols, 0.0f);

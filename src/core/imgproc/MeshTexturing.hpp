@@ -50,15 +50,13 @@ namespace sibr {
 		*/
 		sibr::ImageRGB::Ptr getTexture(uint options = NONE) const;
 
-	private:
-
 		/** Performs flood fill of an image, following a mask.
 		* \param image the image to fill
 		* \param mask mask where the zeros regions will be filled
 		* \return the filled image.
 		*/
 		static sibr::ImageRGB32F::Ptr floodFill(const sibr::ImageRGB32F & image, const sibr::ImageL8 & mask);
-		
+
 		/** Performs poisson fill of an image, following a mask.
 		* \param image the image to fill
 		* \param mask mask where the zeros regions will be filled
@@ -66,6 +64,8 @@ namespace sibr {
 		* \warn This is slow for large images (>8k).
 		*/
 		static sibr::ImageRGB32F::Ptr poissonFill(const sibr::ImageRGB32F & image, const sibr::ImageL8 & mask);
+
+	private:
 
 		/** Test if the UV-space mesh covers a pixel of the texture map.
 		* \param px pixel x coordinate
