@@ -154,7 +154,7 @@ namespace sibr
 			"	colorsModified.y = lighter_ao;\n"
 			"	colorsModified.z = lighter_ao;\n"
 			"	opacityColor = texture(opacity,vec2(uvCoords.x,1.0-uvCoords.y));\n"
-			"	if (opacityColor.x < 0.1f && opacityColor.y < 0.1f && opacityColor.z < 0.1f ) discard;\n"
+			"	if (opacityColor.x < 0.1f || opacityColor.y < 0.1f || opacityColor.z < 0.1f ) discard;\n"
 			"							\n"
 			"							\n"
 			"	out_color = texture(tex,vec2(uvCoords.x,1.0-uvCoords.y));\n"
@@ -181,6 +181,7 @@ namespace sibr
 			"	out_color = out_color * vec4(colorsModified,1);\n}"
 			"	out_color = out_color * vec4(coeffLight,coeffLight,coeffLight,1);\n"
 			"	out_color = vec4(out_color.x,out_color.y,out_color.z,out_color.a);\n"
+			"	if (out_color.x < 0.01f && out_color.y < 0.01f && out_color.z < 0.01f) discard;		\n"
 			"}																	\n";
 
 	public:

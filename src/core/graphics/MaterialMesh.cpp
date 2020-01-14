@@ -1209,7 +1209,7 @@ namespace sibr
 			sibr::ImageRGBA::Ptr texturePtr = diffuseMap(*it);
 			if (texturePtr) {
 				_albedoTextures[i] = std::shared_ptr<sibr::Texture2DRGBA>(
-					new sibr::Texture2DRGBA(*texturePtr));
+					new sibr::Texture2DRGBA(*texturePtr,SIBR_GPU_LINEAR_SAMPLING));
 				_idTextures[i] = _albedoTextures[i]->handle();
 			}
 			else {
@@ -1221,7 +1221,7 @@ namespace sibr
 			sibr::ImageRGB::Ptr texturePtrOpacity = opacityMap(*it);
 			if (texturePtrOpacity && texturePtr) {
 				_opacityTextures[i] = std::shared_ptr<sibr::Texture2DRGB>(
-					new sibr::Texture2DRGB(*texturePtrOpacity));
+					new sibr::Texture2DRGB(*texturePtrOpacity,SIBR_GPU_LINEAR_SAMPLING));
 				_idTexturesOpacity[i] = _opacityTextures[i]->handle();
 			}
 			else {
@@ -1233,7 +1233,7 @@ namespace sibr
 			if (_hasTagsCoveringFile && _tagsCoveringMaps[*it]) {
 				sibr::ImageRGB::Ptr texturePtrTag = tagsCoveringMap(*it);
 				_tagsCoveringTexture[*it] = std::shared_ptr<sibr::Texture2DRGB>(
-					new sibr::Texture2DRGB(*texturePtrTag));
+					new sibr::Texture2DRGB(*texturePtrTag,SIBR_GPU_LINEAR_SAMPLING));
 				_idTagsCoveringTexture[*it] = _tagsCoveringTexture[*it]->handle();
 			}
 
@@ -1244,7 +1244,7 @@ namespace sibr
 		if (_hasTagsFile) {
 			sibr::ImageRGB::Ptr texturePtr = _tagsMap;
 			_tagTexture = std::shared_ptr<sibr::Texture2DRGB>(
-				new sibr::Texture2DRGB(*texturePtr));
+				new sibr::Texture2DRGB(*texturePtr,SIBR_GPU_LINEAR_SAMPLING));
 			_idTagTexture = _tagTexture->handle();
 		}
 
