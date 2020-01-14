@@ -201,50 +201,6 @@ namespace sibr {
 		return filled;
 	}
 
-	sibr::ImageRGB32F::Ptr MeshTexturing::floodFill(const sibr::ImageRGB32F & image, const sibr::ImageL8 & mask) {
-
-		ImageRGB32F::Ptr filled(new ImageRGB32F(image.w(), image.h()));
-
-		SIBR_LOG << "[Texturing] Flood filling..." << std::endl;
-		// Perform filling.
-		// We need the empty pixels marked as non zeros, and the filled marked as zeros.
-		cv::Mat1b flipMask = mask.toOpenCV();
-		flipMask = 255 - flipMask;
-		cv::Mat1f dummyDist(flipMask.rows, flipMask.cols, 0.0f);
-		cv::Mat1i labels(flipMask.rows, flipMask.cols, 0);
-
-		// Run distance transform to obtain the IDs.
-		cv::distanceTransform(flipMask, dummyDist, labels, cv::DIST_L2, cv::DIST_MASK_5, cv::DIST_LABEL_PIXEL);
-
-		// Build a pixel ID to source pixel table, using the pixels in the mask.
-		const sibr::Vector2i basePos(-1, -1);
-		std::vector<sibr::Vector2i> colorTable(flipMask.rows*flipMask.cols, basePos);
-#pragma omp parallel
-		for (int py = 0; py < flipMask.rows; ++py) {
-			for (int px = 0; px < flipMask.cols; ++px) {
-				if (flipMask(py, px) != 0) {
-					continue;
-				}
-				const int label = labels(py, px);
-				colorTable[label] = { px,py };
-			}
-		}
-
-		// Now we can turn the label image into a color image again.
-#pragma omp parallel
-		for (int py = 0; py < flipMask.rows; ++py) {
-			for (int px = 0; px < flipMask.cols; ++px) {
-				// Don't touch existing pixels.
-				if (flipMask(py, px) == 0) {
-					filled(px, py) = image(px, py);
-					continue;
-				}
-				const int label = labels(py, px);
-				filled(px, py) = image(colorTable[label]);
-			}
-		}
-		return filled;
-	}
 
 	bool MeshTexturing::hitTest(int px, int py, RayHit & finalHit)
 	{
