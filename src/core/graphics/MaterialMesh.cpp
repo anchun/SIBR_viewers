@@ -302,7 +302,7 @@ namespace sibr
 						// If the mesh has normals, we should transform them also.
 						if (toWorldMesh.hasNormals()) {
 							sibr::Mesh::Normals normals;
-							const sibr::Matrix4f m1Inv = m1.inverse().transpose();
+							const sibr::Matrix4f m1Inv = (m2*m1).inverse().transpose();
 							for (int v = 0; v < toWorldMesh.normals().size(); v++) {
 								const sibr::Vector3f & ln = toWorldMesh.normals()[v];
 								sibr::Vector4f n4(ln[0], ln[1], ln[2], 1.0);
