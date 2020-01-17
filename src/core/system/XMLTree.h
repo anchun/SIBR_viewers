@@ -20,6 +20,8 @@ namespace sibr {
 
 		~XMLTree(void);
 
+		bool save(const std::string & filePath) const;
+
 	private:
 		std::string xmlString;
 	};
