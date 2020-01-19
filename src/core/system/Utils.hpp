@@ -19,7 +19,7 @@ namespace sibr
 	/** Create directory (if it doesn't exist already) */
 	SIBR_SYSTEM_EXPORT void			makeDirectory( const std::string& path );
 
-	/**List content of directory. */
+	/**List content of directory, sorted alphabetically. */
 	SIBR_SYSTEM_EXPORT std::vector<std::string>	listFiles(const std::string & path, const bool listHidden = false, const bool includeSubdirectories = false, const std::vector<std::string> & allowedExtensions = {});
 
 	/**List content of directory, including subdirectories. */
