@@ -16,8 +16,8 @@ namespace sibr {
 
 	  class LightSphere {
 	  public:
-		  LightSphere(const sibr::Vector3f position, const float radius
-		  , const float radiance) :
+		  LightSphere(const sibr::Vector3f& position, float radius
+			  , float radiance) :
 			  _position(position),
 			  _radiance(radiance),
 			  _radius(radius) {};
@@ -25,6 +25,23 @@ namespace sibr {
 		  float _radius;
 		  float _radiance;
 	  };
+
+	  class LightSpot {
+	  public:
+		  LightSpot(const sibr::Vector3f& position,
+			  const sibr::Vector3f& target,
+			  float intensity, float cutOffAngle) :
+			  _position(position),
+			  _target(target),
+			  _intensity(intensity),
+			  _cutOffAngle(cutOffAngle) {};
+		  sibr::Vector3f _position;
+		  sibr::Vector3f _target;
+		  float _intensity;
+		  float _cutOffAngle;
+	  };
+
+
 
 	  CamEditMeshViewer();
 	  CamEditMeshViewer(
@@ -161,6 +178,10 @@ namespace sibr {
 	  //!
 	  void writeLights();
 
+	  void writeLightSpot(std::string& s, const LightSpot& spot);
+
+	  void writeLightSphere(std::string& s, const LightSphere& sphere);
+
 	  //!
 	  //! Allows to write the validated lights on several files
 	  //! => one light by file
@@ -204,13 +225,25 @@ namespace sibr {
 										  //!<
 
 	  std::vector<LightSphere> _lightSpheresValidated;
-
 	  std::vector<LightSphere> _currentLightSpheres;
+
+	  std::vector<LightSpot> _lightSpotsValidated;
+	  std::vector<LightSpot> _currentLightSpots;
 
 	  float _initialDeltaLight;
 	  float _currentDeltaLight;
+
+	  int	_currentTypeOfLight = 0;
+	  //Sphere light options
 	  float _currentRadius = 1.f;
 	  float _currentRadiance = 1.f;
+
+	  //Spot light options
+	  float _currentIntensity	= 1.f;
+	  float _thetaAngle			= 30.f;
+	  float _phiAngle			= 30.f;
+	  float _currentCutOffAngle	= 20.f;
+	  float _currentScaleSpot	= 1.f;
 
 	  std::string _name; //!< the name of the scene
 						 //!<
