@@ -644,7 +644,7 @@ namespace sibr {
 		data.userColor = color;
 		data.depthTest = false;
 
-		return addMeshData(data).setColorRandom();
+		return addMeshData(data).setColorMode(MeshData::USER_DEFINED);
 	}
 
 	MeshData & MultiMeshManager::addPoints(const std::string & name, const std::vector<Vector3f>& points, const Vector3f & color)
