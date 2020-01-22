@@ -125,7 +125,7 @@ namespace sibr {
 
 	template <typename num_t, class Distance>
 	inline void KdTree<num_t, Distance>::getNeighbors(const Vector3X & pos, double maxDistanceSq, bool sorted, Results & idDistSqs) const {
-		_index->radiusSearch(&pos[0], maxDistanceSq, idDistSqs, nanoflann::SearchParams(32, 0.0f, sorted));
+		_index->radiusSearch(&pos[0], float(maxDistanceSq), idDistSqs, nanoflann::SearchParams(32, 0.0f, sorted));
 	}
 
 
