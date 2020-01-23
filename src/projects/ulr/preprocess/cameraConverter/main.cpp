@@ -73,7 +73,21 @@ int main(int ac, char** av) {
 
 	// Load cameras.
 	std::vector<Camera> cams;
-	if(!load(args.input, cams)) {
+	bool success = false;
+	const std::string ext = sibr::getExtension(args.input);
+	if(ext == "path") {
+		success = load(args.input, cams);
+	} else if(ext == "lookat") {
+		const auto tempCams = InputCamera::loadLookat(args.input, { { 768,508} });
+		success = !tempCams.empty();
+		for(const auto & cam: tempCams) {
+			cams.emplace_back(cam);
+		}
+	} else {
+		SIBR_ERR << "Unsupported path file extension: " << ext << "." << std::endl;
+		return EXIT_FAILURE;
+	}
+	if(!success) {
 		SIBR_ERR << "Unable to find cameras file." << std::endl;
 		return EXIT_FAILURE;
 	}
