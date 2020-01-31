@@ -60,25 +60,26 @@ namespace sibr {
 		void getNeighbors(const Vector3X & pos, double maxDistanceSq, bool sorted, Results & idDistSqs) const;
 
 		/// Interface expected by nanoflann for an adapter.
-
 		const self_t & derived() const {
 			return *this;
 		}
+
+		/// Interface expected by nanoflann for an adapter.
 		self_t & derived() {
 			return *this;
 		}
 
-		// Must return the number of data points
+		/// Must return the number of data points
 		inline size_t kdtree_get_point_count() const {
 			return _points.size();
 		}
 
-		// Returns the dim'th component of the idx'th point in the class:
+		/// Returns the dim'th component of the idx'th point in the class:
 		inline num_t kdtree_get_pt(const size_t idx, const size_t dim) const {
 			return _points[idx][dim];
 		}
 
-		// Optional bounding-box computation: return false to default to a standard bbox computation loop.
+		/// Optional bounding-box computation: return false to default to a standard bbox computation loop.
 		template <class BBOX>
 		bool kdtree_get_bbox(BBOX & /*bb*/) const {
 			return false;
