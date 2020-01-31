@@ -17,6 +17,8 @@ namespace sibr
 	class SIBR_ASSETS_EXPORT InputCamera : public Camera 
 	{
 	public:
+
+		/** Near/far plane representation. */
 		struct Z {
 			Z() {}
 			float far;
@@ -24,35 +26,63 @@ namespace sibr
 			Z(float f, float n) : far(f), near(n) {}
 		};
 
-		// Default constructor for Cameras.
+		/** Default constructor. */
 		InputCamera() :
 			_focal(0.f), _k1(0.f), _k2(0.f), _w(0), _h(0), _id(0), _active(true)
 		{ }
 
+		/** Partial constructor
+		* \param f focal length in mm
+		* \param k1 first distortion parameter
+		* \param k2 second distortion parameter
+		* \param w  width of input image
+		* \param h  height of input image
+		* \param id ID of input image
+		*/
 		InputCamera(float f, float k1, float k2, int w, int h, int id);
 
+		/** Constructor, initialize the input camera.
+		* \param id ID of input image
+		* \param w  width of input image
+		* \param h  height of input image
+		* \param position camera position
+		* \param rotation camera rotation
+		* \param focal focal length in mm
+		* \param k1 first distortion parameter
+		* \param k2 second distortion parameter
+		* \param active  input image active or not
+		*/
 		InputCamera(int id, int w, int h, sibr::Vector3f & position, sibr::Matrix3f & rotation, float focal, float k1, float k2, bool active);
 
 		/** Constructor, initialize the input camera.
 		* \param id ID of input image
 		* \param w  width of input image
 		* \param h  height of input image
-		* \param n  name of input image			<-- this one has be removed (too specific)
 		* \param m  camera parameters read from Bundler output file
-		* \param a  input image active or not
+		* \param active  input image active or not
 		* \sa Bundler: http://phototour.cs.washington.edu/bundler/
+		* \warn Avoid using this legacy constructor.
 		*/
-		//InputCamera( int id, int w, int h, float m[15], bool isActive );
-
 		InputCamera(int id, int w, int h, sibr::Matrix4f m, bool active);
 
-		InputCamera(const InputCamera&) = default;
-		InputCamera(InputCamera&&) = default;
+		/** Constructor from a basic Camera.
+		 * \param c camera
+		 * \param w image width
+		 * \param h image height
+		 */
 		InputCamera(const Camera& c, int w, int h);
+
+		/** Copy constructor. */
+		InputCamera(const InputCamera&) = default;
+
+		/** Move constructor. */
+		InputCamera(InputCamera&&) = default;
+
+		/** Copy operator. */
 		InputCamera&	operator =(const InputCamera&) = default;
+
+		/** Move operator. */
 		InputCamera&	operator =(InputCamera&&) = default;
-
-
 
 		/** Input image width
 		* \returns width of input image
@@ -89,8 +119,6 @@ namespace sibr
 		/** Returns camera id */
 		uint id() const { return _id; }
 
-		/** following there are compatibility functions for depth preprocessing */
-
 		/** project into screen space */
 		Vector3f projectScreen( const Vector3f& pt ) const;
 
@@ -104,18 +132,27 @@ namespace sibr
 		float k2() const;
 
 		/** Back-project pixel coordinates and depth.
-		* \param p pixel coordinates p[0],p[1] in [0,w-1]x[0,h-1] and depth d in [-1,1]
+		* \param pixelPos pixel coordinates p[0],p[1] in [0,w-1]x[0,h-1] 
+		* \param depth d in [-1,1]
 		* \returns 3D point
 		*/
 		Vector3f			unprojectImgSpaceInvertY( const sibr::Vector2i & pixelPos, const float & depth ) const;
 
 		/** Project 3D point using perspective projection.
-		* \param p 3D point
+		* \param point3d 3D point
 		* \returns pixel coordinates in [0,w-1]x[0,h-1] and depth d in [-1,1]
 		*/
 		Vector3f			projectImgSpaceInvertY( const Vector3f& point3d  ) const;
 
+		/** Load from internal binary representation.
+		 * \param filename file path
+		 * \return success boolean
+		 */
 		bool				loadFromBinary( const std::string& filename );
+
+		/** Save to disk using internal binary representation.
+		 * \param filename file path
+		 */
 		void				saveToBinary( const std::string& filename ) const;
 
 		/** Save a file in the IBR TopView format.
@@ -128,17 +165,23 @@ namespace sibr
 		*/
 		void				readFromFile(std::istream& infile);
 
-		/** Return a string that can be used to create a bundle file from this camera
+		/** Conver to Bundle string.
+		 * \param negativeZ should the Z axis be flipped
+		 * \return a string that can be used to create a bundle file from this camera
 		*/
 		std::string toBundleString(bool negativeZ = false) const;
 
 
-		/** Return std::vector or 4 Vector2i coresponding the pixel at the camera corners
+		/** \return vector of 4 Vector2i corresponding to the pixels at the camera corners
 		*/
 		std::vector<sibr::Vector2i> getImageCorners() const;
 
 
-		/** Save a vector of cameras as a bundle file
+		/** Save a vector of cameras as a bundle file.
+		 *\param cams the cameras
+		 * \param fileName output bundle file path
+		 * \param negativeZ should the Z axis be flipped
+		 * \param exportImages should empty images with the proper dimensions be saved in a visualize subdirectory
 		*/
 		static void saveAsBundle(const std::vector<sibr::InputCamera> & cams, const std::string & fileName, bool negativeZ = false, bool exportImages = false);
 

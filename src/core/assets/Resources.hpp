@@ -18,12 +18,24 @@ namespace sibr
 		static Resources* Instance();
 
 	protected:
+		/// Constructor.
 		Resources();
+
+		/// Destructor
 		virtual ~Resources();
 
 	public:
-		/** Look for the filename into plausible _rscPaths to return rebuilt pathName*/
+		/** Look for the filename into plausible resource paths.
+		 * \param filename file name
+		 * \param success was the file found in the registered locations
+		 * \return the full file path
+		 */
 		std::string getResourceFilePathName(std::string const & filename, bool & success);
+
+		/** Look for the filename into plausible resource paths.
+		 * \param filename file name
+		 * \return the full file path
+		 */
 		std::string getResourceFilePathName(std::string const & filename);
 
 	protected:

@@ -43,6 +43,11 @@ namespace sibr
 		return oss.str();
 	}
 
+	/** Generate a string representation of an integer, padded with zeros.
+	 * \param id the integer
+	 * \return the padded string
+	 * \note The template int value determines the padding count.
+	 * */
 	template<unsigned int N> std::string intToString(int id) {
 		std::ostringstream oss;
 		oss << std::setfill('0') << std::setw(N) << id;
@@ -58,7 +63,7 @@ namespace sibr
 	}
 
 	/**
-	* Rename the following status into: NotLoaded, CPULoading, CPUReady, GPUReady, Failure.
+	* \todo Rename the following status into: NotLoaded, CPULoading, CPUReady, GPUReady, Failure.
 	*/
 	namespace LoadingStatus
 	{
