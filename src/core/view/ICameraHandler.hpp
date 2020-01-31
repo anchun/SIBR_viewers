@@ -13,7 +13,7 @@ namespace sibr {
 	class Input;
 
 	/**
-	 * Represent an interaction mode (FPS, trackball,...) or a combination of these.
+	 * Represent an interaction mode (FPS, trackball,...) for a camera controlled by the user, or a combination of multiple modes.
 	 */
 	class SIBR_VIEW_EXPORT ICameraHandler
 	{
@@ -22,12 +22,26 @@ namespace sibr {
 
 	public:
 
-		// Mandatory methods.
+		/** Update the camera handler state.
+		\param input user input
+		\param deltaTime time elapsed since last udpate
+		\param viewport view viewport
+		*/
 		virtual void update(const sibr::Input & input, const float deltaTime, const Viewport & viewport) = 0;
-		virtual const sibr::InputCamera & getCamera(void) const = 0;
+
+		/** \return the current camera. */
+		virtual const InputCamera & getCamera(void) const = 0;
 
 		// We allow for default empty implementations of render and onGUI.
+
+		/** Render on top of the associated view(s). 
+		\param viewport the rendering region
+		*/
 		virtual void onRender(const sibr::Viewport & viewport){};
+		
+		/** Display GUI options and infos
+		\param windowName extra name to avoid collsiion between the windows of different handlers. 
+		*/
 		virtual void onGUI(const std::string & windowName) {};
 
 	};

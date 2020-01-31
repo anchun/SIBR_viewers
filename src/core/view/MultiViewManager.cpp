@@ -114,14 +114,14 @@ namespace sibr
 
 	void MultiViewBase::addSubView(const std::string & title, ViewBase::Ptr view, const Vector2u & res, const ImGuiWindowFlags flags)
 	{
-		const ViewUpdateFonc updateFunc =
+		const ViewUpdateFunc updateFunc =
 			[](ViewBase::Ptr& vi, Input& in, const Viewport& vp, const float dt) {
 			vi->onUpdate(in, vp);
 		};
 		addSubView(title, view, updateFunc, res, flags);
 	}
 
-	void MultiViewBase::addSubView(const std::string & title, ViewBase::Ptr view, const ViewUpdateFonc updateFunc, const Vector2u & res, const ImGuiWindowFlags flags)
+	void MultiViewBase::addSubView(const std::string & title, ViewBase::Ptr view, const ViewUpdateFunc updateFunc, const Vector2u & res, const ImGuiWindowFlags flags)
 	{
 		// We have to shift vertically to avoid an overlap with the menu bar.
 		const Viewport viewport(0.0f, ImGui::GetTitleBarHeight(),
@@ -132,7 +132,7 @@ namespace sibr
 
 	}
 
-	void MultiViewBase::addIBRSubView(const std::string & title, ViewBase::Ptr view, const IBRViewUpdateFonc updateFunc, const Vector2u & res, const ImGuiWindowFlags flags, const bool defaultFuncUsed)
+	void MultiViewBase::addIBRSubView(const std::string & title, ViewBase::Ptr view, const IBRViewUpdateFunc updateFunc, const Vector2u & res, const ImGuiWindowFlags flags, const bool defaultFuncUsed)
 	{
 		// We have to shift vertically to avoid an overlap with the menu bar.
 		const Viewport viewport(0.0f, ImGui::GetTitleBarHeight(),
@@ -160,7 +160,7 @@ namespace sibr
 		addIBRSubView(title, view, updateFunc, res, flags, true);
 	}
 
-	void MultiViewBase::addIBRSubView(const std::string & title, ViewBase::Ptr view, const IBRViewUpdateFonc updateFunc, const Vector2u & res, const ImGuiWindowFlags flags)
+	void MultiViewBase::addIBRSubView(const std::string & title, ViewBase::Ptr view, const IBRViewUpdateFunc updateFunc, const Vector2u & res, const ImGuiWindowFlags flags)
 	{
 		addIBRSubView(title, view, updateFunc, res, flags, false);
 	}
@@ -175,7 +175,7 @@ namespace sibr
 		if (_subViews.count(title) > 0) {
 			return _subViews.at(title).view;
 		}
-		else if (_ibrSubViews.count(title) > 0) {
+		if (_ibrSubViews.count(title) > 0) {
 			return _ibrSubViews.at(title).view;
 		}
 
@@ -200,7 +200,6 @@ namespace sibr
 
 	void MultiViewBase::renderSubView(SubView & subview) 
 	{
-		bool invalidTexture = false;
 		
 		if (!_onPause) {
 
@@ -256,25 +255,25 @@ namespace sibr
 		}
 
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
-		subview.view->setFocus(showImGuiWindow(subview.name, *subview.rt, subview.flags, subview.viewport, invalidTexture, subview.shouldUpdateLayout));
+		subview.view->setFocus(showImGuiWindow(subview.name, *subview.rt, subview.flags, subview.viewport, false, subview.shouldUpdateLayout));
 		ImGui::PopStyleVar();
 		// If we have updated the layout, don't do it next frame.
 		subview.shouldUpdateLayout = false;
 	}
 
-	ViewBase::Ptr MultiViewBase::removeSubView(const std::string & name)
+	ViewBase::Ptr MultiViewBase::removeSubView(const std::string & title)
 	{
 		ViewBase::Ptr viewPtr = nullptr;
-		if (_subViews.count(name) > 0) {
-			viewPtr = _subViews.at(name).view;
-			_subViews.erase(name);
+		if (_subViews.count(title) > 0) {
+			viewPtr = _subViews.at(title).view;
+			_subViews.erase(title);
 		}
-		else if (_ibrSubViews.count(name) > 0) {
-			viewPtr = _ibrSubViews.at(name).view;
-			_ibrSubViews.erase(name);
+		else if (_ibrSubViews.count(title) > 0) {
+			viewPtr = _ibrSubViews.at(title).view;
+			_ibrSubViews.erase(title);
 		}
 		else {
-			SIBR_WRG << "No view named <" << name << "> found." << std::endl;
+			SIBR_WRG << "No view named <" << title << "> found." << std::endl;
 		}
 		return viewPtr;
 	}
@@ -305,7 +304,7 @@ namespace sibr
 
 	}
 
-	void MultiViewBase::addAdditionalRenderingForView(const std::string & name, const AdditionalRenderFonc renderFunc)
+	void MultiViewBase::addAdditionalRenderingForView(const std::string & name, const AdditionalRenderFunc renderFunc)
 	{
 		if (_subViews.count(name) > 0) {
 			_subViews.at(name).renderFunc = renderFunc;

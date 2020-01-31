@@ -9,7 +9,7 @@
 
 namespace sibr
 {
-	/**
+	/** A skybox object for rendering a cubemap texture.
 	* \ingroup sibr_view
 	*/
 	class SIBR_VIEW_EXPORT Skybox
@@ -17,16 +17,26 @@ namespace sibr
 		SIBR_CLASS_PTR(Skybox);
 
 	public:
+
+		/** Load skybox faces from a directory. The files should be named: {right, left, top, bottom, forward, back}.jpg
+		\param skyFolder directory path
+		\return a success boolean 
+		*/
 		bool	load(const std::string& skyFolder);
+
+		/** Rneder in the current RT.
+		\param eye current viewpoint
+		\param imgSize the destination RT size
+		*/
 		void	render(const Camera& eye, const sibr::Vector2u& imgSize);
 
 	private:
 
-		GLShader		_shader;
-		GLParameter		_paramView;
-		GLParameter		_paramAspect;
+		GLShader		_shader; ///< Skybox shader.
+		GLParameter		_paramView; ///< VP parameter.
+		GLParameter		_paramAspect; ///< Aspect ratio parameter.
 
-		TextureCubeMapRGB::Ptr	_cubemap = nullptr;
+		TextureCubeMapRGB::Ptr	_cubemap = nullptr; ///< Cubemap texture.
 
 	};
 

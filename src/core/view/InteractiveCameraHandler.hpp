@@ -34,6 +34,7 @@ namespace sibr {
 
 		SIBR_CLASS_PTR(InteractiveCameraHandler);
 
+		/** Current handler interaction mode. */
 		enum InteractionMode {
 			FPS = 0, ORBIT = 1, INTERPOLATION = 2, TRACKBALL = 3, NONE=4
 		};
@@ -45,7 +46,7 @@ namespace sibr {
 		InteractiveCameraHandler(const bool supportRecording = true);
 
 		/** \deprecated Resolution is deprecated and will be removed in the near future.
-		 *	See  setup(const std::vector<sibr::InputCamera>&, const sibr::Viewport&, std::shared_ptr<sibr::Raycaster>,...); instead. */
+		 *	See setup(const std::vector<sibr::InputCamera>&, const sibr::Viewport&, std::shared_ptr<sibr::Raycaster>,...) instead. */
 		void setup(const std::vector<sibr::InputCamera> & cams, const sibr::Vector2u & resolution, const sibr::Viewport & viewport, const std::shared_ptr<sibr::Raycaster> raycaster);
 
 		/** Setup an interactive camera handler from an existing camera.
@@ -81,7 +82,9 @@ namespace sibr {
 		*/
 		void setup(std::shared_ptr<sibr::Mesh> mesh, const sibr::Viewport& viewport);
 
-		/** Setup a camera path for the interpolation mode. */
+		/** Setup a camera path for the interpolation mode. 
+		 * \param cameras to interpolate along
+		 */
 		void setupInterpolationPath(const std::vector<sibr::InputCamera> & cameras);
 
 		/** Move the interactive camera to a new position and change its internal parameters.
@@ -92,12 +95,16 @@ namespace sibr {
 		void fromCamera(const sibr::InputCamera & cam, bool interpolate = true, bool updateResolution = true);
 		
 		/** Move the interactive camera to a new position.
-		\param cam the cameras the parameters and pose should be copied from
+		\param transform the transform the orientation and pose should be copied from
 		\param interpolate smooth interpolation between the current pose and the new one
 		\param updateResolution should the resolution of the camera be updated or not. Can be disabled if the new cam has a size incompatible with the current viewport.
 		*/
 		void fromTransform(const Transform3f & transform, bool interpolate = true, bool updateResolution = true);
 
+		/** Set the clipping planes.
+		 *\param znear near plane
+		 *\param zfar far plane
+		 */
 		void setClippingPlanes(float znear, float zfar);
 
 		/** Find the camera in a list closest to the current interactive camera position
@@ -107,7 +114,7 @@ namespace sibr {
 		*/
 		int	findNearestCamera(const std::vector<sibr::InputCamera>& inputCameras) const;
 
-		/** Toggle camera moves smoothing. */
+		/** Toggle camera motion smoothing. */
 		void switchSmoothing() { _shouldSmooth = !_shouldSmooth; SIBR_LOG << "Smoothing " << (_shouldSmooth ? "enabled" : "disabled") << std::endl; }
 
 		/** Toggle automatic snapping when getting close to a camera from the interpolation path. */
@@ -118,9 +125,18 @@ namespace sibr {
 		*/
 		void switchMode(const InteractionMode mode);
 
-		// Default camera load/save
+		/** Save the current camera as a binary file to a standard location.
+		 * \param datasetPath destination directory
+		 * \note "default_camera.bin" will be appended to the path.
+		 */
 		void saveDefaultCamera(const std::string& datasetPath);
-		void loadDefaultCamera(const sibr::InputCamera&, const std::string& datasetPath);
+
+		/** Load a camera parameters from a binary file at a standard location.
+		 *\param cam the camera to use if loading fails
+		 * \param datasetPath source directory
+		 * \note "default_camera.bin" will be appended to the path.
+		 */
+		void loadDefaultCamera(const sibr::InputCamera& cam, const std::string& datasetPath);
 
 		/** \return the current interaction mode. */
 		InteractionMode getMode() const { return _currentMode; }
@@ -167,53 +183,53 @@ namespace sibr {
 		*/
 		std::shared_ptr<Raycaster> & getRaycaster() { return _raycaster; }
 
-		/** \return if the handler has been entirely setup */
+		/** \return true if the handler has been entirely setup */
 		bool isSetup() const { return _isSetup; }
 
-		/** \return if the handler has been entirely setup */
+		/** \return the handler viewport */
 		const sibr::Viewport & getViewport() const { return _viewport; }
-
 
 		/** \return radius used for trackball*/
 		float & getRadius() { return _radius; }
 
 	private:
 
-		int _currentCamId;
+		int _currentCamId; ///< Current snapped camera ID.
 
-		bool _shouldSmooth;
-		bool _shouldSnap;
+		bool _shouldSmooth; ///< Motion smoothing.
+		bool _shouldSnap; ///< Currently snapping.
 
-		sibr::FPSCamera _fpsCamera;
-		sibr::Orbit _orbit;
-		sibr::TrackBall _trackball;
+		sibr::FPSCamera _fpsCamera; ///< FPS handler.
+		sibr::Orbit _orbit; ///< Orbit handler.
+		sibr::TrackBall _trackball; ///< Trackball handler.
 
-		InteractionMode _currentMode;
+		InteractionMode _currentMode; ///< Current handler mode.
 
-		float _radius;
+		float _radius; ///< Trackball radius property (for GUI).
 
-		std::shared_ptr<sibr::Raycaster> _raycaster;
-		sibr::Viewport _viewport;
+		std::shared_ptr<sibr::Raycaster> _raycaster; ///< Raycaster (for trackball).
+		sibr::Viewport _viewport;  ///< Current viewport.
 
-		sibr::InputCamera _previousCamera;
-		sibr::InputCamera _currentCamera;
+		sibr::InputCamera _previousCamera; ///< Previous camera (for interpolation).
+		sibr::InputCamera _currentCamera; ///< Current camera.
 
 		/// Parameters for path interpolation.
-		uint _startCam;
-		uint _interpFactor;
-		std::vector<sibr::InputCamera> _interpPath;
+		uint _startCam; ///< Start camera index in the list.
+		uint _interpFactor; ///< Current interpolation factor between cam _startCam and _startCam+1.
+		std::vector<sibr::InputCamera> _interpPath; ///< Cameras along the path.
 
-		sibr::CameraRecorder _cameraRecorder;
-		bool _supportRecording;
+		sibr::CameraRecorder _cameraRecorder; ///< Camera recorder.
+		bool _supportRecording; ///< Does the camera support recording (uneeded).
 
-		sibr::Vector2f _clippingPlanes;
-		bool _saveFrame;
-		bool _saveFrameDebug;
-		bool _triggerCameraUpdate;
-		bool _isSetup;
-		float _cameraFovDeg;
-		bool _fribrExport = false;
+		sibr::Vector2f _clippingPlanes; ///< Clipping planes parameter (for GUI).
+		bool _saveFrame; ///< Should the frame be saved as an image.
+		bool _saveFrameDebug; ///< Should the frame be saved as part of a video.
+		bool _triggerCameraUpdate; ///< Should the camera be updated (delayed if info is missing).
+		bool _isSetup; ///< Is the handler setup.
+		float _cameraFovDeg; ///< Camera field of view in degrees (for GUI).
+		bool _fribrExport = false; ///< Switch to FRIBR compatible export mode for paths.
 
+		/** Interpolate along the path. */
 		void interpolate();
 
 	};
