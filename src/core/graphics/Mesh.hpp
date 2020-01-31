@@ -409,12 +409,13 @@ namespace sibr
 		return _texcoords.empty() ? nullptr : &(_texcoords[0][0]);
 	}
 
+	/** Mesh rendering options. */
 	struct RenderingOptions {
-		bool depthTest = true;
-		bool backFaceCulling = true;
-		Mesh::RenderMode mode = Mesh::FillRenderMode;
-		bool frontFaceCulling = false;
-		bool invertDepthTest = false;
+		bool depthTest = true; ///< Should depth test be performed.
+		bool backFaceCulling = true; ///< Should back faces be culled.
+		Mesh::RenderMode mode = Mesh::FillRenderMode; ///< Rendering mode: points, lines, filled.
+		bool frontFaceCulling = false; ///< Cull fornt faces.
+		bool invertDepthTest = false; ///< Invert the depth test.
 	};
 
 	//*/
