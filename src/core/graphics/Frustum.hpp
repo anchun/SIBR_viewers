@@ -10,12 +10,16 @@ namespace sibr
 {
 	class Camera;
 
-	/** IMPORTANT NOTE: This class has not been strongly tested!
+	/** 
+	* Represent a 3D frustum defined by 6 planes.
+	* \warn This class has not been strongly tested!
 	* \ingroup sibr_graphics
 	*/
 	class SIBR_GRAPHICS_EXPORT Frustum
 	{
 	public:
+
+		/// Result of intersection test.
 		enum TestResult
 		{
 			OUTSIDE = 0,
@@ -23,6 +27,7 @@ namespace sibr
 			INSIDE
 		};
 
+		/// Frustum plane representation.
 		struct Plane
 		{
 			float A;
@@ -30,18 +35,36 @@ namespace sibr
 			float C;
 			float D;
 
+			/** Get the distance from a point to the plane.
+			\param p 3D point
+			\return distance
+			*/
 			float	distanceWithPoint(const Vector3f& p);
+
+			/** Build a plane from a normal and a point.
+			\param normal the normal
+			\param point a point belonging to the plane
+			*/
 			void	buildFrom(const Vector3f& normal, const Vector3f& point);
 		};
 
 	public:
+
+		/** Construct the furstum associated to a camera.
+		\param cam the camera
+		*/
 		Frustum(const Camera& cam);
 
-		// Note: I only needed sphere (safer than bbox) but add whatever you need.
-
+		/** Test if a sphere intersects the frustum or is contained in it.
+		\param sphere sphere center
+		\param radius sphere radis
+		\return if the sphere is inside, intersecting or outside the frustum
+		*/
 		TestResult	testSphere(const Vector3f& sphere, float radius);
 
 	private:
+
+		/// Location of each plane.
 		enum 
 		{
 			TOP = 0, 
@@ -55,7 +78,7 @@ namespace sibr
 		};
 
 
-		std::array<Plane, COUNT> _planes;
+		std::array<Plane, COUNT> _planes; ///< Frustum planes.
 
 	};
 
