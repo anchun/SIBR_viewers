@@ -38,7 +38,7 @@ namespace sibr
 		/// if you need).
 		Array2d( uint width, uint height, const_reference defaultValue );
 
-		// needed in some cases to avoid memory leaks
+		/// Destructor.
 		~Array2d( );
 
 		/// Return the width of this Array2d

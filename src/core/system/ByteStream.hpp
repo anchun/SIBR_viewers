@@ -33,16 +33,27 @@ namespace sibr
 	public:
 		typedef std::vector<uint8>	bytes;	///< type used for storing bytes
 
+		/// Constructor
 		ByteStream( void ) : _readPos(0), _valid(true) /*,_endianness(BigEndian)*/ { }
 
-		/// Load all bytes from a file using the given \param filename
+		/** Load all bytes from a file using the given filename
+		* \param filename the filename
+		* \return success boolean
+		* */ 
 		bool load( const std::string& filename );
-		/// Save all bytes to a file using the given \param filename
+
+		/** Save all bytes to a file using the given filename
+		 *\param filename file apth
+		 **/
 		void	saveToFile( const std::string& filename );
 
-		/// Append data to the current buffer
+		/** Append data to the current buffer
+		 *\param data pointer to the data
+		 *\param size size in bytes
+		 **/
 		void push(const void* data, uint size);
 
+		/// \return if the stream is valid
 		operator bool( void ) const { return _valid; }
 
 		/// Write data to the byte stream
@@ -57,7 +68,7 @@ namespace sibr
 		ByteStream& operator <<( uint64 i );
 		ByteStream& operator <<( const std::string& str );
 		/// Write a floating-point to the byte stream
-		/// Note it uses endianess as integner (not specified in IEEE 754)
+		/// Note it uses endianess as integer (not specified in IEEE 754)
 		ByteStream& operator <<( float f );
 		ByteStream& operator <<(double d);
 
@@ -84,8 +95,7 @@ namespace sibr
 		/// Return a pointer to the buffer
 		inline const uint8*	buffer( void ) const { return &_buffer[0]; }
 
-		// Don't want to include network-related libs (and all their stuffs), so I will
-		// use my own implementation of htonl/htons, ntohl/ntohs.
+		// Don't want to include network-related libs (and all their stuffs), so we use a custom implementation of htonl/htons, ntohl/ntohs.
 
 		/// Convert an uint32 from host to network byte order (which is big endian)
 		static uint64	htonll(uint64 n);

@@ -29,10 +29,10 @@ namespace sibr {
 	}
 
 
-	bool XMLTree::save(const std::string & filePath) const {
-		std::ofstream file(filePath);
+	bool XMLTree::save(const std::string & path) const {
+		std::ofstream file(path);
 		if(!file.is_open()) {
-			SIBR_WRG << "Unable to save XML to path \"" << filePath << "\"." << std::endl;
+			SIBR_WRG << "Unable to save XML to path \"" << path << "\"." << std::endl;
 			return false;
 		}
 

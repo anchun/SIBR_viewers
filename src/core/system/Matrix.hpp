@@ -54,6 +54,10 @@ namespace sibr
 	typedef	Eigen::Matrix<float, 3, 3, Eigen::DontAlign, 3, 3>	Matrix3f;
 	typedef	Eigen::Matrix<double, 3, 3, Eigen::DontAlign, 3, 3>		Matrix3d;
 
+	/** Convert a quaternion to a rotation matrix.
+	 * \param q the quaternion to convert
+	 * \return the corresponding matrix
+	 */
 	template <typename T>
 		Eigen::Matrix<T, 4, 4, 0, 4, 4> matFromQuat( const Eigen::Quaternion<T, 0>& q ) {
 			Eigen::Matrix<T, 3, 3, 0, 3, 3> s = q.toRotationMatrix();
@@ -66,7 +70,11 @@ namespace sibr
 				0, 0, 0, 1;
 			return mat;
 		}
-
+	
+	/** Convert a translation to a rotation matrix.
+	 * \param vec the translation to convert
+	 * \return the corresponding matrix
+	 */
 	template <typename T, int Options>
 		Eigen::Matrix<T, 4, 4, 0, 4, 4> matFromTranslation( const Eigen::Matrix<T, 3, 1, Options>& vec ) {
 
@@ -79,22 +87,65 @@ namespace sibr
 			return mat;
 		}
 
-	/** \param p the principal point, expressed in [0,1] */
+	/** Generate a perspective matrix.
+	 * \param fovRadian vertical field of view in radians
+	 * \param ratio aspect ratio
+	 * \param zn near plane
+	 * \param zf far plane
+	 * \param p the principal point, expressed in [0,1]
+	 * \return the projection matrix */
 	Matrix4f SIBR_SYSTEM_EXPORT perspective( float fovRadian, float ratio, float zn, float zf, const sibr::Vector2f & p = {0.5f, 0.5f});
 
+	/** Generate an off-center perspective matrix.
+	 * Defined by giving the top/left/right/bottom extent in world units.
+	 *	\param left left extent
+	 *	\param right right extent
+	 *	\param bottom bottom extent
+	 *	\param top top extent
+	 *	\param mynear near plane
+	 *	\param myfar dar plane
+	 *	\return the projection matrix */
 	Matrix4f SIBR_SYSTEM_EXPORT perspectiveOffCenter(
 			float left, float right, float bottom, float top, float mynear, float myfar );
 
+	/** Generate a perspective matrix for stereo rendering.
+	 * \param fovRadian vertical field of view in radians
+	 * \param aspect aspect ratio
+	 * \param zn near plane
+	 * \param zf far plane
+	 * \param focalDistance the focal distance
+	 * \param eyeDistance the inter-eye distance
+	 * \param isLeftEye if true computes the left eye matrix, else the right eye
+	 * \return the projection matrix */
 	Matrix4f SIBR_SYSTEM_EXPORT perspectiveStereo( float fovRadian, float aspect, float zn, float zf, float focalDistance,
 			float eyeDistance, bool isLeftEye ); 
 
+	/** Generate an orthographic matrix.
+	 * Defined by giving the top/right extent in world units.
+	 *	\param right right extent
+	 *	\param top top extent
+	 *	\param mynear near plane
+	 *	\param myfar dar plane
+	 *	\return the projection matrix */
 	Matrix4f SIBR_SYSTEM_EXPORT orthographic(float right, float top, float mynear, float myfar);
 
+	/** Generate a view matrix using the look at parameters.
+	 *	\param eye camera position
+	 *	\param center point the camera is looking at
+	 *	\param up up vector
+	 *	\return the projection matrix */
 	Matrix4f SIBR_SYSTEM_EXPORT lookAt( const Vector3f& eye, const Vector3f& center, const Vector3f& up );
 
-
+	/** Output a Matrix4f to a file stream.
+	 *\param outfile the output file
+	 *\param m the matrix
+	 */
 	void 	SIBR_SYSTEM_EXPORT operator<< (std::ofstream& outfile, const Matrix4f& m);
 
+	/** Read a Matrix4f from a file stream.
+	 *\param infile the input file
+	 *\param out the matrix
+	 */
 	void 	SIBR_SYSTEM_EXPORT operator>>( std::ifstream& infile, Matrix4f& out);
 
 	/** }@ */

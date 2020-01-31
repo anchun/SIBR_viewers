@@ -44,10 +44,17 @@ namespace sibr
 	class SIBR_SYSTEM_EXPORT CommandLineArgs {
 
 	public:
+
+		/** Populate arguments list, should be called once at launch.
+		 * \param argc argument count
+		 * \param argv argument list
+		 * */
 		static void parseMainArgs(const int argc, const char* const* argv);
 
 		/** Get the Nth parsed element following -key or --key as a T 
 		* If not available (key not found or not enough token), return default_val argument
+		* \param key the argument keyword
+		* \param default_val the default value to use if not present
 		* */
 		template<typename T, uint N = 0>
 		T get(const std::string & key, const T & default_val) const {
@@ -61,6 +68,7 @@ namespace sibr
 
 		/** Get the Nth parsed element following -key or --key as a T
 		* If not available (key not found or not enough token), an error is raised.
+		* \param key the argument keyword
 		* */
 		template<typename T, uint N = 0>
 		T getRequired(const std::string & key) const {
@@ -149,6 +157,11 @@ namespace sibr
 	template<typename T>
 	class Arg : public ArgBase<T> {
 	public:
+		/** Constructor
+		 *\param key the command argument
+		 *\param default_value the default value
+		 *\param description help message description
+		 */
 		Arg(const std::string & key, const T & default_value, const std::string & description = "") {
 			value = CommandLineArgs::getGlobal().get<T>(key, default_value);
 			// \todo We could display default values if we had a common stringization method.
@@ -161,6 +174,11 @@ namespace sibr
 	template<>
 	class Arg<Switch> : public ArgBase<bool> {
 	public:
+		/** Constructor
+		 *\param key the command argument
+		 *\param default_value the default boolean value
+		 *\param description help message description
+		 */
 		Arg(const std::string & key, const bool & default_value, const std::string & description = "") {
 			const bool arg_is_present = CommandLineArgs::getGlobal().get<bool>(key, false);
 			if (arg_is_present) {
@@ -178,6 +196,11 @@ namespace sibr
 	template<>
 	class Arg<bool> : public ArgBase<bool> {
 	public:
+		/** Constructor
+		 *\param key the command argument
+		 *\param description help message description
+		 *\note Will default to false
+		 */
 		Arg(const std::string & key, const std::string & description = "") {
 			const bool arg_is_present = CommandLineArgs::getGlobal().get<bool>(key, false);
 			value = arg_is_present;
@@ -185,10 +208,14 @@ namespace sibr
 		}
 	};
 
-	/// helper for RequiredArg class
+	/// Represent a mandatory argument
 	template<typename T>
 	class RequiredArgBase {
 	public:
+		/** Constructor
+		 *\param _key the command argument
+		 *\param description help message description
+		 */
 		RequiredArgBase(const std::string & _key, const std::string & description = "") : key(_key) {
 			if (CommandLineArgs::getGlobal().contains(key)) {
 				value = CommandLineArgs::getGlobal().get<T>(key, value);
@@ -201,6 +228,7 @@ namespace sibr
 		const T & get() const { checkInit(); return value; }
 		T & operator=(const T & t) { value = t; wasInit = true; return value; }
 
+		/// \return true if the argument was given
 		const bool & isInit() const { return wasInit; }
 	protected:
 		void checkInit() const {
@@ -215,20 +243,18 @@ namespace sibr
 		bool wasInit = false;
 	};
 
-	/// same as Arg expect this one will crash if attempt to use the value while not initialized
+	/// Similar to Arg, except this one will crash if attempt to use the value while not initialized
 	/// initialization can be done using the command line or manually
 	template<typename T>
 	class RequiredArg : public RequiredArgBase<T> {
 		using RequiredArgBase<T>::RequiredArgBase;
 	};
 
-	///specialization required for std::string as const string & key constructor and const T & constructor are ambiguous. TT : no const T & ctor anymore but operator const char*() const operator added
-	//
+	/// Specialization required for std::string as const string & key constructor and const T & constructor are ambiguous. 
+	/// TT : no const T & ctor anymore but operator const char*() const operator added
 	template<>
 	class RequiredArg<std::string> : public RequiredArgBase<std::string> {
-		//RequiredArg(const RequiredArg &) = delete;
-		//RequiredArg & operator=(const RequiredArg &) = delete;
-	
+		
 	public:
 		using RequiredArgBase<std::string>::RequiredArgBase;
 		std::string & operator=(const std::string & t) { value = t; wasInit = true; return value; }
@@ -237,19 +263,17 @@ namespace sibr
 	};
 
 	/// Hierarchy of Args classes that can be seens as modules, and can be combined using virtual inheritance, with no duplication of code so derived Args has no extra work to do
-	///assuming CommandLineArgs::parseMainArgs() was called once, Args arguments will be automatically initialized with the value from the command line by the constructor
-	///
-	///existing Args structs should cover most of the existing IBR apps
-	///
-	///to add a new argument like --my-arg 5 on top of existing arguments 
-	///and
-	///to add a new required argument like --important-param "on" on top of existing arguments
+	/// Assuming CommandLineArgs::parseMainArgs() was called once, Args arguments will be automatically initialized with the value from the command line by the constructor
+	/// Existing Args structs should cover most of the existing IBR apps
+	/// To add a new argument like --my-arg 5 on top of existing arguments and
+	/// to add a new required argument like --important-param "on" on top of existing arguments, do the following:
 	///
 	/// struct SIBR_SYSTEM_EXPORT MyArgs : virtual ExistingArg1, virtual ExistingArgs2, ... {
 	///		Arg<int> myParameter = { "my-arg", some_default_value };
 	///		RequiredArg<std::string> myRequiredParameter = { "important-param" };
 	/// }
 	struct SIBR_SYSTEM_EXPORT AppArgs {
+		/// Constructor
 		AppArgs();
 
 		std::string appName;
@@ -257,9 +281,11 @@ namespace sibr
 		Arg<std::string> custom_app_path = { "appPath", "./", "define a custom app path" };
 		Arg<bool> showHelp = {"help", "display this help message"};
 
+		/// Helper to print the help message if the help argument was passed.
 		void displayHelpIfRequired() const;
 	};
 
+	/// Arguments related to a window.
 	struct SIBR_SYSTEM_EXPORT WindowArgs {
 		Arg<int> win_width = { "width", 720, "initial window width" };
 		Arg<int> win_height = { "height", 480, "initial window height" };
@@ -270,10 +296,12 @@ namespace sibr
 		Arg<bool> gl_debug = { "gldebug", "enable OpenGL error callback" };
 	};
 
+	/// Combination of window and application arguments.
 	struct SIBR_SYSTEM_EXPORT WindowAppArgs :
 		virtual AppArgs, virtual WindowArgs {
 	};
 
+	/// Common rendering settings.
 	struct SIBR_SYSTEM_EXPORT RenderingArgs {
 		Arg<std::string> scene_metadata_filename = { "scene", "scene_metadata.txt", "scene metadata file" };
 		Arg<Vector2i> rendering_size = { "rendering-size", { 0, 0 }, "size at which rendering is performed" };
@@ -283,16 +311,17 @@ namespace sibr
 		Arg<sibr::Vector3f> focal_pt = { "focal-pt", {0.0f, 0.0f, 0.0f} };
 	};
 
+	/// Dataset related arguments.
 	struct SIBR_SYSTEM_EXPORT BasicDatasetArgs {
 		RequiredArg<std::string> dataset_path = { "path", "path to the dataset root" };
 	};
 
+	/// "Default" set of arguments.
 	struct SIBR_SYSTEM_EXPORT BasicIBRAppArgs :
 		virtual WindowAppArgs, virtual BasicDatasetArgs, virtual RenderingArgs {
 	};
 
-	//specializations of ValueGetter<T>
-
+	/// Specialization of value getter for strings.
 	template<>
 	struct ValueGetter<std::string> {
 		static std::string get(const std::vector<std::string> & values, uint n) {
@@ -303,6 +332,7 @@ namespace sibr
 		}
 	};
 
+	/// Specialization of value getter for booleans.
 	template<>
 	struct ValueGetter<bool> {
 		static bool get(const std::vector<std::string> & values, uint n) {
@@ -313,6 +343,7 @@ namespace sibr
 		}
 	};
 
+	/// Specialization of value getter for doubles.
 	template<>
 	struct ValueGetter<double> {
 		static double get(const std::vector<std::string> & values, uint n) {
@@ -323,6 +354,7 @@ namespace sibr
 		}
 	};
 
+	/// Specialization of value getter for floats.
 	template<>
 	struct ValueGetter<float> {
 		static float get(const std::vector<std::string> & values, uint n) {
@@ -333,6 +365,7 @@ namespace sibr
 		}
 	};
 
+	/// Specialization of value getter for integers.
 	template<>
 	struct ValueGetter<int> {
 		static int get(const std::vector<std::string> & values, uint n) {
@@ -343,6 +376,7 @@ namespace sibr
 		}
 	};
 
+	/// Specialization of value getter for chars.
 	template<>
 	struct ValueGetter<char> {
 		static char get(const std::vector<std::string> & values, uint n) {
@@ -353,6 +387,7 @@ namespace sibr
 		}
 	};
 
+	/// Specialization of value getter for unsigned integers.
 	template<>
 	struct ValueGetter<uint> {
 		static uint get(const std::vector<std::string> & values, uint n) {
@@ -363,6 +398,7 @@ namespace sibr
 		}
 	};
 
+	/// Specialization of value getter for arrays.
 	template<typename T, uint N>
 	struct ValueGetter<std::array<T, N>> {
 		static std::array<T, N> get(const std::vector<std::string> & values, uint n) {
@@ -384,7 +420,7 @@ namespace sibr
 		}
 	};
 
-
+	/// Specialization of value getter for sibr::Vectors.
 	template<typename T, uint N>
 	struct ValueGetter<sibr::Vector<T, N>> {
 		static sibr::Vector<T, N> get(const std::vector<std::string> & values, uint n) {
