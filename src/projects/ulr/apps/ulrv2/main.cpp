@@ -27,7 +27,7 @@ int legacyV2main(ULRAppArgs & myArgs);
 
 int main(int ac, char** av) {
 
-	// Parse Commad-line Args
+	// Parse Command-line Args
 	CommandLineArgs::parseMainArgs(ac, av);
 	ULRAppArgs myArgs;
 	myArgs.displayHelpIfRequired();
@@ -38,7 +38,6 @@ int main(int ac, char** av) {
 	if (myArgs.version == 1) {
 		return legacyV1main(myArgs);
 	}
-
 
 	const bool doVSync = !myArgs.vsync;
 	// rendering size
