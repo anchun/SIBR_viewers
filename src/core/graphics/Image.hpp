@@ -126,11 +126,18 @@ namespace sibr
 		enum { e_NumComp = T_NumComp };
 
 	public:
+
+		/// Default constructor.
 		Image(void);
+
+		/** Constructor.
+		\param width image width
+		\param height image height
+		\warn The image content will be undefined.
+		*/
 		Image(uint width, uint height);
 		Image(uint width, uint height, const T_Type& init);
 		Image(uint width, uint height, const Pixel& init);
-		// Image( const std::string& filename ); // <== I don't recommand this (how do we check result?)
 
 		// Copy is not authorized, this is a move ctor
 		Image(Image&& other);
@@ -145,11 +152,6 @@ namespace sibr
 		void		save(const std::string& filename, bool verbose = true) const;
 		void		saveHDR(const std::string& filename, bool verbose = true) const;
 		void		saveByteStream(const std::string& filename, bool verbose = true) const;
-
-		/*const Pixel&	pixel(uint x, uint y) const;
-		Pixel&			pixel(uint x, uint y);
-		const Pixel&	pixel(const sibr::Vector2i & xy) const;
-		Pixel&			pixel(const sibr::Vector2i & xy);*/
 
 		const Pixel&	operator()(uint x, uint y) const;
 		Pixel&			operator()(uint x, uint y);
@@ -209,7 +211,6 @@ namespace sibr
 		cv::Mat			toOpenCVBGR(void) const;
 		void			fromOpenCVBGR(const cv::Mat& img);
 
-		// compatibility functions from libsl
 		void findMinMax(Pixel&, Pixel&);
 		void remap(const Pixel&, const Pixel&);
 
@@ -239,10 +240,8 @@ namespace sibr
 		// shared_ptr to do this (or unique_ptr if you can).
 		// Note you can also use no pointer at all and even use it in STL container such as
 		// std::vector. If you do that and use a such vector as a class member, then disallow
-		// the copy of your class using SIBR_DISALLOW_COPY (see example in sibr/view/IBRScene).
-		// Visual Studio is too stupid to automatically disallow copy of your class and will try
-		// to generate copy ctor/ copy operator even if you don't use them (-_-'). In this case
-		// use SIBR_DISALLOW_COPY to specify you clearly don't want to generate them.
+		// the copy of your class using SIBR_DISALLOW_COPY (see example in sibr/view/IBRScene) 
+		// to specify you clearly don't want to generate them.
 		//		Image( const Image& );					// Disallowed
 		Image& 		operator =(const Image&);	// Disallowed
 
@@ -284,7 +283,6 @@ namespace sibr
 
 	};
 
-
 	template <typename T_Type, unsigned T_NumComp>
 	static void		show(const Image<T_Type, T_NumComp> & img, const std::string& windowTitle = "sibr::show()", bool closeWindow = true) {
 		cv::namedWindow(windowTitle, CV_WINDOW_AUTOSIZE | CV_WINDOW_KEEPRATIO | CV_GUI_EXPANDED);
@@ -297,10 +295,6 @@ namespace sibr
 			cv::destroyWindow(windowTitle);
 		}
 	}
-
-	SIBR_GRAPHICS_EXPORT Image<unsigned char, 3> coloredClass(const Image<unsigned char, 1>::Ptr imClass);
-	SIBR_GRAPHICS_EXPORT Image<unsigned char, 3> coloredClass(const Image<int, 1>::Ptr imClass);
-	SIBR_GRAPHICS_EXPORT void showFloat(const Image<float, 1> & im, bool logScale = false, double min = -DBL_MAX, double max = DBL_MAX);
 
 	template<typename T_Type, unsigned int T_NumComp>
 	Image<T_Type, T_NumComp>::Image(void) :
@@ -621,8 +615,6 @@ namespace sibr
 #endif
 		SIBR_ASSERT(x < w() && y < h());
 		return _pixels.at<typename Image<T_Type, T_NumComp>::Pixel>(y, x);
-		//return reinterpret_cast<Image<T_Type, T_NumComp>::Pixel>(_pixels.at<cv::Vec<T_Type, T_NumComp>>(y, x));
-		// return _pixels.at<typename T_Type>(y, x);
 	}
 
 	template<typename T_Type, unsigned int T_NumComp>
@@ -906,30 +898,6 @@ namespace sibr
 		return out;
 	}
 
-	//template<typename T_Type, unsigned int T_NumComp>
-	//void		Image<T_Type, T_NumComp>::fromSLArray( const SLArray& pixels ) {
-	//	_pixels.create(pixels.ysize(), pixels.xsize(), opencvType());
-
-	//	Pixel p;
-	//	for (uint y = 0; y < h(); ++y)
-	//	{
-	//		for (uint x = 0; x < w(); ++x)
-	//		{
-	//			Pixel v = pixels.at(x, y);
-	//			for (uint i = 0; i < T_NumComp; ++i)
-	//				p[i] = v[i];
-	//			pixel(x, y, p);
-	//		}
-	//	}
-	//}
-
-	//template<typename T_Type, unsigned int T_NumComp>
-	//void		Image<T_Type, T_NumComp>::fromSLRenderTarget( const SLRenderTarget& img, uint target=0 ) {
-	//	SLRenderTarget::PixelArray pa(img.w(), img.h());
-	//	img.readBack(pa, target);
-	//	fromSLArray(pa);
-	//}
-
 	/// Standard image types
 	typedef Image<unsigned char, 3> ImageRGB;
 	typedef Image<unsigned char, 4> ImageRGBA;
@@ -956,6 +924,27 @@ namespace sibr
 
 	typedef Image<int, 1>        ImageInt1;
 	typedef Image<int, 2>        ImageInt2;
+
+
+	/** Convert an integer ID map to a colored image using a different random color for each ID.
+	\param imClass the ID map
+	\return a color coded map
+	*/
+	SIBR_GRAPHICS_EXPORT Image<unsigned char, 3> coloredClass(const Image<unsigned char, 1>::Ptr imClass);
+
+	/** Convert an integer ID map to a colored image using a different random color for each ID.
+	\param imClass the ID map
+	\return a color coded map
+	*/
+	SIBR_GRAPHICS_EXPORT Image<unsigned char, 3> coloredClass(const Image<int, 1>::Ptr imClass);
+
+	/** Display a 32F image in a debug window, using the Parula colormap after normalizing the values.
+	\param im the float image to display
+	\param logScale display log(img)
+	\param min optional lower bound for the normalization
+	\param max optional upper bound for the normalization
+	*/
+	SIBR_GRAPHICS_EXPORT void showFloat(const Image<float, 1> & im, bool logScale = false, double min = -DBL_MAX, double max = DBL_MAX);
 
 	/**
 	*convert a 1 channel 32 bits into a 4 channels 8 bits, useful to save float maps as png, and such get png compression for free

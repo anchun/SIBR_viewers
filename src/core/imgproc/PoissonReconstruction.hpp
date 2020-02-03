@@ -35,7 +35,7 @@ namespace sibr {
 		void solve(void);
 
 		/** \return the result of the reconstruction */
-		cv::Mat result() { return _img_target; }
+		cv::Mat result() const { return _img_target; }
 
 		/** helper to get the pixel coordinates of valid pixels for agiven pixel and image size.
 		 *\param pos the central pixel position
