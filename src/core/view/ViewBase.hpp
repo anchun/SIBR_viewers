@@ -37,19 +37,19 @@ namespace sibr
 		/* Update state based on user input.
 		 * \param input user input
 		 */
-		virtual void	onUpdate(Input& /*input*/) { }
+		virtual void	onUpdate(Input& input) { }
 
 		/** Render content in a window.
 		 *\param win destination window
 		 */
-		virtual void	onRender( Window& /*win*/ )		{ }
+		virtual void	onRender( Window& win)		{ }
 
 		/** Render content in a given rendertarget.
 		 *\param dst destination RT
 		 *\param eye current viewpoint
 		 *\sa IRenderingMode
 		 */
-		virtual void	onRenderIBR(IRenderTarget& /*dst*/, const Camera& /*eye*/) {};
+		virtual void	onRenderIBR(IRenderTarget& dst, const Camera& eye) {};
 
 		/** Display GUI. */
 		virtual void	onGUI() { }

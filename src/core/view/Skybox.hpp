@@ -24,7 +24,7 @@ namespace sibr
 		*/
 		bool	load(const std::string& skyFolder);
 
-		/** Rneder in the current RT.
+		/** Render in the current RT.
 		\param eye current viewpoint
 		\param imgSize the destination RT size
 		*/

@@ -91,7 +91,7 @@ int main( int ac, char** av )
 		multiViewManager.addCameraForView("ULR view", generalCamera);
 
 		// Top view
-		const std::shared_ptr<sibr::SceneDebugView>    topView(new sibr::SceneDebugView(scene, multiViewManager.getViewport(), generalCamera, myArgs));
+		const std::shared_ptr<sibr::SceneDebugView>    topView(new sibr::SceneDebugView(scene, generalCamera, myArgs));
 		multiViewManager.addSubView("Top view", topView, usedResolution);
 
 		while (window.isOpened())

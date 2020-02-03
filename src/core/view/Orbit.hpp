@@ -73,13 +73,6 @@ namespace sibr {
 		/** \return the current camera. */
 		virtual const sibr::InputCamera & getCamera( void ) const override;
 
-		/** Is the orbit camera in use currently.
-		 *\param shouldUse if true, it is currently used
-		 * \todo Should be managed at a higher level.
-		 **/
-		//void use(bool shouldUse) { _orbit.interp = shouldUse; }
-		//bool isUsed() const { return _orbit.interp; }
-
 	private:
 
 		/** Internal orbit parameters. */
