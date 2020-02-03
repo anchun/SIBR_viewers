@@ -39,9 +39,8 @@ namespace sibr
 		std::string getResourceFilePathName(std::string const & filename);
 
 	protected:
-		/** stock the resources path to find any file */
-		std::vector<std::string>    _rscPaths;
-		static Resources *          _instance;
+		std::vector<std::string>    _rscPaths; ///< List of directories to check into.
+		static Resources *          _instance; ///< Singleton.
 	};
 
 } // namespace sibr

@@ -21,10 +21,10 @@ namespace sibr
 		/** Image infos. */
 		struct Infos
 		{
-			std::string		filename;
-			uint			camId;
-			uint			width;
-			uint			height;
+			std::string		filename; ///< image filename.
+			uint			camId; ///< Associated camera ID.
+			uint			width; ///< Image width.
+			uint			height; ///< Image height.
 		};
 
 	public:
@@ -62,8 +62,8 @@ namespace sibr
 		
 
 	private:
-		std::vector<Infos>		_infos;
-		std::string				_basename;
+		std::vector<Infos>		_infos; ///< Image infos.
+		std::string				_basename; ///< Root name.
 
 	};
 

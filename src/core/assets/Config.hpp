@@ -34,8 +34,8 @@ namespace sibr
 	/**
 	* Utility that converts an integer id to a string using
 	* the "most used" format.
-	*
-	*       e.g.: 7 --> 0000007
+	*       \param id the id to convert (fi 7)
+	*       \return the corresponding string (fi "0000007")
 	*/
 	inline std::string		imageIdToString( int id ) {
 		std::ostringstream oss;
@@ -55,14 +55,17 @@ namespace sibr
 	}
 
 	/**
-	* Return the default path and filename used for the proxy
+	* Get the default path and filename used for the proxy
 	* mesh.
+	* \param datasetPath the base path
+	* \return the mesh path
 	*/
 	inline std::string		getProxyFilename( const std::string& datasetPath ) {
 		return datasetPath + "/pmvs/models/pmvs_recon.ply";
 	}
 
 	/**
+	 * Loading status for streaming.
 	* \todo Rename the following status into: NotLoaded, CPULoading, CPUReady, GPUReady, Failure.
 	*/
 	namespace LoadingStatus

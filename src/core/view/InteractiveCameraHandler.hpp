@@ -223,10 +223,10 @@ namespace sibr {
 
 		sibr::Vector2f _clippingPlanes; ///< Clipping planes parameter (for GUI).
 		bool _saveFrame; ///< Should the frame be saved as an image.
-		bool _saveFrameDebug; ///< Should the frame be saved as part of a video.
+		bool _saveFrameVideo; ///< Should the frame be saved as part of a video.
 		bool _triggerCameraUpdate; ///< Should the camera be updated (delayed if info is missing).
 		bool _isSetup; ///< Is the handler setup.
-		float _cameraFovDeg; ///< Camera field of view in degrees (for GUI).
+		float _cameraFovDeg = 0.0f; ///< Camera field of view in degrees (for GUI).
 		bool _fribrExport = false; ///< Switch to FRIBR compatible export mode for paths.
 
 		/** Interpolate along the path. */

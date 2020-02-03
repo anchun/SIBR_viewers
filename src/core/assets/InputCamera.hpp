@@ -20,10 +20,19 @@ namespace sibr
 
 		/** Near/far plane representation. */
 		struct Z {
+
+			/** Constructor. */
 			Z() {}
-			float far;
-			float near;
+
+			/** Constructor.
+			 * \warn Ordering of the values is swapped.
+			 * \param f far plane
+			 * \param n near plane
+			 */
 			Z(float f, float n) : far(f), near(n) {}
+
+			float far = 0.0f; ///< Far plane.
+			float near = 0.0f; ///< Near plane.
 		};
 
 		/** Default constructor. */
@@ -85,29 +94,32 @@ namespace sibr
 		InputCamera&	operator =(InputCamera&&) = default;
 
 		/** Input image width
-		* \returns width of input image
+		* \return width of input image
 		*/
 		uint w(void) const;
 
 		/** Input image height
-		* \returns height of input image
+		* \return height of input image
 		*/
 		uint h(void) const;
 
 		/** Check if the input camera active or inactive,
 		* camera is completely ignored if set to inactive.
-		* \returns true if active, false otherwise
+		* \return true if active, false otherwise
 		*/
 		bool isActive(void) const;
 
 		/** Set camera active status
+		 *\param active if true, camera is in use
 	     */
 		void setActive(bool active) { _active = active ; }
 
-		/** Input image name */
+		/** \return the image name */
 		inline const std::string&	name(void) const { return _name; }
 
-		/** Set camera name */
+		/** Set camera name 
+		 * \param s the new name
+		 */
 		inline void					name( const std::string& s ) { _name = s; }
 
 		/** Update image dimensions. Calls \a update() after changing image width and height
@@ -116,25 +128,28 @@ namespace sibr
 		*/
 		void size( uint w, uint h );
 
-		/** Returns camera id */
+		/** \return the camera id */
 		uint id() const { return _id; }
 
-		/** project into screen space */
+		/** Project a world space point into screen space.
+		 *\param pt 3d world point
+		 *\return screen space position and depth, in (0,w)x(0,h)x(0,1)
+		 */
 		Vector3f projectScreen( const Vector3f& pt ) const;
 
-		/** focal length */
+		/** \return the focal length */
 		float focal() const;
 
-		/** k1 distorsion param*/
+		/** \return the k1 distorsion parameter */
 		float k1() const;
 
-		/** k2 distorsion param*/
+		/** \return the k2 distorsion parameter */
 		float k2() const;
 
 		/** Back-project pixel coordinates and depth.
 		* \param pixelPos pixel coordinates p[0],p[1] in [0,w-1]x[0,h-1] 
 		* \param depth d in [-1,1]
-		* \returns 3D point
+		* \returns 3D world point
 		*/
 		Vector3f			unprojectImgSpaceInvertY( const sibr::Vector2i & pixelPos, const float & depth ) const;
 
@@ -172,7 +187,7 @@ namespace sibr
 		std::string toBundleString(bool negativeZ = false) const;
 
 
-		/** \return vector of 4 Vector2i corresponding to the pixels at the camera corners
+		/** \return A vector of four Vector2i corresponding to the pixels at the camera corners
 		*/
 		std::vector<sibr::Vector2i> getImageCorners() const;
 
@@ -249,29 +264,15 @@ namespace sibr
 
 
 	protected:
-		/** focal length */
-		float _focal;
 
-		/** K1 bundler distorsion parameter */
-		float _k1;
-
-		/** K2 bundler dist parame*/
-		float _k2;
-
-		/** Image width */
-		uint _w;
-
-		/** Image height */
-		uint _h;
-
-		/** Input camera id */
-		uint _id;
-
-		/** Input image name */
-		std::string _name;
-
-		/** Image allowed to be used for image-based rendering */
-		bool _active;
+		float _focal; ///< focal length
+		float _k1; ///< K1 bundler distorsion parameter
+		float _k2; ///< K2 bundler dist parameter
+		uint _w; ///< Image width
+		uint _h; ///< Image height
+		uint _id; ///< Input camera id
+		std::string _name; ///< Input image name
+		bool _active; ///< is the camera currently in use.
 	};
 
 } // namespace sibr

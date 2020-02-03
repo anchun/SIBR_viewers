@@ -125,7 +125,7 @@
 
 //// Math Macro ////
 # define SIBR_PI	3.14159265358979323846
-# define SIBR_2PI SIBR_PI * 2.0 /// \todo TODO: resolve it now
+# define SIBR_2PI (SIBR_PI * 2.0)
 
 # define SIBR_PI_DIV_180	0.01745329251
 # define SIBR_180_DIV_PI	57.2957795131
