@@ -146,12 +146,18 @@
 
 namespace sibr
 {
+	/** Ensure that all logs are output before exiting when an error or exception is raised. */
 	struct SIBR_SYSTEM_EXPORT LogExit
 	{
+		/// Constructor.
 		LogExit( void );
+
+		/** Throw an exception and trigger exit.
+		\param stream the log stream.
+		*/
 		void operator <<=( const std::ostream& stream );
 
-		std::lock_guard<std::mutex>		lock;
+		std::lock_guard<std::mutex>		lock; ///< Sync lock.
 	};
 }
 
@@ -222,11 +228,17 @@ namespace sibr
 	/// Used for quickly measuring time for completing a scope.
 	struct SIBR_SYSTEM_EXPORT DebugScopeProfiler
 	{
+		/** Constructor.
+		\param name the display name of the profiling session
+		*/
 		DebugScopeProfiler( const std::string& name );
+		
+		/// Destructor.
 		~DebugScopeProfiler( void );
+	
 	private:
-		clock_t _t0;
-		std::string _name;
+		clock_t _t0; ///< Timing.
+		std::string _name; ///< Name.
 	};
 
 # define SIBR_PROFILESCOPE_EXPAND(x, y) sibr::DebugScopeProfiler x(y);
@@ -265,6 +277,11 @@ namespace sibr
 
 namespace sibr
 {
+	/** Rounding operation.
+	\param x the value to round
+	\return the rounded value
+	\todo Compare behaviour with std::round
+	*/
 	inline float round(float x) {
 		return x >= 0.0f ? floorf(x + 0.5f) : ceilf(x - 0.5f);
 	}
