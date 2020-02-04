@@ -205,6 +205,7 @@ namespace sibr
 		}
 
 		const int size = static_cast<int>(_cameras.size() / step);
+		
 		out << "# Bundle file v0.3\n";
 		out << size << " " << 0 << "\n";
 
@@ -293,6 +294,11 @@ namespace sibr
 
 			SIBR_LOG << "[CameraRecorder] - Saved " << _cameras.size() << " cameras to " << dirPath << "." << std::endl;
 		}
+	}
+
+	void CameraRecorder::saveAsLookAt(const std::string & filePath) const
+	{
+		InputCamera::saveAsLookat(_cameras, filePath);
 	}
 
 } // namespace sibr

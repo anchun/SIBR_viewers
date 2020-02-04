@@ -395,6 +395,7 @@ namespace sibr {
 				std::getline(std::cin, filename);
 				_cameraRecorder.save(filename);
 				_cameraRecorder.saveAsBundle(filename + ".out", _currentCamera.h());
+				_cameraRecorder.saveAsLookAt(filename + ".lookat");
 				if (_fribrExport) {
 					const int height = int(std::floor(1920.0f / _currentCamera.aspect()));
 					_cameraRecorder.saveAsFRIBRBundle(filename + "_fribr/", 1920, height);
@@ -413,6 +414,7 @@ namespace sibr {
 				std::getline(std::cin, filename);
 				_cameraRecorder.playback();
 				_cameraRecorder.saveAsBundle(filename + ".out", _currentCamera.h());
+				_cameraRecorder.saveAsLookAt(filename + ".lookat");
 				if (_fribrExport) {
 					const int height = int(std::floor(1920.0f / _currentCamera.aspect()));
 					_cameraRecorder.saveAsFRIBRBundle(filename + "_fribr/", 1920, height);
@@ -600,6 +602,7 @@ namespace sibr {
 							SIBR_LOG << "Saving" << std::endl;
 							_cameraRecorder.save(selectedFile + ".path");
 							_cameraRecorder.saveAsBundle(selectedFile + ".out", _currentCamera.h());
+							_cameraRecorder.saveAsLookAt(selectedFile + ".lookat");
 							if (_fribrExport) {
 								const int height = int(std::floor(1920.0f / _currentCamera.aspect()));
 								_cameraRecorder.saveAsFRIBRBundle(selectedFile + "_fribr/", 1920, height);
@@ -607,6 +610,7 @@ namespace sibr {
 						}
 					}
 				}
+				
 				
 
 				//ImGui::SameLine();

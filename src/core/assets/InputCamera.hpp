@@ -200,6 +200,12 @@ namespace sibr
 		*/
 		static void saveAsBundle(const std::vector<sibr::InputCamera> & cams, const std::string & fileName, bool negativeZ = false, bool exportImages = false);
 
+		/** Save a vector of cameras as a lookat file.
+		 *\param cams the cameras
+		 * \param fileName output lookat file path
+		*/
+		static void saveAsLookat(const std::vector<sibr::Camera> & cams, const std::string & fileName);
+
 		/** Load cameras from a bundler file.
 		 *\param datasetPath path to the root of the dataset, should contain bundle.out, list_images.txt and optionally clipping_planes.txt 
 		 * \param zNear default near-plane value to use if the clipping_planes.txt file doesn't exist

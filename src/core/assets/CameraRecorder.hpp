@@ -122,6 +122,12 @@ namespace sibr
 		void	saveAsFRIBRBundle(const std::string & dirPath, const int width, const int height);
 
 		/**
+		Save the current recording stream as a lookat file.
+		\param filePath Path to the lookat file to write to.
+		*/
+		void saveAsLookAt(const std::string& filePath) const;
+
+		/**
 		\return a boolean denoting if the recorder is currently playing.
 		*/
 		bool isPlaying() const { return _playing; }
