@@ -34,8 +34,6 @@ namespace sibr
 		if (_data->datasetType() != ParseData::Type::EMPTY) {
 			createFromData(noRTs, myArgs.texture_width, noMesh);
 		}
-
-		_userCamera.aspect((float)myArgs.rendering_size.get()[0] / (float)myArgs.rendering_size.get()[1]);
 	}
 
 	void BasicIBRScene::createFromCustomData(const ParseData::Ptr & data, bool noRTs, const uint width)
