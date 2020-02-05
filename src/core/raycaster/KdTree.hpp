@@ -12,6 +12,7 @@ namespace sibr {
 	 * \brief Represent a 3D hierachical query structure baked by a nanoflann KdTree.
 	 * \note With the default L2 distance, all distances and radii are expected to be 
 	 * the squared values (this is a nanoflann constraint). For other metrics, use the distance directly.
+	 * \ingroup sibr_raycaster
 	 */
 	template <typename num_t = double, class Distance = nanoflann::metric_L2>
 	class  KdTree
@@ -60,25 +61,26 @@ namespace sibr {
 		void getNeighbors(const Vector3X & pos, double maxDistanceSq, bool sorted, Results & idDistSqs) const;
 
 		/// Interface expected by nanoflann for an adapter.
-
 		const self_t & derived() const {
 			return *this;
 		}
+
+		/// Interface expected by nanoflann for an adapter.
 		self_t & derived() {
 			return *this;
 		}
 
-		// Must return the number of data points
+		/// Must return the number of data points
 		inline size_t kdtree_get_point_count() const {
 			return _points.size();
 		}
 
-		// Returns the dim'th component of the idx'th point in the class:
+		/// Returns the dim'th component of the idx'th point in the class:
 		inline num_t kdtree_get_pt(const size_t idx, const size_t dim) const {
 			return _points[idx][dim];
 		}
 
-		// Optional bounding-box computation: return false to default to a standard bbox computation loop.
+		/// Optional bounding-box computation: return false to default to a standard bbox computation loop.
 		template <class BBOX>
 		bool kdtree_get_bbox(BBOX & /*bb*/) const {
 			return false;

@@ -2,6 +2,7 @@
 # define __SIBR_EXP_ULR_CONFIG_HPP__
 
 # include <core/system/Config.hpp>
+# include <core/system/CommandLineArgs.hpp>
 
 # ifdef SIBR_OS_WINDOWS
 #  ifdef SIBR_STATIC_DEFINE
@@ -24,5 +25,23 @@
 # else
 #  define SIBR_EXP_ULR_EXPORT
 # endif
+
+namespace sibr {
+
+	/// Arguments for all ULR applications.
+	struct ULRAppArgs :
+		virtual BasicIBRAppArgs {
+		Arg<int> version = { "v", 3, "ULR implementation version" };
+		ArgSwitch softVisibility = { "soft-visibility", false, "generate and use soft visibility masks" };
+		Arg<bool> masks = { "masks" , "use binary masks" };
+		Arg<std::string> maskParams = { "masks-param" , "" };
+		Arg<std::string> maskParamsExtra = { "masks-param-extra" , "" };
+		Arg<bool> invert = { "invert", "invert the masks" };
+		Arg<bool> alphas = { "alphas", "" };
+		Arg<bool> poisson = { "poisson-blend", "apply Poisson-filling to the ULR result" };
+	};
+
+}
+
 
 #endif  //__SIBR_EXP_ULR_CONFIG_HPP__

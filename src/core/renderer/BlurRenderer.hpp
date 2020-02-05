@@ -8,7 +8,10 @@
 # include <core/renderer/Config.hpp>
 
 namespace sibr { 
-	// Blur on edge (when adding object)
+
+	/** Blur on edge (when adding object)
+	\ingroup sibr_renderer
+	*/
 	class SIBR_EXP_RENDERER_EXPORT BlurRenderer
 	{
 	public:

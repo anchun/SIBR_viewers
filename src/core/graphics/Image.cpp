@@ -286,8 +286,6 @@ namespace sibr
 			max = log(max);
 		}
 
-		std::cout << max << " & " << min << std::endl;
-
 		for (unsigned int j = 0; j < im.h(); j++) {
 			for (unsigned int i = 0; i < im.w(); i++) {
 				if (logScale)

@@ -5,7 +5,9 @@
 #include "core/scene/ParseData.hpp"
 
 namespace sibr {
-
+	/**
+	\ingroup sibr_scene
+	*/
 	class SIBR_SCENE_EXPORT ProxyMesh {
 		SIBR_DISALLOW_COPY(ProxyMesh);
 	public:

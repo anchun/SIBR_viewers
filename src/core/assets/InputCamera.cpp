@@ -950,4 +950,36 @@ namespace sibr
 			}
 		}
 	}
+
+	void InputCamera::saveAsLookat(const std::vector<sibr::Camera>& cams, const std::string & fileName)
+	{
+
+		std::ofstream file(fileName, std::ios::out | std::ios::trunc);
+		if(!file.is_open()) {
+			SIBR_WRG << "Unable to save to file at path " << fileName << std::endl;
+			return;
+		}
+		// Get the padding count.
+		const int len = int(std::floor(std::log10(cams.size())))+1;
+		for (size_t cid = 0; cid < cams.size(); ++cid) {
+			const auto & cam = cams[cid];
+			std::string id = std::to_string(cid);
+			const std::string pad = std::string(len - id.size(), '0');
+
+			const sibr::Vector3f & pos = cam.position();
+			const sibr::Vector3f & up = cam.up();
+			const sibr::Vector3f tgt = cam.position() + cam.dir();
+
+			
+			file << "Cam" << pad << id;
+			file << " -D origin=" << pos[0] << "," << pos[1] << "," << pos[2];
+			file << " -D target=" << tgt[0] << "," << tgt[1] << "," << tgt[2];
+			file << " -D up=" << up[0] << "," << up[1] << "," << up[2];
+			file << " -D fovy=" << cam.fovy();
+			file << " -D clip=" << cam.znear() <<"," << cam.zfar();
+			file << "\n";
+		}
+
+		file.close();
+	}
 } // namespace sibr

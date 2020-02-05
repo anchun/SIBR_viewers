@@ -34,7 +34,7 @@ namespace sibr {
 
 		/** Set the current mesh to texture.
 		 * \param mesh the mesh to use.
-		 * \warn The mesh MUST have texcoords.
+		 * \warning The mesh MUST have texcoords.
 		 * \note If the mesh has no normals, they will be computed.
 		 */
 		void setMesh(const sibr::Mesh::Ptr mesh);
@@ -105,7 +105,7 @@ namespace sibr {
 		* \param image the image to fill
 		* \param mask mask where the zeros regions will be filled
 		* \return the filled image.
-		* \warn This is slow for large images (>8k).
+		* \warning This is slow for large images (>8k).
 		*/
 		static sibr::ImageRGB32F::Ptr poissonFill(const sibr::ImageRGB32F & image, const sibr::ImageL8 & mask);
 

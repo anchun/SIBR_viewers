@@ -11,35 +11,59 @@
 namespace sibr
 {
 	/**
-	Represents a listing of input images.
+	Represents a list of input images.
 	\ingroup sibr_assets
 	*/
 	class SIBR_ASSETS_EXPORT ImageListFile : public IFileLoader
 	{
 	public:
+
+		/** Image infos. */
 		struct Infos
 		{
-			std::string		filename;
-			uint			camId;
-			uint			width;
-			uint			height;
+			std::string		filename; ///< image filename.
+			uint			camId; ///< Associated camera ID.
+			uint			width; ///< Image width.
+			uint			height; ///< Image height.
 		};
 
 	public:
+
+		/** Load the list file from disk.
+		\param filename path to the list file
+		\param verbose display information
+		\return a boolean denoting success
+		*/
 		bool load( const std::string& filename , bool verbose = true);
-		
+
+		/** Images information.
+		 * \return each image infos.
+		 */
 		const std::vector<Infos>&	infos( void ) const { return _infos; }
+
+		/** Image absename.
+		 *\return the basename
+		 **/
 		const std::string&			basename( void ) const { return _basename; }
 
+		/** Load images.
+			\return the loaded images
+		*/
 		template <class TImage>
 		std::vector<TImage>			loadImages( void ) const;
+
+		/** Load images, applying an active images file filter. 
+			\param ac the active list file
+			\return the loaded images
+			\note Non-active images are present but empty.
+		*/
 		template <class TImage>
-		std::vector<TImage>			loadImages( const ActiveImageFile& ) const;
+		std::vector<TImage>			loadImages( const ActiveImageFile& ac) const;
 		
 
 	private:
-		std::vector<Infos>		_infos;
-		std::string				_basename;
+		std::vector<Infos>		_infos; ///< Image infos.
+		std::string				_basename; ///< Root name.
 
 	};
 

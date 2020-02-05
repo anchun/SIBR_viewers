@@ -14,6 +14,10 @@
 
 namespace sibr
 {
+
+	/**
+	\ingroup sibr_renderer
+	*/
 	class SIBR_EXP_RENDERER_EXPORT ShadowMapRenderer
 	{
 

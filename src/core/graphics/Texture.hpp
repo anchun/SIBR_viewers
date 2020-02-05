@@ -135,6 +135,17 @@ namespace sibr
 			isdepth             = 0};
 	};
 
+	template <> class GLFormat<unsigned short, 2> {
+	public:
+		enum {
+			internal_format = GL_RG16,
+			format = GL_RG,
+			int_internal_format = GL_RG16UI,
+			int_format = GL_RG_INTEGER,
+			isdepth = 0
+		};
+	};
+
 	template <> class GLFormat<unsigned short,3> {
 	public:
 		enum {
@@ -556,7 +567,7 @@ namespace sibr
 
 		~RenderTarget(void);
 
-		GLuint texture(uint t = 0) const; // deprecated (use handle)
+		GLuint texture(uint t = 0) const; /// \deprecated (use handle)
 		GLuint handle(uint t = 0) const;
 		GLuint depthRB() const;
 
@@ -565,12 +576,12 @@ namespace sibr
 		void unbind(void);
 
 		/**
-		 * \warn Beware, this function will unbind the render target after clearing.
+		 * \warning This function will unbind the render target after clearing.
 		 */
 		void clear( void );
 
 		/**
-		 * \warn Beware, this function will unbind the render target after clearing.
+		 * \warning This function will unbind the render target after clearing.
 		 */
 		void clear( const typename RenderTarget<T_Type, T_NumComp>::PixelFormat& v );
 		void clearStencil( void );
@@ -619,6 +630,11 @@ namespace sibr
 	typedef RenderTarget<float,3>          RenderTargetRGB32F;
 	typedef RenderTarget<float,4>          RenderTargetRGBA32F;
 	typedef RenderTarget<float,1>          RenderTargetLum32F;
+
+	typedef RenderTarget<unsigned short, 1>    RenderTargetLum16;
+	typedef RenderTarget<unsigned short, 2>    RenderTargetUV16;
+	typedef RenderTarget<unsigned short, 3>    RenderTargetRGB16;
+	typedef RenderTarget<unsigned short, 4>    RenderTargetRGBA16;
 
 	typedef RenderTarget<int,1>			   RenderTargetInt1;
 	//////////////////////////////////////////////////////////////////////////////
@@ -1339,7 +1355,7 @@ namespace sibr
 		virtual uint	depth(void) const = 0;
 		virtual uint	numLODs(void) const = 0;
 
-		//warning, low perfomances, for debug use only
+		/// \warning Low perfomances, for debug use only
 		virtual Vector4f	readBackPixel(int i, int x, int y, uint lod = 0) const = 0;
 	};
 
@@ -1401,7 +1417,7 @@ namespace sibr
 		uint	depth(void) const;
 		uint	numLODs(void) const;
 
-		//warning, low perfomances, for debug use only
+		/// \warning low perfomances, for debug use only
 		Vector4f	readBackPixel(int i, int x, int y, uint lod = 0) const;
 
 	private:

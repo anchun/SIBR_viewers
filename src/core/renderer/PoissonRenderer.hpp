@@ -13,12 +13,14 @@
 # include "core/graphics/Shader.hpp"
 
 namespace sibr { 
+
 	/**
 	* Hole filling by poisson synthesis on an input textures;
 	* contains all shaders, render targets and render passes.
 	* All black pixels on the input texture are considered holes
 	* and Poisson synthesis affects these pixels only, all
 	* other pixels are treated at Dirichlet boundary conditions.
+	* \ingroup sibr_renderer
 	*/
 	class SIBR_EXP_RENDERER_EXPORT PoissonRenderer
 	{

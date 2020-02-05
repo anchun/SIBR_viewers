@@ -11,7 +11,9 @@
 namespace sibr {
 
 	
-
+	/**
+	\ingroup sibr_imgproc
+	*/
 	class SIBR_IMGPROC_EXPORT MRFSolver
 	{
 

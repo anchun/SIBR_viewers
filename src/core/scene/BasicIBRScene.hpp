@@ -20,7 +20,6 @@ namespace sibr {
 	* 
 	* \ingroup sibr_scene
 	*/
-
 	class SIBR_SCENE_EXPORT BasicIBRScene
 	{
 		
@@ -41,9 +40,11 @@ namespace sibr {
 		 * The scene may be created using either dataset path, or explicitly specifying individual componenets.
 		 * \param myArgs to provide all command line arguments containing path to specific components.
 		 * \param noRTs to specify whether to initialize render target textures or not.
+		 * \param noMesh skip loading the mesh
 		 */
 		BasicIBRScene(const BasicIBRAppArgs & myArgs, bool noRTs = false, bool noMesh = false);
 
+		/** Detructor. */
 		~BasicIBRScene() {};
 
 		/**
@@ -60,6 +61,7 @@ namespace sibr {
 		* The data could be populated either from dataset path or customized by the user externally.
 		* \param noRTs to specify whether to initialize render target textures or not.
 		* \param width the constrained width for GPU texture data.
+		* \param noMesh skip loading the mesh
 		*/
 		void createFromData(bool noRTs = false, const uint width = 0, bool noMesh = false);
 
@@ -82,7 +84,7 @@ namespace sibr {
 
 		/**
 		* \brief Setter for the pointer holding the data related to the scene for scene creation.
-		*
+		* \param data the setup data
 		*/
 		void									data(const sibr::ParseData::Ptr & data);
 

@@ -70,16 +70,16 @@ namespace sibr
 		SIBR_LOG << "[CameraRecorder] - Recording" << std::endl;
 	}
 
-	void sibr::CameraRecorder::saving(std::string filePath)
+	void sibr::CameraRecorder::saving(std::string savePath)
 	{
 		_saving = true;
-		_savingPath = filePath;
+		_savingPath = savePath;
 		SIBR_LOG << "[CameraRecorder] - Recording" << std::endl;
 	}
 
-	void CameraRecorder::frameDebug(const bool debugFrame)
+	void CameraRecorder::savingVideo(bool saveVideo)
 	{
-		_savingVideo = debugFrame;
+		_savingVideo = saveVideo;
 	}
 
 	void sibr::CameraRecorder::stopSaving(void)
@@ -147,10 +147,9 @@ namespace sibr
 			return true;
 		} else if (path.extension().string() == ".path") {
 			return load(filename);
-		} else {
-			SIBR_WRG << std::endl;
-			return false;
-		}
+		} 
+		SIBR_WRG << "Unable to load camera path" << std::endl;
+		return false;
 	}
 
 	void CameraRecorder::loadBundle(const std::string & filePath, int w, int h)
@@ -206,6 +205,7 @@ namespace sibr
 		}
 
 		const int size = static_cast<int>(_cameras.size() / step);
+		
 		out << "# Bundle file v0.3\n";
 		out << size << " " << 0 << "\n";
 
@@ -294,6 +294,11 @@ namespace sibr
 
 			SIBR_LOG << "[CameraRecorder] - Saved " << _cameras.size() << " cameras to " << dirPath << "." << std::endl;
 		}
+	}
+
+	void CameraRecorder::saveAsLookAt(const std::string & filePath) const
+	{
+		InputCamera::saveAsLookat(_cameras, filePath);
 	}
 
 } // namespace sibr

@@ -10,9 +10,16 @@
 
 namespace sibr
 {
+	/**
+	\addtogroup sibr_system
+	@{
+	*/
 
-	// Clarify if this function is equivalent to sibr::Quaternion(rotationmatrix);
-	// In my experience it was not the case (SR).
+	/** Build a quaternion from a rotation matrix
+	 *\param m the rotation matrix
+	 *\return the quaternion
+	 *\todo Seems to be different from sibr::Quaternion(rotationmatrix)
+	 */
 	template <typename T, int Options>
 	Eigen::Quaternion<T, 0>	quatFromMatrix(const Eigen::Matrix<T, 3, 3, Options, 3, 3>& m) {
 		Eigen::Quaternion<T, 0> q;
@@ -55,6 +62,10 @@ namespace sibr
 		return q;
 	}
 
+	/** Build a quaternion from a rotation matrix
+	 *\param m the rotation matrix
+	 *\return the quaternion
+	 */
 	template <typename T, int Options>
 	Eigen::Quaternion<T, 0>	quatFromMatrix( const Eigen::Matrix<T, 4,4, Options, 4,4>& m ) {
 		Eigen::Quaternion<T, 0> q;
@@ -97,6 +108,11 @@ namespace sibr
 		return q;
 	}
 
+	/** Build a quaternion from rotation euler angles.
+	 *\param deg the rotation angles
+	 *\return the quaternion
+	 *\todo Explicit the angles order (yaw, pitch, roll?)
+	 */
 	template <typename T, int Options>
 	Eigen::Quaternion<T, 0>	quatFromEulerAngles( const Eigen::Matrix<T, 3, 1,Options>& deg ) {
 		Vector3f v(SIBR_DEGTORAD(deg.x()), SIBR_DEGTORAD(deg.y()), SIBR_DEGTORAD(deg.z()));
@@ -122,32 +138,57 @@ namespace sibr
 		return dst;
 	}
 
+	/** Rotate a vector using a quaternion.
+	 *\param rotation the quaternion
+	 *\param vec the vector
+	 *\return the rotated vector.
+	 */
 	template <typename T, int Options>
 	Eigen::Matrix<T, 3, 1, Options>	quatRotateVec(
 		const Eigen::Quaternion<T, 0>& rotation, const Eigen::Matrix<T, 3, 1, Options>& vec ) {
-		return rotation._transformVector(vec); // why '_' in this function name ? I don't have any trust
-		// in the longivity of this function so I have done this function wrapper
+		return rotation._transformVector(vec);
 	}
 
+	/** Quaternion product.
+	 * \param q1 first quaternion
+	 * \param q2 second quaternion
+	 * \return the result quaternion
+	 */
 	template <typename T>
 	inline static Eigen::Quaternion<T> dot( const Eigen::Quaternion<T>& q1, const Eigen::Quaternion<T>& q2 ) {
 		return q1.vec().dot(q2.vec()) + q1.w()*q2.w();
 	}
 
+	/** Compute the delta angle between two quaternions.
+	 *\param q1 first quaternion
+	 *\param q2 second quaternion
+	 *\return the angle in radians
+	 *\note Will return the smallest angle possible
+	 */
 	template <typename T>
 	inline static float		angleRadian( const Eigen::Quaternion<T>& q1, const Eigen::Quaternion<T>& q2 ) {
 		const float mid = 3.14159f;
-		float angle = q1.angularDistance(q2);
+		const float angle = q1.angularDistance(q2);
 		return angle > mid? mid-angle : angle; // be sure to return the shortest angle
 	}
 
-    /// linear quaternion interpolation
+    /** Linear quaternion interpolation
+     *\param q1 first quaternion
+	 *\param q2 second quaternion
+	 *\param t interpolation factor
+	 *\return the interpolated quaternion
+	 */
 	template <typename T>
     inline static Eigen::Quaternion<T> lerp( const Eigen::Quaternion<T>& q1, const Eigen::Quaternion<T>& q2, float t ) {
 		return (q1*(1-t) + q2*t).normalized();
 	}
 
-	/// spherical linear interpolation
+	/** Spherical quaternion interpolation
+	*\param q1 first quaternion
+	*\param q2 second quaternion
+	*\param t interpolation factor
+	*\return the interpolated quaternion
+	*/
 	template <typename T>
 	static Eigen::Quaternion<T> slerp( const Eigen::Quaternion<T>& q1, const Eigen::Quaternion<T>& q2, float t ) {
 		Eigen::Quaternion<T> q3;
@@ -172,6 +213,8 @@ namespace sibr
 	typedef	Eigen::Quaternion<int>			Quaternioni;
 	typedef	Eigen::Quaternion<float>		Quaternionf;
 	typedef	Eigen::Quaternion<double>		Quaterniond;
+
+	/** }@ */
 
 } // namespace sibr
 

@@ -29,10 +29,13 @@ namespace sibr {
 		/**
 		 * Constructor
 		 * \param ibrScene The scene to use for rendering.
+		 * \param render_w rendering width
+		 * \param render_h rendering height
 		 */
 		ULRV3View(const sibr::BasicIBRScene::Ptr& ibrScene, uint render_w, uint render_h);
 
-		/** Replace the current scene. */
+		/** Replace the current scene.
+		 *\param newScene the new scene to render */
 		void setScene(const sibr::BasicIBRScene::Ptr & newScene);
 
 		/**
@@ -53,14 +56,17 @@ namespace sibr {
 		 */
 		void onGUI() override;
 
-		/// Obtain a reference to the renderer.
+		/** \return a reference to the renderer. */
 		const ULRV3Renderer::Ptr & getULRrenderer() const { return _ulrRenderer; }
 
-		/// Set the renderer blending weights mode.
+		/** Set the renderer blending weights mode.
+		 *\param mode the new mode to use
+		 *\sa WeightsMode
+		 **/
 		void setMode(const WeightsMode mode);
 
-		/// Get a ref to the scene.
-		const std::shared_ptr<sibr::BasicIBRScene> getScene() const { return _scene; }
+		/** \return a reference to the scene */
+		const std::shared_ptr<sibr::BasicIBRScene> & getScene() const { return _scene; }
 
 	protected:
 
@@ -70,19 +76,19 @@ namespace sibr {
 		 */
 		void updateCameras(bool allowResetToDefault);
 
-		std::shared_ptr<sibr::BasicIBRScene> _scene;
-		ULRV3Renderer::Ptr		_ulrRenderer;
-		PoissonRenderer::Ptr	_poissonRenderer;
+		std::shared_ptr<sibr::BasicIBRScene> _scene; ///< The current scene.
+		ULRV3Renderer::Ptr		_ulrRenderer; ///< The ULR renderer.
+		PoissonRenderer::Ptr	_poissonRenderer; ///< The poisson filling renderer.
 
-		RenderTargetRGBA::Ptr	_blendRT;
-		RenderTargetRGBA::Ptr	_poissonRT;
+		RenderTargetRGBA::Ptr	_blendRT; ///< ULR destination RT.
+		RenderTargetRGBA::Ptr	_poissonRT; ///< Poisson filling destination RT.
 
-		bool					_poissonBlend = false;
+		bool					_poissonBlend = false; ///< Should Poisson filling be applied.
 
-		RenderMode				_renderMode = ALL_CAMS;
-		WeightsMode				_weightsMode = ULR_W;
-		int						_singleCamId = 0;
-		int						_everyNCamStep = 1;
+		RenderMode				_renderMode = ALL_CAMS; ///< Current rendering mode.
+		WeightsMode				_weightsMode = ULR_W; ///< Current blend weights mode.
+		int						_singleCamId = 0; ///< Selected camera for the single view mode.
+		int						_everyNCamStep = 1; ///< Camera step size for the every other N mode.
 	};
 
 } /*namespace sibr*/ 

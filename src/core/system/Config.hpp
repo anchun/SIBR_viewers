@@ -125,7 +125,7 @@
 
 //// Math Macro ////
 # define SIBR_PI	3.14159265358979323846
-# define SIBR_2PI SIBR_PI * 2.0 /// \todo TODO: resolve it now
+# define SIBR_2PI (SIBR_PI * 2.0)
 
 # define SIBR_PI_DIV_180	0.01745329251
 # define SIBR_180_DIV_PI	57.2957795131
@@ -146,12 +146,20 @@
 
 namespace sibr
 {
+	/** Ensure that all logs are output before exiting when an error or exception is raised. 
+	\ingroup sibr_system
+	*/
 	struct SIBR_SYSTEM_EXPORT LogExit
 	{
+		/// Constructor.
 		LogExit( void );
+
+		/** Throw an exception and trigger exit.
+		\param stream the log stream.
+		*/
 		void operator <<=( const std::ostream& stream );
 
-		std::lock_guard<std::mutex>		lock;
+		std::lock_guard<std::mutex>		lock; ///< Sync lock.
 	};
 }
 
@@ -220,13 +228,20 @@ using Path = boost::filesystem::path;
 namespace sibr
 {
 	/// Used for quickly measuring time for completing a scope.
+	/// \ingroup sibr_system
 	struct SIBR_SYSTEM_EXPORT DebugScopeProfiler
 	{
+		/** Constructor.
+		\param name the display name of the profiling session
+		*/
 		DebugScopeProfiler( const std::string& name );
+		
+		/// Destructor.
 		~DebugScopeProfiler( void );
+	
 	private:
-		clock_t _t0;
-		std::string _name;
+		clock_t _t0; ///< Timing.
+		std::string _name; ///< Name.
 	};
 
 # define SIBR_PROFILESCOPE_EXPAND(x, y) sibr::DebugScopeProfiler x(y);
@@ -265,6 +280,12 @@ namespace sibr
 
 namespace sibr
 {
+	/** Rounding operation.
+	\param x the value to round
+	\return the rounded value
+	\todo Compare behaviour with std::round
+	\ingroup sibr_system
+	*/
 	inline float round(float x) {
 		return x >= 0.0f ? floorf(x + 0.5f) : ceilf(x - 0.5f);
 	}

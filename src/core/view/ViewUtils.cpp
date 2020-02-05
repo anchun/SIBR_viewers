@@ -9,7 +9,6 @@
 #include <core/raycaster/CameraRaycaster.hpp>
 namespace sibr
 {
-	ViewUtils::ViewUtils() : initialized(false) {}
 
 	void ViewUtils::renderCamStub(const sibr::Camera & eye, const sibr::Camera & cam, const sibr::Vector3f & color, float scaling)
 	{
