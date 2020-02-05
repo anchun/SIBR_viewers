@@ -135,6 +135,17 @@ namespace sibr
 			isdepth             = 0};
 	};
 
+	template <> class GLFormat<unsigned short, 2> {
+	public:
+		enum {
+			internal_format = GL_RG16,
+			format = GL_RG,
+			int_internal_format = GL_RG16UI,
+			int_format = GL_RG_INTEGER,
+			isdepth = 0
+		};
+	};
+
 	template <> class GLFormat<unsigned short,3> {
 	public:
 		enum {
