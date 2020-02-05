@@ -87,6 +87,12 @@
 
 namespace sibr
 {
+	/** Clamp a value.
+	\param value value to clamp
+	\param min min value
+	\param max max value
+	\return min(max(value, min), max)
+	*/
 	template <typename T>
 	inline T	clamp( T value, T min, T max ) {
 		return std::max(min, std::min(max, value));

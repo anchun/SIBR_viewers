@@ -7,7 +7,7 @@
 
 namespace sibr {
 
-	/** \brief Performs gradient integration fro tasks such as Poisson-based inpainting, smooth filling, ...
+	/** \brief Performs gradient integration for tasks such as Poisson-based inpainting, smooth filling, ...
 	 * \ingroup sibr_imgproc
 	 */
 	class SIBR_IMGPROC_EXPORT PoissonReconstruction
@@ -35,7 +35,7 @@ namespace sibr {
 		void solve(void);
 
 		/** \return the result of the reconstruction */
-		cv::Mat result() { return _img_target; }
+		cv::Mat result() const { return _img_target; }
 
 		/** helper to get the pixel coordinates of valid pixels for agiven pixel and image size.
 		 *\param pos the central pixel position
@@ -46,28 +46,35 @@ namespace sibr {
 		static std::vector< sibr::Vector2i > getNeighbors(sibr::Vector2i pos, int width, int height);
 
 	private:
-		cv::Mat _img_target;
-		cv::Mat _gradientsX;
-		cv::Mat _gradientsY;
-		cv::Mat _mask;
+		cv::Mat _img_target; ///< Main image.
+		cv::Mat _gradientsX; ///< Gradients.
+		cv::Mat _gradientsY; ///< Gradients.
+		cv::Mat _mask; ///< Mask guide.
 
-		std::vector<sibr::Vector2i> _pixels;
-		std::vector<sibr::Vector2i> _boundaryPixels;
-		std::vector<int > _pixelsId;
-		std::vector<std::vector<int> > _neighborMap;
+		std::vector<sibr::Vector2i> _pixels; ///< list of valid pixels.
+		std::vector<sibr::Vector2i> _boundaryPixels; ///< List of boundary pixels.
+		std::vector<int > _pixelsId; ///< Pixel IDs list.
+		std::vector<std::vector<int> > _neighborMap; ///< Each pixel valid neighbors.
 
-		/* Parse the mask and the additional label condition into a list of pixels to modified and boundaries conditions. */
+		/** Parse the mask and the additional label condition into a list of pixels to modified and boundaries conditions. */
 		void parseMask(void);
 
-		/* Make sure that every modified pixel is connected to some boundary condition, all non connected pixels are discarded. */
+		/** Make sure that every modified pixel is connected to some boundary condition, all non connected pixels are discarded. */
 		void checkConnectivity(void);
 
-		/* Heuristic to fill isolated black pixels. */
+		/** Heuristic to fill isolated black pixels. */
 		void postProcessing(void);
 
-		/* Are we in the mask (ie mask==0). */
+		/** Are we in the mask (ie mask==0). 
+		\param pos the pixel to test for
+		\return true if mask(pix) == 0
+		*/
 		bool isInMask(sibr::Vector2i & pos);
-		/* Are we ignored (ie mask==-1). */
+
+		/* Are we ignored (ie mask==-1).
+		\param pos the pixel to test for
+		\return true if mask(pix) == -1
+		*/
 		bool isIgnored(sibr::Vector2i & pos);
 
 	};

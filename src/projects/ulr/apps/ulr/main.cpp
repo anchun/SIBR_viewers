@@ -14,9 +14,6 @@ const char* usage = ""
 	;
 
 
-struct ULRAppArgs :
-	virtual BasicIBRAppArgs {
-};
 
 int main( int ac, char** av )
 {
@@ -24,7 +21,7 @@ int main( int ac, char** av )
 
 		// Parse Commad-line Args
 		CommandLineArgs::parseMainArgs(ac, av);
-		ULRAppArgs myArgs;
+		BasicIBRAppArgs myArgs;
 		
 		const bool doVSync = !myArgs.vsync;
 		// rendering size
@@ -67,7 +64,7 @@ int main( int ac, char** av )
 		multiViewManager.addCameraForView("ULR view", generalCamera);
 
 		// Top view
-		const std::shared_ptr<sibr::SceneDebugView>    topView(new sibr::SceneDebugView(scene, multiViewManager.getViewport(), generalCamera, myArgs));
+		const std::shared_ptr<sibr::SceneDebugView>    topView(new sibr::SceneDebugView(scene, generalCamera, myArgs));
 		multiViewManager.addSubView("Top view", topView, usedResolution);
 
 		while (window.isOpened())

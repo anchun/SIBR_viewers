@@ -9,6 +9,7 @@
 namespace sibr
 {
 	/**
+	* Timer to monitor performance of a section of code.
 	* \ingroup sibr_system
 	*/
 	class Timer
@@ -21,8 +22,11 @@ namespace sibr
 		typedef std::chrono::seconds s;
 
 		const double timeResolution = (double)std::chrono::high_resolution_clock::period::num
-			/ std::chrono::high_resolution_clock::period::den;
+			/ std::chrono::high_resolution_clock::period::den; ///< Timer resolution.
 
+		/** Constructor. Create a timer.
+		\param start_now start to measure time at creation
+		*/
 		Timer(bool start_now = false ) : hasStarted(false)
 		{
 			if (start_now) {
@@ -30,11 +34,17 @@ namespace sibr
 			}
 		}
 
+		/** Copy constructor
+		\param timer another timer
+		*/
 		Timer(const Timer & timer) {
 			hasStarted = timer.hasStarted;
 			current_tic = timer.current_tic;
 		}
 
+		/** Start measuring elapsed time.
+		 * \warning This will clear existing recorded times.
+		*/
 		void tic()
 		{
 			tocs.resize(0);
@@ -42,12 +52,18 @@ namespace sibr
 			current_tic = std::chrono::high_resolution_clock::now();
 		}
 
+		/** Save currently elapsed time.
+		 * \note You can call toc multiple times in a row.
+		*/
 		void toc()
 		{
 			auto toc = std::chrono::high_resolution_clock::now();
 			tocs.push_back(toc);
 		}
 
+		/** Get the time elapsed since the last tic, with a precisiond etemrined by the tempalte argument.
+			\return the measured time (default: in ms)
+		*/
 		template<typename T = Timer::milli>
 		double deltaTimeFromLastTic() const
 		{
@@ -61,13 +77,16 @@ namespace sibr
 			return deltaTime;
 		}
 
+		/** Print a list of all the recorded tocs, with the precision specified as a template argument (by default in ms).
+			\param toc_now should a toc be generated right now.
+		*/
 		template<typename T = Timer::milli>
-		void display(bool tac_now = false)
+		void display(bool toc_now = false)
 		{
-			if (tac_now) {
+			if (toc_now) {
 				toc();
 			}
-			int n = (int)tocs.size();
+			const int n = (int)tocs.size();
 			if (!hasStarted || n == 0) {
 				std::cout << "[SIBR - Timer] : no tic or no toc" << std::endl;
 			}
@@ -84,6 +103,12 @@ namespace sibr
 			}
 		}
 
+		/** Get the time elapsed between two points in time, using the precision specified as a template argument (default to ms).
+		\param tic first time point
+		\param toc second time point
+		\param deltaTime will contain the computed duration
+		\return false if the elapsed time was below the timer precision.
+		*/
 		template<typename T = Timer::milli>
 		bool getDeltaTime(const time_point & tic, const time_point & toc, double & deltaTime) const {
 			double timediff_nanoSeconds = (double)std::chrono::duration_cast<Timer::nano>(toc - tic).count();
@@ -97,9 +122,9 @@ namespace sibr
 		}
 
 	private:
-		time_point current_tic;
-		std::vector<time_point> tocs;
-		bool hasStarted;
+		time_point current_tic; ///< Initial tic.
+		std::vector<time_point> tocs; ///< Recorded time points.
+		bool hasStarted; ///< Is the timer currently running.
 	};
 	
 

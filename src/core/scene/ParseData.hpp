@@ -25,7 +25,7 @@ namespace sibr{
 	* - 
 	* - 
 	*
-	* \ingroup sibr_assets
+	* \ingroup sibr_scene
 	*/
 
 	class SIBR_SCENE_EXPORT ParseData{
@@ -34,7 +34,7 @@ namespace sibr{
 
 		/**
 		 * \brief Denotes the type of dataset represented by a ParseData object.
-		* \ingroup sibr_view
+		* \ingroup sibr_scene
 		*/
 		enum class Type {
 			EMPTY, SIBR, COLMAP, NVM, MESHROOM

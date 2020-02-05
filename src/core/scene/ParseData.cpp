@@ -610,15 +610,11 @@ namespace sibr {
 						//infos.filename.erase(infos.filename.find_last_of("."), std::string::npos);
 						id = atoi(infos.filename.c_str());
 
-						InputCamera::Z nearFar;
+						InputCamera::Z nearFar(100.0f, 0.1f);
 						
 						if (splitS.size() > 3) {
 							nearFar.near = stof(splitS[3]);
 							nearFar.far = stof(splitS[4]);
-						}
-						else {
-							nearFar.near = 0.1f;
-							nearFar.far = 100.0f;
 						}
 						_imgInfos.push_back(infos);
 						_nearsFars.push_back(nearFar);

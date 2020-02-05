@@ -16,13 +16,45 @@ namespace sibr {
 
 	  class LightSphere {
 	  public:
-		  LightSphere(const sibr::Vector3f position, const float radius
-		  , const float radiance) :
+		  LightSphere(const sibr::Vector3f& position, float radius
+			  , float radiance) :
 			  _position(position),
 			  _radiance(radiance),
 			  _radius(radius) {};
 		  sibr::Vector3f _position;
 		  float _radius;
+		  float _radiance;
+	  };
+
+	  class LightSpot {
+	  public:
+		  LightSpot(const sibr::Vector3f& position,
+			  const sibr::Vector3f& target,
+			  float intensity, float cutOffAngle) :
+			  _position(position),
+			  _target(target),
+			  _intensity(intensity),
+			  _cutOffAngle(cutOffAngle) {};
+		  sibr::Vector3f _position;
+		  sibr::Vector3f _target;
+		  float _intensity;
+		  float _cutOffAngle;
+	  };
+
+	  class LightRectangle {
+	  public:
+		  LightRectangle(
+			  const sibr::Vector3f& position,
+			  const sibr::Vector2f& scale,
+			  const sibr::Vector3f& rotation,
+			  float radiance) :
+			  _position(position),
+			  _scale(scale),
+			  _rotation(rotation),
+			  _radiance(radiance) {};
+		  sibr::Vector3f _position;
+		  sibr::Vector2f _scale;
+		  sibr::Vector3f _rotation;
 		  float _radiance;
 	  };
 
@@ -161,6 +193,12 @@ namespace sibr {
 	  //!
 	  void writeLights();
 
+	  void writeLightSpot(std::string& s, const LightSpot& spot);
+
+	  void writeLightSphere(std::string& s, const LightSphere& sphere);
+
+	  void writeLightRectangle(std::string& s, 
+								const LightRectangle& rectangle);
 	  //!
 	  //! Allows to write the validated lights on several files
 	  //! => one light by file
@@ -204,13 +242,37 @@ namespace sibr {
 										  //!<
 
 	  std::vector<LightSphere> _lightSpheresValidated;
-
 	  std::vector<LightSphere> _currentLightSpheres;
+
+	  std::vector<LightSpot> _lightSpotsValidated;
+	  std::vector<LightSpot> _currentLightSpots;
+
+	  std::vector<LightRectangle> _lightRectanglesValidated;
+	  std::vector<LightRectangle> _currentLightRectangles;
 
 	  float _initialDeltaLight;
 	  float _currentDeltaLight;
+
+	  int	_currentTypeOfLight = 0;
+	  //Sphere light options
 	  float _currentRadius = 1.f;
-	  float _currentRadiance = 1.f;
+	  float _currentRadianceSphere = 1.f;
+
+	  //Spot light options
+	  float _currentIntensity	= 1.f;
+	  float _thetaAngleSpot		= 30.f;
+	  float _phiAngleSpot		= 30.f;
+	  float _currentCutOffAngle	= 20.f;
+	  float _currentScaleSpot	= 1.f;
+
+	  //Rectangle light options
+	  float _currentRadianceRectangle	= 1.f;
+	  float _rotationXAngleRectangle	= 30.f;
+	  float _rotationYAngleRectangle	= 30.f;
+	  float _rotationZAngleRectangle	= 30.f;
+	  float _widthRectangle				= 1.f;
+	  float _heightRectangle			= 1.f;
+
 
 	  std::string _name; //!< the name of the scene
 						 //!<

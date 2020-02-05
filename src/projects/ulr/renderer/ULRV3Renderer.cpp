@@ -89,23 +89,21 @@ void sibr::ULRV3Renderer::process(
 	bool passthroughDepth
 ) {
 	// Render the proxy positions in world space.
-	renderProxyDepth(mesh, eye);
-	// Perform ULR blending.
-	renderBlending(eye, dst, inputRGBs, inputDepths, passthroughDepth);
+	process(mesh, eye, dst, inputRGBs->handle(), inputDepths, passthroughDepth);
 }
 
 void sibr::ULRV3Renderer::process(
 	const sibr::Mesh & mesh,
 	const sibr::Camera & eye,
 	IRenderTarget & dst,
-	uint input_texs_handle,
+	uint inputRGBHandle,
 	const sibr::Texture2DArrayLum32F::Ptr & inputDepths,
 	bool passthroughDepth
 ) {
 	// Render the proxy positions in world space.
 	renderProxyDepth(mesh, eye);
 	// Perform ULR blending.
-	renderBlending(eye, dst, input_texs_handle, inputDepths, passthroughDepth);
+	renderBlending(eye, dst, inputRGBHandle, inputDepths, passthroughDepth);
 }
 
 void sibr::ULRV3Renderer::updateCameras(const std::vector<uint> & camIds) {
@@ -146,73 +144,7 @@ void sibr::ULRV3Renderer::renderProxyDepth(const sibr::Mesh & mesh, const sibr::
 void sibr::ULRV3Renderer::renderBlending(
 	const sibr::Camera & eye,
 	IRenderTarget & dst,
-	const sibr::Texture2DArrayRGB::Ptr & inputRGBs,
-	const sibr::Texture2DArrayLum32F::Ptr & inputDepths,
-	bool passthroughDepth
-){
-	// Bind and clear destination rendertarget.
-	glViewport(0, 0, dst.w(), dst.h());
-	if (_clearDst) {
-		dst.clear();
-	}
-	dst.bind();
-
-	_ulrShader.begin();
-
-	// Uniform values.
-	_nCamPos.set(eye.position());
-	_occTest.send();
-	_areMasksBinary.send();
-	_invertMasks.send();
-	_discardBlackPixels.send();
-	_useMasks.send();
-	_epsilonOcclusion.send();
-	_flipRGBs.send();
-	_showWeights.send();
-	_camsCount.send();
-	_winnerTakesAll.send();
-	_gammaCorrection.send();
-
-	// Textures.
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, _depthRT->handle());
-
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D_ARRAY, inputRGBs->handle());
-
-	glActiveTexture(GL_TEXTURE2);
-	glBindTexture(GL_TEXTURE_2D_ARRAY, inputDepths->handle());
-
-	// Pass the masks if enabled and available.
-	if (_useMasks && _masks.get()) {
-		glActiveTexture(GL_TEXTURE3);
-		glBindTexture(GL_TEXTURE_2D_ARRAY, _masks->handle());
-	}
-	
-	// Bind UBO to shader, after all possible textures.
-	glBindBuffer(GL_UNIFORM_BUFFER, _uboIndex);
-	glBindBufferBase(GL_UNIFORM_BUFFER, 4, _uboIndex);
-	glBindBuffer(GL_UNIFORM_BUFFER, 0);
-
-	if (passthroughDepth) {
-		glEnable(GL_DEPTH_TEST);
-	}
-	else {
-		glDisable(GL_DEPTH_TEST);
-	}
-
-	// Perform ULR rendering.
-	RenderUtility::renderScreenQuad();
-	glDisable(GL_DEPTH_TEST);
-
-	_ulrShader.end();
-	dst.unbind();
-}
-
-void sibr::ULRV3Renderer::renderBlending(
-	const sibr::Camera & eye,
-	IRenderTarget & dst,
-	uint input_texs_handle,
+	uint inputRGBHandle,
 	const sibr::Texture2DArrayLum32F::Ptr & inputDepths,
 	bool passthroughDepth
 ) {
@@ -244,7 +176,7 @@ void sibr::ULRV3Renderer::renderBlending(
 	glBindTexture(GL_TEXTURE_2D, _depthRT->handle());
 
 	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D_ARRAY, input_texs_handle);
+	glBindTexture(GL_TEXTURE_2D_ARRAY, inputRGBHandle);
 
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D_ARRAY, inputDepths->handle());

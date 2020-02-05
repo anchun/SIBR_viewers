@@ -15,7 +15,9 @@
 
 namespace sibr{
 
-
+	/** 
+	\ingroup sibr_scene
+	*/
 	class SIBR_SCENE_EXPORT RTTextureSize {
 
 	public:
@@ -33,7 +35,9 @@ namespace sibr{
 
 	};
 
-
+	/**
+	\ingroup sibr_scene
+	*/
 	class SIBR_SCENE_EXPORT RGBDInputTextures : public virtual RTTextureSize {
 		SIBR_CLASS_PTR(RGBDInputTextures)
 	public:
@@ -47,7 +51,9 @@ namespace sibr{
 
 	};
 
-
+	/**
+	\ingroup sibr_scene
+	*/
 	class SIBR_SCENE_EXPORT DepthInputTextureArray : public virtual RTTextureSize {
 		SIBR_CLASS_PTR(DepthInputTextureArray)
 	public:
@@ -58,7 +64,9 @@ namespace sibr{
 		Texture2DArrayLum32F::Ptr _inputDepthMapArrayPtr;
 
 	};
-
+	/**
+	\ingroup sibr_scene
+	*/
 	class SIBR_SCENE_EXPORT RGBInputTextureArray : public virtual RTTextureSize {
 
 		SIBR_CLASS_PTR(RGBInputTextureArray)
@@ -72,7 +80,9 @@ namespace sibr{
 
 	};
 
-
+	/**
+	\ingroup sibr_scene
+	*/
 	class SIBR_SCENE_EXPORT RenderTargetTextures :
 		public virtual RGBDInputTextures,
 		public virtual DepthInputTextureArray,

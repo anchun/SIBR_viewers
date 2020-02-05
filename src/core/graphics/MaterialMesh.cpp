@@ -49,7 +49,7 @@ namespace sibr
 		auto convertVec = [](const aiVector3D& v) {
 			return Vector3f(v.x, v.y, v.z); };
 		_triangles.clear();
-		
+
 		uint offsetVertices = 0;
 		uint offsetFaces = 0;
 		uint matId = 0; // Material
@@ -115,7 +115,7 @@ namespace sibr
 						randomUV = false;
 					}
 				}
-			
+
 			}
 
 			if (randomUV) {
@@ -125,7 +125,7 @@ namespace sibr
 					float u = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
 					float v = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
 					_texcoords[offsetVertices + i] =
-						 Vector2f(u * 5.f,v * 5.f);
+						Vector2f(u * 5.f, v * 5.f);
 				}
 			}
 
@@ -147,7 +147,7 @@ namespace sibr
 			}
 
 			std::string matName = aiMatName.C_Str();
-			
+
 			if (matName2Id.find(matName) == matName2Id.end()) {
 
 				matName2Id[matName] = matId;
@@ -195,7 +195,7 @@ namespace sibr
 			<< " (" << _triangles.size() << ") faces and "
 			<< " (" << _vertices.size() << ") vertices detected." << std::endl;
 		SIBR_LOG << "Init material part complete." << std::endl;
-		
+
 		_gl.dirtyBufferGL = true;
 		return true;
 	}
@@ -255,8 +255,9 @@ namespace sibr
 					SIBR_LOG << "Adding one instance of: " << filename << std::endl;
 
 					rapidxml::xml_node<> *nodeTrans = node->first_node("transform");
+					sibr::MaterialMesh toWorldMesh = meshes[filename];
+
 					if (nodeTrans) {
-						sibr::MaterialMesh toWorldMesh = meshes[filename];
 						rapidxml::xml_node<> *nodeM1 = nodeTrans->first_node("matrix");
 						std::string matrix1 = nodeM1->first_attribute("value")->value();
 						rapidxml::xml_node<> *nodeM2 = nodeM1->next_sibling("matrix");
@@ -285,40 +286,62 @@ namespace sibr
 							std::stof(splitM2[8]), std::stof(splitM2[9]), std::stof(splitM2[10]), std::stof(splitM2[11]),
 							std::stof(splitM2[12]), std::stof(splitM2[13]), std::stof(splitM2[14]), std::stof(splitM2[15]);
 
-						sibr::MaterialMesh::Vertices vertices;
-						for (int v = 0; v < toWorldMesh.vertices().size(); v++) {
-							sibr::Vector4f v4(toWorldMesh.vertices()[v].x(),
-								toWorldMesh.vertices()[v].y(),
-								toWorldMesh.vertices()[v].z(), 1.0);
-							vertices.push_back((m2*(m1*v4)).xyz());
+						{
+							sibr::MaterialMesh::Vertices vertices;
+							for (int v = 0; v < toWorldMesh.vertices().size(); v++) {
+								sibr::Vector4f v4(toWorldMesh.vertices()[v].x(),
+									toWorldMesh.vertices()[v].y(),
+									toWorldMesh.vertices()[v].z(), 1.0);
+								vertices.push_back((m2*(m1*v4)).xyz());
 
+							}
+
+							toWorldMesh.vertices(vertices);
 						}
 
-						toWorldMesh.vertices(vertices);
-						merge(toWorldMesh);
+						// If the mesh has normals, we should transform them also.
+						if (toWorldMesh.hasNormals()) {
+							sibr::Mesh::Normals normals;
+							const sibr::Matrix4f m1Inv = (m2*m1).inverse().transpose();
+							for (int v = 0; v < toWorldMesh.normals().size(); v++) {
+								const sibr::Vector3f & ln = toWorldMesh.normals()[v];
+								sibr::Vector4f n4(ln[0], ln[1], ln[2], 1.0);
+								normals.push_back((m1Inv * n4).xyz());
+							}
+							toWorldMesh.normals(normals);
+						}
 
 					}
-					else {
-						merge(meshes[filename]);
-					}
-
+					merge(toWorldMesh);
 
 				}
 				else if (strcmp(browserAttributes->name(), "type") == 0 &&
-						(strcmp(browserAttributes->value(), "obj") == 0 ||
+					(strcmp(browserAttributes->value(), "obj") == 0 ||
 						strcmp(browserAttributes->value(), "ply") == 0)) {
-					
+
 					rapidxml::xml_node<> *nodeRef = node->first_node("string");
 					const std::string filename = nodeRef->first_attribute("value")
 						->value();
 					const std::string meshPath = pathFolder + "/" + filename;
+					// Search for any normal options:
+					rapidxml::xml_node<> *nodeOpt = node->first_node("boolean");
+					bool flipNormals = false;
+					while (nodeOpt) {
+						const std::string name = nodeOpt->first_attribute("name")->value();
+						const std::string value = nodeOpt->first_attribute("value")->value();
+						if (name == "flipNormals" && value == "true") {
+							flipNormals = true;
+						}
+						nodeOpt = nodeOpt->next_sibling("boolean");
+					}
+
 
 					if (meshes.find(filename) == meshes.end()) {
 						meshes[filename] = sibr::MaterialMesh();
 						if (!meshes[filename].load(meshPath)) {
 							return false;
 						}
-						if (meshes[filename].matIds().size() == 0)
+						if (meshes[filename].matIds().empty())
 						{
 							SIBR_WRG << "Material (" << filename << ") not present ..." << std::endl;
 						}
@@ -340,9 +363,22 @@ namespace sibr
 
 					rapidxml::xml_node<> *nodeTrans = node
 						->first_node("transform");
+
+
+					sibr::MaterialMesh toWorldMesh = meshes[filename];
+
+					// Apply normals transformation if needed.
+					if (flipNormals && toWorldMesh.hasNormals()) {
+						const auto & refNormals = toWorldMesh.normals();
+						sibr::Mesh::Normals normals(refNormals.size());
+						for (int nid = 0; nid < refNormals.size(); nid++) {
+							normals[nid] = -refNormals[nid];
+						}
+						toWorldMesh.normals(normals);
+					}
+
 					if (nodeTrans) {
 						sibr::Matrix4f m1;
-						sibr::MaterialMesh toWorldMesh = meshes[filename];
 						rapidxml::xml_node<> *nodeM1 = nodeTrans
 							->first_node("matrix");
 						rapidxml::xml_node<> *nodeT = nodeTrans->
@@ -406,23 +442,31 @@ namespace sibr
 							m1 = transform.matrix() * m1;
 						}
 
+						{
+							sibr::Mesh::Vertices vertices;
+							for (int v = 0; v < toWorldMesh.vertices().size(); v++) {
+								sibr::Vector4f v4(toWorldMesh.vertices()[v].x(),
+									toWorldMesh.vertices()[v].y(),
+									toWorldMesh.vertices()[v].z(), 1.0);
+								vertices.push_back((m1*v4).xyz());
 
-						sibr::Mesh::Vertices vertices;
-						for (int v = 0; v < toWorldMesh.vertices().size(); v++) {
-							sibr::Vector4f v4(toWorldMesh.vertices()[v].x(),
-								toWorldMesh.vertices()[v].y(),
-								toWorldMesh.vertices()[v].z(), 1.0);
-							vertices.push_back((m1*v4).xyz());
-
+							}
+							toWorldMesh.vertices(vertices);
 						}
-
-						toWorldMesh.vertices(vertices);
-						merge(toWorldMesh);
-
+						// If the mesh has normals, we should transform them also.
+						if (toWorldMesh.hasNormals()) {
+							sibr::Mesh::Normals normals;
+							const sibr::Matrix4f m1Inv = m1.inverse().transpose();
+							for (int v = 0; v < toWorldMesh.normals().size(); v++) {
+								const sibr::Vector3f & ln = toWorldMesh.normals()[v];
+								sibr::Vector4f n4(ln[0], ln[1], ln[2], 1.0);
+								normals.push_back((m1Inv * n4).xyz());
+							}
+							toWorldMesh.normals(normals);
+						}
 					}
-					else {
-						merge(meshes[filename]);
-					}
+
+					merge(toWorldMesh);
 
 
 				}
@@ -441,7 +485,7 @@ namespace sibr
 				std::string nameMat = attribute->value();
 
 
-			    // Check if a texture exists in our node with diffuse reflectance
+				// Check if a texture exists in our node with diffuse reflectance
 				// If none is found, explore each BRDF until found.
 				std::vector <rapidxml::xml_node<>*> queue;
 				queue.push_back(node);
@@ -480,7 +524,7 @@ namespace sibr
 									nodeString->first_attribute("value")->value();
 								sibr::ImageRGB::Ptr texture(new sibr::ImageRGB());
 								// If we skip loading the textures, still set them as empty images.
-								if(!loadTextures || texture->load(pathFolder + "/" + textureName)) {
+								if (!loadTextures || texture->load(pathFolder + "/" + textureName)) {
 									/*std::cout << "Diffuse " << pathFolder + "/"
 										+ textureName << std::endl;*/
 									_diffuseMaps[nameMat] = texture;
@@ -592,7 +636,7 @@ namespace sibr
 
 			}
 		}
-		
+
 		bool breakBool = false;
 		for (rapidxml::xml_node<> *node = nodeScene->first_node("bsdf");
 			node; node = node->next_sibling("bsdf"))
@@ -647,7 +691,7 @@ namespace sibr
 				}
 			}
 		}
-		
+
 		createSubMeshes();
 		return true;
 
@@ -688,9 +732,9 @@ namespace sibr
 
 		for (unsigned int i = 0; i < _matIds.size(); i++)
 		{
-			const uint matId = uint(_matIds.at(i)+1);
-			const sibr::Vector3u col = {uchar(matId & 0xff), uchar((matId >> 8) & 0xff) , uchar((matId >> 16) & 0xff) };
-			const sibr::Vector3f finalCol = col.cast<float>()/255.0f;
+			const uint matId = uint(_matIds.at(i) + 1);
+			const sibr::Vector3u col = { uchar(matId & 0xff), uchar((matId >> 8) & 0xff) , uchar((matId >> 16) & 0xff) };
+			const sibr::Vector3f finalCol = col.cast<float>() / 255.0f;
 			colorsIdsMaterials.at(_triangles.at(i)[0]) = finalCol;
 			colorsIdsMaterials.at(_triangles.at(i)[1]) = finalCol;
 			colorsIdsMaterials.at(_triangles.at(i)[2]) = finalCol;
@@ -891,7 +935,7 @@ namespace sibr
 						newTexCoords.push_back(newTexCoord);
 					}
 
-					if(hasMeshIds()) {
+					if (hasMeshIds()) {
 						// Pick the first referenced vertex as the provoking vertex.
 						newMeshIds.push_back(meshIds().at(t.x()));
 					}
@@ -940,7 +984,7 @@ namespace sibr
 
 			sibr::Mesh::Triangles newTriangles;
 			sibr::MaterialMesh::MatIds newMatIds;
-			
+
 
 			std::cout << triangles().size() << " triangles" << std::endl;
 
@@ -1173,10 +1217,10 @@ namespace sibr
 	void	MaterialMesh::initAlbedoTextures(void) {
 
 		//Creates textures for albedo
-		if(_albedoTexturesInitialized) {
+		if (_albedoTexturesInitialized) {
 			return;
 		}
-		
+
 		_albedoTextures.resize(matId2Name().size());
 		_idTextures.resize(matId2Name().size());
 		_opacityTextures.resize(matId2Name().size());
@@ -1246,14 +1290,14 @@ namespace sibr
 				glBindTexture(GL_TEXTURE_2D, _idTextures[i]);
 
 				if (_hasTagsCoveringFile && _tagCoveringTexture != nullptr
-					&& (std::find(uniformColorMtlList.begin(), uniformColorMtlList.end(),*it)
-					 != uniformColorMtlList.end())) {
-				glActiveTexture(GL_TEXTURE1);
-				glBindTexture(GL_TEXTURE_2D, _idTagCoveringTexture);
+					&& (std::find(uniformColorMtlList.begin(), uniformColorMtlList.end(), *it)
+						!= uniformColorMtlList.end())) {
+					glActiveTexture(GL_TEXTURE1);
+					glBindTexture(GL_TEXTURE_2D, _idTagCoveringTexture);
 				}
 				else if (_hasTagsFile && _tagTexture != nullptr) {
-				glActiveTexture(GL_TEXTURE1);
-				glBindTexture(GL_TEXTURE_2D, _idTagTexture);
+					glActiveTexture(GL_TEXTURE1);
+					glBindTexture(GL_TEXTURE_2D, _idTagTexture);
 				}
 
 				glActiveTexture(GL_TEXTURE2);
@@ -1263,7 +1307,7 @@ namespace sibr
 			}
 			i++;
 		}
-		
+
 	}
 
 	void	MaterialMesh::renderThreeSixty(bool depthTest, bool backFaceCulling,
@@ -1337,7 +1381,7 @@ namespace sibr
 				matId2Name.push_back(other.matId2Name().at(i));
 				//We substract the number of similarity to avoid
 				//the "gap" about the materials index
-				for (unsigned int j = 0; j < other.matIds().size();++j) {
+				for (unsigned int j = 0; j < other.matIds().size(); ++j) {
 					unsigned int id = other.matIds().at(j);
 					if (id == i) {
 						matIds[j] = id + matIdsOffset - nbOfSimilarity;
@@ -1345,7 +1389,7 @@ namespace sibr
 				}
 			}
 			else {
-				for (unsigned int j = 0; j < other.matIds().size();++j) {
+				for (unsigned int j = 0; j < other.matIds().size(); ++j) {
 					unsigned int id = other.matIds().at(j);
 					if (id == i) {
 						matIds[j] = indexSimilarMaterial;
@@ -1364,25 +1408,27 @@ namespace sibr
 
 		// We have to shift all meshes ids.
 		const bool otherHasIds = other.hasMeshIds();
-		if(thisHasIds && otherHasIds) {
+		if (thisHasIds && otherHasIds) {
 			// Shift all other IDs by _maxMeshId+1.
 			_maxMeshId += 1;
 			MaterialMesh::MeshIds oIds(other.meshIds());
 			const int shift = int(_maxMeshId);
-			for(size_t vid = 0; vid < oIds.size(); ++vid) {
+			for (size_t vid = 0; vid < oIds.size(); ++vid) {
 				oIds[vid] = shift + oIds[vid];
 			}
 			_meshIds.insert(_meshIds.end(), oIds.begin(), oIds.end());
 			_maxMeshId += other._maxMeshId;
-			
 
-		} else if(thisHasIds) {
+
+		}
+		else if (thisHasIds) {
 			// In that case other has no IDs.
 			_maxMeshId += 1;
 			MaterialMesh::MeshIds newMeshIds(other.vertices().size(), int(_maxMeshId));
 			_meshIds.insert(_meshIds.end(), newMeshIds.begin(), newMeshIds.end());
 
-		} else if(otherHasIds) {
+		}
+		else if (otherHasIds) {
 			// in that case give a new ID to the current mesh and insert the other IDs.
 			_maxMeshId = other._maxMeshId + 1;
 			_meshIds = MaterialMesh::MeshIds(oldVerticesCount, int(_maxMeshId));
@@ -1399,7 +1445,7 @@ namespace sibr
 			_matIdsVertices = MatIds(vertices().size(), 0);
 			_matId2Name.push_back("emptyMat");
 		}
-		if(!hasMeshIds()) {
+		if (!hasMeshIds()) {
 			_meshIds = MatIds(vertices().size(), 0);
 			_maxMeshId = 0;
 		}
@@ -1449,7 +1495,7 @@ namespace sibr
 				++m_id;
 			}
 		}
-		
+
 		invertedFacesMaterialMesh->matIds(NmatIds);
 		invertedFacesMaterialMesh->matId2Name(_matId2Name);
 		invertedFacesMaterialMesh->opacityMaps(_opacityMaps);
@@ -1497,7 +1543,7 @@ namespace sibr
 			materialNames.push_back(matName);
 
 			std::vector<int> matIdsSphere;
-			for (unsigned int i = 0; i < sphere.triangles().size();++i) {
+			for (unsigned int i = 0; i < sphere.triangles().size(); ++i) {
 				matIdsSphere.push_back(0);
 			}
 			sphere.matId2Name(materialNames);

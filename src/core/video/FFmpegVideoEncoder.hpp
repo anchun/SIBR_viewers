@@ -16,6 +16,8 @@ extern "C"
 
 namespace sibr {
 
+	/** \ingroup sibr_video
+	*/
 	class SIBR_VIDEO_EXPORT AVinit {
 
 	public:

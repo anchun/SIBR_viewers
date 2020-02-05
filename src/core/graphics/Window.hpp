@@ -2,8 +2,6 @@
 #ifndef __SIBR_GRAPHICS_WINDOW_HPP__
 # define __SIBR_GRAPHICS_WINDOW_HPP__
 
-
-
 #include "core/graphics/imgui/imgui.h"
 #include "core/graphics/imgui/imgui_impl_glfw_gl3.h"
 
@@ -17,7 +15,7 @@
 namespace sibr
 {
 
-	/**
+	/** System window backed by an internal framebuffer.
 	* \ingroup sibr_graphics
 	*/
 	class SIBR_GRAPHICS_EXPORT Window : public IRenderTarget
@@ -26,51 +24,103 @@ namespace sibr
 		typedef std::shared_ptr<Window>		Ptr;
 
 	public:
+		/** Constructor.
+		 *\param title window title
+		 *\param args window setup arguments
+		 *\sa WindowArgs
+		 **/
 		Window(const std::string& title, const WindowArgs & args = {});
 
-		/// Create a window, overidding the args size with a custom (w,h).
+		/** Constructor, overriding the window size.
+		 *\param w window width
+		 *\param h window height
+		 *\param title window title
+		 *\param args window setup arguments
+		 *\sa WindowArgs
+		 **/
 		Window(uint w, uint h, const std::string& title, const WindowArgs & args = {});
 
+		/** Constructor, adjust the size to fill the screen except for the margins.
+		 *\param title window title
+		 *\param margins horizontal and vertical margins to preserve on each side of the window
+		 *\param args window setup arguments
+		 *\sa WindowArgs
+		 **/
 		Window(const std::string & title, const sibr::Vector2i & margins, const WindowArgs & args = {});
 
-
+		/** \return a pointer to the underlying GLFW window */
 		GLFWwindow *  GLFW(void);
+
+		/** Activate the associated graphics context. */
 		inline void			makeContextCurrent(void);
+		/** \return the context currently in use (represented by a GLFW window) */
 		inline GLFWwindow *		getContextCurrent(void);
+		/** Deactivate the associated graphics context. */
 		inline void			makeContextNull(void);
 
-		/// Cause to refresh what is displayed on the screen
+		/** Flush the graphics pipeline and perform rendering, displaying the result in the abck buffer. */
 		inline void			swapBuffer(void);
 
+		/** Set the window size
+		 *\param w width
+		 *\param h height
+		 **/
 		void				size(int w, int h);
+		
+		/** \return the window size */
 		Vector2i			size(void) const;
+
+		/** Set the window position
+		 *\param x horizontal location
+		 *\param v vertical location
+		 **/
 		void				position(const unsigned int x, const unsigned int y);
+
+		/** \return the window position on screen */
 		Vector2i			position() const;
 
-		/// Be sure to have an OpenGL (or GLFW) before calling this function
+		/** \return the screen size. */
 		static Vector2i		desktopSize(void);
 
-		/// Returns true if at least one OpenGL context is running.
+		/** \return true if an openGL context is active. */
 		static bool			contextIsRunning(void);
 
-		/// id of the last created context (-1 if no context)
-		static int			contextId;
-
+		/** Set the framerate.
+		 *\param fps one of 60, 30, 15 
+		 */
 		void				setFrameRate(int fps);
 
-
+		/** Display the cursor in the window. 
+		 * \param enable boolean flag
+		 */
 		void				enableCursor(bool enable);
 
+		/** \return if the window is currently opened */
 		bool				isOpened(void) const;
+		/** Mark the window as closed. */
 		void				close(void);
 
+		/** \return true if the window is fullscreen. */
 		bool				isFullscreen(void) const;
+		/** Toggle fullscreen.
+		 *\param fullscreen if true the window will be resized to occupy the whole screen, without visible borders.
+		 */
 		void				setFullscreen(const bool fullscreen);
 
+		/** \return true if the window is using V-sync. */
 		bool				isVsynced(void) const;
+		/** Toggle V-sync.
+		 *\param vsync if true, framerate will be limited to 60 FPS
+		 *\note When set to false, tearing might be visible.
+		 */
 		void				setVsynced(const bool vsync);
 
+		/** \return the window viewport */
 		const Viewport&	viewport(void) const;
+
+		/** Set the window viewport.
+		 *\param view the new viewport
+		 */
 		void			viewport(const Viewport& view);
 
 		// From IRenderTarget
@@ -84,29 +134,39 @@ namespace sibr
 		inline uint		h(void) const;
 
 		inline float	scaling() const;
-
+		
+		static int			contextId; ///< Last created window context ID (-1 initially).
 	private:
 
+		/** Setup the window.
+		 *\param width window width on screen
+		 *\param height window height on screen
+		 *\param title window title
+		 *\param args window setup arguments
+		 *\sa WindowArgs
+		 */
 		void setup(int width, int height, const std::string & title, const WindowArgs & args);
 
+		/// Window pointer for callbacks.
 		typedef std::unique_ptr<GLFWwindow, std::function<void(GLFWwindow*)>> GLFWwindowptr;
 
+		/// helper to handle window creation/destruction.
 		struct AutoInitializer
 		{
 			AutoInitializer(void);
 			~AutoInitializer(void);
 		};
 
-		bool				_shouldClose;
-		GLFWwindowptr		_glfwWin;
-		Vector2i			_size;
-		const bool			_useGUI;
-		bool				_useVSync;
+		bool				_shouldClose; ///< Is the window marked as closed.
+		GLFWwindowptr		_glfwWin; ///< Undelrying GLF window.
+		Vector2i			_size; ///< Window size.
+		const bool			_useGUI; ///< Should ImGui windows be displayed.
+		bool				_useVSync; ///< is the window using vsync.
 		Vector2i			_oldPosition; ///< Backup for handling fullscreen/windowed mode restoration.
 		Vector2i			_oldSize; ///< Backup for handling fullscreen/windowed mode restoration.
-		Viewport			_viewport;
-		float				_scaling = 1.0f;
-		// Must be place add the end of member data
+		Viewport			_viewport; ///< Current viewport.
+		float				_scaling = 1.0f; ///< Internal scaling for HiDPI screens.
+		// Must be placed add the end of member data .
 		AutoInitializer		_hiddenInit; ///< nifty counter used to auto-init window system
 	};
 

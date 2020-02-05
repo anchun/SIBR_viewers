@@ -29,7 +29,6 @@ namespace sibr
 		Default destructor.
 		*/
 		~CameraRecorder( void ) { 
-			//save(); 
 		}
 
 		/**
@@ -55,8 +54,11 @@ namespace sibr
 		*/
 		void	saving(std::string savePath);
 
-
-		void	frameDebug(const bool debugFrame);
+		/**
+		Toggle the save flag for video frames when replaying.
+		\param saveVideo the new flag status
+		*/
+		void	savingVideo(bool saveVideo);
 
 		/**
 		Stop saving.
@@ -88,7 +90,13 @@ namespace sibr
 		*/
 		void	save( const std::string& filename=SIBR_CAMERARECORDER_DEFAULTFILE );
 
-
+		/** Load recorded path based on file extension.
+		 *\param filename the file to load
+		 *\param w resoltuion width
+		 *\param h resolution height
+		 *\return a success boolean
+		 *\note w and h are needed when loading a Bundle.
+		 */
 		bool safeLoad(const std::string& filename, int w = 1920, int h = 1080);
 
 		/**
@@ -114,12 +122,18 @@ namespace sibr
 		void	saveAsBundle(const std::string & filePath, const int height, const int step = 1);
 
 		/**
-		Save the current recording stream as a bundle file and a series of emlpty images for FRIBR compatibility.
+		Save the current recording stream as a bundle file and a series of empty images for FRIBR compatibility.
 		\param dirPath Path to the directory to export to.
 		\param width the width in pixels of the camera. 
 		\param height the height in pixels of the camera.
 		*/
 		void	saveAsFRIBRBundle(const std::string & dirPath, const int width, const int height);
+
+		/**
+		Save the current recording stream as a lookat file.
+		\param filePath Path to the lookat file to write to.
+		*/
+		void saveAsLookAt(const std::string& filePath) const;
 
 		/**
 		\return a boolean denoting if the recorder is currently playing.
@@ -148,16 +162,16 @@ namespace sibr
 		float & speed() { return _speed; }
 
 	private:
-		uint					_pos;
-		std::vector<Camera>		_cameras;
-		bool					_recording;
-		bool					_playing;	
-		bool					_saving;
-		std::string				_savingPath;
-		bool					_savingVideo;
-		std::string				_savingVideoPath;
-		float					_speed;
-		float					_interp;
+		uint					_pos; ///< Current camera ID for replay.
+		std::vector<Camera>		_cameras; ///< List of recorded cameras.
+		bool					_recording; ///< Are we currently recording.
+		bool					_playing; ///< Are we currently playing.
+		bool					_saving; ///< Are we saving the path as images.
+		std::string				_savingPath; ///< Destination base path for saved images.
+		bool					_savingVideo; ///< Are we saving the path as video.
+		std::string				_savingVideoPath; ///< Destination base path for saved video.
+		float					_speed; ///< Playback speed.
+		float					_interp; ///< Current interpoaltion factor.
 	};
 
 	///// DEFINITIONS /////

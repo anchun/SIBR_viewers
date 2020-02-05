@@ -34,8 +34,9 @@ namespace sibr
 	/**
 	* Utility that converts an integer id to a string using
 	* the "most used" format.
-	*
-	*       e.g.: 7 --> 0000007
+	*       \param id the id to convert (fi 7)
+	*       \return the corresponding string (fi "0000007")
+	* \ingroup sibr_assets
 	*/
 	inline std::string		imageIdToString( int id ) {
 		std::ostringstream oss;
@@ -43,6 +44,12 @@ namespace sibr
 		return oss.str();
 	}
 
+	/** Generate a string representation of an integer, padded with zeros.
+	 * \param id the integer
+	 * \return the padded string
+	 * \note The template int value determines the padding count.
+	 * \ingroup sibr_assets
+	 * */
 	template<unsigned int N> std::string intToString(int id) {
 		std::ostringstream oss;
 		oss << std::setfill('0') << std::setw(N) << id;
@@ -50,15 +57,20 @@ namespace sibr
 	}
 
 	/**
-	* Return the default path and filename used for the proxy
+	* Get the default path and filename used for the proxy
 	* mesh.
+	* \param datasetPath the base path
+	* \return the mesh path
+	* \ingroup sibr_assets
 	*/
 	inline std::string		getProxyFilename( const std::string& datasetPath ) {
 		return datasetPath + "/pmvs/models/pmvs_recon.ply";
 	}
 
 	/**
-	* Rename the following status into: NotLoaded, CPULoading, CPUReady, GPUReady, Failure.
+	 * Loading status for streaming.
+	* \todo Rename the following status into: NotLoaded, CPULoading, CPUReady, GPUReady, Failure.
+	* \ingroup sibr_assets
 	*/
 	namespace LoadingStatus
 	{

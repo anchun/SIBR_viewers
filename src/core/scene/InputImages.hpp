@@ -5,6 +5,9 @@
 
 namespace sibr
 {
+	/** 
+	\ingroup sibr_scene
+	*/
 	class SIBR_SCENE_EXPORT InputImages {
 		SIBR_DISALLOW_COPY(InputImages);
 	public:

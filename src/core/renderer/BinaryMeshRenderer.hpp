@@ -8,6 +8,10 @@
 # include <core/renderer/Config.hpp>
 
 namespace sibr { 
+
+	/**
+	\ingroup sibr_renderer
+	*/
 	class SIBR_EXP_RENDERER_EXPORT BinaryMeshRenderer
 	{
 		SIBR_CLASS_PTR(BinaryMeshRenderer);

@@ -4,7 +4,9 @@
 
 namespace sibr
 {
-
+	/**
+	\ingroup sibr_scene
+	*/
 	class SIBR_SCENE_EXPORT CalibratedCameras {
 	public:
 

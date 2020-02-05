@@ -90,8 +90,8 @@ namespace sibr {
 		if (ImGui::BeginPopup(("##Options_popup_" + name).c_str())) {
 			ImGui::Checkbox(("Depth Test##" + name).c_str(), &depthTest);
 			if (meshType == TRIANGLES) {
-				ImGui::Checkbox(("BackFace##" + name).c_str(), &backFaceCulling);
-				ImGui::Checkbox(("FrontFace##" + name).c_str(), &frontFaceCulling);
+				ImGui::Checkbox(("Cull faces##" + name).c_str(), &backFaceCulling);
+				ImGui::Checkbox(("Swap back/front##" + name).c_str(), &frontFaceCulling);
 			}
 			if (renderMode == Mesh::PointRenderMode) {
 				ImGui::PushItemWidth(75);
@@ -354,7 +354,7 @@ namespace sibr {
 	{
 		dst.bind();
 
-		Viewport vp(0.0f, 0.0f, (float)dst.w(), (float)dst.h());
+		const Viewport vp(0.0f, 0.0f, (float)dst.w(), (float)dst.h());
 		onRender(vp);
 
 		dst.unbind();
@@ -644,7 +644,7 @@ namespace sibr {
 		data.userColor = color;
 		data.depthTest = false;
 
-		return addMeshData(data).setColorRandom();
+		return addMeshData(data).setColorMode(MeshData::USER_DEFINED);
 	}
 
 	MeshData & MultiMeshManager::addPoints(const std::string & name, const std::vector<Vector3f>& points, const Vector3f & color)

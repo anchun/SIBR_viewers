@@ -11,7 +11,7 @@ namespace sibr {
 	float TrackBall::ratioTrackBall2D = 0.75f;
 
 	TrackBall::TrackBall(bool _verbose) : hasBeenInitialized(false), shadersCompiled(false), state(TrackBallState::IDLE), verbose(_verbose),
-		fixedCamera(InputCamera()), tempCamera(InputCamera()), isActive(true)
+		fixedCamera(InputCamera()), tempCamera(InputCamera())
 	{
 		drawThis = true;
 	}
@@ -35,7 +35,7 @@ namespace sibr {
 	}
 
 	void TrackBall::onRender(const sibr::Viewport& viewport) {
-		if (!isActive || !drawThis) { return; }
+		if (!drawThis) { return; }
 
 		if (!shadersCompiled) {
 			initTrackBallShader();
@@ -188,7 +188,7 @@ namespace sibr {
 
 	void TrackBall::update(const Input & input, const Viewport & viewport, std::shared_ptr<Raycaster> raycaster)
 	{
-		if (!hasBeenInitialized || !isActive || input.empty()) { return; }
+		if( !hasBeenInitialized || input.empty()) { return; }
 
 		updateTrackBallCameraSize(viewport);
 
@@ -639,11 +639,6 @@ namespace sibr {
 		trackBallStateGPU.init(trackBallShader, "mState");
 
 		shadersCompiled = true;
-	}
-
-	void TrackBall::draw(const Viewport & viewport)
-	{
-		onRender(viewport);
 	}
 
 	void TrackBall::printMessage(const std::string & msg) const

@@ -33,7 +33,7 @@ namespace sibr
 
 
 	/**
-	* \ingroup sibr_graphics
+	* \ingroup sibr_video
 	*/
 	class SIBR_VIDEO_EXPORT Video
 	{
@@ -77,6 +77,9 @@ namespace sibr
 		bool loaded = false;
 	};
 
+	/**
+	* \ingroup sibr_video
+	*/
 	template<uint N>
 	struct PingPongTexture {
 		using TexPtr = std::shared_ptr<sibr::Texture2D<uchar, N>>;
@@ -99,6 +102,9 @@ namespace sibr
 	using PingPong3u = PingPongTexture<3>;
 	using PingPong1u = PingPongTexture<1>;
 
+	/**
+	* \ingroup sibr_video
+	*/
 	class SIBR_VIDEO_EXPORT VideoPlayer : public Video, public ZoomInterraction
 	{
 
@@ -145,6 +151,9 @@ namespace sibr
 		int current_frame_slider;
 	};
 
+	/**
+	* \ingroup sibr_video
+	*/
 	template<typename T, uint N>
 	struct MultipleVideoDecoder {
 		using TexArray = sibr::Texture2DArray<T,N>;
@@ -203,6 +212,9 @@ namespace sibr
 	using MultipleVideoDecoder1u = MultipleVideoDecoder<uchar, 1>;
 	using MultipleVideoDecoder3u = MultipleVideoDecoder<uchar, 3>;
 
+	/**
+	* \ingroup sibr_video
+	*/
 	template<typename T, uint N>
 	struct MultipleVideoDecoderArray : public MultipleVideoDecoder<T,N> {
 		using TexArray = sibr::Texture2DArray<T, N>;

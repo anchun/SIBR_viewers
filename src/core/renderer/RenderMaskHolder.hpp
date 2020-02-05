@@ -10,9 +10,11 @@
 # include <core/scene/BasicIBRScene.hpp>
 
 namespace sibr { 
-	/// \todo TODO: I don't think we need RenderTarget;
-	/// simple Texture would be better.
 
+	/**
+	\note Might want to use textures instead of RTs here.
+	\ingroup sibr_renderer
+	*/
 	class SIBR_EXP_RENDERER_EXPORT RenderMaskHolder
 	{
 		typedef	RenderTargetLum::Ptr	MaskPtr;
@@ -31,6 +33,9 @@ namespace sibr {
 		std::vector<MaskPtr>	_masks;
 	};
 
+	/**
+	\ingroup sibr_renderer
+	*/
 	class SIBR_EXP_RENDERER_EXPORT RenderMaskHolderArray
 	{
 		using MaskArray = sibr::Texture2DArrayLum;

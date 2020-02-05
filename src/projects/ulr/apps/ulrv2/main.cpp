@@ -27,7 +27,7 @@ int legacyV2main(ULRAppArgs & myArgs);
 
 int main(int ac, char** av) {
 
-	// Parse Commad-line Args
+	// Parse Command-line Args
 	CommandLineArgs::parseMainArgs(ac, av);
 	ULRAppArgs myArgs;
 	myArgs.displayHelpIfRequired();
@@ -38,7 +38,6 @@ int main(int ac, char** av) {
 	if (myArgs.version == 1) {
 		return legacyV1main(myArgs);
 	}
-
 
 	const bool doVSync = !myArgs.vsync;
 	// rendering size
@@ -99,7 +98,7 @@ int main(int ac, char** av) {
 	multiViewManager.addCameraForView("ULR view", generalCamera);
 
 	// Top view
-	const std::shared_ptr<sibr::SceneDebugView> topView(new sibr::SceneDebugView(scene, multiViewManager.getViewport(), generalCamera, myArgs));
+	const std::shared_ptr<sibr::SceneDebugView> topView(new sibr::SceneDebugView(scene, generalCamera, myArgs));
 	multiViewManager.addSubView("Top view", topView, usedResolution);
 
 	CHECK_GL_ERROR;
@@ -170,7 +169,7 @@ int legacyV2main(ULRAppArgs & myArgs)
 		multiViewManager.addCameraForView("ULR view", generalCamera);
 
 		// Top view
-		const std::shared_ptr<sibr::SceneDebugView>    topView(new sibr::SceneDebugView(scene, multiViewManager.getViewport(), generalCamera, myArgs));
+		const std::shared_ptr<sibr::SceneDebugView>    topView(new sibr::SceneDebugView(scene, generalCamera, myArgs));
 		multiViewManager.addSubView("Top view", topView, usedResolution);
 
 		// Soft Visibility masks
@@ -332,7 +331,7 @@ int legacyV1main(ULRAppArgs & myArgs)
 		multiViewManager.addCameraForView("ULR view", generalCamera);
 
 		// Top view
-		const std::shared_ptr<sibr::SceneDebugView>    topView(new sibr::SceneDebugView(scene, multiViewManager.getViewport(), generalCamera, myArgs));
+		const std::shared_ptr<sibr::SceneDebugView>    topView(new sibr::SceneDebugView(scene, generalCamera, myArgs));
 		multiViewManager.addSubView("Top view", topView);
 
 		while (window.isOpened())
