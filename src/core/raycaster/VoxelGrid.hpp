@@ -11,6 +11,11 @@
 
 namespace sibr
 {
+	/**
+	\addtogroup sibr_raycaster
+	@{
+	*/
+
 	sibr::Vector3f orthoVector(const sibr::Vector3f & v);
 
 
@@ -199,11 +204,6 @@ namespace sibr
 		return out_ids;
 	}
 
-	//template<typename CellType> template<typename FuncType>
-	//inline void VoxelGrid<CellType>::fix_non_empty_cells(const FuncType & func) {
-	//	non_empty_cells_ids = detect_non_empty_cells(func);
-	//}
-
 	template<typename CellType> template<typename FuncType>
 	inline sibr::Mesh::Ptr VoxelGrid<CellType>::getAllCellMeshWithCond(bool filled, const FuncType & f) const
 	{
@@ -242,6 +242,7 @@ namespace sibr
 		return out;
 	}
 
+	/** }@ */
 
 } // namespace sibr
 

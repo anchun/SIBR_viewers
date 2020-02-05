@@ -18,7 +18,7 @@ namespace sibr
 	
 	Note this class is currently what I call a constclass:
 	once built you cannot modify it.
-	* \ingroup sibr_graphics
+	* \ingroup sibr_system
 	*/
 	template <typename T>
 	class Rect

@@ -12,7 +12,7 @@ namespace sibr
 
 	/** 
 	* Represent a 3D frustum defined by 6 planes.
-	* \warn This class has not been strongly tested!
+	* \warning This class has not been strongly tested!
 	* \ingroup sibr_graphics
 	*/
 	class SIBR_GRAPHICS_EXPORT Frustum

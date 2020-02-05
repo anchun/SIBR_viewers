@@ -43,7 +43,7 @@ namespace sibr
 		}
 
 		/** Start measuring elapsed time.
-		 * \warn This will clear existing recorded times.
+		 * \warning This will clear existing recorded times.
 		*/
 		void tic()
 		{

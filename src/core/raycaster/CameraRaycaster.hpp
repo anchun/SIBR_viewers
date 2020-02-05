@@ -11,12 +11,12 @@
 namespace sibr
 {
 
-	///
-	/// Used to process casted ray from image pixels. Implement
-	/// this interface and write your custom behavior.
-	/// (e.g. see CameraRaycasterProcessor.hpp for built-in processor)
-	/// \ingroup sibr_raycaster
-	///
+	/**
+	 Used to process casted ray from image pixels. Implement
+	 this interface and write your custom behavior.
+	 (e.g. see CameraRaycasterProcessor.hpp for built-in processor)
+	 \ingroup sibr_raycaster
+	*/
 	class SIBR_RAYCASTER_EXPORT ICameraRaycasterProcessor
 	{
 	public:
@@ -30,10 +30,10 @@ namespace sibr
 
 	};
 
-	///
-	/// Used for casting each pixel of an image into a raycast scene.
-	/// \ingroup sibr_raycaster
-	///
+	/**
+	 Used for casting each pixel of an image into a raycast scene.
+	 \ingroup sibr_raycaster
+	*/
 	class SIBR_RAYCASTER_EXPORT CameraRaycaster
 	{
 	public:
@@ -76,7 +76,9 @@ namespace sibr
 		Raycaster									_raycaster;
 	};
 
-
+	/**
+	\ingroup sibr_raycaster
+	*/
 	class SIBR_RAYCASTER_EXPORT RaycastingCamera : public sibr::InputCamera {
 		SIBR_CLASS_PTR(RaycastingCamera);
 	public:

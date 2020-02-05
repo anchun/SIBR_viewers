@@ -8,7 +8,9 @@
 namespace sibr {
 
 	/** Visualize and explore a MVS dataset. 
-	Allow reprojections between one of the input images, scene geometry and other images.*/
+	Allow reprojections between one of the input images, scene geometry and other images.
+	 \ingroup sibr_view
+	 */
 	class SIBR_VIEW_EXPORT DatasetView 
 		: public MultiViewBase
 	{

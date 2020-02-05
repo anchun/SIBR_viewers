@@ -13,7 +13,7 @@ namespace sibr
 {
 	/**
 	 * Represent a 3D transformation composed of a rotation and translation.
-	* \ingroup sibr_graphics
+	* \ingroup sibr_system
 	*/
 	template <typename T>
 	class Transform3
@@ -225,6 +225,7 @@ namespace sibr
 	 *\param stream the byte stream
 	 *\param t the transform
 	 *\return the stream for compositing
+	 \ingroup sibr_system
 	 */
 	template <typename T>
 	ByteStream&		operator << (ByteStream& stream, const Transform3<T>& t ) {
@@ -239,6 +240,7 @@ namespace sibr
 	 *\param stream the byte stream
 	 *\param t the transform
 	 *\return the stream for compositing
+	 \ingroup sibr_system
 	 */
 	template <typename T>
 	ByteStream&		operator >> (ByteStream& stream, Transform3<T>& t ) {

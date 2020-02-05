@@ -9,7 +9,9 @@
 
 namespace sibr{
 
-	/** Provide basic IBR utilities. */
+	/** Provide basic IBR utilities. 
+	 \ingroup sibr_view
+	 */
 	class SIBR_VIEW_EXPORT IBRBasicUtils
 	{
 
@@ -20,7 +22,7 @@ namespace sibr{
 		\param eye novel viewpoint
 		\param count number of cameras to select
 		\return a list of selected camera indices.
-		\warn The number of cameras selected might be lower than count
+		\warning The number of cameras selected might be lower than count
 		\sa selectCamerasAngleWeight
 		*/
 		static std::vector<uint> selectCameras(const std::vector<InputCamera>& cams, const sibr::Camera& eye, uint count);
@@ -30,7 +32,7 @@ namespace sibr{
 		\param eye novel viewpoint
 		\param count number of cameras to select
 		\return a list of selected camera indices.
-		\warn The number of cameras selected might be lower than count
+		\warning The number of cameras selected might be lower than count
 		*/
 		static std::vector<uint> selectCamerasSimpleDist(const std::vector<InputCamera>& cams, const sibr::Camera& eye, uint count);
 
@@ -41,7 +43,7 @@ namespace sibr{
 		\param eye novel viewpoint
 		\param count number of cameras to select
 		\return a list of selected camera indices.
-		\warn The number of cameras selected might be lower than count
+		\warning The number of cameras selected might be lower than count
 		*/
 		static std::vector<uint> selectCamerasAngleWeight(const std::vector<InputCamera>& cams, const sibr::Camera& eye, uint count);
 

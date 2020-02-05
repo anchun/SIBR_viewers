@@ -10,6 +10,10 @@
 
 namespace sibr
 {
+	/**
+	\addtogroup sibr_system
+	@{
+	*/
 
 	/** Build a quaternion from a rotation matrix
 	 *\param m the rotation matrix
@@ -209,6 +213,8 @@ namespace sibr
 	typedef	Eigen::Quaternion<int>			Quaternioni;
 	typedef	Eigen::Quaternion<float>		Quaternionf;
 	typedef	Eigen::Quaternion<double>		Quaterniond;
+
+	/** }@ */
 
 } // namespace sibr
 

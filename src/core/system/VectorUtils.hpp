@@ -275,7 +275,9 @@ namespace sibr
 		}
 	};
 
-	/** base multi-dimensional vector class (a 1D vector). */
+	/** Base multi-dimensional vector class (a 1D vector). 
+	\ingroup sibr_system
+	*/
 	template<typename T>
 	class MultiVector<T, 1> : public std::vector<T>
 	{

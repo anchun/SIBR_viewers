@@ -10,6 +10,7 @@ namespace sibr {
 	/**
 	Wrapper of rapidxml xml_document<> class so that the string associated to the xml file stays in memory.
 	Needed to access nodes by their names.
+	* \ingroup sibr_system
 	*/
 	class SIBR_SYSTEM_EXPORT XMLTree : public rapidxml::xml_document<>
 	{

@@ -9,6 +9,10 @@
 
 namespace sibr
 {
+	/**
+	\addtogroup sibr_system
+	@{
+	*/
 
 	struct Switch {};
 
@@ -37,9 +41,12 @@ namespace sibr
 		RENDERMODE_STEREO_QUADBUFFER
 	};
 
+	/** }@ */
+
 	/* Parse and store the command line arguments specified by the user.
 	* Only a static instance exists, that must be init with parseMainArgs(argc,argv) right after main(argc,argv)
 	* Parses -key or --key with any number of value.
+	* \ingroup sibr_system
 	*/
 	class SIBR_SYSTEM_EXPORT CommandLineArgs {
 
@@ -135,10 +142,12 @@ namespace sibr
 	};
 
 	/** Getter for the command line args manager singleton.
+	* \ingroup sibr_system
 	 */
 	SIBR_SYSTEM_EXPORT const CommandLineArgs & getCommandLineArgs();
 
-	/** Internal argument based interface. */
+	/** Internal argument based interface.
+	* \ingroup sibr_system*/
 	template<typename T>
 	class ArgBase {
 	public:
@@ -153,6 +162,7 @@ namespace sibr
 	* Should be declared as some class/struct member using Arg<T> myArg = { "key", some_default_value };
 	* is implicitly convertible to the template type
 	* \note As multiple implicit conversion is not possible in cpp, you might have to use the .get() method to access the inner T value
+	* \ingroup sibr_system
 	* */
 	template<typename T>
 	class Arg : public ArgBase<T> {
@@ -171,6 +181,7 @@ namespace sibr
 	};
 
 	/// Specialization of Arg for Switch, default value get flipped if arg is present
+	/// \ingroup sibr_system
 	template<>
 	class Arg<Switch> : public ArgBase<bool> {
 	public:
@@ -193,6 +204,7 @@ namespace sibr
 	using ArgSwitch = Arg<Switch>;
 
 	/// Specialization of Arg for bool, value is true if key is present and false otherwise
+	/// \ingroup sibr_system
 	template<>
 	class Arg<bool> : public ArgBase<bool> {
 	public:
@@ -209,6 +221,7 @@ namespace sibr
 	};
 
 	/// Represent a mandatory argument
+	/// \ingroup sibr_system
 	template<typename T>
 	class RequiredArgBase {
 	public:
@@ -245,6 +258,7 @@ namespace sibr
 
 	/// Similar to Arg, except this one will crash if attempt to use the value while not initialized
 	/// initialization can be done using the command line or manually
+	/// \ingroup sibr_system
 	template<typename T>
 	class RequiredArg : public RequiredArgBase<T> {
 		using RequiredArgBase<T>::RequiredArgBase;
@@ -252,6 +266,7 @@ namespace sibr
 
 	/// Specialization required for std::string as const string & key constructor and const T & constructor are ambiguous. 
 	/// TT : no const T & ctor anymore but operator const char*() const operator added
+	/// \ingroup sibr_system
 	template<>
 	class RequiredArg<std::string> : public RequiredArgBase<std::string> {
 		
@@ -272,6 +287,7 @@ namespace sibr
 	///		Arg<int> myParameter = { "my-arg", some_default_value };
 	///		RequiredArg<std::string> myRequiredParameter = { "important-param" };
 	/// }
+	/// \ingroup sibr_system
 	struct SIBR_SYSTEM_EXPORT AppArgs {
 		/// Constructor
 		AppArgs();
@@ -286,6 +302,7 @@ namespace sibr
 	};
 
 	/// Arguments related to a window.
+	/// \ingroup sibr_system
 	struct SIBR_SYSTEM_EXPORT WindowArgs {
 		Arg<int> win_width = { "width", 720, "initial window width" };
 		Arg<int> win_height = { "height", 480, "initial window height" };
@@ -297,11 +314,13 @@ namespace sibr
 	};
 
 	/// Combination of window and application arguments.
+	/// \ingroup sibr_system
 	struct SIBR_SYSTEM_EXPORT WindowAppArgs :
 		virtual AppArgs, virtual WindowArgs {
 	};
 
 	/// Common rendering settings.
+	/// \ingroup sibr_system
 	struct SIBR_SYSTEM_EXPORT RenderingArgs {
 		Arg<std::string> scene_metadata_filename = { "scene", "scene_metadata.txt", "scene metadata file" };
 		Arg<Vector2i> rendering_size = { "rendering-size", { 0, 0 }, "size at which rendering is performed" };
@@ -312,16 +331,19 @@ namespace sibr
 	};
 
 	/// Dataset related arguments.
+	/// \ingroup sibr_system
 	struct SIBR_SYSTEM_EXPORT BasicDatasetArgs {
 		RequiredArg<std::string> dataset_path = { "path", "path to the dataset root" };
 	};
 
 	/// "Default" set of arguments.
+	/// \ingroup sibr_system
 	struct SIBR_SYSTEM_EXPORT BasicIBRAppArgs :
 		virtual WindowAppArgs, virtual BasicDatasetArgs, virtual RenderingArgs {
 	};
 
 	/// Specialization of value getter for strings.
+	/// \ingroup sibr_system
 	template<>
 	struct ValueGetter<std::string> {
 		static std::string get(const std::vector<std::string> & values, uint n) {
@@ -333,6 +355,7 @@ namespace sibr
 	};
 
 	/// Specialization of value getter for booleans.
+	/// \ingroup sibr_system
 	template<>
 	struct ValueGetter<bool> {
 		static bool get(const std::vector<std::string> & values, uint n) {
@@ -344,6 +367,7 @@ namespace sibr
 	};
 
 	/// Specialization of value getter for doubles.
+	/// \ingroup sibr_system
 	template<>
 	struct ValueGetter<double> {
 		static double get(const std::vector<std::string> & values, uint n) {
@@ -355,6 +379,7 @@ namespace sibr
 	};
 
 	/// Specialization of value getter for floats.
+	/// \ingroup sibr_system
 	template<>
 	struct ValueGetter<float> {
 		static float get(const std::vector<std::string> & values, uint n) {
@@ -366,6 +391,7 @@ namespace sibr
 	};
 
 	/// Specialization of value getter for integers.
+	/// \ingroup sibr_system
 	template<>
 	struct ValueGetter<int> {
 		static int get(const std::vector<std::string> & values, uint n) {
@@ -377,6 +403,7 @@ namespace sibr
 	};
 
 	/// Specialization of value getter for chars.
+	/// \ingroup sibr_system
 	template<>
 	struct ValueGetter<char> {
 		static char get(const std::vector<std::string> & values, uint n) {
@@ -388,6 +415,7 @@ namespace sibr
 	};
 
 	/// Specialization of value getter for unsigned integers.
+	/// \ingroup sibr_system
 	template<>
 	struct ValueGetter<uint> {
 		static uint get(const std::vector<std::string> & values, uint n) {
@@ -399,6 +427,7 @@ namespace sibr
 	};
 
 	/// Specialization of value getter for arrays.
+	/// \ingroup sibr_system
 	template<typename T, uint N>
 	struct ValueGetter<std::array<T, N>> {
 		static std::array<T, N> get(const std::vector<std::string> & values, uint n) {
@@ -421,6 +450,7 @@ namespace sibr
 	};
 
 	/// Specialization of value getter for sibr::Vectors.
+	/// \ingroup sibr_system
 	template<typename T, uint N>
 	struct ValueGetter<sibr::Vector<T, N>> {
 		static sibr::Vector<T, N> get(const std::vector<std::string> & values, uint n) {

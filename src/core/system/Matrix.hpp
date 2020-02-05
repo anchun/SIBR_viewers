@@ -42,7 +42,7 @@
 namespace sibr
 {
 	/**
-	\addtogroup sibr_graphics
+	\addtogroup sibr_system
 	@{
 	*/
 	typedef	Eigen::Matrix<unsigned, 4, 4, Eigen::DontAlign, 4, 4>		Matrix4u;

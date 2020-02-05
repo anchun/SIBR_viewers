@@ -88,9 +88,10 @@ namespace sibr
 	 * Present a native OS file picker.
 	 * \param selectedElement will contain the path to the element selected by the user if any.
 	 * \param mode the mode to use, pick from Save, Directory, Default.
-	 * \param directoryPath the initial directory to present to the user. \warn '.' relative path is unsupported.
+	 * \param directoryPath the initial directory to present to the user.
 	 * \param extensionsAllowed a list of file extensions to allow: "obj,ply" for instance.
 	 * \return true if an element was selected, else false.
+	 * \warning '.' relative path is unsupported for directoryPath.
 	 */
 	SIBR_SYSTEM_EXPORT bool showFilePicker(std::string & selectedElement,
 		const FilePickerMode mode, const std::string & directoryPath = "", const std::string & extensionsAllowed = "");

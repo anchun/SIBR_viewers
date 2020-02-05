@@ -10,6 +10,10 @@
 #include <core/graphics/Mesh.hpp>
 #include <core/graphics/Window.hpp>
 
+
+/**
+	\ingroup sibr_raycaster
+*/
 class SIBR_RAYCASTER_EXPORT PlaneEstimator
 {
 protected:

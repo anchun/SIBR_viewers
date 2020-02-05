@@ -133,7 +133,7 @@ namespace sibr
 		/** Constructor.
 		\param width image width
 		\param height image height
-		\warn The image content will be undefined.
+		\warning The image content will be undefined.
 		*/
 		Image(uint width, uint height);
 		Image(uint width, uint height, const T_Type& init);

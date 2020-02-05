@@ -22,6 +22,7 @@ namespace sibr
 		\param cam camera to visualize as a stub
 		\param znear near value to use for the frustum (if < 0, cam.near() will be used)
 		\param zfar far value to use for the frustum (if < 0, cam.far() will be used)
+		 \ingroup sibr_view
 		*/
 	Mesh::Ptr SIBR_VIEW_EXPORT generateCamFrustum(const InputCamera & cam, float znear = -1, float zfar = -1);
 
@@ -30,17 +31,20 @@ namespace sibr
 		\param col the mesh line color
 		\param znear near value to use for the frustum (if < 0, cam.near() will be used)
 		\param zfar far value to use for the frustum (if < 0, cam.far() will be used)
+		 \ingroup sibr_view
 		*/
 	Mesh::Ptr SIBR_VIEW_EXPORT generateCamFrustumColored(const InputCamera & cam, const Vector3f & col, float znear = -1, float zfar = -1);
 
 	/** Generate a quad representing a camera image plane.
 	 *\param cam the camera
 	 *\param dist the distance in world space from the camera position to the image plane
+	  \ingroup sibr_view
 	 **/
 	Mesh::Ptr SIBR_VIEW_EXPORT generateCamQuadWithUvs(const InputCamera & cam, float dist);
 
 	/** Helper used to display camera labels on screen.
 	 * Internally use ImGui to generate labels data.
+	  \ingroup sibr_view
 	 * */
 	struct SIBR_VIEW_EXPORT LabelsManager {
 
@@ -96,6 +100,7 @@ namespace sibr
 
 	/** Helper used to render image planes in front of the camera, 
 	 * for both scenes storing 2D separate images or a texture array.
+	  \ingroup sibr_view
 	 */
 	struct SIBR_VIEW_EXPORT ImageCamViewer {
 
@@ -132,6 +137,7 @@ namespace sibr
 
 	/** Scene viewer for IBR scenes with a proxy, cameras and input images. 
 	 * It adds camera visualization options (labels, frusta, image planes) on top of the MeshManager.
+	  \ingroup sibr_view
 	 */
 	class SIBR_VIEW_EXPORT SceneDebugView : public MultiMeshManager, public ImageCamViewer, public LabelsManager
 	{
@@ -154,7 +160,7 @@ namespace sibr
 		 * \param viewport the view viewport
 		 * \param camHandler a camera handler to display as a "user camera"
 		 * \param myArgs dataset arguments (needed to load/save the camera location)
-		 * \warn Deprecated, use the version without the viewport.
+		 * \warning Deprecated, use the version without the viewport.
 		 */
 		SceneDebugView(const std::shared_ptr<BasicIBRScene> & scene, const Viewport & viewport, const InteractiveCameraHandler::Ptr & camHandler, const BasicDatasetArgs & myArgs);
 

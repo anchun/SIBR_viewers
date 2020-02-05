@@ -146,7 +146,9 @@
 
 namespace sibr
 {
-	/** Ensure that all logs are output before exiting when an error or exception is raised. */
+	/** Ensure that all logs are output before exiting when an error or exception is raised. 
+	\ingroup sibr_system
+	*/
 	struct SIBR_SYSTEM_EXPORT LogExit
 	{
 		/// Constructor.
@@ -226,6 +228,7 @@ using Path = boost::filesystem::path;
 namespace sibr
 {
 	/// Used for quickly measuring time for completing a scope.
+	/// \ingroup sibr_system
 	struct SIBR_SYSTEM_EXPORT DebugScopeProfiler
 	{
 		/** Constructor.
@@ -281,6 +284,7 @@ namespace sibr
 	\param x the value to round
 	\return the rounded value
 	\todo Compare behaviour with std::round
+	\ingroup sibr_system
 	*/
 	inline float round(float x) {
 		return x >= 0.0f ? floorf(x + 0.5f) : ceilf(x - 0.5f);

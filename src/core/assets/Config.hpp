@@ -36,6 +36,7 @@ namespace sibr
 	* the "most used" format.
 	*       \param id the id to convert (fi 7)
 	*       \return the corresponding string (fi "0000007")
+	* \ingroup sibr_assets
 	*/
 	inline std::string		imageIdToString( int id ) {
 		std::ostringstream oss;
@@ -47,6 +48,7 @@ namespace sibr
 	 * \param id the integer
 	 * \return the padded string
 	 * \note The template int value determines the padding count.
+	 * \ingroup sibr_assets
 	 * */
 	template<unsigned int N> std::string intToString(int id) {
 		std::ostringstream oss;
@@ -59,6 +61,7 @@ namespace sibr
 	* mesh.
 	* \param datasetPath the base path
 	* \return the mesh path
+	* \ingroup sibr_assets
 	*/
 	inline std::string		getProxyFilename( const std::string& datasetPath ) {
 		return datasetPath + "/pmvs/models/pmvs_recon.ply";
@@ -67,6 +70,7 @@ namespace sibr
 	/**
 	 * Loading status for streaming.
 	* \todo Rename the following status into: NotLoaded, CPULoading, CPUReady, GPUReady, Failure.
+	* \ingroup sibr_assets
 	*/
 	namespace LoadingStatus
 	{

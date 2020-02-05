@@ -9,7 +9,7 @@
 namespace Eigen
 {
 	/**
-	* \addtogroup sibr_graphics
+	* \addtogroup sibr_system
 	* @{
 	*/
 

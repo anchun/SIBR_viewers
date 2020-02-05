@@ -17,6 +17,7 @@ namespace sibr {
 
 	/** Shader wrapper for sending mesh display options to the GPU (while avoiding duplicated uniforms) . 
 	 * Contains an MVP matrix and an opacity value.
+	  \ingroup sibr_view
 	 */
 	class SIBR_VIEW_EXPORT ShaderAlphaMVP {
 		SIBR_CLASS_PTR(ShaderAlphaMVP);
@@ -49,6 +50,7 @@ namespace sibr {
 
 	/** Shader wrapper for sending mesh display options to the GPU (while avoiding duplicated uniforms) .
 	 * Adds a user-defined color. \sa ShaderAlphaMVP
+	  \ingroup sibr_view
 	 */
 	class SIBR_VIEW_EXPORT ColorMeshShader : public ShaderAlphaMVP {
 	public:
@@ -72,6 +74,7 @@ namespace sibr {
 
 	/** Shader wrapper for sending mesh display options to the GPU (while avoiding duplicated uniforms) .
 	 * Adds a point size. \sa ShaderAlphaMVP
+	  \ingroup sibr_view
 	 */
 	class SIBR_VIEW_EXPORT PointShader : public ColorMeshShader {
 	public:
@@ -101,6 +104,7 @@ namespace sibr {
 
 	/** Shader wrapper for sending mesh display options to the GPU (while avoiding duplicated uniforms) .
 	 * Adds shading parameters. \sa ShaderAlphaMVP
+	  \ingroup sibr_view
 	 */
 	class SIBR_VIEW_EXPORT MeshShadingShader : public ColorMeshShader {
 	public:
@@ -125,6 +129,7 @@ namespace sibr {
 
 	/** Shader wrapper for sending mesh display options to the GPU (while avoiding duplicated uniforms) .
 	 * Adds line length option. \sa ShaderAlphaMVP
+	  \ingroup sibr_view
 	 */
 	class SIBR_VIEW_EXPORT NormalRenderingShader : public ColorMeshShader {
 	public:
@@ -150,6 +155,7 @@ namespace sibr {
 	/** Helper class containing all information relative to how to render a mesh for debugging purpose in a MultiMeshManager.
 	 * You can chain setters to modify multiple properties sequentially (chaining).
 	\sa MultiMeshManager
+	 \ingroup sibr_view
 	*/
 	class SIBR_VIEW_EXPORT MeshData {
 		SIBR_CLASS_PTR(MeshData);
@@ -275,6 +281,7 @@ namespace sibr {
 	 * useful for debugging purposes for instance.
 	 * The API supports chaining when setting mesh display options. You can for instance do:
 	 * manager.addMesh("my mesh", mesh).setDepthtest(true).setAlpha(0.5f); 
+	  \ingroup sibr_view
 	*/
 	class SIBR_VIEW_EXPORT MultiMeshManager : public ViewBase {
 		SIBR_CLASS_PTR(MultiMeshManager);

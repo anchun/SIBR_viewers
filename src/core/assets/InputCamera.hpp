@@ -25,7 +25,7 @@ namespace sibr
 			Z() {}
 
 			/** Constructor.
-			 * \warn Ordering of the values is swapped.
+			 * \warning Ordering of the values is swapped.
 			 * \param f far plane
 			 * \param n near plane
 			 */
@@ -70,7 +70,7 @@ namespace sibr
 		* \param m  camera parameters read from Bundler output file
 		* \param active  input image active or not
 		* \sa Bundler: http://phototour.cs.washington.edu/bundler/
-		* \warn Avoid using this legacy constructor.
+		* \deprecated Avoid using this legacy constructor.
 		*/
 		InputCamera(int id, int w, int h, sibr::Matrix4f m, bool active);
 

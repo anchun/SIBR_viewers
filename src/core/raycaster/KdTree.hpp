@@ -12,6 +12,7 @@ namespace sibr {
 	 * \brief Represent a 3D hierachical query structure baked by a nanoflann KdTree.
 	 * \note With the default L2 distance, all distances and radii are expected to be 
 	 * the squared values (this is a nanoflann constraint). For other metrics, use the distance directly.
+	 * \ingroup sibr_raycaster
 	 */
 	template <typename num_t = double, class Distance = nanoflann::metric_L2>
 	class  KdTree

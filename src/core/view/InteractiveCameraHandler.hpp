@@ -179,7 +179,7 @@ namespace sibr {
 		void snapToCamera(int id = -1);
 
 		/** \return the handler raycaster.
-			\warn Can be nullptr 
+			\warning Can be nullptr 
 		*/
 		std::shared_ptr<Raycaster> & getRaycaster() { return _raycaster; }
 
