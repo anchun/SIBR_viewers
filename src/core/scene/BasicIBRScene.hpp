@@ -124,20 +124,6 @@ namespace sibr {
 		 *
 		 */
 		Texture2DRGB::Ptr &					inputMeshTextures(void);
-
-		/**
-		 * \brief Getter for the pointer holding the user camera viewing the scene.
-		 * 
-		 * \todo Move to somwhere more appropriate.
-		 */
-		const sibr::InputCamera&					userCamera(void);
-
-		/**
-		 * \brief Setter for the pointer holding the user camera viewing the scene.
-		 * \param cam The camera to which the user camera should be set.
-		 * \todo Move to somwhere more appropriate.
-		 */
-		void										userCamera(const InputCamera& cam);
 		
 
 	protected:
@@ -195,16 +181,5 @@ namespace sibr {
 	{
 		return _inputMeshTexture;
 	}
-
-	inline const sibr::InputCamera & BasicIBRScene::userCamera(void)
-	{
-		return _userCamera;
-	}
-
-	inline void BasicIBRScene::userCamera(const InputCamera & cam)
-	{
-		_userCamera = cam;
-	}
-
 
 }
