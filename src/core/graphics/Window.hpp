@@ -124,18 +124,35 @@ namespace sibr
 		void			viewport(const Viewport& view);
 
 		// From IRenderTarget
+		/** Get the backbuffer texture ID. unsuported. */
 		inline GLuint	texture(uint t = 0) const;
+
+		/** Get the backbuffer texture ID. unsuported. */
 		inline GLuint	handle(uint t = 0) const;
+
+		/** \return the window buffer ID (0) */
 		inline GLuint	fbo(void) const;
+
+		/** Bind the window buffer. */
 		inline void		bind(void);
+
+		/** Unind the window buffer. */
 		inline void		unbind(void);
+
+		/** Clear the window buffer. */
 		inline void		clear(void);
+
+		/** \return the window buffer width */
 		inline uint		w(void) const;
+
+		/** \return the window buffer height */
 		inline uint		h(void) const;
 
+		/** \return the screens caling factor. */
 		inline float	scaling() const;
 		
 		static int			contextId; ///< Last created window context ID (-1 initially).
+
 	private:
 
 		/** Setup the window.
@@ -150,7 +167,7 @@ namespace sibr
 		/// Window pointer for callbacks.
 		typedef std::unique_ptr<GLFWwindow, std::function<void(GLFWwindow*)>> GLFWwindowptr;
 
-		/// helper to handle window creation/destruction.
+		/// Helper to handle window creation/destruction.
 		struct AutoInitializer
 		{
 			AutoInitializer(void);

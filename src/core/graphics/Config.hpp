@@ -92,6 +92,7 @@ namespace sibr
 	\param min min value
 	\param max max value
 	\return min(max(value, min), max)
+	\ingroup sibr_graphics
 	*/
 	template <typename T>
 	inline T	clamp( T value, T min, T max ) {
