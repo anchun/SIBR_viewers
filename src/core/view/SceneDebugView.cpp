@@ -488,7 +488,7 @@ namespace sibr
 		addMesh("proxy", _scene->proxies()->proxyPtr());
 
 		// Add a gizmo.
-		addMeshAsLines("guizmo", RenderUtility::createAxisGizmoPtr())
+		addMeshAsLines("guizmo", RenderUtility::createAxisGizmo())
 			.setDepthTest(false).setColorMode(MeshData::ColorMode::VERTEX);
 	}
 
