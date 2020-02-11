@@ -263,7 +263,7 @@ namespace sibr
 
 		static Mesh::Ptr getSphereMesh(const Vector3f & center, float radius, bool withGraphics = true, int precision = 50);
 
-		sibr::Mesh::Ptr subDivide(float limitSize) const;
+		sibr::Mesh::Ptr subDivide(float limitSize, size_t maxRecursion = std::numeric_limits<size_t>::max()) const;
 		
 		float meanEdgeSize() const;
 

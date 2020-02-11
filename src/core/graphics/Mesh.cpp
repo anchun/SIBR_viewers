@@ -1716,7 +1716,7 @@ namespace sibr
 		return sphereMesh;
 	}
 
-	sibr::Mesh::Ptr Mesh::subDivide(float limitSize) const
+	sibr::Mesh::Ptr Mesh::subDivide(float limitSize, size_t maxRecursion) const
 	{
 		struct Less {
 			bool operator()(const sibr::Vector3f &a, const sibr::Vector3f &b) const {
@@ -1747,25 +1747,31 @@ namespace sibr
 		int t_id = 0;
 		int e_id = 0;
 		for (const auto & t : triangles()) {
+			bool degenerate = false;
 			for (int k = 0; k < 3; ++k) {
 				int v0 = t[k];
 				int v1 = t[(k + 1) % 3];
-				sibr::Vector3f midPoint = 0.5f*(vertices()[v0] + vertices()[v1]);
+				// Skip degenerate faces.
+				if (v0 == v1) {
+					degenerate  = true;
+					break;
+				}
+				const sibr::Vector3f midPoint = 0.5f*(vertices()[v0] + vertices()[v1]);
 				sibr::Vector3f midNormal(0.0f, 0.0f, 0.0f);
 				if(hasNormals()) {
 					midNormal = (0.5f*(normals()[v0] + normals()[v1])).normalized();
 				}
 				
-				float length = (vertices()[v0] - vertices()[v1]).norm();
+				const float length = (vertices()[v0] - vertices()[v1]).norm();
 				if (mapEdges.count(midPoint) == 0) {
 					mapEdges[midPoint] = e_id;
-					Edge edge = { midPoint, midNormal,{t_id}, length, {v0,v1} };
+					const Edge edge = { midPoint, midNormal, {t_id}, length, {v0,v1} };
 					tris[t_id].edges_ids[k] = e_id;
 					edges.push_back(edge);
 					++e_id;
 				}
 				else {
-					int edge_id = mapEdges[midPoint];
+					const int edge_id = mapEdges[midPoint];
 					edges[edge_id].triangles_ids.push_back(t_id);
 					tris[t_id].edges_ids[k] = edge_id;
 					if (v0 != edges[edge_id].v_ids[0]) {
@@ -1773,25 +1779,31 @@ namespace sibr
 					}
 				}
 			}
+			if (degenerate) {
+				continue;
+			}
 			++t_id;
 		}
 
-		int nOldVertices = (int)vertices().size();
+		const int nOldVertices = (int)vertices().size();
 		sibr::Mesh::Vertices newVertices = vertices();
 		sibr::Mesh::Normals newNormals = normals();
 
 		std::vector<int> edge_to_divided_edges(edges.size(), -1);
 
 		sibr::Mesh::Triangles newTriangles;
-
-		int tri_id = 0;
+		
+		bool dbg = false;
 		int num_divided_edges = 0;
 		for (const Triangle & t : tris) {
-
+			// Ignore undef triangles.
+			if (t.edges_ids[0] == -1 && t.edges_ids[1] == -1 && t.edges_ids[2] == -1) {
+				continue;
+			}
 			std::vector<int> ks(3, -1);
 			std::vector<int> non_ks(3, -1);
 			for (int k = 0; k < 3; ++k) {
-				int e_id = t.edges_ids[k];
+				const int e_id = t.edges_ids[k];
 				if (edges[e_id].length > limitSize) {
 					if (ks[0] < 0) {
 						ks[0] = k;
@@ -1808,6 +1820,7 @@ namespace sibr
 						newVertices.push_back(edges[e_id].midPoint);
 						newNormals.push_back(edges[e_id].midNormal);
 						++num_divided_edges;
+						
 					}
 
 				}
@@ -1818,10 +1831,10 @@ namespace sibr
 				}
 			}
 
-			sibr::Vector3i corners_ids = sibr::Vector3i(0, 1, 2).unaryViewExpr([&](int i) {
+			const sibr::Vector3i corners_ids = sibr::Vector3i(0, 1, 2).unaryViewExpr([&](int i) {
 				return edges[t.edges_ids[i]].v_ids[t.edges_flipped[i] ? 1 : 0];
 			});
-			sibr::Vector3i midpoints_ids = sibr::Vector3i(0, 1, 2).unaryViewExpr([&](int i) {
+			const sibr::Vector3i midpoints_ids = sibr::Vector3i(0, 1, 2).unaryViewExpr([&](int i) {
 				return  edge_to_divided_edges[t.edges_ids[i]] >= 0 ? nOldVertices + edge_to_divided_edges[t.edges_ids[i]] : -1;
 			});
 
@@ -1832,12 +1845,12 @@ namespace sibr
 				newTriangles.push_back(midpoints_ids.cast<unsigned>());
 			}
 			else if (ks[1] >= 0) {
-				int candidate_edge_1_v_id_1 = corners_ids[non_ks[0]];
-				int candidate_edge_1_v_id_2 = midpoints_ids[(non_ks[0] + 1) % 3];
-				int candidate_edge_2_v_id_1 = corners_ids[(non_ks[0] + 1) % 3];
-				int candidate_edge_2_v_id_2 = midpoints_ids[(non_ks[0] + 2) % 3];
-				float candidate_edge_1_norm = (newVertices[candidate_edge_1_v_id_1] - newVertices[candidate_edge_1_v_id_2]).norm();
-				float candidate_edge_2_norm = (newVertices[candidate_edge_2_v_id_1] - newVertices[candidate_edge_2_v_id_2]).norm();
+				const int candidate_edge_1_v_id_1 = corners_ids[non_ks[0]];
+				const int candidate_edge_1_v_id_2 = midpoints_ids[(non_ks[0] + 1) % 3];
+				const int candidate_edge_2_v_id_1 = corners_ids[(non_ks[0] + 1) % 3];
+				const int candidate_edge_2_v_id_2 = midpoints_ids[(non_ks[0] + 2) % 3];
+				const float candidate_edge_1_norm = (newVertices[candidate_edge_1_v_id_1] - newVertices[candidate_edge_1_v_id_2]).norm();
+				const float candidate_edge_2_norm = (newVertices[candidate_edge_2_v_id_1] - newVertices[candidate_edge_2_v_id_2]).norm();
 				if (candidate_edge_1_norm < candidate_edge_2_norm) {
 					newTriangles.push_back(sibr::Vector3u(candidate_edge_1_v_id_1, corners_ids[(non_ks[0] + 1) % 3], candidate_edge_1_v_id_2));
 					newTriangles.push_back(sibr::Vector3u(candidate_edge_1_v_id_2, midpoints_ids[(non_ks[0] + 2) % 3], candidate_edge_1_v_id_1));
@@ -1855,19 +1868,16 @@ namespace sibr
 			else {
 				newTriangles.push_back(corners_ids.cast<unsigned>());
 			}
-
-			++tri_id;
 		}
-
+		std::cout << "." << std::flush;
 
 		subMeshPtr->vertices(newVertices);
 		if (hasNormals()) {
 			subMeshPtr->normals(newNormals);
 		}
 		subMeshPtr->triangles(newTriangles);
-
-		if (num_divided_edges > 0) {
-			return subMeshPtr->subDivide(limitSize);
+		if (num_divided_edges > 0 && maxRecursion > 0) {
+			return subMeshPtr->subDivide(limitSize, maxRecursion-1);
 		}
 
 		return subMeshPtr;
