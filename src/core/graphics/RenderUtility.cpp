@@ -13,23 +13,18 @@
 namespace sibr
 {
 
-	float RenderUtility::_camStubSize;
 
-	static const std::vector<float>&	getCameraStubVertices( void )
+	static const std::vector<float>&	getCameraStubVertices(float camStubSize = 0.1f)
 	{
-		static std::vector<float> _vBuffer;
-
-		if (_vBuffer.empty()) {
-			_vBuffer.resize(3*5);
-
-			_vBuffer[3*0+0]= 1*RenderUtility::camStubDrawSize(); _vBuffer[3*0+1]= 1*RenderUtility::camStubDrawSize(); _vBuffer[3*0+2]=-3*RenderUtility::camStubDrawSize();
-			_vBuffer[3*1+0]=-1*RenderUtility::camStubDrawSize(); _vBuffer[3*1+1]= 1*RenderUtility::camStubDrawSize(); _vBuffer[3*1+2]=-3*RenderUtility::camStubDrawSize();
-			_vBuffer[3*2+0]=-1*RenderUtility::camStubDrawSize(); _vBuffer[3*2+1]=-1*RenderUtility::camStubDrawSize(); _vBuffer[3*2+2]=-3*RenderUtility::camStubDrawSize();
-			_vBuffer[3*3+0]= 1*RenderUtility::camStubDrawSize(); _vBuffer[3*3+1]=-1*RenderUtility::camStubDrawSize(); _vBuffer[3*3+2]=-3*RenderUtility::camStubDrawSize();
-			_vBuffer[3*4+0]= 0*RenderUtility::camStubDrawSize(); _vBuffer[3*4+1]= 0*RenderUtility::camStubDrawSize(); _vBuffer[3*4+2]= 0*RenderUtility::camStubDrawSize();
-		}
+		std::vector<float> _vBuffer(3*5);
+		_vBuffer[3*0+0]= 1*camStubSize; _vBuffer[3*0+1]= 1*camStubSize; _vBuffer[3*0+2]=-3*camStubSize;
+		_vBuffer[3*1+0]=-1*camStubSize; _vBuffer[3*1+1]= 1*camStubSize; _vBuffer[3*1+2]=-3*camStubSize;
+		_vBuffer[3*2+0]=-1*camStubSize; _vBuffer[3*2+1]=-1*camStubSize; _vBuffer[3*2+2]=-3*camStubSize;
+		_vBuffer[3*3+0]= 1*camStubSize; _vBuffer[3*3+1]=-1*camStubSize; _vBuffer[3*3+2]=-3*camStubSize;
+		_vBuffer[3*4+0]= 0*camStubSize; _vBuffer[3*4+1]= 0*camStubSize; _vBuffer[3*4+2]= 0*camStubSize;
 		return _vBuffer;
 	}
+
 	static const std::vector<uint>&		getCameraStubIndices( void )
 	{
 		static std::vector<uint>	_iBuffer;
@@ -169,13 +164,11 @@ namespace sibr
 	}
 
 
-	/*static*/ Mesh		RenderUtility::createCameraStub( void )
+	/*static*/ Mesh		RenderUtility::createCameraStub(float camStubSize)
 	{
-		if (_camStubSize == 0.0f) {
-			_camStubSize = 0.1f;
-		}
+		
 		Mesh m;
-		m.vertices( getCameraStubVertices() );
+		m.vertices( getCameraStubVertices(camStubSize) );
 		m.triangles( getCameraStubIndices() );
 		return m;
 	}
@@ -208,104 +201,7 @@ namespace sibr
 		return m;
 	}
 
-	/*static*/ Mesh		RenderUtility::createAxisGizmo( void ){
-		const float arrowShift = 0.2f;
-		const float arrowSpread = 0.1f;
-
-		Mesh::Vertices v;
-		// Axis X
-		v.emplace_back(-1.0f, 0.0f, 0.0f);
-		v.emplace_back( 1.0f, 0.0f, 0.0f);
-		// Arrow X
-		v.emplace_back( 1.0f - arrowShift, -arrowSpread, 0.0f);
-		v.emplace_back( 1.0f - arrowShift, 0.0f,		 -arrowSpread);
-		v.emplace_back( 1.0f - arrowShift, arrowSpread,	 0.0f);
-		v.emplace_back( 1.0f - arrowShift, 0.0f,		 arrowSpread);
-		// Axis Y
-		v.emplace_back( 0.0f, -1.0f, 0.0f);
-		v.emplace_back( 0.0f,  1.0f, 0.0f);
-		// Arrow Y
-		v.emplace_back(-arrowSpread, 1.0f - arrowShift, 0.0f);
-		v.emplace_back( 0.0f,		 1.0f - arrowShift, -arrowSpread);
-		v.emplace_back( arrowSpread, 1.0f - arrowShift, 0.0f);
-		v.emplace_back( 0.0f,		 1.0f - arrowShift, arrowSpread);
-		// Axis Z
-		v.emplace_back( 0.0f,  0.0f, -1.0f);
-		v.emplace_back( 0.0f,  0.0f, 1.0f);
-		// Arrow Z
-		v.emplace_back(-arrowSpread, 0.0f,		   1.0f - arrowShift);
-		v.emplace_back( 0.0f,		 -arrowSpread, 1.0f - arrowShift);
-		v.emplace_back( arrowSpread, 0.0f,		   1.0f - arrowShift);
-		v.emplace_back( 0.0f,		 arrowSpread,  1.0f - arrowShift);
-
-		// Letter X
-		v.emplace_back( 1.0f + arrowShift - arrowSpread, -arrowSpread, 0.0f);
-		v.emplace_back( 1.0f + arrowShift + arrowSpread, arrowSpread,	0.0f);
-		v.emplace_back( 1.0f + arrowShift - arrowSpread, arrowSpread,	 0.0f);
-		v.emplace_back( 1.0f + arrowShift + arrowSpread, -arrowSpread, 0.0f);
-		// Letter Y
-		v.emplace_back( 0.0f,		 1.0f + arrowShift - arrowSpread, 0.0f);
-		v.emplace_back( 0.0f,		 1.0f + arrowShift,				  0.0f);
-		v.emplace_back(-arrowSpread, 1.0f + arrowShift + arrowSpread, 0.0f);
-		v.emplace_back( arrowSpread, 1.0f + arrowShift + arrowSpread, 0.0f);
-		// Letter Z
-		v.emplace_back( 0.0f, -arrowSpread, 1.0f + arrowShift - arrowSpread);
-		v.emplace_back( 0.0f, -arrowSpread, 1.0f + arrowShift + arrowSpread);
-		v.emplace_back( 0.0f,  arrowSpread, 1.0f + arrowShift - arrowSpread);
-		v.emplace_back( 0.0f,  arrowSpread, 1.0f + arrowShift + arrowSpread);
-
-		Mesh::Colors c;
-		// Colors X
-		c.emplace_back(1.0f,0.0f,0.0f); c.emplace_back(1.0f,0.0f,0.0f); c.emplace_back(1.0f,0.0f,0.0f);
-		c.emplace_back(1.0f,0.0f,0.0f); c.emplace_back(1.0f,0.0f,0.0f); c.emplace_back(1.0f,0.0f,0.0f);
-		// Colors Y
-		c.emplace_back(0.0f,1.0f,0.0f); c.emplace_back(0.0f,1.0f,0.0f); c.emplace_back(0.0f,1.0f,0.0f); 
-		c.emplace_back(0.0f,1.0f,0.0f);c.emplace_back(0.0f,1.0f,0.0f); c.emplace_back(0.0f,1.0f,0.0f);
-		// Colors Z
-		c.emplace_back(0.0f,0.0f,1.0f); c.emplace_back(0.0f,0.0f,1.0f); c.emplace_back(0.0f,0.0f,1.0f);
-		c.emplace_back(0.0f,0.0f,1.0f); c.emplace_back(0.0f,0.0f,1.0f); c.emplace_back(0.0f,0.0f,1.0f);
-		// Colors Letter X
-		c.emplace_back(1.0f,0.0f,0.0f); c.emplace_back(1.0f,0.0f,0.0f);
-		c.emplace_back(1.0f,0.0f,0.0f); c.emplace_back(1.0f,0.0f,0.0f);
-		// Colors Letter Y
-		c.emplace_back(0.0f,1.0f,0.0f); c.emplace_back(0.0f,1.0f,0.0f);
-		c.emplace_back(0.0f,1.0f,0.0f); c.emplace_back(0.0f,1.0f,0.0f);
-		// Colors Letter Z
-		c.emplace_back(0.0f,0.0f,1.0f); c.emplace_back(0.0f,0.0f,1.0f);
-		c.emplace_back(0.0f,0.0f,1.0f); c.emplace_back(0.0f,0.0f,1.0f);
-		
-		Mesh::Triangles t;
-		// Axis X
-		t.emplace_back(0,1,0);
-		// Arrow X
-		t.emplace_back(1,2,3); t.emplace_back(1,3,4); t.emplace_back(1,4,5);
-		t.emplace_back(1,5,2); t.emplace_back(2,3,4); t.emplace_back(2,3,5);
-		// Axis Y
-		t.emplace_back(6,7,6);
-		// Arrow Y
-		t.emplace_back(7,8,9); t.emplace_back(7,9,10); t.emplace_back(7,10,11);
-		t.emplace_back(7,11,8); t.emplace_back(8,9,10); t.emplace_back(8,9,11);
-		// Axis Z
-		t.emplace_back(12,13,12);
-		// Arrow Z
-		t.emplace_back(13,14,15); t.emplace_back(13,15,16); t.emplace_back(13,16,17);
-		t.emplace_back(13,17,14); t.emplace_back(14,15,16); t.emplace_back(14,15,17);
-
-		// Letter X
-		t.emplace_back(18,19,18); t.emplace_back(20,21,20);
-		//Letter Y
-		t.emplace_back(22,23,22); t.emplace_back(24,23,24); t.emplace_back(25,23,25);
-		//Letter Z
-		t.emplace_back(26,28,26); t.emplace_back(26,29,26); t.emplace_back(27,29,27);
-
-		Mesh m;
-		m.vertices(v);
-		m.colors(c);
-		m.triangles(t);
-		return m;
-	}
-
-	Mesh::Ptr RenderUtility::createAxisGizmoPtr()
+	Mesh::Ptr RenderUtility::createAxisGizmo()
 	{
 		const float arrowShift = 0.2f;
 		const float arrowSpread = 0.1f;

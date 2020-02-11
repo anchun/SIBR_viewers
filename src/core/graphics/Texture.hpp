@@ -630,6 +630,7 @@ namespace sibr
 	typedef RenderTarget<float,3>          RenderTargetRGB32F;
 	typedef RenderTarget<float,4>          RenderTargetRGBA32F;
 	typedef RenderTarget<float,1>          RenderTargetLum32F;
+	typedef RenderTarget<float, 2>          RenderTargetUV32F;
 
 	typedef RenderTarget<unsigned short, 1>    RenderTargetLum16;
 	typedef RenderTarget<unsigned short, 2>    RenderTargetUV16;

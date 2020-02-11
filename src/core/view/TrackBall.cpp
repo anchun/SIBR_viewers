@@ -475,7 +475,7 @@ namespace sibr {
 
 	void TrackBall::updateRadius(const Input & input)
 	{
-		if (!sibr::KeyCombination()) { return; }
+		if(input.key().getNumActivated() != 0){ return; }
 		if (!fixedCamera._isOrtho) {
 			float zoomIn = (input.mouseScroll() > 0 ? -1.0f : 1.0f);
 			float radius = (fixedCamera.position() - fixedCenter).norm();
