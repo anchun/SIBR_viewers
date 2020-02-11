@@ -114,6 +114,10 @@ namespace sibr
 		out.aspect(dist01*from.aspect() + (1.0f-dist01)*to.aspect());
 		out.zfar(dist01*from.zfar() + (1.0f-dist01)*to.zfar());
 		out.znear(dist01*from.znear() + (1.0f-dist01)*to.znear());
+		if (from._isOrtho) {
+			out.orthoRight(dist01*from.orthoRight() + (1.0f-dist01)*to.orthoRight());
+			out.orthoTop(dist01*from.orthoTop() + (1.0f-dist01)*to.orthoTop());
+		}
 		return out;
 	}
 

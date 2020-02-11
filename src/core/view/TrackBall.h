@@ -228,6 +228,7 @@ namespace sibr {
 		bool						hasBeenInitialized; ///< Initialized or not.
 		bool						verbose; ///< verbose or not.
 
+		float						zoom=1.0f;//zoom factor used for ortho cams
 		//members used for interaction drawing
 		std::shared_ptr<Mesh>		quadMesh; ///< Supporting mesh for the overlay.
 		GLShader					trackBallShader; ///< Overlay shader.

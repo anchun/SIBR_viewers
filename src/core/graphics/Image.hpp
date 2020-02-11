@@ -285,7 +285,7 @@ namespace sibr
 
 	template <typename T_Type, unsigned T_NumComp>
 	static void		show(const Image<T_Type, T_NumComp> & img, const std::string& windowTitle = "sibr::show()", bool closeWindow = true) {
-		cv::namedWindow(windowTitle, CV_WINDOW_AUTOSIZE | CV_WINDOW_KEEPRATIO | CV_GUI_EXPANDED);
+		cv::namedWindow(windowTitle, cv::WINDOW_AUTOSIZE | cv::WINDOW_KEEPRATIO | cv::WINDOW_GUI_EXPANDED);
 		// Note: CV_GUI_EXPANDED does only work with Qt :s
 		//SIBR_ASSERT(img.w() > 1 || img.h() > 1);
 
@@ -412,7 +412,7 @@ namespace sibr
 			SIBR_LOG << "Loading image file '" << filename << "'." << std::endl;
 		else
 			std::cerr << ".";
-		cv::Mat img = cv::imread(filename, CV_LOAD_IMAGE_UNCHANGED | CV_LOAD_IMAGE_ANYDEPTH | CV_LOAD_IMAGE_ANYCOLOR);
+		cv::Mat img = cv::imread(filename, cv::IMREAD_UNCHANGED | cv::IMREAD_ANYDEPTH | cv::IMREAD_ANYCOLOR);
 		if (img.data == nullptr)
 		{
 			operator =(Image<T_Type, T_NumComp>()); // reset mat
@@ -482,7 +482,7 @@ namespace sibr
 
 		cv::Mat img;
 		if (T_NumComp == 1) {
-			cv::cvtColor(toOpenCVBGR(), img, CV_GRAY2BGR);
+			cv::cvtColor(toOpenCVBGR(), img, cv::COLOR_GRAY2BGR);
 		} /// \todo TODO: support for 2 channels images.
 		else {
 			// For 3 and 4 channels, leave the image untouched.

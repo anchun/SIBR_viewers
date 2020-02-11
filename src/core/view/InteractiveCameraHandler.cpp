@@ -586,6 +586,8 @@ namespace sibr {
 							_cameraRecorder.reset();
 							if (boost::filesystem::extension(selectedFile) == ".out")
 								_cameraRecorder.loadBundle(selectedFile, 1920, 1080);
+							else if (boost::filesystem::extension(selectedFile) == ".lookat")
+								_cameraRecorder.loadLookat(selectedFile, 1920, 1080);
 							else
 								_cameraRecorder.load(selectedFile);
 							_cameraRecorder.playback();

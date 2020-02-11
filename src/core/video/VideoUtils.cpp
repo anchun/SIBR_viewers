@@ -3,6 +3,7 @@
 #include <core/graphics/Utils.hpp>
 #include <algorithm>
 
+
 #include <opencv2/ximgproc/edge_filter.hpp>
 #include <opencv2/optflow.hpp>
 namespace sibr {
@@ -1845,4 +1846,5 @@ namespace sibr {
 	//int TimeHistogram::getModeId() const {
 	//	return  std::distance(bins.begin(), std::max_element(bins.begin(), bins.end()));
 	//}
+	
 }

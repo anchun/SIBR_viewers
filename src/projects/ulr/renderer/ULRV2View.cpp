@@ -159,7 +159,7 @@ void ULRV2View::computeVisibilityMap(const sibr::ImageL32F & depthMap, sibr::Ima
 	}
 
 	cv::Mat distance(depthMap.h(), depthMap.w(), CV_32FC1);
-	cv::distanceTransform(edgeMap.toOpenCVnonConst(), distance, CV_DIST_L2, CV_DIST_MASK_PRECISE);
+	cv::distanceTransform(edgeMap.toOpenCVnonConst(), distance, cv::DIST_L2, cv::DIST_MASK_PRECISE);
 
 	sibr::ImageL32F outF;
 	outF.fromOpenCV(distance);

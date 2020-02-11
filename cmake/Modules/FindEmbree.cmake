@@ -36,7 +36,7 @@ endif()
 set(PROGRAMFILESx86 "PROGRAMFILES(x86)")
 
 FIND_PATH(EMBREE_INCLUDE_DIR
-	NAMES embree2/rtcore_geometry_user.h
+	NAMES embree3/rtcore_geometry.h
 	PATHS
 		${EMBREE_DIR}
 		## linux
@@ -51,7 +51,7 @@ FIND_PATH(EMBREE_INCLUDE_DIR
 )
 
 FIND_LIBRARY(EMBREE_LIBRARY
-	NAMES embree
+	NAMES embree3
 	PATHS
 		${EMBREE_DIR}/${EMBREE_SEARCH_LIB}
 		${EMBREE_DIR}/lib

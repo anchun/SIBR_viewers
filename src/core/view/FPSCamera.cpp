@@ -105,6 +105,9 @@ namespace sibr {
 		if (input.key().isActivated(sibr::Key::LeftControl)) { return; }
 
 		float camSpeed = 2.f * deltaTime		* IBRVIEW_CAMSPEED;
+		if (_currentCamera._isOrtho) {
+			camSpeed *= 5.0f;
+		}
 		float camRotSpeed = 30.f * deltaTime	* IBRVIEW_CAMSPEED;
 		//float camSpeed = 0.1f;
 		//float camRotSpeed = 1.f;

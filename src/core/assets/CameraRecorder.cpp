@@ -191,6 +191,16 @@ namespace sibr
 
 	}
 
+	void CameraRecorder::loadLookat(const std::string &filePath, int w, int h)
+	{
+		SIBR_LOG << "Loading lookat path." << std::endl;
+		std::vector<InputCamera> path = InputCamera::loadLookat(filePath, std::vector<Vector2u>{Vector2u(w, h)});
+		for (const InputCamera & cam : path)
+		{
+			_cameras.emplace_back(cam);
+		}
+	}
+
 	void CameraRecorder::saveAsBundle(const std::string & filePath, const int height, const int step)
 	{
 

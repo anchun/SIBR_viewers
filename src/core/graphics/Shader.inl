@@ -101,6 +101,15 @@ namespace sibr
 		if (!m_Strict && m_Handle == -1) return;
 		glUniform1fv(m_Handle,size,pv);
 	}
+	
+	void	GLParameter::setArray( const std::vector<int>& pv, int size )
+	{
+		authorize();
+		if (!m_Strict && m_Handle == -1) return;
+		glUniform1iv(m_Handle,size,&pv[0]);
+	}
+
+
 
 	void	GLParameter::set( const Vector2f& v )
 	{

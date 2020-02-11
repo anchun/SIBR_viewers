@@ -106,6 +106,7 @@ namespace sibr
 		SIBR_OPT_INLINE void	set( int v );
 		SIBR_OPT_INLINE void	set( bool b);
 		SIBR_OPT_INLINE void	setArray( const float *pv, int size );
+		SIBR_OPT_INLINE void	setArray( const std::vector<int>& pv, int size );
 		SIBR_OPT_INLINE void	set( const Vector2f& v );
 		SIBR_OPT_INLINE void	set( const Vector3f& v );
 		SIBR_OPT_INLINE void	set( const Vector4f& v );
@@ -152,6 +153,15 @@ namespace sibr
 			value = t;
 			send();
 		}
+		
+		void setArray(const T & t,int size) {
+			value = t;
+			if (parameter.isInitialized()) {
+				parameter.setArray(value,size);
+			}
+		}
+
+
 
 	protected :
 		T value;

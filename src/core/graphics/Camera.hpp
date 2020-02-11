@@ -18,7 +18,7 @@ namespace sibr
 
 	public:
 
-		Camera(void) :
+		Camera( void ):
 			_matViewProj(Matrix4f::Identity()), _invMatViewProj(Matrix4f::Identity()),
 			_dirtyViewProj(true), _savePath(""), _debugVideoFrames(false),
 			_fov(70.f/180.0f*float(M_PI)), _aspect(1.f), _znear(0.01f), _zfar(1000.f),_isOrtho(false), _p(0.5f, 0.5f) { }
@@ -69,6 +69,12 @@ namespace sibr
 
 		void				zfar( float value );
 		float				zfar( void ) const;
+
+		void				orthoRight( float value );
+		float				orthoRight( void ) const;
+
+		void				orthoTop( float value );
+		float				orthoTop( void ) const;
 
 		Vector3f			dir( void ) const;
 		Vector3f			up( void ) const;
@@ -230,6 +236,21 @@ namespace sibr
 	inline void Camera::principalPoint(const sibr::Vector2f & p) {
 		_p = p; _dirtyViewProj = true;
 	}
+
+	inline void	Camera::orthoRight( float value ) {
+		_right = value; _dirtyViewProj = true;
+	}
+	inline float	Camera::orthoRight( void ) const {
+		return _right;
+	}
+
+	inline void	Camera::orthoTop( float value ) {
+		_top = value; _dirtyViewProj = true;
+	}
+	inline float	Camera::orthoTop( void ) const {
+		return _top;
+	}
+
 
 	inline const Matrix4f&			Camera::viewproj( void ) const {
 		if (_dirtyViewProj)
