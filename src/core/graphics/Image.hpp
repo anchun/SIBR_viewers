@@ -924,6 +924,7 @@ namespace sibr
 
 	typedef Image<int, 1>        ImageInt1;
 	typedef Image<int, 2>        ImageInt2;
+	typedef Image<int, 3>        ImageInt3;
 
 
 	/** Convert an integer ID map to a colored image using a different random color for each ID.

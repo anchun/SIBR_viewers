@@ -65,21 +65,6 @@ namespace sibr
 		enum {type=GL_INT};
 	};
 
-	//template <> class GLType<depth32> {
-	//public:
-	//	enum {type=GL_FLOAT};
-	//};
-
-	//template <> class GLType<depth24> {
-	//public:
-	//	enum {type=GL_UNSIGNED_INT};
-	//};
-
-	//template <> class GLType<depth16> {
-	//public:
-	//	enum {type=GL_UNSIGNED_SHORT};
-	//};
-
 	// -----------------------------------------------------------------------
 
 	template <typename T_Type,int T_Num> class GLFormat;
@@ -174,6 +159,42 @@ namespace sibr
 			int_internal_format = GL_R32I,
 			int_format          = GL_RED_INTEGER,
 			isdepth             = 0};
+	};
+
+
+	template <> class GLFormat<int, 2> {
+	public:
+		enum {
+			internal_format = GL_RG32I,
+			format = GL_RG_INTEGER,
+			int_internal_format = GL_RG32I,
+			int_format = GL_RG_INTEGER,
+			isdepth = 0
+		};
+	};
+
+
+	template <> class GLFormat<int, 3> {
+	public:
+		enum {
+			internal_format = GL_RGB32I,
+			format = GL_RGB_INTEGER,
+			int_internal_format = GL_RGB32I,
+			int_format = GL_RGB_INTEGER,
+			isdepth = 0
+		};
+	};
+
+
+	template <> class GLFormat<int, 4> {
+	public:
+		enum {
+			internal_format = GL_RGBA32I,
+			format = GL_RGBA_INTEGER,
+			int_internal_format = GL_RGBA32I,
+			int_format = GL_RGBA_INTEGER,
+			isdepth = 0
+		};
 	};
 
 	template <> class GLFormat<float,1> {
@@ -1164,13 +1185,13 @@ namespace sibr
 	void RenderTarget<T_Type, T_NumComp>::clear(const typename RenderTarget<T_Type, T_NumComp>::PixelFormat& v) {
 		bind();
 		if (PixelFormat::NumComp == 1) {
-			glClearColor(v[0],0,0,0);
+			glClearColor(GLclampf(v[0]),0,0,0);
 		} else if (PixelFormat::NumComp == 2) {
-			glClearColor(v[0],v[1],0,0);
+			glClearColor(GLclampf(v[0]), GLclampf(v[1]),0,0);
 		} else if (PixelFormat::NumComp == 3) {
-			glClearColor(v[0],v[1],v[2],0);
+			glClearColor(GLclampf(v[0]), GLclampf(v[1]), GLclampf(v[2]),0);
 		} else if (PixelFormat::NumComp == 4) {
-			glClearColor(v[0],v[1],v[2],v[3]);
+			glClearColor(GLclampf(v[0]), GLclampf(v[1]), GLclampf(v[2]), GLclampf(v[3]));
 		}
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 		unbind();
@@ -1453,9 +1474,18 @@ namespace sibr
 
 	typedef Texture2DArray<unsigned short, 1>    Texture2DArrayLum16;
 	typedef Texture2DArray<unsigned short, 2>    Texture2DArrayUV16;
+	typedef Texture2DArray<unsigned short, 3>    Texture2DArrayRGB16;
 	typedef Texture2DArray<unsigned short, 4>    Texture2DArrayRGBA16;
 
+	typedef Texture2DArray<short, 1>             Texture2DArrayLum16s;
 	typedef Texture2DArray<short, 2>             Texture2DArrayUV16s;
+	typedef Texture2DArray<short, 3>             Texture2DArrayRGB16s;
+	typedef Texture2DArray<short, 4>             Texture2DArrayRGBA16s;
+
+	typedef Texture2DArray<int, 1>				 Texture2DArrayInt1;
+	typedef Texture2DArray<int, 2>				 Texture2DArrayInt2;
+	typedef Texture2DArray<int, 3>				 Texture2DArrayInt3;
+	typedef Texture2DArray<int, 4>				 Texture2DArrayInt4;
 
 	typedef Texture2DArray<float, 1>             Texture2DArrayLum32F;
 	typedef Texture2DArray<float, 2>             Texture2DArrayUV32F;

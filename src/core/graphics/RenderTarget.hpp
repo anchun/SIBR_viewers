@@ -16,13 +16,6 @@ namespace sibr
 	typedef RenderTarget<float,4>          RenderTargetRGBA32F;
 	typedef RenderTarget<float,1>          RenderTargetLum32F;
 
-	//typedef RenderTarget<half,1>           RenderTargetLum16F;
-	//typedef RenderTarget<half,2>           RenderTargetUV16F;
-	//typedef RenderTarget<half,3>           RenderTargetRGB16F;
-	//typedef RenderTarget<half,4>           RenderTargetRGBA16F;
-
-	//typedef RenderTarget<depth24,1>        RenderTargetDepth24;
-	//typedef RenderTarget<depth32,1>        RenderTargetDepth32;
 
 	/**
 	* \ingroup sibr_graphics
