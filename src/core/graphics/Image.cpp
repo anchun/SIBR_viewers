@@ -28,10 +28,10 @@ namespace sibr
 			switch (img.channels())
 			{
 			case 3:
-				cv::cvtColor(img, img, CV_BGR2RGB);
+				cv::cvtColor(img, img, cv::COLOR_BGR2RGB);
 				break;
 			case 4:
-				cv::cvtColor(img, img, CV_BGRA2RGBA);
+				cv::cvtColor(img, img,  cv::COLOR_BGRA2RGBA);
 				break;
 			default:
 				break;
@@ -43,10 +43,10 @@ namespace sibr
 			switch (img.channels())
 			{
 			case 3:
-				cv::cvtColor(img, img, CV_RGB2BGR);
+				cv::cvtColor(img, img, cv::COLOR_RGB2BGR);
 				break;
 			case 4:
-				cv::cvtColor(img, img, CV_RGBA2BGRA);
+				cv::cvtColor(img, img, cv::COLOR_RGBA2BGRA);
 				break;
 			default:
 				break;

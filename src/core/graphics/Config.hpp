@@ -16,9 +16,9 @@
 
 // (used by Image)
 # pragma warning(push, 0)
-#  include <opencv/cv.h>
-#  include <opencv/cxcore.h>
-#  include <opencv/highgui.h>
+#  include <opencv2/opencv.hpp>
+#  include <opencv2/core.hpp>
+#  include <opencv2/highgui.hpp>
 # pragma warning(pop)
 
 

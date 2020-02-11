@@ -814,7 +814,7 @@ if(1)#BUILD_MVIIR OR BUILD_VBR OR BUILD_IBR_UTILITIES_MVSEG OR BUILD_UTILITIES_D
         )
     elseif (MSVC14)
         set(opencv_set_arguments 
-            CHECK_CACHED_VAR OpenCV_DIR PATH "opencv-3.4.1/build" ## see OpenCVConfig.cmake
+            CHECK_CACHED_VAR OpenCV_DIR PATH "opencv-4.2.0/build" ## see OpenCVConfig.cmake
         )
     else ()
         message("There is no provided OpenCV library for your version of MSVC")
@@ -823,7 +823,7 @@ if(1)#BUILD_MVIIR OR BUILD_VBR OR BUILD_IBR_UTILITIES_MVSEG OR BUILD_UTILITIES_D
     win3rdParty(OpenCV #VERBOSE ON
             MSVC11 "win3rdParty/MSVC11/OpenCV" "https://gforge.inria.fr/frs/download.php/file/35599/opencv.7z"
             MSVC12 "win3rdParty/MSVC11/OpenCV" "https://gforge.inria.fr/frs/download.php/file/35599/opencv.7z"
-            MSVC14 "win3rdParty/MSVC14/OpenCV" "https://gforge.inria.fr/frs/download.php/file/37552/opencv-3.4.1.7z"    # opecv compatible with msvc14 and with contribs
+            MSVC14 "win3rdParty/MSVC14/OpenCV" "https://gforge.inria.fr/frs/download.php/file/38280/opencv-4.2.0.7z"    # opecv compatible with msvc14 and with contribs
             SET ${opencv_set_arguments}
         )
     find_package(OpenCV REQUIRED) ## Use directly the OpenCVConfig.cmake provided
@@ -874,7 +874,7 @@ if (BUILD_IBR_TORCHGL_INTEROP)
     sibr_addlibrary(
         NAME libtorch
         MSVC11 "https://gforge.inria.fr/frs/download.php/file/38148/libtorch.7z"
-        MSVC14 "https://gforge.inria.fr/frs/download.php/file/38148/libtorch.7z"  
+        MSVC14 "https://gforge.inria.fr/frs/download.php/file/38282/libtorch-1.4.0.7z"
         REQUIREDFOR BUILD_IBR_TORCHGL_INTEROP
     )
 endif()

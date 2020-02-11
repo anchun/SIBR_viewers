@@ -136,7 +136,6 @@ namespace sibr {
 		ProxyMesh::Ptr								_proxies;
 		Texture2DRGB::Ptr							_inputMeshTexture;
 		RenderTargetTextures::Ptr					_renderTargets;
-		InputCamera									_userCamera;
 		
 	};
 
