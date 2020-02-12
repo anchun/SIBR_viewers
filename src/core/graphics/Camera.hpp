@@ -9,6 +9,8 @@
 namespace sibr
 {
 	/**
+	Represent a basic camera.
+	\note In practice, InputCamera is used most of the time
 	* \ingroup sibr_graphics
 	*/
 	class SIBR_GRAPHICS_EXPORT Camera
@@ -18,6 +20,7 @@ namespace sibr
 
 	public:
 
+		/// Default constructor.
 		Camera( void ):
 			_matViewProj(Matrix4f::Identity()), _invMatViewProj(Matrix4f::Identity()),
 			_dirtyViewProj(true), _savePath(""), _debugVideoFrames(false),
@@ -27,122 +30,267 @@ namespace sibr
 		///// ====================  Transform  ==================== /////
 		/////////////////////////////////////////////////////////////////
 
+		/** Set the camera pose.
+		\param translation the camera translation
+		\param rotation the camera rotation
+		*/
 		void					set( const Vector3f& translation, const Quaternionf& rotation );
-		void					setLookAt( const Vector3f& Eye, const Vector3f& Center, const Vector3f& Up );
 
+		/** Set the camera pose based on two points and a up vector.
+		\param eye the camera position
+		\param center the camera target point
+		\param up the camera up vector
+		*/
+		void					setLookAt( const Vector3f& eye, const Vector3f& center, const Vector3f& up );
+
+		/** Translate the camera.
+		\param v the translation
+		*/
 		void					translate( const Vector3f& v );
 
-		// perform a translation with respect to frame ref
+		/** Translate the camera with respect to a reference frame.
+		\param v the translation
+		\param ref the reference frame
+		*/
 		void					translate( const Vector3f& v, const Transform3f& ref );
 
+		/** Set the camera position.
+		\param v the new position
+		*/
 		void					position( const Vector3f& v );
+
+		/** \return the camer position. */
 		const Vector3f&			position( void ) const;
 
-		// the action of performing the rotation, given the rotation
+		/** Rotate the camera.
+		\param rotation the quaternion rotation to apply
+		*/
 		void					rotate( const Quaternionf& rotation );
+
+		/** Rotate the camera.
+		\param v the euler angles to apply
+		*/
 		void					rotate( const Vector3f& v );
-		// perform a rotation with respect to frame ref
+		
+		/** Rotate the camera with respect to a reference frame.
+		\param v the rotation euler angles
+		\param ref the reference frame
+		*/
 		void					rotate( const Vector3f& v, const Transform3f& ref );
 
-		// set orientation values
+		/** Set the camera rotation.
+		\param v the new rotation euler angles
+		*/
 		void					rotation( const Vector3f& v );
+
+		/** Set the camera rotation.
+		\param q the new rotation
+		*/
 		void					rotation( const Quaternionf& q );
+		
+		/** \return the camera rotation. */
 		const Quaternionf&		rotation( void ) const;
 
-		/** Set transform */
+		/** Set the camera transform.
+		\param t the new transform
+		*/
 		void 					transform( const Transform3f& t );
-		/** Get transform */
+		
+		/** \return the camera transform. */
 		const Transform3f&		transform( void ) const;
 
 		/////////////////////////////////////////////////////////////////
 		///// ==================== Projection  ==================== /////
 		/////////////////////////////////////////////////////////////////
 
+		/** Set the vertical field of view (in radians).
+		\pram value the new value
+		*/
 		void				fovy( float value );
+
+		/** \return the vertical field of view (in radians). */
 		float				fovy( void ) const;
 
+		/** Set the aspect ratio.
+		\pram value the new value
+		*/
 		void				aspect( float value );
+
+		/** \return the aspect ratio. */
 		float				aspect( void ) const;
 
+		/** Set the near plane.
+		\pram value the new value
+		*/
 		void				znear( float value );
+
+		/** \return the near plane distance */
 		float				znear( void ) const;
 
+		/** Set the far plane.
+		\pram value the new value
+		*/
 		void				zfar( float value );
+
+		/** \return the far plane distance */
 		float				zfar( void ) const;
 
+		/** Set the right frustum extent.
+		\pram value the new value
+		*/
 		void				orthoRight( float value );
+
+		/** \return the right frustum distance */
 		float				orthoRight( void ) const;
 
+		/** Set the top frustum extent.
+		\pram value the new value
+		*/
 		void				orthoTop( float value );
+
+		/** \return the top frustum distance */
 		float				orthoTop( void ) const;
 
+		/** \return true if the camera is orthographic. */
+		bool				ortho(void) const;
+
+		/** \return the camera direction vector. */
 		Vector3f			dir( void ) const;
+
+		/** \return the camera up vector. */
 		Vector3f			up( void ) const;
+
+		/** \return the camera right vector. */
 		Vector3f			right( void ) const;
 
 		/** Project 3D point using perspective projection.
-		* \param p 3D point
-		* \returns pixel coordinates in [-1,1] range and depth in [-1,1]
+		* \param point3d 3D point
+		* \return pixel coordinates in [-1,1] and depth in [-1,1]
 		*/
 		Vector3f			project( const Vector3f& point3d ) const;
 
 		/** Back-project pixel coordinates and depth.
-		* \param p pixel coordinates p[0],p[1] in [-1,1] and depth p[3] in [-1,1]
-		* \returns 3D point
+		* \param pixel2d pixel coordinates p[0],p[1] in [-1,1] and depth p[2] in [-1,1]
+		* \return 3D point
 		*/
 		Vector3f			unproject( const Vector3f& pixel2d ) const;
 
+		/** Update the projection parameters of the camera.
+		\param fovRad the vertical field ov view in radians
+		\param ratio the aspect ratio
+		\param znear the near plane distance
+		\param zfar the far plane distance
+		*/
 		void				perspective( float fovRad, float ratio, float znear, float zfar );
 
-		bool				frustumTest(const Vector3f& position3d, const Vector2f& pixel2d) const; //pixel2d in [-1,1]
+		/** Check if a point falls inside the camera frustum.
+		\param position3d the point location in 3D
+		\return true if the point falls inside
+		*/
 		bool				frustumTest(const Vector3f& position3d) const;
+		
+		/** Check if a point falls inside the camera frustum. Use this version if you already have the projected point.
+		\param position3d the point location in 3D
+		\param pixel2d the projection location of the point in image space ([-1,1])
+		\return true if the point falls inside
+		*/
+		bool				frustumTest(const Vector3f& position3d, const Vector2f& pixel2d) const;
 
+		/** \return the camera model matrix (for camera stub rendering for instance). */
 		Matrix4f			model( void ) const { return _transform.matrix(); }
-		Matrix4f			view( void ) const { return _transform.invMatrix(); }
-		Matrix4f			proj( void ) const;
-		const Matrix4f&		viewproj( void ) const; /* cached */
-		const Matrix4f&		invViewproj( void ) const; /* cached */
 
-		/** \param p the principal point, expressed in [0,1] */
+		/** \return the camera view matrix. */
+		Matrix4f			view( void ) const { return _transform.invMatrix(); }
+
+		/** \return the camera projection matrix. */
+		Matrix4f			proj( void ) const;
+
+		/** \return the camera view-proj matrix (cached). */
+		const Matrix4f&		viewproj( void ) const;
+
+		/** \return the camera inverse view-proj matrix (cached). */
+		const Matrix4f&		invViewproj( void ) const;
+
+		/** Set the camera principal point. 
+		\param p the principal point, expressed in [0,1] 
+		*/
 		void principalPoint(const sibr::Vector2f & p);
 
+		/** Interpolate between two cameras.
+		\param from start camera
+		\param to end camera
+		\param dist01 the interpolation factor
+		\return a camera with interpolated parameters
+		*/
 		static Camera		interpolate( const Camera& from, const Camera& to, float dist01 );
 
-		void 				setStereoCam(bool isLeft, float, float);
+		/** Set stereo camera projection parameters.
+		\param isLeft is the camera for the left eye (else right)
+		\param focal the focal distance
+		\param iod the inter ocular distance
+		*/
+		void 				setStereoCam(bool isLeft, float focal, float iod);
+
+		/** Set orthographic camera projection parameters.
+		\param right the right frustum extent
+		\param top the top frustum extent
+		*/
 		void				setOrthoCam(float right, float top);
 
-		void				readViewProjMat(std::ifstream& infile) { infile >> _matViewProj; forceUpdateViewProj(); }
-		void				saveViewProjMat(std::ofstream& outfile){ outfile << _matViewProj; };
-
+		/** \return true if the rendering generated with the camera be saved. */
 		bool				needSave() const { return _savePath!=""; }
+
+		/**\return true if the rendering generated with the camera be saved as a frame. */
 		bool				needVideoSave() const { return _debugVideoFrames; }
+
+		/** \return the save destination path for renderings */
 		std::string			savePath() const { return _savePath; }
+
+		/** Set the save destination path for renderings.
+		\param savePath the new path
+		*/
 		void				setSavePath(std::string savePath) { _savePath = savePath; }
+
+		/** Toggle video saving.
+		\todo Cleanup naming.
+		\param debug if true, saving frames
+		*/
 		void				setDebugVideo(const bool debug) { _debugVideoFrames = debug; }
-		bool			_isOrtho;
-		float			_right;
-		float			_top;
+		
 	protected:
+
+		/** Trigger a viewproj matrix udpate. */
 		void				forceUpdateViewProj( void ) const;
 
-		std::string				_savePath;
-		bool					_debugVideoFrames;
-		mutable Matrix4f		_matViewProj;
-		mutable Matrix4f		_invMatViewProj;
-		mutable bool			_dirtyViewProj;
+		std::string				_savePath; ///< Save destination path when reocrding images.
+		bool					_debugVideoFrames; ///< Is video saving enabled or not. \todo Cleanup.
+		mutable Matrix4f		_matViewProj; ///< View projection matrix.
+		mutable Matrix4f		_invMatViewProj; ///< Inverse projection matrix.
+		mutable bool			_dirtyViewProj; ///< Does the camera matrix need an update.
 
-		Transform3f		_transform;
-		float			_fov;
-		float			_aspect;
-		float			_znear;
-		float			_zfar;
-		sibr::Vector2f   _p = {0.5f, 0.5};
-		//bool			_isOrtho;
-		//float			_right;
-		//float			_top;
+		Transform3f		_transform; ///< The camera pose.
+		float			_fov; ///< The vertical field of view (radians)
+		float			_aspect; ///< Aspect ratio.
+		float			_znear; ///< Near plane.
+		float			_zfar; ///< Far plane.
+		float			_right; ///< Frustum half width.
+		float			_top; ///< Frustum half height.
+		sibr::Vector2f   _p = {0.5f, 0.5}; ///< Principal point.
+		bool			_isOrtho; ///< Is the camera orthographic.
 	};
 
+	/** Write a camera to a byte stream.
+	\param stream the stream to write to
+	\param c the camera
+	\return the stream (for chaining).
+	*/
 	SIBR_GRAPHICS_EXPORT ByteStream&		operator << (ByteStream& stream, const Camera& c );
+
+	/** Read a camera from a byte stream.
+	\param stream the stream to read from
+	\param c the camera
+	\return the stream (for chaining).
+	*/
 	SIBR_GRAPHICS_EXPORT ByteStream&		operator >> (ByteStream& stream, Camera& c );
 
 	///// DEFINITIONS /////
@@ -156,16 +304,16 @@ namespace sibr
 		_dirtyViewProj = true; _transform.set(translation, rotation);
 	}
 
-	inline void				Camera::setLookAt( const Vector3f& Eye, const Vector3f& At, const Vector3f& Up ) {
-		const Vector3f zAxis( (Eye - At).normalized() );
-		const Vector3f xAxis( (Up.normalized().cross(zAxis)).normalized() );
+	inline void				Camera::setLookAt( const Vector3f& eye, const Vector3f& at, const Vector3f& up ) {
+		const Vector3f zAxis( (eye - at).normalized() );
+		const Vector3f xAxis( (up.normalized().cross(zAxis)).normalized() );
 		const Vector3f yAxis( zAxis.cross(xAxis).normalized() );
 
 		Eigen::Matrix3f rotation;
 		rotation << xAxis, yAxis, zAxis;
 		Quaternionf q(rotation);
 
-		_transform.set(Eye,q);
+		_transform.set(eye,q);
 		forceUpdateViewProj();
 	}
 
@@ -249,6 +397,9 @@ namespace sibr
 	}
 	inline float	Camera::orthoTop( void ) const {
 		return _top;
+	}
+	inline bool	Camera::ortho(void) const {
+		return _isOrtho;
 	}
 
 

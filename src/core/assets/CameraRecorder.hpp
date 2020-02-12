@@ -22,7 +22,7 @@ namespace sibr
 		Default constructor.
 		*/
 		CameraRecorder(void) :
-			_pos(0), _recording(false), _playing(false), _saving(false), _savingPath(""), _speed(1.0f), _interp(0.0f) {
+			_pos(0), _recording(false), _playing(false), _saving(false), _savingPath(""), _savingVideo(false), _savingVideoPath(""), _speed(1.0f), _interp(0.0f) {
 				//load();
 		}
 		/**

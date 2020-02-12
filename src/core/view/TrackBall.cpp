@@ -121,7 +121,7 @@ namespace sibr {
 	{
 		if (boost::filesystem::exists(filePath)) {
 			char c;
-			std::cout << " a track ball already exists, override ? y/n ... " << std::flush;
+			SIBR_LOG << " a track ball already exists, override ? y/n ... " << std::flush;
 			std::cin >> c;
 			if (c != 'y') {
 				std::cout << " not saved ! " << std::endl;
@@ -134,10 +134,10 @@ namespace sibr {
 			saveVectorInFile(file, fixedCamera.position());
 			saveVectorInFile(file, fixedCamera.up());
 			file << fixedCamera.fovy() << " " << fixedCamera.znear() << " " << fixedCamera.zfar() << std::endl;
-			std::cout << " TrackBall saved at " << filePath << std::endl;
+			SIBR_LOG << " TrackBall saved at " << filePath << std::endl;
 		}
 		else {
-			std::cout << " could not save trackBall" << std::endl;
+			SIBR_LOG << " Could not save trackBall" << std::endl;
 		}
 	}
 
@@ -167,7 +167,7 @@ namespace sibr {
 	{
 
 		if (box.isEmpty() || (box.diagonal().array() == 0.0f).any()) {
-			std::cout << " [WARNING] TrackBall::fromMesh : cannot create camera from flat mesh " << std::endl;
+			SIBR_LOG << " [WARNING] TrackBall::fromMesh : cannot create camera from flat mesh " << std::endl;
 			return false;
 		}
 		else {
@@ -215,7 +215,7 @@ namespace sibr {
 				printMessage("trackBall is now verbose ");
 			}
 			else {
-				std::cout << "trackBall not verbose anymore " << std::endl;
+				SIBR_LOG << " TrackBall not verbose anymore " << std::endl;
 			}
 		}
 		if (input.key().isActivated(Key::LeftControl)) {
@@ -285,12 +285,12 @@ namespace sibr {
 		}
 
 		sibr::Vector3f worldPos, dir;
-		if(fixedCamera._isOrtho)
+		if(fixedCamera.ortho())
 		{
 			sibr::Vector2i clickPos = input.mousePosition();
 			worldPos = fixedCamera.position() +
-									(2.0f*clickPos.x() / (float)fixedCamera.w() - 1.0f)*fixedCamera._right*fixedCamera.right()
-									+ (2.0f*((float)fixedCamera.h() - 1 - clickPos.y()) / (float)fixedCamera.h() - 1.0f)*fixedCamera._top*fixedCamera.up();
+									(2.0f*clickPos.x() / (float)fixedCamera.w() - 1.0f)*fixedCamera.orthoRight()*fixedCamera.right()
+									+ (2.0f*((float)fixedCamera.h() - 1 - clickPos.y()) / (float)fixedCamera.h() - 1.0f)*fixedCamera.orthoTop()*fixedCamera.up();
 			dir = fixedCamera.dir();
 
 		}
@@ -331,16 +331,7 @@ namespace sibr {
 			Vector3f oldEye = -fixedCamera.dir().normalized();
 			Vector3f newEye = fixedCenter + radius * (rot*oldEye);
 			tempCamera.setLookAt(newEye, fixedCenter, fixedCamera.up());
-			/*
-			if (tempCamera._isOrtho) {
-				SIBR_WRG << "Rotation with ortho cam is not fully functional, fuction to fix";
-				Vector3f newCenter = fixedCenter + radius*oldEye.dot((fixedCamera.position() - newEye).normalized())*(fixedCamera.position() - newEye);
-				Vector3f newEyeOrtho = radius*(newEye - newCenter).normalized()+newCenter;
-				tempCamera.setLookAt(newEyeOrtho, newCenter, fixedCamera.up());
-			}
-			else {
-				tempCamera.setLookAt(newEye, fixedCenter, fixedCamera.up());
-			}*/
+		
 		}
 	}
 
@@ -366,12 +357,12 @@ namespace sibr {
 		if (input.mouseButton().isPressed(Mouse::Right)) {
 
 			sibr::Vector3f worldPos, dir;
-			if(fixedCamera._isOrtho)
+			if(fixedCamera.ortho())
 			{
 				sibr::Vector2i clickPos = input.mousePosition();
 				worldPos = fixedCamera.position() +
-										(2.0f*clickPos.x() / (float)fixedCamera.w() - 1.0f)*fixedCamera._right*fixedCamera.right()
-										+ (2.0f*((float)fixedCamera.h() - 1 - clickPos.y()) / (float)fixedCamera.h() - 1.0f)*fixedCamera._top*fixedCamera.up();
+										(2.0f*clickPos.x() / (float)fixedCamera.w() - 1.0f)*fixedCamera.orthoRight()*fixedCamera.right()
+										+ (2.0f*((float)fixedCamera.h() - 1 - clickPos.y()) / (float)fixedCamera.h() - 1.0f)*fixedCamera.orthoTop()*fixedCamera.up();
 				dir = fixedCamera.dir();
 			
 			}
@@ -380,13 +371,11 @@ namespace sibr {
 				worldPos = fixedCamera.position();
 			}
 
-			//Vector3f dir(CameraRaycaster::computeRayDir(fixedCamera, input.mousePosition().cast<float>()));
 			Vector3f pointOnPlane = fixedCenter;
 			if (raycaster.get() != nullptr) {
 				RayHit hit = raycaster->intersect(Ray(worldPos, dir));
 				if (hit.hitSomething()) {
 					pointOnPlane = worldPos + hit.dist()*dir;
-					//std::cout << "hit : " << pointOnPlane.transpose() << std::endl;
 				}
 			}
 			trackballPlane = Eigen::Hyperplane<float, 3>(fixedCamera.dir().normalized(), pointOnPlane);
@@ -395,10 +384,6 @@ namespace sibr {
 		Vector3f clicked3DPosition(mapTo3Dplane(lastPoint2D));
 		Vector3f current3DPosition(mapTo3Dplane(input.mousePosition()));
 		Vector3f shift3D = clicked3DPosition - current3DPosition;
-
-		//std::cout << "clicked3DPosition : " << clicked3DPosition.transpose() << std::endl;
-		//std::cout << "current3DPosition : " << current3DPosition.transpose() << std::endl;
-		//std::cout << "shift3D : " << shift3D.transpose() << std::endl;
 
 		tempCenter = fixedCenter + shift3D / zoom;
 		tempCamera.setLookAt(fixedCamera.position() + shift3D, tempCenter, fixedCamera.up());
@@ -476,7 +461,7 @@ namespace sibr {
 	void TrackBall::updateRadius(const Input & input)
 	{
 		if(input.key().getNumActivated() != 0){ return; }
-		if (!fixedCamera._isOrtho) {
+		if (!fixedCamera.ortho()) {
 			float zoomIn = (input.mouseScroll() > 0 ? -1.0f : 1.0f);
 			float radius = (fixedCamera.position() - fixedCenter).norm();
 			Vector3f oldEye = -fixedCamera.dir().normalized();
@@ -487,8 +472,8 @@ namespace sibr {
 		else
 		{
 			float zoomIn = (input.mouseScroll() > 0.0f ? -1.0f : 1.0f);
-			fixedCamera.orthoRight(fixedCamera._right *pow(1.25f, zoomIn));
-			fixedCamera.orthoTop(fixedCamera._top *pow(1.25f, zoomIn));
+			fixedCamera.orthoRight(fixedCamera.orthoRight() * pow(1.25f, zoomIn));
+			fixedCamera.orthoTop(fixedCamera.orthoTop() * pow(1.25f, zoomIn));
 			zoom /= pow(1.25f, zoomIn);
 		}
 	}
@@ -510,8 +495,6 @@ namespace sibr {
 
 	bool TrackBall::isInTrackBall2dRegion(const Vector2i & pos2D, const Viewport & viewport) const
 	{
-		//float pos_x = (lastPoint2D.x()-viewport.finalLeft())/viewport.finalWidth();
-		//float pos_y = (lastPoint2D.y()-viewport.finalTop())/viewport.finalHeight();
 		float pos_x = (lastPoint2D.x()) / viewport.finalWidth();
 		float pos_y = (lastPoint2D.y()) / viewport.finalHeight();
 		float min_ratio = 0.5f * (1.0f - TrackBall::ratioTrackBall2D);
@@ -521,11 +504,7 @@ namespace sibr {
 
 	Vector3f TrackBall::mapToSphere(const Vector2i & pos2D, const Viewport & viewport) const
 	{
-		//int xMin = (int)viewport.finalLeft();
-		//int xMax = (int)viewport.finalRight();
-		//int yMin = (int)viewport.finalTop();
-		//int yMax = (int)viewport.finalBottom();
-
+		
 		int xMin = (int)0;
 		int xMax = (int)(viewport.finalRight() - viewport.finalLeft());
 		int yMin = (int)0;
@@ -546,11 +525,11 @@ namespace sibr {
 	Vector3f TrackBall::mapTo3Dplane(const Vector2i & pos2D) const
 	{
 		sibr::Vector3f worldPos, dir;
-		if(fixedCamera._isOrtho)
+		if(fixedCamera.ortho())
 		{
 			worldPos = fixedCamera.position() +
-									(2.0f*pos2D.x() / (float)fixedCamera.w() - 1.0f)*fixedCamera._right*fixedCamera.right()
-									+ (2.0f*((float)fixedCamera.h() - 1 - pos2D.y()) / (float)fixedCamera.h() - 1.0f)*fixedCamera._top*fixedCamera.up();
+									(2.0f*pos2D.x() / (float)fixedCamera.w() - 1.0f)*fixedCamera.orthoRight()*fixedCamera.right()
+									+ (2.0f*((float)fixedCamera.h() - 1 - pos2D.y()) / (float)fixedCamera.h() - 1.0f)*fixedCamera.orthoTop()*fixedCamera.up();
 			dir = fixedCamera.dir();
 			
 		}

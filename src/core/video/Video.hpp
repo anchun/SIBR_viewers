@@ -71,9 +71,9 @@ namespace sibr
 
 		Path filepath;
 		sibr::Vector2i resolution;
-		int nFrames;
-		double frameRate;
-		int codec;
+		int nFrames = 0;
+		double frameRate = 0.0;
+		int codec = 0;
 		bool loaded = false;
 	};
 

@@ -342,12 +342,14 @@ namespace sibr {
 
 	void MultiMeshManager::onRender(const Viewport & viewport)
 	{
+		glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "Multimesh manager");
+
 		viewport.clear(backgroundColor);
 		viewport.bind();
-		
 		renderMeshes();
-
 		camera_handler.onRender(viewport);
+
+		glPopDebugGroup();
 	}
 
 	void MultiMeshManager::onRender(IRenderTarget & dst)
