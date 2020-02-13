@@ -36,18 +36,28 @@ namespace sibr {
 		*/
 		PoissonRenderer ( uint w, uint h );
 
+		/** Perform poisson filling.
+		\param src source rendertarget, black pixels will be filled
+		\param dst destination rendertarget
+		*/
 		void	process(
 			/*input*/	const RenderTargetRGBA::Ptr& src,
 			/*ouput*/	RenderTargetRGBA::Ptr& dst );
+
+		/** Perform poisson filling.
+		\param texID source texture handle, black pixels will be filled
+		\param dst destination rendertarget
+		*/
 		void	process(
 			/*input*/	uint texID,
 			/*ouput*/	RenderTargetRGBA::Ptr& dst );
 
 		/**
-		* Return the size used for in/out textures (defined in ctor)
+		* \return the size used for in/out textures (defined in ctor)
 		*/
 		const Vector2i&		getSize( void ) const;
 
+		/** \return a reference to the "weird flat regions of color" bugfix toggle. */
 		bool & enableFix() { return _enableFix; }
 
 	private:
@@ -85,10 +95,13 @@ namespace sibr {
 		/** Dirichlet constraints for each multigrid level */
 		std::vector<RenderTargetRGBA::Ptr> _poisson_div_RT;
 
+		/** Jacobi step parameters. */
 		sibr::GLParameter _jacobi_weights, _jacobi_scale, _restrict_scale;
+		/** Interpolation scale. */
 		sibr::GLParameter _interp_scale;
 
-		bool _enableFix;
+		/** Enable the "weird large regions of color" bugfix. */
+		bool _enableFix = true;
 	};
 
 } /*namespace sibr*/ 

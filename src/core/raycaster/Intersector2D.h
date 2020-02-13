@@ -57,7 +57,11 @@ namespace sibr {
 	{
 
 	public:
-		Intersector2D(void) { } /// \todo TODO: move to private/delete.
+		/// Constructor.
+		Intersector2D(void) = delete;
+
+		/// Destructor
+		~Intersector2D(void) = delete;
 
 		/**
 		Having defined a straight line in the 2D plane, this method can be used to know in which half-space (defined by the line) a point lies.
@@ -125,7 +129,6 @@ namespace sibr {
 		*/
 		static std::vector<std::vector<bool>> frustrumQuadsIntersect(std::vector<quad> & quads, const std::vector<sibr::InputCamera> & cams);
 
-		~Intersector2D(void) { } /// \todo TODO: move to private/delete.
 	};
 
 }

@@ -96,9 +96,13 @@ namespace sibr
 		/** Unbind arrays and buffers. */
 		void	unbind(void) const;
 
+		/** Copy constructor (disabled). */
+		MeshBufferGL(const MeshBufferGL&) = delete;
+
+		/** Copy operator (disabled). */
+		MeshBufferGL& operator =(const MeshBufferGL&) = delete;
+
 	private:
-		MeshBufferGL( const MeshBufferGL& );				// disallowed
-		MeshBufferGL& operator =( const MeshBufferGL& );	// disallowed
 		
 		GLuint 							_vaoId; ///< Vertex array object ID.
 		std::array<GLuint, BUFCOUNT>	_bufferIds; ///< Buffers IDs.

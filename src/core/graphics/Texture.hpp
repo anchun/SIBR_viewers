@@ -608,17 +608,13 @@ namespace sibr
 		void clearStencil( void );
 
 		template <typename TType, uint NNumComp>
-		void swap( RenderTarget<TType, NNumComp>& other );
-
-		//void readBack( PixelImage& array, uint target=0 ) const;
-		//void readBack(sibr::Image<T_IType, N_INumComp>& img, uint target = 0);
-
-		template <typename TType, uint NNumComp>
 			void readBack( sibr::Image<TType, NNumComp>& image, uint target=0 ) const;
 
 		template <typename TType, uint NNumComp>
 			void readBackToCVmat(cv::Mat & image, uint target = 0) const;
 
+
+		// ATTN: unclear whether consistent with readBack -- may require flip; not tested !
 		template <typename TType, uint NNumComp>
 			void readBackDepth( sibr::Image<TType, NNumComp>& image, uint target=0 ) const;
 
@@ -651,7 +647,7 @@ namespace sibr
 	typedef RenderTarget<float,3>          RenderTargetRGB32F;
 	typedef RenderTarget<float,4>          RenderTargetRGBA32F;
 	typedef RenderTarget<float,1>          RenderTargetLum32F;
-	typedef RenderTarget<float, 2>          RenderTargetUV32F;
+	typedef RenderTarget<float,2>          RenderTargetUV32F;
 
 	typedef RenderTarget<unsigned short, 1>    RenderTargetLum16;
 	typedef RenderTarget<unsigned short, 2>    RenderTargetUV16;
@@ -659,6 +655,8 @@ namespace sibr
 	typedef RenderTarget<unsigned short, 4>    RenderTargetRGBA16;
 
 	typedef RenderTarget<int,1>			   RenderTargetInt1;
+
+
 	//////////////////////////////////////////////////////////////////////////////
 	// IMPORTANT NOTE CONCERNING DEPTH BUFFER:
 	//
@@ -1308,21 +1306,6 @@ namespace sibr
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 
-
-
-	//template<>
-	//template <typename T_IType, uint N_INumComp>
-	//void RenderTarget<depth24, 1>::readBack( sibr::Image<T_IType, N_INumComp>& img, uint target ) const {
-	//	readBackDepth(img, target);
-	//}
-
-	//template<>
-	//template <typename T_IType, uint N_INumComp>
-	//void RenderTarget<depth32, 1>::readBack( sibr::Image<T_IType, N_INumComp>& img, uint target ) const {
-	//	readBackDepth(img, target);
-	//}
-
-	// ATTN: unclear whether consistent with readBack -- may require flip; not tested !
 	template <typename TType, uint NNumComp>
 	template <typename T_IType, uint N_INumComp>
 	void RenderTarget<TType, NNumComp>::readBackDepth( sibr::Image<T_IType, N_INumComp>& image, uint target ) const {
@@ -1356,7 +1339,13 @@ namespace sibr
 	uint   RenderTarget<T_Type, T_NumComp>::fbo		   (void)  const { return m_fbo; }
 
 	/**
-	* \ingroup sibr_graphics
+	Copy the content of a texture to another texture, resizing if needed.
+	\param src source texture
+	\param dst destination texture
+	\param mask which part of the buffer to copy (color, depth, stencil).
+	\param filtering mode if the two buffers have different dimensions (linear or nearest)
+	\warning If the mask contains the depth or stencil, filter must be GL_NEAREST
+	\ingroup sibr_graphics
 	*/
 	SIBR_GRAPHICS_EXPORT void			blit(const ITexture2D& src, const ITexture2D& dst, GLbitfield mask = GL_COLOR_BUFFER_BIT, GLenum filter = GL_LINEAR);
 

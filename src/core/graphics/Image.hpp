@@ -141,7 +141,7 @@ namespace sibr
 
 		// Copy is not authorized, this is a move ctor
 		Image(Image&& other);
-		Image& operator=(Image&& other);
+		Image& operator=(Image&& other) noexcept;
 
 		bool		load(const std::string& filename, bool verbose = true, bool warning_if_not_found = true);
 		bool		loadByteStream(const std::string& filename, bool verbose = true);
@@ -325,7 +325,7 @@ namespace sibr
 	}
 
 	template<typename T_Type, unsigned int T_NumComp>
-	Image<T_Type, T_NumComp>& Image<T_Type, T_NumComp>::operator=(Image<T_Type, T_NumComp>&& other) {
+	Image<T_Type, T_NumComp>& Image<T_Type, T_NumComp>::operator=(Image<T_Type, T_NumComp>&& other) noexcept {
 		_pixels = std::move(other._pixels);
 		return *this;
 	}

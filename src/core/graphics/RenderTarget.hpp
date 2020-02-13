@@ -8,37 +8,64 @@
 
 namespace sibr
 {
-	typedef RenderTarget<unsigned char,3>  RenderTargetRGB;
-	typedef RenderTarget<unsigned char,4>  RenderTargetRGBA;
-	typedef RenderTarget<unsigned char,1>  RenderTargetLum;
-
-	typedef RenderTarget<float,3>          RenderTargetRGB32F;
-	typedef RenderTarget<float,4>          RenderTargetRGBA32F;
-	typedef RenderTarget<float,1>          RenderTargetLum32F;
-
 
 	/**
-	* \ingroup sibr_graphics
+	Copy the content of a render target to another render target, resizing if needed.
+	\param src source rendertarget
+	\param dst destination rendertarget
+	\param mask which part of the buffer to copy (color, depth, stencil).
+	\param filtering mode if the two rendertargets have different dimensions (linear or nearest)
+	\note The blit can only happen for color attachment 0 in both src and dst.
+	\warning If the mask contains the depth or stencil, filter must be GL_NEAREST
+	 \ingroup sibr_graphics
 	*/
 	SIBR_GRAPHICS_EXPORT void			blit(const IRenderTarget& src, const IRenderTarget& dst, GLbitfield mask = GL_COLOR_BUFFER_BIT, GLenum filter = GL_LINEAR);
 
 	/**
-	* \ingroup sibr_graphics
+	Copy the content of a render target to another render target, resizing if needed and flipping the result.
+	\param src source rendertarget
+	\param dst destination rendertarget
+	\param mask which part of the buffer to copy (color, depth, stencil).
+	\param filtering mode if the two rendertargets have different dimensions (linear or nearest)
+	\note The blit can only happen for color attachment 0 in both src and dst.
+	\warning If the mask contains the depth or stencil, filter must be GL_NEAREST
+	 \ingroup sibr_graphics
 	*/
 	SIBR_GRAPHICS_EXPORT void			blit_and_flip(const IRenderTarget& src, const IRenderTarget& dst, GLbitfield mask = GL_COLOR_BUFFER_BIT, GLenum filter = GL_LINEAR);
 
 	/**
-	* \ingroup sibr_graphics
+	Copy the content of a texture to a render target, resizing if needed.
+	\param src source texture
+	\param dst destination rendertarget
+	\param mask which part of the buffer to copy (color, depth, stencil).
+	\param filtering mode if the two buffers have different dimensions (linear or nearest)
+	\note The blit can only happen for color attachment 0 in dst.
+	\warning If the mask contains the depth or stencil, filter must be GL_NEAREST
+	 \ingroup sibr_graphics
 	*/
 	SIBR_GRAPHICS_EXPORT void			blit(const ITexture2D& src, const IRenderTarget& dst, GLbitfield mask = GL_COLOR_BUFFER_BIT, GLenum filter = GL_LINEAR);
 
 	/**
-	* \ingroup sibr_graphics
+	Copy the content of a texture to a render target, resizing if needed and flipping the result.
+	\param src source texture
+	\param dst destination rendertarget
+	\param mask which part of the buffer to copy (color, depth, stencil).
+	\param filtering mode if the two buffers have different dimensions (linear or nearest)
+	\note The blit can only happen for color attachment 0 in dst.
+	\warning If the mask contains the depth or stencil, filter must be GL_NEAREST
+	 \ingroup sibr_graphics
 	*/
 	SIBR_GRAPHICS_EXPORT void			blit_and_flip(const ITexture2D& src, const IRenderTarget& dst, GLbitfield mask = GL_COLOR_BUFFER_BIT, GLenum filter = GL_LINEAR);
 
 	/**
-	* \ingroup sibr_graphics
+	Copy the content of a rendertarget first color attachment to a texture, resizing if needed.
+	\param src source rendertarget
+	\param dst destination texture
+	\param mask which part of the buffer to copy (color, depth, stencil).
+	\param filtering mode if the two buffers have different dimensions (linear or nearest)
+	\note The blit can only happen for color attachment 0 in dst.
+	\warning If the mask contains the depth or stencil, filter must be GL_NEAREST
+	 \ingroup sibr_graphics
 	*/
 	SIBR_GRAPHICS_EXPORT void			blit(const IRenderTarget& src, const ITexture2D& dst, GLbitfield mask = GL_COLOR_BUFFER_BIT, GLenum filter = GL_LINEAR);
 
@@ -55,8 +82,13 @@ namespace sibr
 	//	glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
 	//}
 
-	/**
-	* \ingroup sibr_graphics
+
+	/** Display a rendertarget color content in a popup window (backed by OpenCV).
+	\param rt the rendertarget to display
+	\param layer the color attachment to display
+	\param windowTitle name of the window
+	\param closeWindow should the window be closed when pressing a key
+	\ingroup sibr_graphics
 	*/
 	template <typename T_Type, unsigned T_NumComp>
 	static void		show( const RenderTarget<T_Type, T_NumComp> & rt, uint layer=0, const std::string& windowTitle="sibr::show()" , bool closeWindow = true ) {
@@ -64,8 +96,12 @@ namespace sibr
 		rt.readBack(img, layer);
 		show(img, windowTitle, closeWindow);
 	}
-	/**
-	* \ingroup sibr_graphics
+	
+	/** Display a rendertarget depth content in a popup window (backed by OpenCV).
+	\param rt the rendertarget to display
+	\param windowTitle name of the window
+	\param closeWindow should the window be closed when pressing a key
+	\ingroup sibr_graphics
 	*/
 	template <typename T_Type, unsigned T_NumComp>
 	static void		showDepth( const RenderTarget<T_Type, T_NumComp> & rt, const std::string& windowTitle="sibr::show()" , bool closeWindow = true ) {
@@ -73,8 +109,12 @@ namespace sibr
 		rt.readBackDepth(img);
 		show(img, windowTitle, closeWindow);
 	}
-	/**
-	* \ingroup sibr_graphics
+	
+	/** Display a rendertarget alpha content as a grey map in a popup window (backed by OpenCV).
+	\param rt the rendertarget to display
+	\param windowTitle name of the window
+	\param closeWindow should the window be closed when pressing a key
+	\ingroup sibr_graphics
 	*/
 	template <typename T_Type, unsigned T_NumComp>
 	static void		showDepthFromAlpha( const RenderTarget<T_Type, T_NumComp> & rt, const std::string& windowTitle="sibr::show()" , bool closeWindow = true ) {

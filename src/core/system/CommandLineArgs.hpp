@@ -14,27 +14,40 @@ namespace sibr
 	@{
 	*/
 
+	/// Used to wrap a toggle argument in the command line.
 	struct Switch {};
 
 	/// uint contexpr helper, defining the number of command line tokens required to init T
 	template<typename T>
 	constexpr uint NumberOfArg = 1;
-
+	/// uint contexpr helper, defining the number of command line tokens required to init T
 	template<>
 	constexpr uint NumberOfArg<bool> = 0;
-
+	/// uint contexpr helper, defining the number of command line tokens required to init T
 	template<>
 	constexpr uint NumberOfArg<Switch> = 0;
-
+	/// uint contexpr helper, defining the number of command line tokens required to init T
 	template<typename T, uint N>
 	constexpr uint NumberOfArg<sibr::Vector<T, N>> = N * NumberOfArg<T>;
 
-	/// Getter helper, return the n-th T from vector of strings
+	/// Helper to extract values from a vector of strings.
 	template<typename T> struct ValueGetter {
+
+		/** Extract the N-th element from a vector of string representations.
+		\param values a list of strings representing elements
+		\param n the index of the element to query
+		\return the element corresponding to the N-th string.
+		*/
 		static T get(const std::vector<std::string> & values, uint n);
+
+		/** Convert an element to its string representation.
+		\param value the element to convert
+		\return the string representation
+		*/
 		static std::string toString(const T & value);
 	};
 
+	/** Available rendering modes for IBR views. */
 	enum RenderingModes {
 		RENDERMODE_MONO,
 		RENDERMODE_STEREO_ANAGLYPH,
@@ -119,6 +132,7 @@ namespace sibr
 
 	protected:
 
+		/// Default constructor.
 		CommandLineArgs() = default;
 
 		/** Get the Nth parsed element following -key or --key as a T
@@ -151,11 +165,21 @@ namespace sibr
 	template<typename T>
 	class ArgBase {
 	public:
+
+		/// \return a reference to the argument value
 		operator const T &() const { return value; }
+
+		/// \return a reference to the argument value
 		const T & get() const { return value; }
+
+		/** Copy operator.
+		\param t the value to copy
+		\return a reference to the argument value
+		*/
 		T & operator=(const T & t) { value = t; return value; }
 	protected:
-		T value;
+
+		T value; ///< the argument value.
 	};
 
 	/** Template Arg class, will init itself in the defaut ctor using the command line args (ie. --key value)
@@ -237,13 +261,24 @@ namespace sibr
 			CommandLineArgs::getGlobal().registerRequiredCommand(key, description);
 		}
 
+		/// \return a reference to the argument value
 		operator const T &() const { checkInit(); return value; }
+
+		/// \return a reference to the argument value
 		const T & get() const { checkInit(); return value; }
+
+		/** Copy operator.
+		\param t the value to copy
+		\return a reference to the argument value
+		*/
 		T & operator=(const T & t) { value = t; wasInit = true; return value; }
 
 		/// \return true if the argument was given
 		const bool & isInit() const { return wasInit; }
+
 	protected:
+
+		/** Check if the argument was init.If not, as it is a required argument we display the help message and raise an error.*/
 		void checkInit() const {
 			if (!wasInit) {
 				CommandLineArgs::getGlobal().displayHelp();
@@ -251,9 +286,9 @@ namespace sibr
 			}
 		}
 
-		std::string key;
-		T value;
-		bool wasInit = false;
+		std::string key; ///< Argument key.
+		T value; ///< Argument value.
+		bool wasInit = false; ///< Was the argument initialized.
 	};
 
 	/// Similar to Arg, except this one will crash if attempt to use the value while not initialized
