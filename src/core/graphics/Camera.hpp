@@ -100,7 +100,7 @@ namespace sibr
 		/////////////////////////////////////////////////////////////////
 
 		/** Set the vertical field of view (in radians).
-		\pram value the new value
+		\param value the new value
 		*/
 		void				fovy( float value );
 
@@ -108,7 +108,7 @@ namespace sibr
 		float				fovy( void ) const;
 
 		/** Set the aspect ratio.
-		\pram value the new value
+		\param value the new value
 		*/
 		void				aspect( float value );
 
@@ -116,7 +116,7 @@ namespace sibr
 		float				aspect( void ) const;
 
 		/** Set the near plane.
-		\pram value the new value
+		\param value the new value
 		*/
 		void				znear( float value );
 
@@ -124,7 +124,7 @@ namespace sibr
 		float				znear( void ) const;
 
 		/** Set the far plane.
-		\pram value the new value
+		\param value the new value
 		*/
 		void				zfar( float value );
 
@@ -132,7 +132,7 @@ namespace sibr
 		float				zfar( void ) const;
 
 		/** Set the right frustum extent.
-		\pram value the new value
+		\param value the new value
 		*/
 		void				orthoRight( float value );
 
@@ -140,7 +140,7 @@ namespace sibr
 		float				orthoRight( void ) const;
 
 		/** Set the top frustum extent.
-		\pram value the new value
+		\param value the new value
 		*/
 		void				orthoTop( float value );
 

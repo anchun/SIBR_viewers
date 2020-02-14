@@ -238,7 +238,7 @@ namespace sibr
 		SIBR_OPT_INLINE void	set( const Vector4f& v );
 
 		/** Set the uniform mat4 value.
-		\param v the new value
+		\param m the new value
 		*/
 		SIBR_OPT_INLINE void	set( const Matrix4f& m );
 

@@ -72,7 +72,7 @@ namespace sibr
 
 		/** Set the window position
 		 *\param x horizontal location
-		 *\param v vertical location
+		 *\param y vertical location
 		 **/
 		void				position(const unsigned int x, const unsigned int y);
 

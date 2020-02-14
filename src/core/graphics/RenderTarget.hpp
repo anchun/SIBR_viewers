@@ -101,6 +101,7 @@ namespace sibr
 		/** Constructor and allocation.
 		\param w the target width
 		\param h the target height
+		\param flags options
 		\param num the number of color attachments.
 		*/
 		RenderTarget(uint w, uint h, uint flags = 0, uint num = 1);

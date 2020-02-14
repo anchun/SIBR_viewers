@@ -153,7 +153,7 @@ namespace sibr
 		 * \param camHandler a camera handler to display as a "user camera"
 		 * \param myArgs dataset arguments (needed to load/save the camera location)
 		 */
-		SceneDebugView(const std::shared_ptr<BasicIBRScene> & scene, const InteractiveCameraHandler::Ptr & camHandler, const BasicDatasetArgs & myArgs);
+		SceneDebugView(const BasicIBRScene::Ptr& scene, const InteractiveCameraHandler::Ptr & camHandler, const BasicDatasetArgs& myArgs);
 
 		/** Constructor.
 		 * \param scene the scene to display
@@ -162,7 +162,7 @@ namespace sibr
 		 * \param myArgs dataset arguments (needed to load/save the camera location)
 		 * \warning Deprecated, use the version without the viewport.
 		 */
-		SceneDebugView(const std::shared_ptr<BasicIBRScene> & scene, const Viewport & viewport, const InteractiveCameraHandler::Ptr & camHandler, const BasicDatasetArgs & myArgs);
+		SceneDebugView(const BasicIBRScene::Ptr& scene, const Viewport& viewport, const InteractiveCameraHandler::Ptr& camHandler, const BasicDatasetArgs& myArgs);
 
 		/** Update state based on user input.
 		 * \param input user input

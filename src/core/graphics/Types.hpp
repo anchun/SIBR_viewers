@@ -373,12 +373,12 @@ namespace sibr{
 		*/
 		static const void* data(const ImageType& img);
 
-		static const uint internal_format; ///< Internal GL format.
-		static const uint format; ///< Generic GL format.
-		static const uint int_internal_format; ///< Internal GL format for integer textures.
-		static const uint int_format; ///< Generic GL format for integer textures.
-		static const uint isdepth; ///< Is it a depth format.
-		static const uint type; ///< The component GL type.
+		static const uint internal_format;		///< Internal GL format.
+		static const uint format;				///< Generic GL format.
+		static const uint int_internal_format;	///< Internal GL format for integer textures.
+		static const uint int_format;			///< Generic GL format for integer textures.
+		static const uint isdepth;				///< Is it a depth format.
+		static const uint type;					 ///< The component GL type.
 	};
 
 	/** Helper class to provide, for an sibr::Image, all the information needed for OpenGL textures. */
@@ -412,12 +412,12 @@ namespace sibr{
 			return img.data();
 		}
 
-		static const uint internal_format = GLFormat<ScalarType, N>::internal_format; ///< \copydoc GLFormat::internal_format
-		static const uint format = GLFormat<ScalarType, N>::format; ///< \copydoc GLFormat::internal_format
-		static const uint int_internal_format = GLFormat<ScalarType, N>::int_internal_format; ///< \copydoc GLFormat::internal_format
-		static const uint int_format = GLFormat<ScalarType, N>::int_format; ///< \copydoc GLFormat::internal_format
-		static const uint isdepth = GLFormat<ScalarType, N>::isdepth; ///< \copydoc GLFormat::internal_format
-		static const uint type = GLType<ScalarType>::type; ///< \copydoc GLFormat::internal_format
+		static const uint internal_format = GLFormat<ScalarType, N>::internal_format; ///< Internal GL format.
+		static const uint format = GLFormat<ScalarType, N>::format;  ///< Generic GL format.
+		static const uint int_internal_format = GLFormat<ScalarType, N>::int_internal_format; ///< Internal GL format for integer textures.
+		static const uint int_format = GLFormat<ScalarType, N>::int_format;  ///< Generic GL format for integer textures.
+		static const uint isdepth = GLFormat<ScalarType, N>::isdepth; ///< Is it a depth format.
+		static const uint type = GLType<ScalarType>::type;  ///< The component GL type.
 	};
 
 	/** Helper class to provide, for an sibr::Image::Ptr, all the information needed for OpenGL textures. */
@@ -451,12 +451,13 @@ namespace sibr{
 			return img->data();
 		}
 
-		static const uint internal_format = GLFormat<ScalarType, N>::internal_format; ///< \copydoc GLFormat::internal_format
-		static const uint format = GLFormat<ScalarType, N>::format; ///< \copydoc GLFormat::format
-		static const uint int_internal_format = GLFormat<ScalarType, N>::int_internal_format; ///< \copydoc GLFormat::int_internal_format
-		static const uint int_format = GLFormat<ScalarType, N>::int_format; ///< \copydoc GLFormat::int_format
-		static const uint isdepth = GLFormat<ScalarType, N>::isdepth; ///< \copydoc GLFormat::isdepth
-		static const uint type = GLType<ScalarType>::type; ///< \copydoc GLFormat::type
+		static const uint internal_format = GLFormat<ScalarType, N>::internal_format; ///< Internal GL format.
+		static const uint format = GLFormat<ScalarType, N>::format;  ///< Generic GL format.
+		static const uint int_internal_format = GLFormat<ScalarType, N>::int_internal_format; ///< Internal GL format for integer textures.
+		static const uint int_format = GLFormat<ScalarType, N>::int_format;  ///< Generic GL format for integer textures.
+		static const uint isdepth = GLFormat<ScalarType, N>::isdepth; ///< Is it a depth format.
+		static const uint type = GLType<ScalarType>::type;  ///< The component GL type.
+
 	};
 
 	/** Helper class to provide, for a cv::Mat, all the information needed for OpenGL textures. */
@@ -502,12 +503,12 @@ namespace sibr{
 			return CV_MAKE_TYPE(cv::DataType<ScalarType>::depth, N);
 		}
 
-		static const uint internal_format = GLFormatCVmat<ScalarType, N>::internal_format; ///< \copydoc GLFormat::internal_format
-		static const uint format = GLFormatCVmat<ScalarType, N>::format; ///< \copydoc GLFormat::format
-		static const uint int_internal_format = GLFormatCVmat<ScalarType, N>::int_internal_format; ///< \copydoc GLFormat::int_internal_format
-		static const uint int_format = GLFormatCVmat<ScalarType, N>::int_format; ///< \copydoc GLFormat::int_format
-		static const uint isdepth = GLFormatCVmat<ScalarType, N>::isdepth; ///< \copydoc GLFormat::isdepth
-		static const uint type = GLType<ScalarType>::type; ///< \copydoc GLFormat::type
+		static const uint internal_format = GLFormatCVmat<ScalarType, N>::internal_format; ///< Internal GL format.
+		static const uint format = GLFormatCVmat<ScalarType, N>::format;  ///< Generic GL format.
+		static const uint int_internal_format = GLFormatCVmat<ScalarType, N>::int_internal_format; ///< Internal GL format for integer textures.
+		static const uint int_format = GLFormatCVmat<ScalarType, N>::int_format;  ///< Generic GL format for integer textures.
+		static const uint isdepth = GLFormatCVmat<ScalarType, N>::isdepth; ///< Is it a depth format.
+		static const uint type = GLType<ScalarType>::type;  ///< The component GL type.
 	};
 
 	/** Helper class to provide, for a cv::Mat, all the information needed for OpenGL textures. */

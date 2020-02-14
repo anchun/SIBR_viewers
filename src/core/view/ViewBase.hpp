@@ -73,7 +73,7 @@ namespace sibr
 		virtual void	preRender(RenderTargetRGB& prev) {} ;
 
 		/** Legacy: Set the internal RT to use.
-		 *\param RT index */
+		 *\param i RT index */
 		virtual void		whichRT(uint i)			{ _whichRT=i; }
 		/** Legacy: \return the current selected RT ID. */
 		virtual uint		whichRT(void)			{ return _whichRT; }

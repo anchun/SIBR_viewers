@@ -321,7 +321,6 @@ sibr::Mesh PlaneEstimator::getMeshPlane(sibr::Vector4f plane, sibr::Vector3f cen
 	sibr::Mesh::Vertices vert;
 	sibr::Mesh::Triangles tri;
 	sibr::Mesh::Normals nml;
-	//sibr::MaterialMesh::MatIds mat;
 	sibr::Mesh::UVs tex;
 
 	sibr::Vector3f u = (projCenter - plane.w()*plane.xyz()).normalized();

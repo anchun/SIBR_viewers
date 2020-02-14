@@ -204,7 +204,7 @@ namespace sibr {
 			if (hit.hitSomething()) {
 				_orbit.center = _currentCamera.position() + hit.dist()*dir.normalized();
 
-				/// \todo TODO: SR reimplement the fitting of planes by either passing cameras all the way down, or something else.
+				// \todo TODO: SR reimplement the fitting of planes by either passing cameras all the way down, or something else.
 				//_orbit.planePointCams = computeFittingPlaneCameras(_orbit.center);
 				_orbit.yAxis = _currentCamera.up(); // _orbit.planePointCams.xyz();
 

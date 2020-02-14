@@ -86,7 +86,7 @@ namespace sibr
 
 	typedef	Vector4f ColorRGBA;
 
-	/*** @} */
+	/** @} */
 
 	/**
 	* Interface virtual class for all the templated image classes.
@@ -362,8 +362,8 @@ namespace sibr
 		/** Generate a resized version of the current image so that the maximum 
 		dimension (either width or height) is now equal to maxlen. Preserve the original ratio.
 		Example: src is 2048x1024, resizedMax(1024) -> dst is 1024x512
-		\param the target maximum dimension value
-		\return the resize image
+		\param maxlen the target maximum dimension value
+		\return the resized image
 		*/ 
 		Image		resizedMax(int maxlen) const;
 

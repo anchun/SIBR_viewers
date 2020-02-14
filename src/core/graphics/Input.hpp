@@ -192,7 +192,7 @@ namespace sibr
 	
 	/** Merge two set of pressed keys.
 	\param combA  first set
-	\param comB second set
+	\param combB second set
 	\return the union set
 	*/
 	KeyCombination SIBR_GRAPHICS_EXPORT operator&&( const KeyCombination & combA, const KeyCombination & combB);

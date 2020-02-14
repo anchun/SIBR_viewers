@@ -16,7 +16,7 @@ namespace sibr
 	\param windowTitle the window name (unique)
 	\param rt the rendrtarget to display
 	\param flags ImGui flags
-	\param will contain the window extent on screen
+	\param viewport will contain the window extent on screen
 	\param invalidTexture ignore the RT
 	\param updateLayout force update the camera location on screen
 	\return true if window is focused (useful for managing interactions).

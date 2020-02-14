@@ -125,7 +125,7 @@ namespace sibr
 
 		/** Send the CPU images data for each mipmap to the GPU.
 		\param id the created texture
-		\param array the image data
+		\param miparray the image data
 		\param flags options
 		*/
 		static void send2Dmipmap(GLuint id, const std::vector<PixelImage>& miparray, uint flags);
@@ -462,7 +462,7 @@ namespace sibr
 	\param src source texture
 	\param dst destination texture
 	\param mask which part of the buffer to copy (color, depth, stencil).
-	\param filtering mode if the two buffers have different dimensions (linear or nearest)
+	\param filter filtering mode if the two buffers have different dimensions (linear or nearest)
 	\warning If the mask contains the depth or stencil, filter must be GL_NEAREST
 	\ingroup sibr_graphics
 	*/
@@ -474,7 +474,7 @@ namespace sibr
 	\param src source texture
 	\param dst destination rendertarget
 	\param mask which part of the buffer to copy (color, depth, stencil).
-	\param filtering mode if the two buffers have different dimensions (linear or nearest)
+	\param filter filtering mode if the two buffers have different dimensions (linear or nearest)
 	\note The blit can only happen for color attachment 0 in dst.
 	\warning If the mask contains the depth or stencil, filter must be GL_NEAREST
 	 \ingroup sibr_graphics
@@ -486,7 +486,7 @@ namespace sibr
 	\param src source texture
 	\param dst destination rendertarget
 	\param mask which part of the buffer to copy (color, depth, stencil).
-	\param filtering mode if the two buffers have different dimensions (linear or nearest)
+	\param filter filtering mode if the two buffers have different dimensions (linear or nearest)
 	\note The blit can only happen for color attachment 0 in dst.
 	\warning If the mask contains the depth or stencil, filter must be GL_NEAREST
 	 \ingroup sibr_graphics
@@ -498,7 +498,7 @@ namespace sibr
 	\param src source rendertarget
 	\param dst destination texture
 	\param mask which part of the buffer to copy (color, depth, stencil).
-	\param filtering mode if the two buffers have different dimensions (linear or nearest)
+	\param filter filtering mode if the two buffers have different dimensions (linear or nearest)
 	\note The blit can only happen for color attachment 0 in dst.
 	\warning If the mask contains the depth or stencil, filter must be GL_NEAREST
 	 \ingroup sibr_graphics
