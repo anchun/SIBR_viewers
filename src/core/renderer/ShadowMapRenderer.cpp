@@ -26,7 +26,7 @@ namespace sibr
 		_shadowMapShader.begin();
 		_depthMap_MVP.set(depthMapCam.viewproj());
 		_depthMap_MVPinv.set(depthMapCam.invViewproj());
-		_depthMap_radius.set(depthMapCam._right);
+		_depthMap_radius.set(depthMapCam.orthoRight());
 		_lightDir.set(toLight);
 		_sun_app_radius.set(SUN_APP_DIAM/2.0f);
 		_shadowMapShader.end();

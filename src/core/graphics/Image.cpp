@@ -101,51 +101,16 @@ namespace sibr
 		return out;
 	}
 
-	sibr::ImageRGBA convertUV32FtoRGBA(const sibr::ImageUV32F & imgF)
+	SIBR_GRAPHICS_EXPORT sibr::ImageRGB32F convertRGBAtoRGB32F(const sibr::ImageRGBA& imgRGBA)
 	{
-		sibr::ImageRGBA out(2 * imgF.w(), imgF.h());
-#pragma omp parallel for
-		for (int y = 0; y < int(imgF.h()); ++y) {
-			for (uint x = 0; x < imgF.w(); ++x) {
-				for (int k = 0; k < 2; k++) {
-					unsigned char const * p = reinterpret_cast<unsigned char const *>(&imgF(x, y)[k]);
-					for (std::size_t i = 0; i != sizeof(float); ++i) {
-						out(k*imgF.w() + x, y)[i] = p[i];
-					}
-				}
-			}
-		}
-		return out;
-	}
-
-
-	SIBR_GRAPHICS_EXPORT sibr::ImageRGB32F convertRGBAtoRGB32F(const sibr::ImageRGBA & imgRGBA)
-	{
-		sibr::ImageRGB32F out(imgRGBA.w()/3, imgRGBA.h());
+		sibr::ImageRGB32F out(imgRGBA.w() / 3, imgRGBA.h());
 #pragma omp parallel for
 		for (int y = 0; y < int(out.h()); ++y) {
 			for (uint x = 0; x < out.w(); ++x) {
 				for (int k = 0; k < 3; k++) {
-					unsigned char * p = reinterpret_cast<unsigned char *>(&out(x, y)[k]);
+					unsigned char* p = reinterpret_cast<unsigned char*>(&out(x, y)[k]);
 					for (std::size_t i = 0; i != sizeof(float); ++i) {
-						p[i] = imgRGBA(k*out.w() + x, y)[i];
-					}
-				}
-			}
-		}
-		return out;
-	}
-
-	SIBR_GRAPHICS_EXPORT sibr::ImageUV32F convertRGBAtoUV32F(const sibr::ImageRGBA & imgRGBA)
-	{
-		sibr::ImageUV32F out(imgRGBA.w() / 2, imgRGBA.h());
-#pragma omp parallel for
-		for (int y = 0; y < int(out.h()); ++y) {
-			for (uint x = 0; x < out.w(); ++x) {
-				for (int k = 0; k < 2; k++) {
-					unsigned char * p = reinterpret_cast<unsigned char *>(&out(x, y)[k]);
-					for (std::size_t i = 0; i != sizeof(float); ++i) {
-						p[i] = imgRGBA(k*out.w() + x, y)[i];
+						p[i] = imgRGBA(k * out.w() + x, y)[i];
 					}
 				}
 			}
@@ -210,8 +175,8 @@ namespace sibr
 		return out;
 	}
 
-	Image<unsigned char, 3> coloredClass(const Image<unsigned char, 1>::Ptr imClass) { // note that 255 is black
-		//SIBR_ASSERT(T_NumComp==1 && typdeId(T_Type)==typeId(unsigned char));
+	Image<unsigned char, 3> coloredClass(const Image<unsigned char, 1>::Ptr imClass) { 
+		
 		const int color_list[25][3] = {
 			{255, 179, 0},{128, 62, 117},{166, 189, 215} ,{193, 0, 32},{0,128,255},{0, 125, 52},
 			{246, 118, 142},{0, 83, 138},{255, 122, 92} ,{0, 255, 0},{255, 142, 0},{179, 40, 81},
@@ -234,8 +199,8 @@ namespace sibr
 		return imClassColor;
 	}
 
-	Image<unsigned char, 3> coloredClass(const Image<int, 1>::Ptr imClass) { // note that 255 is black
-																					   //SIBR_ASSERT(T_NumComp==1 && typdeId(T_Type)==typeId(unsigned char));
+	Image<unsigned char, 3> coloredClass(const Image<int, 1>::Ptr imClass) { 
+																					   
 		const int color_list[25][3] = {
 			{ 255, 179, 0 },{ 128, 62, 117 },{ 166, 189, 215 } ,{ 193, 0, 32 },{ 0,128,255 },{ 0, 125, 52 },
 			{ 246, 118, 142 },{ 0, 83, 138 },{ 255, 122, 92 } ,{ 0, 255, 0 },{ 255, 142, 0 },{ 179, 40, 81 },

@@ -14,7 +14,7 @@ namespace sibr
 
 	/**
 	 Used to manipulate stream of bytes.
-	Notes: This ByteStream stores integer using the network byte order (which is big endian).
+	 \note This ByteStream stores integer using the network byte order (which is big endian).
 	 \ingroup sibr_system
 	*/
 	class SIBR_SYSTEM_EXPORT ByteStream
@@ -396,8 +396,8 @@ namespace sibr
 			return *this;
 		}
 
-		//// Function used to test this class (might be still useful to test future improvement)
-		/*/
+		// Function used to test this class (might be still useful to test future improvement)
+		/*
 		static void unitTestByteStream( void )
 		{
 			SIBR_LOG << "[work in progress] - testing ByteStream" << std::endl;
@@ -442,7 +442,7 @@ namespace sibr
 			std::cout << "Dumping DataOUT:" << std::endl;
 			dout.dump();
 		}
-		//*/
+		*/
 
 	} // namespace sibr
 

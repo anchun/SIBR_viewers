@@ -234,8 +234,8 @@ namespace sibr
 			AdditionalRenderFunc renderFunc; ///< Optional additonal rendering function.
 			sibr::Viewport viewport; ///< Viewport in the global window.
 			std::string name; ///< View name.
-			ImGuiWindowFlags flags; ///< ImGui flags.
-			bool shouldUpdateLayout; ///< Should the layout be updated at the next frame.
+			ImGuiWindowFlags flags = 0; ///< ImGui flags.
+			bool shouldUpdateLayout = false; ///< Should the layout be updated at the next frame.
 
 			/// Default constructor.
 			SubView() {};
@@ -295,7 +295,7 @@ namespace sibr
 		struct IBRSubView : SubView {
 			IBRViewUpdateFunc updateFunc; ///< The update function.
 			sibr::InputCamera cam; ///< The current camera.
-			bool defaultUpdateFunc; ///< Was the default update function used.
+			bool defaultUpdateFunc = true; ///< Was the default update function used.
 
 			/// Default constructor.
 			IBRSubView() : SubView() {};

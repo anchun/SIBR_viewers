@@ -28,13 +28,16 @@ namespace sibr
 		typedef clock::time_point								time_point;
 		typedef std::function<void (float, const std::string&)>	ExternalCallback;
 
-		/// Build using the given total number of iterations (\param maxIteration),
-		/// a message that will be inserted in next reports (\param status), and
-		/// an interval of time  (\param interval) between each report.
+		/** Create a progress bar.
+		\param maxIteration total number of iterations
+		\param status a message that will be inserted in next reports
+		\param interval an interval of time between each report.
+		*/
 		LoadingProgress( size_t maxIteration,
 			const std::string& status="", float interval=1.f );
 
-		/// Make the loading progress by the given number of \param step.
+		/// Make the loading progress by the given number of steps.
+		/// \param step number of steps
 		void				walk( size_t step = 1);
 		///	\return the current progress in a range [0.0, 1.0]
 		float				current( void ) const;

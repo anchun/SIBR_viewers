@@ -1,5 +1,5 @@
 /*! 
-	\defgroup sibr_view
+	\defgroup sibr_view sibr_view
 
 	\brief View, camera, high-level rendering utilities. 
 	

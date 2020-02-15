@@ -27,7 +27,7 @@ namespace sibr
 	 * \param path directory path
 	 * \param listHidden should hidden files be listed
 	 * \param includeSubdirectories should subdirectories be explored
-	 * \pram allowedExtensions a list of allowed extensions to filter the list with (for instance {"png", "bmp"})
+	 * \param allowedExtensions a list of allowed extensions to filter the list with (for instance {"png", "bmp"})
 	 * \return a list of file names/subpaths
 	 * \note To get each element full path, use path + "/" + itemPath
 	 */

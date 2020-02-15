@@ -1,8 +1,8 @@
 #pragma once
 
 #include "core/scene/Config.hpp"
-#include "core/graphics/MaterialMesh.hpp"
 #include "core/scene/ParseData.hpp"
+#include "core/graphics/Mesh.hpp"
 
 namespace sibr {
 	/**

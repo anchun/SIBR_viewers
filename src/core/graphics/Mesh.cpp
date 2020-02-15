@@ -20,6 +20,16 @@
 
 namespace sibr
 {
+
+	Mesh::Mesh(bool withGraphics) : _meshPath("") {
+		if (withGraphics) {
+			_gl.bufferGL.reset(new MeshBufferGL);
+		}
+		else {
+			_gl.bufferGL = nullptr;
+		}
+	}
+
 	bool		Mesh::saveToObj(const std::string& filename)  const
 	{
 		aiScene scene;
@@ -697,7 +707,6 @@ namespace sibr
 
 	void	Mesh::generateNormals(void)
 	{
-		//SIBR_LOG << "Generate vertex normals..." << std::endl;
 
 		// will store a list of normals (of all triangles around each vertex)
 		std::vector<std::vector<Vector3f>>	vertexNormals(_vertices.size());
@@ -986,7 +995,6 @@ namespace sibr
 					newVertices[vid] += _vertices[ovid];
 				}
 				newVertices[vid] /= float(neighbors[vid].size());
-				//newVertices[vid] += _vertices[vid];
 			}
 
 			vertices(newVertices);
@@ -1072,11 +1080,9 @@ namespace sibr
 						newVertices[vid] = v + 0.25*dtV;
 					}
 					else {
-						//newVertices[vid] = v - 0.47203*dtV;
 						newVertices[vid] = v + 0.25*dtV;
 					}
 				}
-				//newVertices[vid] += _vertices[vid];
 			}
 
 			vertices(newVertices);
@@ -1396,7 +1402,6 @@ namespace sibr
 				for (int c = 0; c < 3; c++) {
 					isInRemovedTriangle[t[c]] = true;
 				}
-				//t.unaryExpr([&isInRemovedTriangle](unsigned v_id) { isInRemovedTriangle[v_id] = true; });
 			}
 		}
 
@@ -1422,8 +1427,6 @@ namespace sibr
 				subMesh.complementaryVertices.push_back(id);
 			}
 		}
-
-		//std::cout << " numKeptV : " << numValidNewVertices << " " << subMesh.meshPtr->vertices().size() << " " << subMesh.complementaryVertices.size() << std::endl;
 
 		return subMesh;
 	}
@@ -1618,9 +1621,6 @@ namespace sibr
 			for (int lgt = 0; lgt < 360; lgt++) {
 
 				int delta = 1;
-				/*if (lgt == 359) {
-				delta = -359;
-				}*/
 				int lgtShift = lgt + 361 * (lat - lowLimit);
 				tri.push_back(sibr::Vector3u(lgtShift, lgtShift + delta, lgtShift + 361 + delta));
 				tri.push_back(sibr::Vector3u(lgtShift, lgtShift + 361 + delta, lgtShift + 361));
@@ -1643,12 +1643,6 @@ namespace sibr
 			centroid /= static_cast<double>(_vertices.size());
 		}
 		return centroid.cast<float>();
-	}
-
-	sibr::Vector2f Mesh::getZnearZfar() const
-	{
-		float diagonal = getBoundingBox().diagonal().norm();
-		return sibr::Vector2f(0.1*diagonal, 2.0f*diagonal);
 	}
 
 	std::stringstream Mesh::getOffStream(bool verbose) const
@@ -1677,7 +1671,6 @@ namespace sibr
 
 	void Mesh::fromOffStream(std::stringstream & stream, bool computeNormals)
 	{
-		//std::string dummy_string;
 		int n_vert;
 		int n_faces;
 		int n_edges;
@@ -1687,12 +1680,7 @@ namespace sibr
 		std::getline(stream, line);
 		std::istringstream iss(line);
 
-		//std::cout << line << std::endl;
-
 		iss >> n_vert >> n_faces >> n_edges;
-
-		//std::cout << n_vert << " " << n_faces << " " << n_edges << std::endl;
-		//std::cout << " end header " << std::endl;
 
 		_vertices.resize(n_vert);
 		for (int v = 0; v < n_vert; ++v) {
@@ -1701,8 +1689,6 @@ namespace sibr
 
 			lineStream >> _vertices[v][0] >> _vertices[v][1] >> _vertices[v][2];
 
-			//std::cout << line << std::endl;
-			//std::cout << _vertices[v].transpose() << std::endl;
 		}
 
 		_triangles.resize(0);
@@ -1728,9 +1714,6 @@ namespace sibr
 				_triangles.push_back(t1);
 				_triangles.push_back(t2);
 			}
-
-			//std::cout << line << std::endl;
-			//std::cout << _triangles[t].transpose() << std::endl;
 		}
 
 		if (computeNormals) {

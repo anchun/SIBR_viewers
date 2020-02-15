@@ -58,6 +58,9 @@
 #include <stdexcept>
 #include <vector>
 
+ /** \cond
+ */
+
 /** Library version: 0xMmP (M=Major,m=minor,P=patch) */
 #define NANOFLANN_VERSION 0x130
 
@@ -2037,4 +2040,6 @@ public:
 /** @} */ // end of grouping
 } // namespace nanoflann
 
+/** \endcond
+*/
 #endif /* NANOFLANN_HPP_ */

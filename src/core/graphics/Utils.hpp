@@ -7,8 +7,6 @@
 # include "core/graphics/Image.hpp"
 
 
-// Add your own utility functions here.
-
 namespace sibr
 {
 	/**
@@ -16,14 +14,23 @@ namespace sibr
 	* @{
 	*/
 
-	// e.g.:
-	// Matrix4f SIBR_GRAPHICS_EXPORT perspective( float fovRadian, float ratio, float zn, float zf );
+	/** Generate a random color.
+	\return a random RGB triplet
+	*/
+	template<typename T_Type>
+	static Eigen::Matrix<T_Type, 3, 1, Eigen::DontAlign> randomColor(){
+		// We just use rand here, we don't need 'proper' PRNG.
+		const uint8_t r = uint8((std::rand() % 255 + 192) * 0.5f);
+		const uint8_t g = uint8((std::rand() % 255 + 192) * 0.5f);
+		const uint8_t b = uint8((std::rand() % 255 + 192) * 0.5f);
+		const sibr::Vector3ub output(r, g,b);
+		return output.unaryExpr([](float f) { return f * sibr::opencv::imageTypeRange<T_Type>(); }).cast<T_Type>();
+	}
 
-	// Color map helpers.
-
-	// Jet color map.
-	//SIBR_GRAPHICS_EXPORT sibr::Vector3ub getJetColorFromProbaV(double proba);
-
+	/** Generate a color for a given scalar score, using the jet color map.
+	\param gray the probability value
+	\return the associated jet color.
+	*/
 	template<typename T_Type>
 	static Eigen::Matrix<T_Type, 3, 1, Eigen::DontAlign> jetColor(float gray)
 	{
@@ -45,39 +52,56 @@ namespace sibr
 			output.z() = 0.0f;
 		}
 
-		return output.unaryExpr([](float f) { return f*sibr::opencv::imageTypeRange<T_Type>(); }).cast<T_Type>();
-	}
-
-	template<typename T_Type>
-	static Eigen::Matrix<T_Type, 3, 1, Eigen::DontAlign> randomColor(){
-		// We just use rand here, we don't need 'proper' PRNG.
-		const uint8_t r = uint8((std::rand() % 255 + 192) * 0.5f);
-		const uint8_t g = uint8((std::rand() % 255 + 192) * 0.5f);
-		const uint8_t b = uint8((std::rand() % 255 + 192) * 0.5f);
-		const sibr::Vector3ub output(r, g,b);
 		return output.unaryExpr([](float f) { return f * sibr::opencv::imageTypeRange<T_Type>(); }).cast<T_Type>();
 	}
 
+	/** Generate a jet color associated to the input probability, as a 3-channels cv::Scalar.
+	\param gray the probability value
+	\return the associated jet color.
+	*/
 	SIBR_GRAPHICS_EXPORT cv::Scalar jetColor(float gray);
 
-	// Simpler but reversible colormap.
+	/** Generate a color for a given scalar score, using a reversible mapping.
+	\param proba the probability value
+	\return the associated color
+	*/
 	SIBR_GRAPHICS_EXPORT sibr::Vector3ub getLinearColorFromProbaV(double proba);
 
-	// There will be a precision loss.
+	/** Convert a color to the associated scalar score, using a reversible mapping.
+	\param color the color
+	\return the probability value
+	*/
 	SIBR_GRAPHICS_EXPORT double getProbaFromLinearColor(const sibr::Vector3ub & color);
 
-	//dir assumed normalized, returns [phi,theta] in [-pi,pi]x[0,pi]
+	/** Convert a direction from cartesian to spherical coordinates.
+	\param dir a direction in cartesian 3D space
+	\return the spherical coordinates [phi,theta] in [-pi,pi]x[0,pi]
+	\warning dir is assumed to be normalized
+	*/
 	SIBR_GRAPHICS_EXPORT sibr::Vector2d cartesianToSpherical(const sibr::Vector3d & dir); 
 
-	//dir assumed normalized, returns [u,v] in [0,1]^2
+	/** Convert a direction from cartesian to spherical UVs.
+	\param dir a direction in cartesian 3D space
+	\return the spherical UVs [u,v] in [0,1]^2
+	\warning dir is assumed to be normalized
+	*/
 	SIBR_GRAPHICS_EXPORT sibr::Vector2d cartesianToSphericalUVs(const sibr::Vector3d & dir);
 
-	//Inplace conversion of float image from sRGB space to linear.
+	/**Inplace conversion of float image from sRGB space to linear.
+	\param img the image to convert
+	*/
 	SIBR_GRAPHICS_EXPORT void sRGB2Lin(sibr::ImageRGB32F& img);
 
-	//Inplace conversion of float image from linear space to sRGB.
+	/** Inplace conversion of a float image from linear space to sRGB.
+	\param img the image to convert
+	*/
 	SIBR_GRAPHICS_EXPORT void lin2sRGB(sibr::ImageRGB32F& img);
 
+	/** Debug helper: wrap a rendering task in an openGL debug group (visible in Renderdoc).
+	\param s debug group name
+	\param f the task to wrap
+	\param args the task arguments
+	*/
 	template<typename FunType, typename ...ArgsType>
 	void renderTask(const std::string & s, FunType && f, ArgsType && ... args) {
 		glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, s.c_str());
@@ -85,17 +109,23 @@ namespace sibr
 		glPopDebugGroup();
 	};
 
-
-	inline float		lerp(float from, float to, float fac);
-	inline float		inverseLerp(float from, float to, float current);
-
-	///// INLINES /////
-
-	float		lerp( float A, float B, float fac ) {
+	/** Interpolate between two values.
+	\param A first value
+	\param B second value
+	\param fac interpolation factor
+	\return A+fac*(B-A)
+	*/
+	inline float lerp( float A, float B, float fac ) {
 		return A*(1.f-fac)+B*fac;
 	}
 
-	float		inverseLerp( float from, float to, float current ) {
+	/** Express a value as the linear combination of two other values.
+	\param from first value
+	\param to second value
+	\param current value to express as a combination
+	\return the interpolation factor
+	*/
+	inline float inverseLerp( float from, float to, float current ) {
 		return (current - from)/(to - from);
 	}
 

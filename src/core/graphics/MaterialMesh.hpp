@@ -34,7 +34,6 @@ namespace sibr
 		typedef std::vector<int>								MeshIds;
 		typedef std::vector<std::string>						MatId2Name;
 
-
 		typedef std::map<std::string, sibr::ImageRGB::Ptr>		OpacityMaps;
 		typedef std::map<std::string, sibr::ImageRGB::Ptr>		DiffuseMaps;
 
@@ -332,19 +331,19 @@ namespace sibr
 
 		bool _hasTagsFile = false;
 		sibr::Texture2DRGB::Ptr _tagTexture;
-		GLuint _idTagTexture;
+		GLuint _idTagTexture = 0;
 
 		bool _hasTagsCoveringFile = false;
 		sibr::Texture2DRGB::Ptr _tagCoveringTexture;
-		GLuint _idTagCoveringTexture;
+		GLuint _idTagCoveringTexture = 0;
 
 		//AO attributes
 		AmbientOcclusion _ambientOcclusion;
 		std::function<sibr::Mesh::Colors(sibr::MaterialMesh&, const int)> _aoFunction;
-		float _currentThreshold;
+		float _currentThreshold = 0.0f;
 		bool _aoInitialized = false;
-		float _averageSize;
-		float _averageArea;
+		float _averageSize = 0.0f;
+		float _averageArea = 0.0f;
 	};
 
 	///// DEFINITION /////

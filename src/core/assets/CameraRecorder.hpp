@@ -22,7 +22,7 @@ namespace sibr
 		Default constructor.
 		*/
 		CameraRecorder(void) :
-			_pos(0), _recording(false), _playing(false), _saving(false), _savingPath(""), _speed(1.0f), _interp(0.0f) {
+			_pos(0), _recording(false), _playing(false), _saving(false), _savingPath(""), _savingVideo(false), _savingVideoPath(""), _speed(1.0f), _interp(0.0f) {
 				//load();
 		}
 		/**
@@ -102,6 +102,8 @@ namespace sibr
 		/**
 		Load a recording stream saved as a bundle file (useful for path from FRIBR).
 		\param filePath Path to the bundle file to write to.
+		\param w the image width to use for Fov computation
+		\param h the image height
 		*/
 		void	loadBundle(const std::string & filePath, int w = 1920, int h = 1080);
 

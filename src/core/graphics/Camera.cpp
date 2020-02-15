@@ -98,7 +98,7 @@ namespace sibr
 	Matrix4f	Camera::proj( void ) const
 	{
 		//std::cout << "FOV: " << _fov << "Aspect" << _aspect << "ZNEAR" << _znear << "ZFAR" << _zfar << std::endl << std::flush;
-		if (_isOrtho)
+		if (ortho())
 			return sibr::orthographic(_right, _top, _znear, _zfar);
 		else
 			return sibr::perspective(_fov, _aspect, _znear, _zfar, _p);
@@ -114,7 +114,7 @@ namespace sibr
 		out.aspect(dist01*from.aspect() + (1.0f-dist01)*to.aspect());
 		out.zfar(dist01*from.zfar() + (1.0f-dist01)*to.zfar());
 		out.znear(dist01*from.znear() + (1.0f-dist01)*to.znear());
-		if (from._isOrtho) {
+		if (from.ortho()) {
 			out.orthoRight(dist01*from.orthoRight() + (1.0f-dist01)*to.orthoRight());
 			out.orthoTop(dist01*from.orthoTop() + (1.0f-dist01)*to.orthoTop());
 		}

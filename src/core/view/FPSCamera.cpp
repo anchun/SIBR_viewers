@@ -105,7 +105,7 @@ namespace sibr {
 		if (input.key().isActivated(sibr::Key::LeftControl)) { return; }
 
 		float camSpeed = 2.f * deltaTime		* IBRVIEW_CAMSPEED;
-		if (_currentCamera._isOrtho) {
+		if (_currentCamera.ortho()) {
 			camSpeed *= 5.0f;
 		}
 		float camRotSpeed = 30.f * deltaTime	* IBRVIEW_CAMSPEED;
@@ -141,15 +141,15 @@ namespace sibr {
 		pivot[2] -= input.key().isActivated(sibr::Key::O) ? camRotSpeed : 0.f;
 		pivot[2] += input.key().isActivated(sibr::Key::U) ? camRotSpeed : 0.f;
 
-		if (_currentCamera._isOrtho) {
+		if (_currentCamera.ortho()) {
 			if (input.key().isActivated(sibr::Key::Z)) {
-				_currentCamera._right /= 1.1f;
-				_currentCamera._top /= 1.1f;
+				_currentCamera.orthoRight(_currentCamera.orthoRight()/1.1f);
+				_currentCamera.orthoTop(_currentCamera.orthoTop()/1.1f);
 				_speedRotFpsCam /= 1.1f;
 			}
 			else if (input.key().isActivated(sibr::Key::X)) {
-				_currentCamera._right *= 1.1f;
-				_currentCamera._top *= 1.1f;
+				_currentCamera.orthoRight(_currentCamera.orthoRight()*1.1f);
+				_currentCamera.orthoTop(_currentCamera.orthoTop()*1.1f);
 				_speedRotFpsCam *= 1.1f;
 			}
 		}
