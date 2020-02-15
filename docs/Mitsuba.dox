@@ -1,0 +1,8 @@
+/** @page Mitsuba Rendering with Mitsuba
+  *
+  * \tableofcontents
+  *
+  * \section Cluster Compiling Mitsuba on Cluster
+  * Follow the given steps to compile Mitsuba on cluster
+  * 
+  **/
