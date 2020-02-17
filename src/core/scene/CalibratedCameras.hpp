@@ -48,7 +48,7 @@ namespace sibr
 		/**
 		* \brief Function to mark the cameras used for rendering.
 		* Generally used for debugging purposes
-		* \param selectedImages Vector of camera IDs that are used for rendering
+		* \param selectedCameras list of camera IDs that are used for rendering
 		*/
 		void	debugFlagCameraAsUsed(const std::vector<uint>& selectedCameras);
 

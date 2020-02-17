@@ -68,8 +68,8 @@ namespace sibr {
 		* \brief Creates a BasicIBRScene given custom data argument.
 		* The scene will be created using the custom data (cameras/images/proxies/textures etc.) provided.
 		* \param data to provide data instance holding customized components.
-		* \param noRTs to specify whether to initialize render target textures or not.
 		* \param width the constrained width for GPU texture data.
+		* \param myOpts to specify whether to initialize specific parts of the scene (RTs, geometry,...)
 		*/
 		void createFromCustomData(const ParseData::Ptr & data, const uint width = 0, SceneOptions myOpts = SceneOptions());
 		

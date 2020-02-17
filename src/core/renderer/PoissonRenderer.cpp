@@ -1,5 +1,4 @@
 /**
-* \file poisson.cpp
 *
 * Poisson synthesis.
 */
