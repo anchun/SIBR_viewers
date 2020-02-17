@@ -7,10 +7,6 @@
 # include <core/system/Vector.hpp>
 # include "core/raycaster/Config.hpp"
 
-
-// Force export
-//template class SIBR_RAYCASTER_EXPORT Vertex<float, 3>;
-
 namespace sibr
 {
 
@@ -21,27 +17,42 @@ namespace sibr
 	class SIBR_RAYCASTER_EXPORT Ray
 	{
 	public:
-		/// Construct from params
+		/** Construct a ray from parameters.
+		\param orig ray origin
+		\param dir ray direction
+		\note The direction will be normalized.
+		*/
 		Ray( const sibr::Vector3f& orig = sibr::Vector3f(0.f, 0.f, 0.f),
 			const sibr::Vector3f& dir = sibr::Vector3f(0.f, 0.f, -1.f) );
 
-		/// Set the position from where the ray starts
+		/** Set the position from where the ray starts.
+		\param o the new origin
+		*/
 		inline void		orig( const sibr::Vector3f& o );
-		/// Get the position from where the ray starts
+		
+		/// \return the ray origin
 		inline const sibr::Vector3f&	orig( void ) const;
 
-		/// Set the direction to where the ray goes. Additionally,
-		/// you can precise if you want this direction to be automatically
-		/// normalized or not.
+		/** Set the direction of the ray. Additionally,
+		 you can precise if you want this direction to be automatically
+		 normalized or not.
+		 \param d the new direction
+		 \param normalizeIt should normalization be applied
+		 */
 		inline void		dir( const sibr::Vector3f& d, bool normalizeIt=true );
-		/// Get the direction to where the ray goes.
+
+		/// \return the direction of the ray.
 		inline const sibr::Vector3f&	dir( void ) const;
 
+		/** Return the 3D point such that p = orig + t * dir;
+		\param t the distance along the ray
+		\return the 3D point
+		*/
 		Vector3f at(float t) const;
 
 	private:
-		sibr::Vector3f		_orig;	///< position from where the ray starts
-		sibr::Vector3f		_dir;	///< direction where the ray goes
+		sibr::Vector3f		_orig;	///< Position from where the ray starts
+		sibr::Vector3f		_dir;	///< Direction where the ray goes
 	};
 
 	///
@@ -51,7 +62,7 @@ namespace sibr
 	class SIBR_RAYCASTER_EXPORT RayHit
 	{
 	public:
-		static const float	InfinityDist;// = std::numeric_limits<float>::infinity();
+		static const float	InfinityDist;
 
 		/// Infos about the object that was hit
 		struct Primitive
@@ -68,33 +79,44 @@ namespace sibr
 			float v;	///< v-coordinates (ranging from 0.0 to 1.0)
 		};
 		
-		/// Construct hit from params
+		/** Construct a hit record.
+		\param r the ray
+		\param dist intersection distance
+		\param coord barycentric coordinates
+		\param normal surface normal
+		\param prim intersected primitive
+		*/
 		RayHit( const Ray& r, float dist, const BCCoord& coord,
 			const sibr::Vector3f& normal, const Primitive& prim );
+
+		/// Non-hit constructor.
 		RayHit() {};
 
-		/// Return the ray that was casted
+		/// \return the ray that was casted
 		inline const Ray&			ray( void ) const;
-		/// Return the distance from the ray origin to the hit
+
+		/// \return the distance from the ray origin to the hit
 		inline float				dist( void ) const;
-		/// Return the barycentric coordinates of the hit point on
-		/// the triangle that was hit
+
+		/// \return the barycentric coordinates of the hit point on the triangle that was hit
 		inline const BCCoord&		barycentricCoord( void ) const;
-		/// Return 3 interpolation factors for extracting information
-		/// at each vertex of a triangle.
-		/// e.g: get fragment color using
-		///   color = factor[0]*colorVert0 + factor[1]*colorVert1 + factor[2]*colorVert2
-		/// It consider the following triangle: https://embree.github.io/images/triangle_uv.png
-		///
-		/// \todo TODO: explain better this comment (do it yourself if you have an idea!)
+		
+		/** Return the proper barycentric factors for interpolating information stored
+		 at each vertex of a triangle.
+		 e.g: get fragment color using
+		   color = factor[0]*colorVert0 + factor[1]*colorVert1 + factor[2]*colorVert2
+		 It consider the following triangle: https://embree.github.io/images/triangle_uv.png
+		\return the barycentric coordinates
+		*/
 		sibr::Vector3f			interpolateUV( void ) const;
 
-		/// Return the normal of the triangle that was hit
+		/// \return the normal of the triangle that was hit.
 		inline const sibr::Vector3f&			normal( void ) const;
-		/// Return information about the primitive that was hit
+
+		/// \return information about the primitive that was hit.
 		inline const Primitive&		primitive( void ) const;
 
-		/// Return TRUE if an object was hit
+		/// \return true if an object was hit.
 		inline bool	hitSomething( void ) const;
 
 	private:

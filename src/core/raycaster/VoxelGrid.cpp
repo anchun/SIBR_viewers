@@ -8,7 +8,7 @@ namespace sibr {
 	}
 
 	VoxelGridBase::VoxelGridBase(const Box & boundingBox, const sibr::Vector3i & numsPerDim, bool forceCube)
-		: box(boundingBox), dims(numsPerDim)
+		: box(boundingBox), dims(numsPerDim), _generator(0), _distribution(-1.0, 1.0);
 	{
 		if (forceCube) {
 			float maxDimSize = box.sizes().cwiseQuotient(dims.cast<float>()).maxCoeff();
@@ -220,13 +220,13 @@ namespace sibr {
 		return getAllCellMeshInternal(true);
 	}
 
-	Box3f VoxelGridBase::getCellBox(size_t cellId) const
+	Eigen::AlignedBox3f VoxelGridBase::getCellBox(size_t cellId) const
 	{
 		sibr::Vector3i cell = getCell(cellId);
 		sibr::Vector3f center = getCellCenter(cell);
 		sibr::Vector3f half_diagonal = 0.5f*getCellSize();
 
-		Box3f out;
+		Eigen::AlignedBox3f out;
 		out.extend(center - half_diagonal);
 		out.extend(center + half_diagonal);
 		return out;
@@ -297,7 +297,11 @@ namespace sibr {
 
 	sibr::Vector3f VoxelGridBase::sampleCell(size_t cellId)
 	{
-		return getCellCenter(getCell(cellId)) + rng.sample().cwiseProduct(getCellSize());
+		sibr::Vector3f out;
+		out[0] = _distribution(_generator);
+		out[1] = _distribution(_generator);
+		out[2] = _distribution(_generator);
+		return getCellCenter(getCell(cellId)) + out.cwiseProduct(getCellSize());
 	}
 
 	sibr::Mesh::Ptr VoxelGridBase::getCellMeshInternal(const sibr::Vector3i & cell, bool filled) const
