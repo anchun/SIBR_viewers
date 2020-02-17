@@ -193,10 +193,15 @@ namespace sibr
 
 		_showImages = true;
 
-		const std::string camerasDir = myArgs.dataset_path.get() + "/cameras"; 
-		_topViewPath = camerasDir + "/topview.txt";
-		if (!directoryExists(camerasDir)) {
-			makeDirectory(camerasDir);
+		const std::string camerasDir = myArgs.dataset_path.get() + "/cameras";
+		if (directoryExists(camerasDir)) {
+			_topViewPath = camerasDir + "/topview.txt";
+				if (!directoryExists(camerasDir)) {
+					makeDirectory(camerasDir);
+				}
+		}
+		else {
+			_topViewPath = parentDirectory(myArgs.dataset_path) + "/topview.txt";
 		}
 
 		setup();
