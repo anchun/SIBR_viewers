@@ -296,6 +296,19 @@ namespace sibr
 		return static_cast<int>(_subViews.size() + _ibrSubViews.size() + _subMultiViews.size());
 	}
 
+	void MultiViewBase::captureView(const std::string & subviewName, const std::string & path, const std::string & filename)
+	{
+		if (_subViews.count(subviewName)) {
+			captureView(_subViews[subviewName], path, filename);
+		}
+		else if (_ibrSubViews.count(subviewName)) {
+			captureView(_ibrSubViews[subviewName], path, filename);
+		}
+		else {
+			SIBR_WRG << "No View in the MultiViewManager with " << subviewName << " as a name!" << std::endl;
+		}
+	}
+
 	void MultiViewBase::captureView(const SubView & view, const std::string& path, const std::string & filename) {
 
 		const uint w = view.rt->w();

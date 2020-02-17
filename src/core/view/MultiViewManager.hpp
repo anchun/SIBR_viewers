@@ -223,7 +223,13 @@ namespace sibr
 		* \param path path to the directory to use.
 		*/
 		void setExportPath(const std::string & path);
-
+		/**
+		* \brief captures a View content into an image file.
+		* \param subviewName a string with the name of the subview.
+		* \param path the path to save the output.
+		* \param filename the name of the output file, needs to have an OpenCV compatible file type.
+		*/
+		void captureView(const std::string& subviewName, const std::string& path = "./screenshots", const std::string& filename = "");
 	protected:
 
 		/** Internal representation of a subview.
