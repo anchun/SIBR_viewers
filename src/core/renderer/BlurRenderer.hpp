@@ -9,7 +9,7 @@
 
 namespace sibr { 
 
-	/** Blur on edge (when adding object)
+	/** Blur on color edges present in a texture.
 	\ingroup sibr_renderer
 	*/
 	class SIBR_EXP_RENDERER_EXPORT BlurRenderer
@@ -18,16 +18,25 @@ namespace sibr {
 		typedef std::shared_ptr<BlurRenderer>	Ptr;
 
 	public:
+
+		/// Constructor.
 		BlurRenderer( void );
 
+		/** Process the texture.
+		\param texturID the texture to blur
+		\param textureSize the texture dimensions
+		\param dst the destination rendertarget
+		*/
 		void	process(
 			/*input*/	uint textureID,
 			/*input*/	const Vector2f& textureSize,
 			/*output*/	IRenderTarget& dst );
 
 	private:
-		GLShader			_shader;
-		GLParameter			_paramImgSize;
+
+		GLShader			_shader; ///< Blur shader.
+		GLParameter			_paramImgSize; ///< Texture size uniform.
+
 	};
 
 } /*namespace sibr*/ 

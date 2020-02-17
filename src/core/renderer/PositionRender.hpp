@@ -12,7 +12,7 @@
 
 namespace sibr
 {
-	/**
+	/** Render the world space positions of a mesh surface.
 	\ingroup sibr_renderer
 	*/
 	class SIBR_EXP_RENDERER_EXPORT PositionRenderer
@@ -20,17 +20,30 @@ namespace sibr
 		SIBR_CLASS_PTR(PositionRenderer);
 
 	public:
+
+		/** Constructor with a target size.
+		\param w the target width
+		\param h the target height
+		*/
 		PositionRenderer(int w,int h);
 
+		/** Render the mesh world positions.
+		\param cam the viewpoint to use
+		\param mesh the mesh to render
+		\param backFaceCulling should backface culling be performed
+		\param frontFaceCulling flip the culling test orientation
+		*/
 		void render( const sibr::Camera &cam, const Mesh& mesh, bool backFaceCulling=false, bool frontFaceCulling=false);
 
+		/** \return the result rendertarget containing world space positions. */
 		const sibr::RenderTargetRGB32F::Ptr & getPositionsRT() { return _RT; }
 
-		
 	private:
-		sibr::GLShader							_shader;
-		sibr::GLuniform<sibr::Matrix4f>			_MVP;
-		sibr::RenderTargetRGB32F::Ptr			_RT;
+
+		sibr::GLShader							_shader; ///< The positions shader.
+		sibr::GLuniform<sibr::Matrix4f>			_MVP; ///< MVP uniform.
+		sibr::RenderTargetRGB32F::Ptr			_RT; ///< Destination render target.
+		
 	};
 
 } // namespace

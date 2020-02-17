@@ -15,7 +15,7 @@
 namespace sibr { 
 
 	/**
-	* Hole filling by poisson synthesis on an input textures;
+	* Hole filling by poisson synthesis on an input texture;
 	* contains all shaders, render targets and render passes.
 	* All black pixels on the input texture are considered holes
 	* and Poisson synthesis affects these pixels only, all
@@ -31,8 +31,8 @@ namespace sibr {
 
 		/**
 		* Initialize Poisson solvers render targets and shaders.
-		* \param w width of highest (or highest resolution) multigrid level
-		* \param h height of highest (or highest resolution) multigrid level
+		* \param w width of highest resolution multigrid level
+		* \param h height of highest resolution multigrid level
 		*/
 		PoissonRenderer ( uint w, uint h );
 
@@ -57,14 +57,16 @@ namespace sibr {
 		*/
 		const Vector2i&		getSize( void ) const;
 
-		/** \return a reference to the "weird flat regions of color" bugfix toggle. */
+		/** If true, fix a bug caused by erroneous viewport when initializing the internal pyramid.
+			Left exposed for retrocompatibility reasons.
+		\return a reference to the bugfix toggle. */
 		bool & enableFix() { return _enableFix; }
 
 	private:
 		/**
 		* Render the full Poisson synthesis on the holes in texture 'tex'.
 		* \param tex OpenGL texture handle of input texture
-		* \returns OpenGL texture handle of texture containing POisson synthesis solution
+		* \returns OpenGL texture handle of texture containing Poisson synthesis solution
 		*/
 		uint render( uint tex );
 
