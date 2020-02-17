@@ -341,7 +341,7 @@ sibr::Mesh PlaneEstimator::getMeshPlane(sibr::Vector4f plane, sibr::Vector3f cen
 	return planeMesh;
 }
 
-void PlaneEstimator::displayPCAndPlane(sibr::Window::Ptr _window)
+void PlaneEstimator::displayPCAndPlane(sibr::Window::Ptr window)
 {
 }
 
