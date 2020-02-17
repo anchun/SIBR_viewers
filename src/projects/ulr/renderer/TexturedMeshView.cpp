@@ -16,16 +16,6 @@ sibr::TexturedMeshView::TexturedMeshView(const sibr::BasicIBRScene::Ptr & ibrSce
 	// Rendertargets.
 	_poissonRT.reset(new RenderTargetRGBA(w, h, SIBR_CLAMP_UVS));
 	_blendRT.reset(new RenderTargetRGBA(w, h, SIBR_CLAMP_UVS));
-
-	// Tell the scene we are a priori using all active cameras.
-	std::vector<uint> imgs_ulr;
-	const auto & cams = ibrScene->cameras()->inputCameras();
-	for(size_t cid = 0; cid < cams.size(); ++cid) {
-		if(cams[cid].isActive()) {
-			imgs_ulr.push_back(uint(cid));
-		}
-	}
-	_scene->cameras()->debugFlagCameraAsUsed(imgs_ulr);
 }
 
 void sibr::TexturedMeshView::setScene(const sibr::BasicIBRScene::Ptr & newScene) {
@@ -34,30 +24,7 @@ void sibr::TexturedMeshView::setScene(const sibr::BasicIBRScene::Ptr & newScene)
 	const uint h = getResolution().y();
 
 	_textureRenderer.reset(new TexturedMeshRenderer());
-
-	// Tell the scene we are a priori using all active cameras.
-	std::vector<uint> imgs_ulr;
-	const auto & cams = newScene->cameras()->inputCameras();
-	for (size_t cid = 0; cid < cams.size(); ++cid) {
-		if (cams[cid].isActive()) {
-			imgs_ulr.push_back(uint(cid));
-		}
-	}
-	_scene->cameras()->debugFlagCameraAsUsed(imgs_ulr);
 }
-
-//void sibr::TexturedMeshView::setMode(const WeightsMode mode) {
-//	_weightsMode = mode;
-//	if (_weightsMode == VARIANCE_BASED_W) {
-//		_ulrRenderer->setupShaders("ulr_v3_alt");
-//	}
-//	else if (_weightsMode == ULR_FAST) {
-//		_ulrRenderer->setupShaders("ulr_v3_fast");
-//	}
-//	else {
-//		_ulrRenderer->setupShaders();
-//	}
-//}
 
 void sibr::TexturedMeshView::onRenderIBR(sibr::IRenderTarget & dst, const sibr::Camera & eye)
 {
@@ -91,17 +58,3 @@ void sibr::TexturedMeshView::onGUI()
 	ImGui::End();
 }
 
-void sibr::TexturedMeshView::updateCameras(bool allowResetToDefault) {
-	// If we are here, the rendering mode or the selected index have changed, we need to update the enabled cameras.
-	std::vector<uint> imgs_ulr;
-	const auto & cams = _scene->cameras()->inputCameras();
-
-	// Only update if there is at least one camera enabled.
-	if(!imgs_ulr.empty()) {
-		// Update the shader informations in the renderer.
-		//_ulrRenderer->updateCameras(imgs_ulr);
-		// Tell the scene which cameras we are using for debug visualization.
-		_scene->cameras()->debugFlagCameraAsUsed(imgs_ulr);
-	}
-	
-}

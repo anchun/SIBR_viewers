@@ -61,23 +61,15 @@ namespace sibr {
 
 	protected:
 
-		/**
-		 * Update the camera informations in the Textured Mesh renderer based on the current rendering mode and selected index.
-		 * \param allowResetToDefault If true, when the rendering mode is ALL_CAMS, the cameras information will be updated.
-		 */
-		void updateCameras(bool allowResetToDefault);
-
+		
 		std::shared_ptr<sibr::BasicIBRScene> _scene;
-		TexturedMeshRenderer::Ptr		_textureRenderer;
-		PoissonRenderer::Ptr	_poissonRenderer;
-
-		RenderTargetRGBA::Ptr	_blendRT;
-		RenderTargetRGBA::Ptr	_poissonRT;
-
-		bool					_poissonBlend = false;
-
-		int						_singleCamId = 0;
-		int						_everyNCamStep = 1;
+		TexturedMeshRenderer::Ptr			 _textureRenderer;
+		PoissonRenderer::Ptr				 _poissonRenderer;
+											 
+		RenderTargetRGBA::Ptr				 _blendRT;
+		RenderTargetRGBA::Ptr				 _poissonRT;
+											 
+		bool								 _poissonBlend = false;
 	};
 
 } /*namespace sibr*/ 
