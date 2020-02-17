@@ -301,6 +301,13 @@ namespace sibr
 		*/
 		GLuniform & operator=(const GLuniform& other) { value = other.value; return *this; };
 
+		/** not-equal-to operator. Compares the stored values with the argument and returns
+		the not-equal-to operator.
+		\param t value to compare to.
+		\return the boolean result of the operation.
+		*/
+		bool operator!=(const T& t) { return value != t; }
+
 		/** Copy constructor. Update the stored value using the one of the other uniform.
 		\param other uniform to get the new value from
 		*/
