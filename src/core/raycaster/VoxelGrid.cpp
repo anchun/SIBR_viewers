@@ -8,7 +8,7 @@ namespace sibr {
 	}
 
 	VoxelGridBase::VoxelGridBase(const Box & boundingBox, const sibr::Vector3i & numsPerDim, bool forceCube)
-		: box(boundingBox), dims(numsPerDim), _generator(0), _distribution(-1.0, 1.0);
+		: box(boundingBox), dims(numsPerDim), _generator(0), _distribution(-1.0, 1.0)
 	{
 		if (forceCube) {
 			float maxDimSize = box.sizes().cwiseQuotient(dims.cast<float>()).maxCoeff();
@@ -298,9 +298,9 @@ namespace sibr {
 	sibr::Vector3f VoxelGridBase::sampleCell(size_t cellId)
 	{
 		sibr::Vector3f out;
-		out[0] = _distribution(_generator);
-		out[1] = _distribution(_generator);
-		out[2] = _distribution(_generator);
+		out[0] = float(_distribution(_generator));
+		out[1] = float(_distribution(_generator));
+		out[2] = float(_distribution(_generator));
 		return getCellCenter(getCell(cellId)) + out.cwiseProduct(getCellSize());
 	}
 
