@@ -359,8 +359,6 @@ namespace sibr
 		Vector2i _defaultViewResolution; ///< Default view resolution.
 
 		std::string _exportPath; ///< Capture output path.
-		std::string _vdoPath; ///< video ouptut path.
-		bool _savingVideo; ///< Currently saving a video.
 		std::vector<cv::Mat> _videoFrames; ///< Video frames.
 
 		std::chrono::time_point<std::chrono::steady_clock> _timeLastFrame; ///< Last frame time point.
