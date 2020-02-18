@@ -23,7 +23,7 @@ namespace sibr {
 		BlurRenderer( void );
 
 		/** Process the texture.
-		\param texturID the texture to blur
+		\param textureID the texture to blur
 		\param textureSize the texture dimensions
 		\param dst the destination rendertarget
 		*/

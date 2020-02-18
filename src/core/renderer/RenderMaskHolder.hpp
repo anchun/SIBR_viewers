@@ -23,7 +23,7 @@ namespace sibr {
 	public:
 
 		/** Update the masks
-		\param the new masks to use
+		\param masks the new masks to use
 		*/
 		void							setMasks( const std::vector<MaskPtr>& masks );
 
@@ -73,7 +73,7 @@ namespace sibr {
 	public:
 
 		/** Update the masks
-		\param the new masks to use
+		\param masks the new masks to use
 		*/
 		void							setMasks(const MaskArrayPtr& masks);
 
