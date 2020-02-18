@@ -8,8 +8,7 @@
 
 
 
-/**
-	Struct representing a 3D quad, along with load/save utilities.
+/** Struct representing a 3D quad, along with load/save utilities.
 	\todo move in proper namespace without breaking anything.
 	\ingroup sibr_raycaster
 */
@@ -49,8 +48,7 @@ struct  quad {
 namespace sibr {
 
 
-	/**
-	This class provides utilities to compute point/line/triangle/quad intersections.
+	/** This class provides utilities to compute point/line/triangle/quad intersections.
 	\ingroup sibr_raycaster
 	*/
 	class SIBR_RAYCASTER_EXPORT Intersector2D

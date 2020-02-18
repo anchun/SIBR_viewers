@@ -10,8 +10,7 @@
 
 namespace sibr { 
 
-	/**
-	Composite two rendered scenes while generating local cast shadows from the top one to the bottom one.
+	/** Composite two rendered scenes while generating local cast shadows from the top one to the bottom one.
 	\ingroup sibr_renderer
 	*/
 	class SIBR_EXP_RENDERER_EXPORT AddShadowRenderer

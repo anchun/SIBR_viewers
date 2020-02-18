@@ -16,22 +16,7 @@
 namespace sibr
 {
 
-	template<typename T> struct OpenCVdepth;
-	template<> struct OpenCVdepth<uchar> {
-		static const uint value = CV_8U;
-	};
-	template<> struct OpenCVdepth<float> {
-		static const uint value = CV_32F;
-	};
-	template<> struct OpenCVdepth<double> {
-		static const uint value = CV_64F;
-	};
-
-	template<typename T, uint N> constexpr uint getOpenCVtype = CV_MAKE_TYPE(OpenCVdepth<T>::value, N);
-	template<typename T> constexpr uint getOpenCVtypeSingleChannel = getOpenCVtype<T, 1>;
-
-
-
+	
 	/**
 	* \ingroup sibr_video
 	*/

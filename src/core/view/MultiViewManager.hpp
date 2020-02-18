@@ -374,8 +374,7 @@ namespace sibr
 		bool _onPause = false; ///< Paused interaction and update.
 	};
 
-	/**
-		A multiview manager is a multi-view system that displays its subviews in an OS window.
+	/** A multiview manager is a multi-view system that displays its subviews in an OS window.
 	use it as a based for applications with multiple subviews.
 	* \ingroup sibr_view
 	*/

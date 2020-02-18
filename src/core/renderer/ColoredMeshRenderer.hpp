@@ -11,8 +11,7 @@
 
 namespace sibr { 
 
-	/**
-	Render a mesh colored using the per-vertex color attribute.
+	/** Render a mesh colored using the per-vertex color attribute.
 	\ingroup sibr_renderer
 	*/
 	class SIBR_EXP_RENDERER_EXPORT ColoredMeshRenderer

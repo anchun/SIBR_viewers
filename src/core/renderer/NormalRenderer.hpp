@@ -15,8 +15,7 @@
 namespace sibr
 {
 
-	/**
-	Render the world or view space normals of a mesh.
+	/** Render the world or view space normals of a mesh.
 	\ingroup sibr_renderer
 	*/
 	class SIBR_EXP_RENDERER_EXPORT NormalRenderer

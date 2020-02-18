@@ -9,8 +9,7 @@
 
 namespace sibr { 
 
-	/**
-	Render a binary mask of a mesh, with options to limit Z-fighting.
+	/** Render a binary mask of a mesh, with options to limit Z-fighting.
 	\ingroup sibr_renderer
 	*/
 	class SIBR_EXP_RENDERER_EXPORT BinaryMeshRenderer

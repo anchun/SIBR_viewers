@@ -11,8 +11,7 @@
 namespace sibr
 {
 
-	/**
-	 Used to process casted rays from image pixels. Implement
+	/** Used to process casted rays from image pixels. Implement
 	 this interface and write your custom behavior.
 	 (e.g. see CameraRaycasterProcessor.hpp for built-in processor)
 	 \ingroup sibr_raycaster
@@ -33,8 +32,7 @@ namespace sibr
 
 	};
 
-	/**
-	 Used for casting each pixel of an image into a raycaster scene.
+	/**  Used for casting each pixel of an image into a raycaster scene.
 	 \ingroup sibr_raycaster
 	*/
 	class SIBR_RAYCASTER_EXPORT CameraRaycaster
@@ -98,8 +96,7 @@ namespace sibr
 		Raycaster									_raycaster; ///< Internal raycaster.
 	};
 
-	/**
-	A raycasting camera is an input camera augmented with additional casting and frustum helpers.
+	/** A raycasting camera is an input camera augmented with additional casting and frustum helpers.
 	\ingroup sibr_raycaster
 	*/
 	class SIBR_RAYCASTER_EXPORT RaycastingCamera : public sibr::InputCamera {

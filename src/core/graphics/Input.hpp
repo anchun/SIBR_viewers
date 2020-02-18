@@ -296,8 +296,7 @@ namespace sibr
 		std::array<bool, TNbState>			_lastStates; ///< Last frame state.
 	};
 
-	/**
-	Maintain the complete state of user interactions (mouse, keyboard) for a given view or window.
+	/** Maintain the complete state of user interactions (mouse, keyboard) for a given view or window.
 	All coordinates are recaled with respect to the associated view.
 	To check if the B key is currently held:
 		input.key().isActivated(Key::B);

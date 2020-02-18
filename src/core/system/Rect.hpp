@@ -7,8 +7,7 @@
 
 namespace sibr
 {
-	/**
-	Represents a simple aligned axis rectangle
+	/** Represents a simple aligned axis rectangle
 	
 	I use left, top, right, bottom and not x1, x2, y1, y2
 	or x, y, w, h for being free of coordinate systems.

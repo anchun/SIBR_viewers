@@ -6,8 +6,7 @@
 
 namespace sibr
 {
-	/**
-	General file loading interface.
+	/** General file loading interface.
 	\ingroup sibr_assets
 	*/
 	class SIBR_ASSETS_EXPORT IFileLoader

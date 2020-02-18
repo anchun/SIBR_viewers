@@ -11,8 +11,7 @@
 
 namespace sibr { 
 
-	/**
-	Render a textured mesh, using per-vertex texture coordinates.
+	/** Render a textured mesh, using per-vertex texture coordinates.
 	\ingroup sibr_renderer
 	*/
 	class SIBR_EXP_RENDERER_EXPORT TexturedMeshRenderer

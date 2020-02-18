@@ -8,8 +8,7 @@
 
 namespace sibr
 {
-	/**
-	Represent a basic camera.
+	/** Represent a basic camera.
 	\note In practice, InputCamera is used most of the time
 	* \ingroup sibr_graphics
 	*/

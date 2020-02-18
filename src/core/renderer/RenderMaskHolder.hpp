@@ -11,8 +11,7 @@
 
 namespace sibr { 
 
-	/**
-	Store a set of masks associated to a set of images (dataset input images for instance), on the GPU.
+	/** Store a set of masks associated to a set of images (dataset input images for instance), on the GPU.
 	This version uses a list of R8 rendertargets.
 	\note Might want to use textures instead of RTs here.
 	\ingroup sibr_renderer
@@ -60,8 +59,7 @@ namespace sibr {
 
 	};
 
-	/**
-	Store a set of masks associated to a set of images (dataset input images for instance), on the GPU.
+	/** Store a set of masks associated to a set of images (dataset input images for instance), on the GPU.
 	This version uses a R8 texture array.
 	\ingroup sibr_renderer
 	*/

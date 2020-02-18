@@ -10,8 +10,7 @@
 
 namespace sibr { 
 
-	/**
-	Copy the content of an input texture to another rendertarget or to the window.
+	/** Copy the content of an input texture to another rendertarget or to the window.
 	If you need a basic copy, prefer using blit.
 	\sa sibr::blit
 	\ingroup sibr_renderer

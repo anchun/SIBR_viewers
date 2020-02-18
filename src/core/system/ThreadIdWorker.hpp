@@ -11,8 +11,7 @@
 
 namespace sibr
 {
-	/**
-	 Class used to work concurrently on multiple tasks/instructions.
+	/** Class used to work concurrently on multiple tasks/instructions.
 	 The only shared object is a queue (TaskIds) that
 	 contains ids of remaining tasks to perform.
 	
