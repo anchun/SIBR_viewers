@@ -99,6 +99,15 @@ namespace sibr
 		/** \return true if the view is currently focused (ie the user is interacting with it). */
 		bool				isFocused(void) const;
 
+		
+		/** Define the name of the view (used for disambiguation of GUI, etc.).
+		 * \param name the new name
+		 */
+		void				setName(const std::string & name);
+
+		/** \return the name of the view. */
+		const std::string & name() const;
+		
 	protected:
 		uint			_whichRT; ///< Selected RT id.
 		std::vector<RenderTargetLum::Ptr>	_masks; ///< Rendering masks that can beused by some views/renderers.
@@ -106,6 +115,7 @@ namespace sibr
 		bool			_active = true; ///< Is the view active.
 		Vector2i		_resolution; ///< View resolution.
 		bool			_focus = false; ///< Is the view focused.
+		std::string		_name = ""; ///< View name.
 
 	};
 

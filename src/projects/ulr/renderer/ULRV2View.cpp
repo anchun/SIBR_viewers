@@ -105,8 +105,8 @@ void ULRV2View::onUpdate(Input & input)
 }
 
 void ULRV2View::onGUI() {
-
-		if(ImGui::Begin("ULRV2 Settings")) {
+		const std::string guiName = "ULRV2 Settings (" + name() + ")";
+		if(ImGui::Begin(guiName.c_str())) {
 			
 			ImGui::PushScaledItemWidth(80);
 			const bool v1_changed = ImGui::InputInt("#Dist", &_numDistUlr, 1, 10);

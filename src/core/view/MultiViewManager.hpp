@@ -226,20 +226,24 @@ namespace sibr
 
 	protected:
 
-		/** Internal representation of a subview. */
+		/** Internal representation of a subview.
+		 * Note: this representation should remain *internal* to the multi view system, avoid any abstraction leak.
+		 */
 		struct SubView {
 			ViewBase::Ptr view; ///< Pointer to the view.
 			RenderTargetRGB::Ptr rt; ///< Destination RT.
 			ICameraHandler::Ptr handler; ///< Potential camera handler.
 			AdditionalRenderFunc renderFunc; ///< Optional additonal rendering function.
 			sibr::Viewport viewport; ///< Viewport in the global window.
-			std::string name; ///< View name.
 			ImGuiWindowFlags flags = 0; ///< ImGui flags.
 			bool shouldUpdateLayout = false; ///< Should the layout be updated at the next frame.
 
 			/// Default constructor.
-			SubView() {};
+			SubView() = default;
 
+			/// Destructor.
+			virtual ~SubView() = default;
+			
 			/** Constructor.
 			 *\param view_ the view
 			 *\param rt_ the destination RT
@@ -247,10 +251,8 @@ namespace sibr
 			 *\param name_ the view name
 			 *\param flags_ the ImGui flags
 			 */
-			SubView(ViewBase::Ptr view_, RenderTargetRGB::Ptr rt_, const sibr::Viewport viewport_, const std::string & name_, const ImGuiWindowFlags flags_) :
-				view(view_), rt(rt_), handler(), viewport(viewport_), name(name_), flags(flags_), shouldUpdateLayout(false) {
-				renderFunc = [](ViewBase::Ptr &, const Viewport&, const IRenderTarget::Ptr & ) {};
-			}
+			SubView(ViewBase::Ptr view_, RenderTargetRGB::Ptr rt_, const sibr::Viewport viewport_, 
+				const std::string & name_, const ImGuiWindowFlags flags_);
 
 			/** Render the subview.
 			 *\param rm the rendering mode to use
@@ -260,12 +262,15 @@ namespace sibr
 		};
 
 		/** Specialization of Subview for basic views. */
-		struct BasicSubView : SubView {
+		struct BasicSubView final : SubView {
 			ViewUpdateFunc updateFunc; ///< The update function.
 
 			/// Default constructor.
 			BasicSubView() : SubView() {};
 
+			/// Destructor.
+			virtual ~BasicSubView() = default;
+			
 			/** Constructor.
 			 *\param view_ the view
 			 *\param rt_ the destination RT
@@ -274,25 +279,18 @@ namespace sibr
 			 *\param flags_ the ImGui flags
 			 *\param f_ the update function
 			 */
-			BasicSubView(ViewBase::Ptr view_, RenderTargetRGB::Ptr rt_, const sibr::Viewport viewport_, const std::string & name_, const ImGuiWindowFlags flags_, ViewUpdateFunc f_) :
-				SubView(view_, rt_, viewport_, name_, flags_), updateFunc(f_) {
-			}
+			BasicSubView(ViewBase::Ptr view_, RenderTargetRGB::Ptr rt_, const sibr::Viewport viewport_, 
+				const std::string & name_, const ImGuiWindowFlags flags_, ViewUpdateFunc f_);
 
 			/** Render the subview.
 			 *\param rm the rendering mode to use (unused)
 			 *\param renderViewport the viewport to use in the destination RT
 			 */
-			virtual void render(const IRenderingMode::Ptr & rm, const Viewport & renderViewport) const override {
-				rt->bind();
-				renderViewport.bind();
-				renderViewport.clear();
-				view->onRender(renderViewport);
-				rt->unbind();
-			}
+			void render(const IRenderingMode::Ptr & rm, const Viewport & renderViewport) const override;
 		};
 
 		/** Specialization of Subview for views using a render mode (IBR views mainly). */
-		struct IBRSubView : SubView {
+		struct IBRSubView final : SubView {
 			IBRViewUpdateFunc updateFunc; ///< The update function.
 			sibr::InputCamera cam; ///< The current camera.
 			bool defaultUpdateFunc = true; ///< Was the default update function used.
@@ -300,6 +298,9 @@ namespace sibr
 			/// Default constructor.
 			IBRSubView() : SubView() {};
 
+			/// Destructor.
+			virtual ~IBRSubView() = default;
+			
 			/** Constructor.
 			 *\param view_ the view
 			 *\param rt_ the destination RT
@@ -309,20 +310,14 @@ namespace sibr
 			 *\param f_ the update function
 			 *\param defaultUpdateFunc_ was the default update function use (to avoid some collisions)
 			 */
-			IBRSubView(ViewBase::Ptr view_, RenderTargetRGB::Ptr rt_, const sibr::Viewport viewport_, const std::string & name_, const ImGuiWindowFlags flags_, IBRViewUpdateFunc f_, const bool defaultUpdateFunc_) :
-				SubView(view_, rt_, viewport_, name_, flags_), updateFunc(f_), defaultUpdateFunc(defaultUpdateFunc_){
-				cam = sibr::InputCamera();
-			}
+			IBRSubView(ViewBase::Ptr view_, RenderTargetRGB::Ptr rt_, const sibr::Viewport viewport_, 
+				const std::string & name_, const ImGuiWindowFlags flags_, IBRViewUpdateFunc f_, const bool defaultUpdateFunc_);
 
 			/** Render the subview.
 			 *\param rm the rendering mode to use
 			 *\param renderViewport the viewport to use in the destination RT
 			 */
-			virtual void render(const IRenderingMode::Ptr & rm, const Viewport & renderViewport) const override {
-				if (rm) {
-					rm->render(*view, cam, renderViewport, rt.get());
-				}
-			}
+			 void render(const IRenderingMode::Ptr & rm, const Viewport & renderViewport) const override;
 		};
 
 	protected:

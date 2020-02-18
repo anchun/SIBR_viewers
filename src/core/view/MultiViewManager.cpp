@@ -147,8 +147,6 @@ namespace sibr
 		else {
 			_ibrSubViews[title] = { view, rtPtr, viewport, title, flags, updateFunc, defaultFuncUsed };
 		}
-		
-
 	}
 
 	void MultiViewBase::addIBRSubView(const std::string & title, ViewBase::Ptr view, const Vector2u & res, const ImGuiWindowFlags flags)
@@ -255,7 +253,7 @@ namespace sibr
 		}
 
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
-		subview.view->setFocus(showImGuiWindow(subview.name, *subview.rt, subview.flags, subview.viewport, false, subview.shouldUpdateLayout));
+		subview.view->setFocus(showImGuiWindow(subview.view->name(), *subview.rt, subview.flags, subview.viewport, false, subview.shouldUpdateLayout));
 		ImGui::PopStyleVar();
 		// If we have updated the layout, don't do it next frame.
 		subview.shouldUpdateLayout = false;
@@ -336,7 +334,7 @@ namespace sibr
 			finalPath.append(filename);
 		}
 		else {
-			const std::string autoName = view.name + "_" + sibr::timestamp();
+			const std::string autoName = view.view->name() + "_" + sibr::timestamp();
 			finalPath.append(autoName + ".png");
 		}
 
@@ -396,6 +394,36 @@ namespace sibr
 		_exportPath = path;
 		sibr::makeDirectory(path);
 	}
+
+	MultiViewBase::SubView::SubView(ViewBase::Ptr view_, RenderTargetRGB::Ptr rt_, const sibr::Viewport viewport_, const std::string& name_, const ImGuiWindowFlags flags_) :
+		view(view_), rt(rt_), handler(), viewport(viewport_), flags(flags_), shouldUpdateLayout(false) {
+		renderFunc = [](ViewBase::Ptr&, const Viewport&, const IRenderTarget::Ptr&) {};
+		view->setName(name_);
+	}
+
+	MultiViewBase::BasicSubView::BasicSubView(ViewBase::Ptr view_, RenderTargetRGB::Ptr rt_, const sibr::Viewport viewport_, const std::string& name_, const ImGuiWindowFlags flags_, ViewUpdateFunc f_) :
+		SubView(view_, rt_, viewport_, name_, flags_), updateFunc(f_) {
+	}
+
+	void MultiViewBase::BasicSubView::render(const IRenderingMode::Ptr& rm, const Viewport& renderViewport) const  {
+		rt->bind();
+		renderViewport.bind();
+		renderViewport.clear();
+		view->onRender(renderViewport);
+		rt->unbind();
+	}
+
+	MultiViewBase::IBRSubView::IBRSubView(ViewBase::Ptr view_, RenderTargetRGB::Ptr rt_, const sibr::Viewport viewport_, const std::string& name_, const ImGuiWindowFlags flags_, IBRViewUpdateFunc f_, const bool defaultUpdateFunc_) :
+		SubView(view_, rt_, viewport_, name_, flags_), updateFunc(f_), defaultUpdateFunc(defaultUpdateFunc_) {
+		cam = sibr::InputCamera();
+	}
+
+	void MultiViewBase::IBRSubView::render(const IRenderingMode::Ptr& rm, const Viewport& renderViewport) const  {
+		if (rm) {
+			rm->render(*view, cam, renderViewport, rt.get());
+		}
+	}
+
 
 	MultiViewManager::MultiViewManager(Window& window, bool resize)
 		: _window(window), _fpsCounter(false)
@@ -598,5 +626,6 @@ namespace sibr
 		}
 		toggleSubViewsGUI();
 	}
+
 
 } // namespace sibr
