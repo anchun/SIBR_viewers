@@ -8,8 +8,7 @@
 
 namespace sibr
 {
-	/**
-	Represent a active_images.txt file use to select a subset of a scene images.
+	/** Represent a active_images.txt file use to select a subset of a scene images.
 	\ingroup sibr_assets
 	*/
 	class SIBR_ASSETS_EXPORT ActiveImageFile : public IFileLoader

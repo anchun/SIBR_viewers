@@ -162,7 +162,7 @@ namespace sibr
 		inline const float* normalArray( void ) const;
 
 		/** Make the mesh whole, ie it will have default values for all components (texture, materials, colors, etc)
-		  It is useful when merging two meshes. If the second one is missing some attributes, the merging will break the mesh state if it itsn't made whole.
+		  It is useful when merging two meshes. If the second one is missing some attributes, the merging will break the mesh state if it isn't made whole.
 		  */
 		void	makeWhole(void);
 

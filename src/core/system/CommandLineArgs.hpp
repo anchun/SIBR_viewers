@@ -54,7 +54,7 @@ namespace sibr
 		RENDERMODE_STEREO_QUADBUFFER
 	};
 
-	/** }@ */
+	/** @} */
 
 	/* Parse and store the command line arguments specified by the user.
 	* Only a static instance exists, that must be init with parseMainArgs(argc,argv) right after main(argc,argv)

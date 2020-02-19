@@ -135,7 +135,7 @@ namespace sibr {
 
 	/** Store user interaction and zooming information to be returned when displaying an image. */
 	struct SIBR_GRAPHICS_EXPORT ZoomInterraction {
-		/** update zoom information.
+		/** Update zoom information.
 		\param canvasSize size ot the displayed region of the image
 		*/
 		void updateZoom(const sibr::Vector2f& canvasSize);
@@ -155,14 +155,22 @@ namespace sibr {
 		ZoomInterraction & zoom
 	);
 
-	/** \todo Document */
+	/** Represent a segment defined by the user by clicking on screen.  */
 	struct SIBR_GRAPHICS_EXPORT SegmentSelection {
+
+		/** Update based on user interaction data.
+		\param callback user interaction data
+		\param size the region size
+		\param zoom optional zoom interaction data
+		*/
 		void update(const CallBackData& callback, const sibr::Vector2i& size, const ZoomData& zoom = {});
+
+		/** Generate a rasterized line as a list of pixels.*/
 		void computeRasterizedLine();
 
-		sibr::Vector2i firstPosScreen, secondPosScreen, firstPosIm, secondPosIm;
-		std::vector<sibr::Vector2i> rasterizedLine;
-		bool first = false, valid = false;
+		sibr::Vector2i firstPosScreen, secondPosScreen, firstPosIm, secondPosIm; ///< Segment endpoints in image and screen space.
+		std::vector<sibr::Vector2i> rasterizedLine; ///< List of pixel covered by the rasterized line.
+		bool first = false, valid = false; ///< Current interactions state.
 	};
 }
 

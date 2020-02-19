@@ -193,7 +193,7 @@ namespace sibr
 	\param src source rendertarget
 	\param dst destination rendertarget
 	\param mask which part of the buffer to copy (color, depth, stencil).
-	\param filtering mode if the two rendertargets have different dimensions (linear or nearest)
+	\param filter filtering mode if the two rendertargets have different dimensions (linear or nearest)
 	\note The blit can only happen for color attachment 0 in both src and dst.
 	\warning If the mask contains the depth or stencil, filter must be GL_NEAREST
 	 \ingroup sibr_graphics
@@ -205,7 +205,7 @@ namespace sibr
 	\param src source rendertarget
 	\param dst destination rendertarget
 	\param mask which part of the buffer to copy (color, depth, stencil).
-	\param filtering mode if the two rendertargets have different dimensions (linear or nearest)
+	\param filter filtering mode if the two rendertargets have different dimensions (linear or nearest)
 	\note The blit can only happen for color attachment 0 in both src and dst.
 	\warning If the mask contains the depth or stencil, filter must be GL_NEAREST
 	 \ingroup sibr_graphics

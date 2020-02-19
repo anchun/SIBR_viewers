@@ -92,7 +92,8 @@ void sibr::ULRV3View::onUpdate(Input & input)
 
 void sibr::ULRV3View::onGUI()
 {
-	if (ImGui::Begin("ULRV3 Settings")) {
+	const std::string guiName = "ULRV3 Settings (" + name() + ")";
+	if (ImGui::Begin(guiName.c_str())) {
 
 		// Poisson settings.
 		ImGui::Checkbox("Poisson ", &_poissonBlend); ImGui::SameLine();

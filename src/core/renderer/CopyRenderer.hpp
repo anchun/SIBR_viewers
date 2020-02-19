@@ -10,7 +10,9 @@
 
 namespace sibr { 
 
-	/**
+	/** Copy the content of an input texture to another rendertarget or to the window.
+	If you need a basic copy, prefer using blit.
+	\sa sibr::blit
 	\ingroup sibr_renderer
 	*/
 	class SIBR_EXP_RENDERER_EXPORT CopyRenderer
@@ -19,28 +21,37 @@ namespace sibr {
 		typedef std::shared_ptr<CopyRenderer>	Ptr;
 
 	public:
+
+		/** Constructor. You can specify custom shaders, refer to noproj.vert and copy.frag for examples.
+		\param vertFile pah to the vertex shader file
+		\param fragFile pah to the fragment shader file
+		*/
 		CopyRenderer(
 			const std::string& vertFile = sibr::getBinDirectory() + "/shaders_rsc/noproj.vert",
 			const std::string& fragFile = sibr::getBinDirectory() + "/shaders_rsc/copy.frag"
 		);
 
-		// Copy input texture to the output texture
-		// * Copy also input's alpha into depth
-		// Note: should have settings for specifying this
-		void	process(
-			/*input*/	uint textureID,
-			/*output*/	IRenderTarget& dst,
+		/** Copy input texture to the output texture, copy also the input alpha into depth.
+		\param textureID the texture to copy
+		\param dst the destination
+		\param disableTest disable depth testing (depth won't be written)
+		*/
+		void	process( uint textureID, IRenderTarget& dst,
 			bool disableTest=true);
 
-		void	copyToWindow(
-			/*input*/	uint textureID,
-			/*output*/	Window& dst);
+		/** Copy input texture to a window.
+		\param textureID the texture to copy
+		\param dst the destination window
+		*/
+		void	copyToWindow( uint textureID, Window& dst);
 
+		/** \return option to flip the texture when copying. */
 		bool & flip() { return _flip.get(); }
 
 	private:
-		GLShader			_shader;
-		GLuniform<bool>		_flip = false;
+		
+		GLShader			_shader; ///< Copy shader.
+		GLuniform<bool>		_flip = false; ///< Flip the texture when copying.
 	};
 
 } /*namespace sibr*/ 

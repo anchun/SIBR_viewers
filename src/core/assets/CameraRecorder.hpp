@@ -10,8 +10,7 @@
 
 namespace sibr
 {
-	/**
-	This class handles the recording and replay of a stream of cameras.
+	/** This class handles the recording and replay of a stream of cameras.
 	\ingroup sibr_assets
 	*/
 	class SIBR_ASSETS_EXPORT CameraRecorder

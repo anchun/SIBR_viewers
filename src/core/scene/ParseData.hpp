@@ -81,13 +81,14 @@ namespace sibr{
 		* \brief Function to parse data from a template dataset path.
 		* \param dataset_path Path to the folder containing data
 		* \param customPath Path to algorithm specific data
-		* \param scene_metadata_filename Specify the filename of the Scene Metadata file to load specific scene
+		* \param nvm_path Specify the filename of the NVM path.
 		*/
 		void  getParsedNVMData(const std::string & dataset_path, const std::string & customPath, const std::string & nvm_path);
 
 		/**
 		* \brief Function to parse data from a dataset path. Will automatically determine the type of dataset based on the files present.
 		* \param myArgs Arguments containing the dataset path and other infos
+		* \param customPath additional data path
 		*/
 		void  getParsedData(const BasicIBRAppArgs & myArgs, const std::string & customPath = "");
 

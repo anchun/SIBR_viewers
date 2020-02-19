@@ -37,8 +37,7 @@ namespace sibr
 		virtual uint   h      (void) const = 0;
 	};
 
-	/** 
-	* Represent a 2D texture on the GPU, with custom format and type.
+	/** Represent a 2D texture on the GPU, with custom format and type.
 	* \sa ITexture2D
 	* \ingroup sibr_graphics
 	*/

@@ -10,8 +10,7 @@ namespace sibr
 {
 	class Camera;
 
-	/** 
-	* Represent a 3D frustum defined by 6 planes.
+	/** Represent a 3D frustum defined by 6 planes.
 	* \warning This class has not been strongly tested!
 	* \ingroup sibr_graphics
 	*/

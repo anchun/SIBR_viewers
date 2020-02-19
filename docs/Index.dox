@@ -23,10 +23,10 @@
  *
  * - Clone sibr_basic repository (https://gitlab.inria.fr/sprakash/sibr_basic).
  *  \code git clone git@gitlab.inria.fr:sprakash/sibr_basic.git \endcode
- * - Run Cmake-gui once, select the <repo_root>/ as a source directory, <repo_root>/build/ as the build directory. Configure, select the Visual Studio C++ Win64 compiler.
+ * - Run Cmake-gui once, select the repo_root/ as a source directory, repo_root/build/ as the build directory. Configure, select the Visual Studio C++ Win64 compiler.
  * - Select the projects you want to generate among the BUILD elements in the list.
  * - Generate.
- * - Open the generated Visual Studio solution (<repo_root>/build/sibr_projects.sln).
+ * - Open the generated Visual Studio solution (repo_root/build/sibr_projects.sln).
  * - Build the BUILD_ALL target, and then the INSTALL target.
  * - The compiled executables will be put in install/bin.
  * \note If install fails, you will have to copy the required .dll files which are not copied automatically in the install/bin directory.
@@ -47,10 +47,10 @@
  *  \code git submodule init \endcode
  * - Run submodule update to clone the project added as submodules.
  *  \code git submodule update \endcode
- * - Run Cmake-gui again, and select the <repo_root>/ as a source directory, <repo_root>/build/ as the build directory. Configure, select the Visual Studio C++ Win64 compiler.
+ * - Run Cmake-gui again, and select the repo_root/ as a source directory, repo_root/build/ as the build directory. Configure, select the Visual Studio C++ Win64 compiler.
  * - Select the projects you want to generate among the BUILD elements in the list.
  * - Generate.
- * - Open the generated Visual Studio solution (<repo_root>/build/sibr_projects.sln) and build the project as above.
+ * - Open the generated Visual Studio solution (repo_root/build/sibr_projects.sln) and build the project as above.
  *
  * For troubleshooting Git Submodule issues such as updating, modifying, or resolving merge conflicts in the project submodule, follow the Git Submodule tutorial at https://git-scm.com/book/en/v2/Git-Tools-Submodules.
  *

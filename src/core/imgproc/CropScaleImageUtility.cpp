@@ -18,21 +18,10 @@ namespace sibr {
 		return pathToImgs;
 	}
 
-	bool CropScaleImageUtility::getIsEmptyFile(const char * filename)
-	{
-		std::ifstream testFile(filename);
-
-		bool result = !testFile.good();
-
-		testFile.close();
-
-		return result;
-	}
-
 	void CropScaleImageUtility::logExecution(const sibr::Vector2i & originalResolution, unsigned nrImages, long long elapsedTime, bool wasTransformed, const char* log_file_name)
 	{
 		// check if file exists
-		bool isEmptyFile = getIsEmptyFile(log_file_name);
+		const bool isEmptyFile = !sibr::fileExists(log_file_name);
 		std::ofstream outputFile(log_file_name, std::ios::app);
 
 		if (isEmptyFile) {

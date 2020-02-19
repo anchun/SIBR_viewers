@@ -133,7 +133,7 @@ namespace sibr
 		sibr::Mesh::Ptr getAllCellMeshFilled() const;
 
 		/** Get a voxel bounding box.
-		\param cell the voxel integer coordinates
+		\param cellId the voxel linear index
 		\return the bounding box.
 		*/
 		Eigen::AlignedBox3f getCellBox(size_t cellId) const;
@@ -198,13 +198,13 @@ namespace sibr
 
 		/** Helper to generate a voxel mesh.
 		\param cell the coordinates of the voxel to generate
-		\pram filled should the mesh be wireframe (false) or faceted (true)
+		\param filled should the mesh be wireframe (false) or faceted (true)
 		\return the generated mesh
 		*/
 		sibr::Mesh::Ptr getCellMeshInternal(const sibr::Vector3i & cell, bool filled) const;
 
 		/** Helper to generate the voxel grid mesh.
-		\pram filled should the mesh be wireframe (false) or faceted (true)
+		\param filled should the mesh be wireframe (false) or faceted (true)
 		\return the generated mesh
 		*/
 		sibr::Mesh::Ptr getAllCellMeshInternal(bool filled) const;

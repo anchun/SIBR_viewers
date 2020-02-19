@@ -123,7 +123,7 @@ namespace sibr
 		Ray			_ray;		///< casted ray
 		float		_dist;		///< distance from the ray's origin to the hit
 		BCCoord		_coord;		///< barycentric coordinate on the triangle that was hit
-		sibr::Vector3f			_normal;	///< normal of the triangle that was hit
+		sibr::Vector3f	_normal;///< normal of the triangle that was hit
 		Primitive	_prim;		///< infos about the primitive that was hit
 	};
 

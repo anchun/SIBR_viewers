@@ -317,7 +317,31 @@ namespace sibr{
 			isdepth = GLFormat<uchar, 4>::isdepth
 		};
 	};
+	
+	/** Helper building the correspondence between a GL type and a cv::Mat depth. */
+	template<typename T> struct OpenCVdepth;
 
+	/** Helper building the correspondence between a GL type and a cv::Mat depth. */
+	template<> struct OpenCVdepth<uchar> {
+		static const uint value = CV_8U;
+	};
+
+	/** Helper building the correspondence between a GL type and a cv::Mat depth. */
+	template<> struct OpenCVdepth<float> {
+		static const uint value = CV_32F;
+	};
+
+	/** Helper building the correspondence between a GL type and a cv::Mat depth. */
+	template<> struct OpenCVdepth<double> {
+		static const uint value = CV_64F;
+	};
+
+	/** Helper to create a cv::Mat type from its depth and number of components. */
+	template<typename T, uint N> constexpr uint getOpenCVtype = CV_MAKE_TYPE(OpenCVdepth<T>::value, N);
+	
+	/** Helper to create a one-channel cv::Mat from its depth. */
+	template<typename T> constexpr uint getOpenCVtypeSingleChannel = getOpenCVtype<T, 1>;
+	
 	/** Helper class to specify for which image type we can find a valid texture format. */
 	template<typename ImageType> struct ValidGLTexFormat {
 		static const bool value = false;
