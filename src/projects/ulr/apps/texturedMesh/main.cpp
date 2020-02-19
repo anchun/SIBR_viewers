@@ -10,7 +10,7 @@
 using namespace sibr;
 
 const char* usage = ""
-	"Usage: " PROGRAM_NAME " -path <dataset-path>"    	                                "\n"
+	"Usage: " PROGRAM_NAME " -path <dataset-path or mesh-path>"    	                                "\n"
 	;
 
 
@@ -74,7 +74,7 @@ int main( int ac, char** av )
 			scene->inputMeshTextures().reset(new sibr::Texture2DRGB(inputTextureImg, SIBR_GPU_LINEAR_SAMPLING));
 		}
 		else {
-			SIBR_ERR << "No mesh and texture path specified! Please specify path to mesh using --path and path to the mesh texture using --texture!" << std::endl;
+			SIBR_ERR << "No mesh and texture found! Please specify path to mesh using --path and path to the mesh texture using --texture!" << std::endl;
 			return 0;
 		}
 
