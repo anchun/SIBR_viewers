@@ -18,7 +18,8 @@ namespace sibr {
 
 	
 	/** Video encoder using ffmpeg.
-	Adapted from adapted from https://github.com/leixiaohua1020/simplest_ffmpeg_video_encoder/blob/master/simplest_ffmpeg_video_encoder/simplest_ffmpeg_video_encoder.cpp
+	Adapted from https://github.com/leixiaohua1020/simplest_ffmpeg_video_encoder/blob/master/simplest_ffmpeg_video_encoder/simplest_ffmpeg_video_encoder.cpp
+	\ingroup sibr_video
 	*/
 	class SIBR_VIDEO_EXPORT FFVideoEncoder {
 
