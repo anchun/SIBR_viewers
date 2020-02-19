@@ -16,11 +16,7 @@ namespace sibr
 	BasicIBRScene::BasicIBRScene(const BasicIBRAppArgs & myArgs, bool noRTs, bool noMesh)
 	{
 
-		_cams.reset(new CalibratedCameras());
-		_imgs.reset(new InputImages());
-		_proxies.reset(new ProxyMesh());
-		_renderTargets.reset(new RenderTargetTextures());
-
+		BasicIBRScene();
 		// parse metadata file
 		_data.reset(new ParseData());
 		_currentOpts.renderTargets = !noRTs;
@@ -39,11 +35,7 @@ namespace sibr
 
 	BasicIBRScene::BasicIBRScene(const BasicIBRAppArgs& myArgs, SceneOptions myOpts)
 	{
-		_cams.reset(new CalibratedCameras());
-		_imgs.reset(new InputImages());
-		_proxies.reset(new ProxyMesh());
-		_renderTargets.reset(new RenderTargetTextures());
-
+		BasicIBRScene();
 		_currentOpts = myOpts;
 
 		// parse metadata file

@@ -37,7 +37,7 @@ namespace sibr{
 		* \ingroup sibr_scene
 		*/
 		enum class Type {
-			EMPTY, SIBR, COLMAP, NVM, MESHROOM
+			EMPTY, SIBR, COLMAP, NVM, MESHROOM, EXTERNAL
 		};
 
 		/**
@@ -98,10 +98,22 @@ namespace sibr{
 		const std::vector<sibr::ImageListFile::Infos>&	imgInfos(void) const;
 
 		/**
+		* \brief Setter for the information regarding the input images.
+		*
+		*/
+		void											imgInfos(std::vector<sibr::ImageListFile::Infos>& infos);
+
+		/**
 		* \brief Getter to the list of camera matrices associated with each input camera.
 		*
 		*/
 		const std::vector<Matrix4f>&					outputCamsMatrix(void) const;
+
+		/**
+		* \brief Setter to the list of camera matrices associated with each input camera.
+		*
+		*/
+		void											outputCamsMatrix(std::vector<Matrix4f>& cams);
 
 		/**
 		* \brief Getter to the number of cameras defined in the bundle file.
@@ -110,16 +122,34 @@ namespace sibr{
 		const int										numCameras(void) const;
 
 		/**
+		* \brief Setter to the number of cameras defined in the bundle file.
+		*
+		*/
+		void											numCameras(int numCams);
+
+		/**
 		* \brief Getter to the list of near and far clipping plane defined for each camera.
 		*
 		*/
 		const std::vector<InputCamera::Z>&				nearsFars(void) const;
 
 		/**
+		* \brief Setter to the list of near and far clipping plane defined for each camera.
+		*
+		*/
+		void											nearsFars(std::vector<InputCamera::Z>& clipPlanes);
+
+		/**
 		* \brief Getter for the list of active cameras/images.
 		*
 		*/
 		const std::vector<bool>&						activeImages(void) const;
+
+		/**
+		* \brief Setter for the list of active cameras/images.
+		*
+		*/
+		void											activeImages(std::vector<bool>& activeCams);
 
 		/**
 		* \brief Getter for the list of in-active cameras/images.
@@ -131,13 +161,19 @@ namespace sibr{
 		* \brief Setter for the list of in-active cameras/images.
 		*
 		*/
-		void										excludeImages(std::vector<bool> & excImg);
+		void											excludeImages(std::vector<bool>& excludeCams);
 
 		/**
 		* \brief Getter for the base path name where the dataset is located.
 		*
 		*/
 		const std::string&								basePathName(void) const;
+
+		/**
+		* \brief Setter for the base path name where the dataset is located.
+		*
+		*/
+		void											basePathName(std::string & path) ;
 		
 		/**
 		* \brief Getter for the mesh path where the dataset is located.
@@ -146,26 +182,24 @@ namespace sibr{
 		const std::string&								meshPath(void) const;
 
 		/**
-		* \brief Getter for the mesh texture image path where the dataset is located.
+		* \brief Setter for the mesh path where the dataset is located.
 		*
 		*/
-		const std::string&								texImgPath(void) const;
+		void											meshPath(std::string & path) ;
 
 		/**
 		* \brief Getter for the dataset type.
 		*
 		*/
-		const ParseData::Type&								datasetType(void) const;
+		const ParseData::Type&							datasetType(void) const;
 
 		/**
 		* \brief Setter for the dataset type.
 		*
 		*/
-		void												datasetType(ParseData::Type dataType);
+		void											datasetType(ParseData::Type dataType);
 
-
-	public:
-			/**
+		/**
 		* \brief Function to parse the scene metadata file to read image data.
 		*
 		*/
@@ -207,7 +241,6 @@ namespace sibr{
 
 		std::string									_basePathName;
 		std::string									_meshPath;
-		std::string									_texImgPath;
 		std::vector<sibr::ImageListFile::Infos>		_imgInfos;
 		std::vector<bool>							_activeImages;
 		std::vector<bool>							_excludeImages;
@@ -224,27 +257,55 @@ namespace sibr{
 	inline const std::vector<sibr::ImageListFile::Infos>&	ParseData::imgInfos(void) const {
 		return _imgInfos;
 	}
+
+	inline void ParseData::imgInfos(std::vector<sibr::ImageListFile::Infos>& infos)
+	{
+		_imgInfos = infos;
+	}
 	
 	inline const std::vector<Matrix4f>& ParseData::outputCamsMatrix(void) const {
 		return _outputCamsMatrix;
 	}
 
-	inline const int ParseData::numCameras( void ) const {		return _numCameras;		}
+	inline void ParseData::outputCamsMatrix(std::vector<Matrix4f>& cams)
+	{
+		_outputCamsMatrix = cams;
+	}
+
+	inline const int ParseData::numCameras( void ) const {		
+		return _numCameras;		
+	}
+
+	inline void ParseData::numCameras(int numCams)
+	{
+		_numCameras = numCams;
+	}
 	
 	inline const std::vector<InputCamera::Z>& ParseData::nearsFars(void) const {
 		return _nearsFars;
+	}
+
+	inline void ParseData::nearsFars(std::vector<InputCamera::Z>& clipPlanes)
+	{
+		_nearsFars = clipPlanes;
 	}
 	
 	inline const std::vector<bool>& ParseData::activeImages(void) const {
 		return _activeImages;
 	}
 
+	inline void ParseData::activeImages(std::vector<bool>& activeCams)
+	{
+		_activeImages = activeCams;
+	}
+
 	inline const std::vector<bool>& ParseData::excludeImages(void) const {
 		return _excludeImages;
 	}
 
-	inline void ParseData::excludeImages(std::vector<bool> & excImg) {
-		_excludeImages = excImg;
+	inline void ParseData::excludeImages(std::vector<bool>& excludeCams)
+	{
+		_excludeImages = excludeCams;
 	}
 
 	inline const std::string & ParseData::basePathName(void) const
@@ -252,14 +313,19 @@ namespace sibr{
 		return _basePathName;
 	}
 
+	inline void ParseData::basePathName(std::string& path)
+	{
+		_basePathName = path;
+	}
+
 	inline const std::string & ParseData::meshPath(void) const
 	{
 		return _meshPath;
 	}
 
-	inline const std::string & ParseData::texImgPath(void) const
+	inline void ParseData::meshPath(std::string& path)
 	{
-		return _texImgPath;
+		_meshPath = path;
 	}
 
 	inline void		ParseData::datasetType(ParseData::Type dataType) {
