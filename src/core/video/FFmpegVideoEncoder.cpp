@@ -1,5 +1,13 @@
 #include "FFMpegVideoEncoder.hpp"
 
+
+extern "C"
+{
+#include <libavcodec/avcodec.h>
+#include <libavformat/avformat.h>
+#include <libswscale/swscale.h>
+}
+
 #define QQ(rat) (rat.num/(double)rat.den)
 
 // Disable ffmpeg deprecation warning.

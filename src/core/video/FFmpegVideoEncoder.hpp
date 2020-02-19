@@ -1,18 +1,19 @@
 #pragma once
 
-extern "C"
-{
-#include <libavcodec/avcodec.h>
-#include <libavformat/avformat.h>
-#include <libswscale/swscale.h>
-}
 
 #include <string>
 #include <core/graphics/Image.hpp>
 #include "Video.hpp"
 #include "Config.hpp"
 
-
+// Forward libav declarations.
+struct AVFrame;
+struct AVFormatContext;
+struct AVOutputFormat;
+struct AVStream;
+struct AVCodecContext;
+struct AVCodec;
+struct AVPacket;
 
 namespace sibr {
 
