@@ -13,20 +13,15 @@
 # include "core/graphics/MeshBufferGL.hpp"
 # include "core/graphics/Texture.hpp"
 
-///// Be sure to use STL objects from client's dll version by exporting this declaration (see warning C4251)
-//template class SIBR_GRAPHICS_EXPORT std::vector<Vector3f>;
-//template class SIBR_GRAPHICS_EXPORT std::vector<Vector3u>;
-
 namespace sibr
 {
 
-	///
-	/// Simple class for storing data about a mesh.
-	///
-	/// DevNote: Currently this class could be a simple POD struct. However
-	/// 'Mesh' should be an important actor for this project and might
-	/// evolve. That's why I prefer begin interfaces for it now.
-	/// \ingroup sibr_graphics
+	
+	/** Store both CPU and GPU data for a geometric mesh.
+		Specifically designed for synthetic scenes with material information.
+		Provide many processing and display methods.
+	\ingroup sibr_graphics
+	*/
 	class SIBR_GRAPHICS_EXPORT MaterialMesh : public sibr::Mesh
 	{
 	public:
@@ -45,6 +40,7 @@ namespace sibr
 
 		SIBR_CLASS_PTR(MaterialMesh);
 
+		/** Synthetic data rendering options. */
 		enum class RenderCategory
 		{
 			classic,
@@ -53,6 +49,7 @@ namespace sibr
 			threesixtyDepth
 		};
 
+		/** Ambient occlusion options. */
 		struct AmbientOcclusion {
 			bool AoIsActive = false;
 			float AttenuationDistance = 1.f;
@@ -157,85 +154,153 @@ namespace sibr
 
 	public:
 
+		/** Constructor.
+		\param withGraphics init associated OpenGL buffers object (requires an openGL context)
+		*/
 		MaterialMesh(bool withGraphics = true) : Mesh(withGraphics) {
 		}
+
+		/** Constructor from a basic mesh.
+		\param mesh the mesh to copy
+		*/
 		MaterialMesh(sibr::Mesh& mesh) : Mesh(mesh) {}
 
-		/// Set material Ids
+		/** Set material IDs (per triangle)
+		\param matIds the new ids
+		*/
 		inline void	matIds(const MatIds& matIds);
-		/// Get material Ids
+		
+		/** \return a reference to the per-triangle material IDs. */
 		inline const MatIds& matIds(void) const;
-		/// Get material vertices Ids 
+		
+		/** \return a reference to the per-vertex material IDs. */
 		inline const MatIds& matIdsVertices(void) const;
-		/// Return TRUE if each triangle has a materialId assigned
+
+		/** \return true if each triangle has a material ID assigned. */
 		inline bool	hasMatIds(void) const;
-		/// Return the mapping between Ids and Material Name
+
+		/** \return the mapping between IDs and material names. */
 		inline const MatId2Name& matId2Name(void) const;
-		/// Set the mapping
+		
+		/** Set the mapping between IDs and material names.
+		\param matId2Name the new mapping
+		*/
 		inline void matId2Name(const MatId2Name& matId2Name);
 
-		/// Get the source mesh of each vertex.
+		/** Set the mesh ID of each vertex.
+		\param meshIds the new ids
+		*/
 		inline void meshIds(const MeshIds& meshIds);
-		/// Set the source mesh of each vertex.
+		
+		/** \return a reference to the per-vertex mesh IDs. */
 		inline const MeshIds& meshIds(void) const;
-		/// \return true if source mesh information is available for each vertex.
+		
+		/** \return true if source mesh information is available for each vertex. */
 		inline bool hasMeshIds(void) const;
 
-		/// Return the pointer to oppacity texture if it exist
+		/** Query a material opacity map.
+		\param matName the material name
+		\return the opacity texture if it exist
+		*/
 		inline sibr::ImageRGB::Ptr opacityMap(const std::string& matName) const;
-		/// Set the opacityMaps
+		
+		/** Set all material opacity maps.
+		\param maps the new maps
+		*/
 		inline void opacityMaps(const OpacityMaps & maps);
-		/// get the opacityMaps
+		
+		/** \return all opacity maps. */
 		inline const OpacityMaps& opacityMaps(void) const;
 
-		/// Return the pointer to oppacity texture if it exist
+		/** Query a material diffuse map.
+		\param matName the material name
+		\return the diffuse texture if it exist
+		*/
 		inline sibr::ImageRGB::Ptr diffuseMap(const std::string& matName) const;
-		/// Set the diffuseMaps
+		
+		/** Set all material diffuse maps.
+		\param maps the new maps
+		*/
 		inline void diffuseMaps(const DiffuseMaps & maps);
-		/// get the diffuseMaps
+		
+		/** \return all diffuse maps. */
 		inline const DiffuseMaps& diffuseMaps(void) const;
-		///set the tagsFile boolean
+		
+		/** Indicate if the mesh has an associated tag file (for calibration).
+		\param hasOrNot the flag
+		*/
 		inline void hasTagsFile(bool hasOrNot);
-		///get the tagsFile boolean
+		
+		/** \return true if the mesh has an associated tag file. */
 		inline const bool hasTagsFile(void) const;
-		/// Set the tagsMap
+		
+		/** Set the tag map.
+		\param map the new map
+		*/
 		inline void tagsMap(const TagsMap & map);
-		/// get the tagsMap
+		
+		/** \return the current tag map. */
 		inline const TagsMap& tagsMap(void) const;
-		///set the tagsCoveringFile boolean
+		
+		/** Indicate if the mesh has an associated covering tag file (for calibration).
+		\param hasOrNot the flag
+		*/
 		inline void hasTagsCoveringFile(bool hasOrNot);
-		///get the tagsFile boolean
+		
+		/** \return true if the mesh has an associated covering tag file. */
 		inline const bool hasTagsCoveringFile(void) const;
-		/// Set the tagsMap
+		
+		/** Set the covering tag map.
+		\param map the new map
+		*/
 		inline void tagsCoveringMap(const TagsMap & map);
-		/// get the tagsMap
+		
+		/** \return the current covering tag map. */
 		inline const TagsMap& tagsCoveringMap(void) const;
-		/// set the subMeshes 
+		
+		/** Set the sub meshes.
+		\param subMeshes a list of submeshes
+		*/
 		inline void subMeshes(const SubMeshes& subMeshes);
-		/// get the subMeshes 
+		
+		/** \return the list of submeshes. */
 		inline const SubMeshes& subMeshes(void) const;
 
-		/// set the category of render
+		/** Set the synthetic rendering mode.
+		\param type the new mode
+		*/
 		inline void typeOfRender(const RenderCategory& type);
-		/// get the category of render 
+		
+		/** \return the current synthetic rendering mode. */ 
 		inline const RenderCategory& typeOfRender(void) const;
 
-		/// set the option Ambient occlusion
+		/** Set the ambient occlusion options and compute AO values, storing them in the vertex colors.
+		\param ao the new options
+		*/
 		void ambientOcclusion(const AmbientOcclusion& ao);
 
-		/// get the option Ambient occlusion
+		/** \return the current ambient occlusion options. */
 		inline const AmbientOcclusion& ambientOcclusion(void);
 
+		/** Set the function used to compute ambient occlusion at each vertex. 
+		\pram aoFunction the new function to use 
+		*/
 		inline void aoFunction(std::function<sibr::Mesh::Colors(
 			sibr::MaterialMesh&,
 			const int)>& aoFunction);
 
-		/// Load a material mesh from the disk.
-		/// (tested with .ply, should work with .obj)
+		/** Load a mesh from the disk.
+		\param filename the file path
+		\return a success flag
+		\note Supports OBJ and PLY for now.
+		*/
 		bool	load(const std::string& filename);
 
-		/// Load a material mesh from a mitsuba XML files.
-		/// It allows handling instances used several times.
+		/** Load a scene from a set of mitsuba XML scene files (referencing multiple OBJs/PLYs). 
+		It handles instances (duplicating the geoemtry and applying the per-instance transformation).
+		\param filename the file path
+		\return a success flag
+		*/
 		bool	loadMtsXML(const std::string& xmlFile, bool loadTextures = true);
 
 		/** Attribute a random color at each vertex based on the material IDs of the faces it belongs to. */
@@ -244,35 +309,58 @@ namespace sibr
 		/** Store the material ID of each vertex in its color attribute (R: bits 0-7, G: 8-15, B: 16-23). */
 		void	fillColorsWithMatIds();
 
-
-		sibr::Mesh::Colors genAO(const int spp);
-
-		/// Merge another material_mesh into this one
+		/** Merge another mesh into this one.
+		\param other the mesh to merge
+		\sa makeWhole
+		*/
 		void	merge(const MaterialMesh& other);
 
-		/// Make the mesh whole. ie: it will have default values for all components (texture, materials, colors, etc)
-		/// It is usefull when merging two meshes. If the second one is missing some attributes, the merging will break the good mesh.
+		/** Make the mesh whole, ie it will have default values for all components (texture, materials, colors, etc)
+		  It is useful when merging two meshes. If the second one is missing some attributes, the merging will break the mesh state if it isn't made whole.
+		*/
 		void	makeWhole(void);
 
+		/** Split the mesh geometry in multiple submeshes based on each vertex material ID. */
 		void	createSubMeshes(void);
 
-
+		/** \return a copy of the mesh with "doubled" faces (obtained by merging the current mesh with a copy with inverted faces. */
 		sibr::MaterialMesh::Ptr invertedFacesMesh2() const;
 
+		/** Force upload of data to the GPU. */
 		void	forceBufferGLUpdate(void) const;
+		
+		/** Delete GPU mesh data. */
 		void	freeBufferGLUpdate(void) const;
 
+		/** Subdivide a mesh triangles until a triangle area threshold is reached.
+		\param threshold the maximum deviation from the average triangle area allowed
+		*/
 		void subdivideMesh2(float threshold);
 
+		/** Subdivide a mesh triangles until an edge length threshold is reached.
+		\param threshold the maximum deviation from the average edge length allowed
+		*/
 		void	subdivideMesh(float threshold);
 
-
+		/** Add an environment sphere to the mesh, surrounding the existing geometry.
+		\param forcedCenterX optional sphere center x coordinate
+		\param forcedCenterY optional sphere center y coordinate
+		\param forcedCenterZ optional sphere center z coordinate
+		\param forcedRadius optional sphere radius
+		*/
 		void addEnvironmentMap(float* forcedCenterX = nullptr,
 			float* forcedCenterY = nullptr,
 			float* forcedCenterZ = nullptr,
 			float* forcedRadius = nullptr);
 
-
+		/** Render the geometry using OpenGL.
+		\param depthTest should depth testing be performed
+		\param backFaceCulling should culling be performed
+		\param mode the primitives rendering mode
+		\param frontFaceCulling should the culling test be flipped
+		\param invertDepthTest should the depth test be flipped (GL_GREATER_THAN)
+		\param tessellation should the rendering call tesselation shaders
+		*/
 		void	render(
 			bool depthTest = true,
 			bool backFaceCulling = true,
@@ -282,6 +370,13 @@ namespace sibr
 			bool tessellation = false
 		) const;
 
+		/** Render the geometry with albedo and tag textures.
+		\param depthTest should depth testing be performed
+		\param backFaceCulling should culling be performed
+		\param mode the primitives rendering mode
+		\param frontFaceCulling should the culling test be flipped
+		\param invertDepthTest should the depth test be flipped (GL_GREATER_THAN)
+		*/
 		void	renderAlbedo(
 			bool depthTest = true,
 			bool backFaceCulling = true,
@@ -290,6 +385,13 @@ namespace sibr
 			bool invertDepthTest = false
 		) const;
 
+		/** Render the geometry for 360 environment maps.
+		\param depthTest should depth testing be performed
+		\param backFaceCulling should culling be performed
+		\param mode the primitives rendering mode
+		\param frontFaceCulling should the culling test be flipped
+		\param invertDepthTest should the depth test be flipped (GL_GREATER_THAN)
+		*/
 		void	renderThreeSixty(
 			bool depthTest,
 			bool backFaceCulling,
@@ -298,52 +400,54 @@ namespace sibr
 			bool invertDepthTest
 		) const;
 
+		/** Upload the material textures to the GPU. */
 		void	initAlbedoTextures(void);
+
+		/** Generate a mesh containing all triangles with a given material.
+		\param material the material ID
+		\return the submesh
+		*/
 		Mesh generateSubMaterialMesh(int material) const;
 
 	private:
 
 
-		MatIds		_matIds;
-		MatIds		_matIdsVertices;
-		MatId2Name	_matId2Name;
+		MatIds		_matIds; ///< Per triangle material ID.
+		MatIds		_matIdsVertices; ///< Per vertex material ID.
+		MatId2Name	_matId2Name; ///< ID to name material mapping.
 
-		MeshIds		_meshIds;
-		size_t		_maxMeshId = 0;
+		MeshIds		_meshIds; ///< Per-vertex submesh ID.
+		size_t		_maxMeshId = 0; ///< Maximum submesh ID encounter.
 
-		OpacityMaps _opacityMaps;
-		DiffuseMaps _diffuseMaps;
+		OpacityMaps _opacityMaps; ///< Material opacity images.
+		DiffuseMaps _diffuseMaps; ///< Material diffuse images.
 
-		TagsMap		_tagsMap;
-		TagsMap		_tagsCoveringMap;
-		std::vector<std::string> uniformColorMtlList;
+		TagsMap		_tagsMap;  ///< Material tag images.
+		TagsMap		_tagsCoveringMap;  ///< Material covering tag images.
+		std::vector<std::string> uniformColorMtlList; ///< List of materials with a diffuse map.
 
-		// We have to gen one mesh per material to render them separately
-		SubMeshes	_subMeshes;
-		RenderCategory _typeOfRender = RenderCategory::diffuseMaterials;
+		SubMeshes	_subMeshes; ///< Submeshes, one per material, for rendering them separately.
+		RenderCategory _typeOfRender = RenderCategory::diffuseMaterials; ///< Synthetic rendering mode.
 
-		bool _albedoTexturesInitialized = false;
-		std::vector<sibr::Texture2DRGB::Ptr> _albedoTextures;
-		std::vector<GLuint> _idTextures;
+		bool _albedoTexturesInitialized = false; ///< Are the texture initialized.
+		std::vector<sibr::Texture2DRGB::Ptr> _albedoTextures; ///< Albedo textures.
+		std::vector<GLuint> _idTextures; ///< Texture handles.
+		std::vector<sibr::Texture2DRGB::Ptr> _opacityTextures;///< Opacity textures.
+		std::vector<GLuint> _idTexturesOpacity;///< Opacity texture handles.
 
-		std::vector<sibr::Texture2DRGB::Ptr> _opacityTextures;
-		std::vector<GLuint> _idTexturesOpacity;
+		bool _hasTagsFile = false; ///< Is a tag file associated to the mesh.
+		sibr::Texture2DRGB::Ptr _tagTexture; ///< Tag texture.
+		GLuint _idTagTexture = 0; ///< Tag texture handle.
 
-		bool _hasTagsFile = false;
-		sibr::Texture2DRGB::Ptr _tagTexture;
-		GLuint _idTagTexture = 0;
+		bool _hasTagsCoveringFile = false; ///< Is a covering tag file associated to the mesh.
+		sibr::Texture2DRGB::Ptr _tagCoveringTexture;///< Convering tag texture.
+		GLuint _idTagCoveringTexture = 0; ///< Covering tag texture handle.
 
-		bool _hasTagsCoveringFile = false;
-		sibr::Texture2DRGB::Ptr _tagCoveringTexture;
-		GLuint _idTagCoveringTexture = 0;
-
-		//AO attributes
-		AmbientOcclusion _ambientOcclusion;
-		std::function<sibr::Mesh::Colors(sibr::MaterialMesh&, const int)> _aoFunction;
-		float _currentThreshold = 0.0f;
-		bool _aoInitialized = false;
-		float _averageSize = 0.0f;
-		float _averageArea = 0.0f;
+		AmbientOcclusion _ambientOcclusion; ///< AO options.
+		std::function<sibr::Mesh::Colors(sibr::MaterialMesh&, const int)> _aoFunction; ///< AO generation function.
+		bool _aoInitialized = false; ///< Is AO data initialized.
+		float _averageSize = 0.0f; ///< Average maximum edge length.
+		float _averageArea = 0.0f; ///< Average triangle area.
 	};
 
 	///// DEFINITION /////
