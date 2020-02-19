@@ -1,13 +1,10 @@
 #pragma once
 
-#include <core/graphics/Texture.hpp>
-#include <core/graphics/GUI.hpp>
-
 #include "Config.hpp"
 
+#include <core/graphics/Texture.hpp>
+#include <core/graphics/GUI.hpp>
 #include <opencv2/opencv.hpp>
-
-//#include <boost/filesystem.hpp>
 
 // must install ffdshow 
 #define CV_WRITER_CODEC cv::VideoWriter::fourcc('F','F','D','S')
@@ -16,78 +13,101 @@
 namespace sibr
 {
 
-	
-	/**
+	/** Video loaded from a file using OpenCV VideoCapture and FFMPEG.
 	* \ingroup sibr_video
 	*/
 	class SIBR_VIDEO_EXPORT Video
 	{
 		SIBR_CLASS_PTR(Video);
-
-		Video(const std::string & path = "") : filepath(path) {}
 		
 	public:
+
+		/** Constructor.
+		\param path the path to the video file
+		\note No loading will be performed at construction. Call load.
+		*/
+		Video(const std::string & path = "") : filepath(path) {}
+
+		/** Load from a given file on disk.
+		\param path path to the video
+		\return a success flag
+		*/
 		virtual bool load(const std::string & path);
+		
+		/** \return the video resolution. */
 		const sibr::Vector2i & getResolution();
+		
+		/** \return the video resolution. */
 		cv::Size getResolutionCV();
+
+		/** \return the current frame ID. */
 		int getCurrentFrameNumber();
+
+		/** Seek a specific frame.
+		\param i the frame ID to seek
+		*/
 		void setCurrentFrame(int i);
+
+		/** \return the total number of frames. */
 		int getNumFrames();
+
+		/** \return the video framerate. */
 		double getFrameRate();
+
+		/** \return the path to the video file on disk. */
 		const Path & getFilepath() const;
+
+		/** \return true if the video has been loaded. */
 		bool isLoaded();
+
+		/** \return the ID of the codec used to decode the video. */
 		int getCodec();
+
+		/** Stop reading from the file. */
 		virtual void release();
 
+		/** Read a section of the video and store it in a cv::Mat, where
+		each row contains a frame, stored as RGBRGBRGB... linearly.
+		\param time_skiped_begin time to skip at the beginning of the video, in seconds
+		\param time_skiped_end time to skip at the end of the video, in seconds
+		\return the frames data stored as described above.
+		*/
 		cv::Mat getVolume(float time_skiped_begin = 0, float time_skiped_end = 0);
+
+		/** Read a section of the video and store  otin a cv::Mat, where
+		each row contains a frame, stored as RGBRGBRGB... linearly.
+		\param starting_frame index of the first frame to extract
+		\param ending_frame index of the last frame to extract
+		\return the frames data stored as described above.
+		*/
 		cv::Mat getVolume(int starting_frame, int ending_frame);
 
+		/** \return the next frame. */
 		cv::Mat next();
 
+		/** \return the underlying VideoCapture object. */
 		cv::VideoCapture & getCVvideo();
 
+		/** \return true if the video exists on disk. */
 		bool exists() const;
 
 	protected:
 		
+		/** Check if the video is loaded. */
 		virtual void checkLoad();
 
-		cv::VideoCapture cap;
+		cv::VideoCapture cap; ///< Internal capture object.
 
-		Path filepath;
-		sibr::Vector2i resolution;
-		int nFrames = 0;
-		double frameRate = 0.0;
-		int codec = 0;
-		bool loaded = false;
+		Path filepath; ///< The path to the video.
+		sibr::Vector2i resolution; ///< Video resolution.
+		int nFrames = 0; ///< Number of frames in the video.
+		double frameRate = 0.0; ///< Video frame rate.
+		int codec = 0; ///< Codec used to read the video.
+		bool loaded = false; ///< Video loading status.
 	};
 
-	/**
-	* \ingroup sibr_video
-	*/
-	template<uint N>
-	struct PingPongTexture {
-		using TexPtr = std::shared_ptr<sibr::Texture2D<uchar, N>>;
 
-		TexPtr & getLoadingTex();
-		TexPtr & getDisplayTex();
-
-		template<typename ImgType>
-		void update(const ImgType & frame);
-
-		template<typename ImgType>
-		void updateGPU(const ImgType &  frame);
-		
-		int displayTex = 1, loadingTex = 1;
-		TexPtr ping, pong;
-		bool first = true;
-	};
-
-	using PingPong4u = PingPongTexture<4>;
-	using PingPong3u = PingPongTexture<3>;
-	using PingPong1u = PingPongTexture<1>;
-
-	/**
+	/** Load and display a video in a view, with playback options.
 	* \ingroup sibr_video
 	*/
 	class SIBR_VIDEO_EXPORT VideoPlayer : public Video, public ZoomInterraction
@@ -95,247 +115,81 @@ namespace sibr
 
 		SIBR_CLASS_PTR(VideoPlayer);
 
+	public:
+
+		/** Replay mode. */
 		enum Mode { PAUSE, PLAY, SHOULD_CLOSE };
 
-		using Transformation = std::function<cv::Mat(cv::Mat)>;
+		using Transformation = std::function<cv::Mat(cv::Mat)>; ///< Image processing function.
 
-	public:
+		/** Constructor.
+		\param filepath the path to the video file
+		\param f a function to apply to each frame
+		\note No loading will be performed at construction. Call load.
+		*/
 		VideoPlayer(const std::string & filepath = "", const std::function<cv::Mat(cv::Mat)>&  f = [](cv::Mat m) { return m; });
 		
+		/** Load a video from disk.
+		\param path the path to the video on disk
+		\return a success flag
+		*/
 		bool load(const std::string & path) override;
 
+		/** Set a transformation function to apply to each frame.
+		\param f the new transformation
+		*/
 		void setTransformation(const Transformation & f) { transformation = f; }
+		
+		/** Set the playback mode.
+		\param _mode the new mode
+		*/
 		void setMode(Mode _mode) { mode = _mode; }
 
+		/** \return the current display texture on the GPU. */
 		const std::shared_ptr<sibr::Texture2DRGB> & getDisplayTex() const;
+
+		/** Load the next frame, call once per rendering frame. 
+		\note Internally calls updateCPU and updateGPU.
+		*/
 		void update();
+
+		/** Display playback GUI.
+		\param ratio_display a scaling factor that determine the size of the video on screen based on the video intrinsic size.
+		*/
 		void onGui(float ratio_display);
 		
-		// return true if frame was extracted
+		/** Load the next frame to the CPU.
+		\return a success flag
+		*/
 		bool updateCPU();
 
+		/** Load the next frame to the GPU.
+		\note You should call updateCPU first.
+		*/
 		void updateGPU();
 
+		/** \return a reference to the current frame on the CPU. */
 		const cv::Mat & getCurrentFrame() const { return tmpFrame; }
 
 	protected:
+		
+		/** \return the current loading texture on the GPU. */
 		std::shared_ptr<sibr::Texture2DRGB> & getLoadingTex() { return loadingTex ? ping : pong; }
-		std::string dbg(int i) const { return i ? "ping" : "pong"; }
+		
+		/// Load the next frame, on the CPU then the GPU.
 		void loadNext();
 
-		Mode mode = PAUSE;
-		bool first = true, repeat_when_end = true;
-
-		int displayTex = 1, loadingTex = 1;
-		std::shared_ptr<sibr::Texture2DRGB> ping,pong;
-
-		cv::Mat tmpFrame;
-
-		Transformation transformation;
-
-		int current_frame_slider;
+		Mode mode = PAUSE; ///< Play mode.
+		bool first = true; ///< Are we at the first frame.
+		bool repeat_when_end = true; ///< Loop when reaching the end.
+		int displayTex = 1; ///< Index of the display texture.
+		int loadingTex = 1; ///< Index of the loading texture.
+		std::shared_ptr<sibr::Texture2DRGB> ping,pong; ///< Double buffer textures.
+		cv::Mat tmpFrame; ///< Scratch frame.
+		Transformation transformation; ///< Transformation to apply to each frame.
+		int current_frame_slider; ///< Slider position.
 	};
 
-	/**
-	* \ingroup sibr_video
-	*/
-	template<typename T, uint N>
-	struct MultipleVideoDecoder {
-		using TexArray = sibr::Texture2DArray<T,N>;
-		using TexArrayPtr = typename TexArray::Ptr;
-
-		void update(const std::vector<sibr::VideoPlayer::Ptr> & videos) {
-			updateCPU(videos);
-			updateGPU(videos);
-
-			loadingTexArray = (loadingTexArray + 1) % 2;
-
-			if (first) {
-				first = false;
-			} else {
-				displayTexArray = (displayTexArray + 1) % 2;
-			}
-		}
-
-		void updateCPU(const std::vector<sibr::VideoPlayer::Ptr> & videos) {
-			size_t numVids = videos.size();
-
-			for (size_t i = 0; i < numVids; ++i) {
-				videos[i]->updateCPU();
-			}
-
-		}
-
-		void updateGPU(const std::vector<sibr::VideoPlayer::Ptr> & videos) {
-			size_t numVids = videos.size();
-			std::vector<cv::Mat> frames(numVids);
-			for (size_t i = 0; i < numVids; ++i) {
-				if (std::is_same_v<T, uchar> && N == 3) {
-					frames[i] = videos[i]->getCurrentFrame();
-				} else {
-					std::vector<cv::Mat> cs;
-					cv::split(videos[i]->getCurrentFrame(), cs);
-					frames[i] = cs[0];
-				}			
-			}
-
-			if (getLoadingTexArray().get()) {
-				getLoadingTexArray()->updateFromImages(frames);
-			} else {
-				getLoadingTexArray() = TexArrayPtr(new TexArray(frames));
-			}
-		}
-
-		TexArrayPtr & getLoadingTexArray() { return loadingTexArray ? ping : pong; }
-		const TexArrayPtr & getDisplayTexArray() const { return displayTexArray ? ping : pong; }
-
-		bool first = true;
-		int loadingTexArray = 1, displayTexArray = 1;
-		TexArrayPtr ping, pong;
-	};
-
-	using MultipleVideoDecoder1u = MultipleVideoDecoder<uchar, 1>;
-	using MultipleVideoDecoder3u = MultipleVideoDecoder<uchar, 3>;
-
-	/**
-	* \ingroup sibr_video
-	*/
-	template<typename T, uint N>
-	struct MultipleVideoDecoderArray : public MultipleVideoDecoder<T,N> {
-		using TexArray = sibr::Texture2DArray<T, N>;
-		using TexArrayPtr = typename TexArray::Ptr;
-
-		void update(const std::vector<sibr::VideoPlayer::Ptr> & videos, const std::vector<int> & slices) {
-			updateCPU(videos, slices);
-			updateGPU(videos, slices);
-
-			loadingTexArray = (loadingTexArray + 1) % 2;
-
-			if (first) {
-				first = false;
-			} else {
-				displayTexArray = (displayTexArray + 1) % 2;
-			}
-		}
-
-		void updateCPU(const std::vector<sibr::VideoPlayer::Ptr> & videos, const std::vector<int> & slices) {
-#pragma omp parallel for num_threads(4)
-			for (int i = 0; i < (int)slices.size(); ++i) {
-				//std::cout << slice << " " << std::flush;
-				videos[slices[i]]->updateCPU();
-			}
-		}
-
-		void updateGPU(const std::vector<sibr::VideoPlayer::Ptr> & videos, const std::vector<int> & slices) {
-			int numVids = (int)videos.size();
-			int numSlices = (int)slices.size();
-
-			//std::cout << "update GPU " << std::flush;
-
-			std::vector<cv::Mat> frames(numVids);
-			for (int s = 0; s < numSlices; ++s) {
-				if (std::is_same_v<T, uchar> && N == 3) {
-					frames[slices[s]] = videos[slices[s]]->getCurrentFrame();
-				} else {
-					std::vector<cv::Mat> cs;
-					cv::split(videos[slices[s]]->getCurrentFrame(), cs);
-					frames[slices[s]] = cs[0];
-					//videos[slices[s]]->getCurrentFrame().convertTo(frames[slices[s]], sibr::getOpenCVtype<T, N>);
-				}
-				//std::cout << s << " " << slices[s] << " " << std::flush;
-			} 
-
-			if (!getLoadingTexArray().get()) {
-				getLoadingTexArray() = TexArrayPtr(new TexArray((uint)videos.size(), SIBR_GPU_LINEAR_SAMPLING));
-			}
-
-			CHECK_GL_ERROR;
-			getLoadingTexArray()->updateSlices(frames, slices);
-		}
-
-	};
-
-	using MultipleVideoDecoderArray1u = MultipleVideoDecoderArray<uchar, 1>;
-	using MultipleVideoDecoderArray3u = MultipleVideoDecoderArray<uchar, 3>;
-
-	template<uint N>
-	std::shared_ptr<sibr::Texture2D<uchar, N>> & PingPongTexture<N>::getLoadingTex()
-	{
-		return loadingTex ? ping : pong;
-	}
-
-	template<uint N>
-	std::shared_ptr<sibr::Texture2D<uchar,N>> & PingPongTexture<N>::getDisplayTex()
-	{
-		return displayTex ? ping : pong;
-	}
-
-	template<uint N> template<typename ImgType>
-	void PingPongTexture<N>::update(const ImgType & frame)
-	{
-		if (first) {
-			updateGPU(frame);
-			loadingTex = (loadingTex + 1) % 2;
-			first = false;
-			return;
-		}
-
-		updateGPU(frame);
-
-		displayTex = (displayTex + 1) % 2;
-		loadingTex = (loadingTex + 1) % 2;
-	}
-
-	template<uint N> template<typename ImgType>
-	void PingPongTexture<N>::updateGPU(const ImgType & frame)
-	{
-		if (getLoadingTex()) {
-			getLoadingTex()->update(frame);
-		} else {
-			getLoadingTex() = TexPtr(new sibr::Texture2D<uchar, N>(frame, SIBR_GPU_LINEAR_SAMPLING));
-		}
-	}
-
+	
  } // namespace sibr
 
-
-  /*
-  threads test
-
-
-
-  class AtomicBool
-  {
-  protected:
-  std::atomic<bool> a;
-
-  public:
-  AtomicBool() : a() {}
-
-  AtomicBool(const bool &other) : a(other) {}
-
-  AtomicBool(const AtomicBool &other) : a(other.a.load()) {}
-
-  AtomicBool &operator=(const AtomicBool &other) { a.store(other.a.load()); return *this; }
-
-  operator bool () const { return a.load(); }
-  };
-
-  struct WriteRead {
-  AtomicBool needsRead = false, needsWrite = false, endWrite = false;
-  };
-
-  int mode_int = 0;
-
-  WriteRead loadingStatus;
-
-  AtomicBool firstTex = true, thread_ongoing = false;
-
-  std::shared_ptr<std::thread> loadNextPtr;
-  void loadNextMain();
-
-
-  //~VideoPlayer();
-
-
-  */

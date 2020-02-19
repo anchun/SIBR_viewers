@@ -14,22 +14,53 @@ namespace sibr
 			resolution[0] = (int)cap.get(cv::VideoCaptureProperties::CAP_PROP_FRAME_WIDTH);
 			resolution[1] = (int)cap.get(cv::VideoCaptureProperties::CAP_PROP_FRAME_HEIGHT);
 			codec = (int)cap.get(cv::VideoCaptureProperties::CAP_PROP_FOURCC);
-			std::cout << path << " loaded" << std::endl;
+			SIBR_LOG << "[Video] " << path << " loaded." << std::endl;
 		}
 		return loaded;
 	}
 
-	const sibr::Vector2i & Video::getResolution() { checkLoad();  return resolution; }
-	cv::Size Video::getResolutionCV() { checkLoad();   return cv::Size(resolution[0], resolution[1]); }
+	const sibr::Vector2i & Video::getResolution() { 
+		checkLoad();  
+		return resolution; 
+	}
 
-	int Video::getCurrentFrameNumber() { checkLoad();  return (int)cap.get(cv::VideoCaptureProperties::CAP_PROP_POS_FRAMES); }
-	void Video::setCurrentFrame(int i){ checkLoad(); cap.set(cv::VideoCaptureProperties::CAP_PROP_POS_FRAMES, i); }
-	int Video::getNumFrames()  { checkLoad();  return nFrames; }
-	double Video::getFrameRate() { checkLoad(); return frameRate; }
-	const Path & Video::getFilepath() const { return filepath; }
-	bool Video::isLoaded() { return loaded; }
+	cv::Size Video::getResolutionCV() { 
+		checkLoad();   
+		return cv::Size(resolution[0], resolution[1]);
+	}
 
-	int Video::getCodec() { checkLoad(); return codec; }
+	int Video::getCurrentFrameNumber() { 
+		checkLoad();  
+		return (int)cap.get(cv::VideoCaptureProperties::CAP_PROP_POS_FRAMES); 
+	}
+	
+	void Video::setCurrentFrame(int i){ 
+		checkLoad(); 
+		cap.set(cv::VideoCaptureProperties::CAP_PROP_POS_FRAMES, i); 
+	}
+	
+	int Video::getNumFrames()  { 
+		checkLoad();  
+		return nFrames; 
+	}
+	
+	double Video::getFrameRate() { 
+		checkLoad(); 
+		return frameRate; 
+	}
+	
+	const Path & Video::getFilepath() const { 
+		return filepath; 
+	}
+	
+	bool Video::isLoaded() { 
+		return loaded; 
+	}
+
+	int Video::getCodec() { 
+		checkLoad(); 
+		return codec; 
+	}
 
 	void Video::release()
 	{
@@ -41,7 +72,6 @@ namespace sibr
 	{
 		const int starting_frame = (int)(time_skiped_begin * getFrameRate());
 		const int finishing_frame = getNumFrames() - (int)(time_skiped_end*getFrameRate()) - 1;
-
 		return getVolume(starting_frame, finishing_frame);
 	}
 
@@ -71,11 +101,7 @@ namespace sibr
 	{
 		checkLoad();
 		cv::Mat frame;
-			
-		//sibr::Timer t(true);
 		cap >> frame;
-		//std::cout << " >> " << t.deltaTimeFromLastTic<>() << std::endl;
-		
 		return frame;
 	}
 
@@ -94,7 +120,7 @@ namespace sibr
 	{
 		if (!loaded) {
 			if (!load(filepath.string())) {
-				SIBR_ERR << " could not open video " << filepath << std::endl;
+				SIBR_ERR << "[Video] Could not open video " << filepath << std::endl;
 			}	
 		}
 	}
@@ -195,7 +221,7 @@ namespace sibr
 			return true;
 		} else {
 			if (alreayEmpty) {
-				SIBR_WRG << " video could not load next frames " << std::endl;
+				SIBR_WRG << "[Video] Could not load next frames." << std::endl;
 				return false;
 			}
 			if (repeat_when_end) {
