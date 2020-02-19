@@ -16,30 +16,6 @@ extern "C"
 
 namespace sibr {
 
-	/** FFMPEG plugin initialization singleton.
-	\todo Private, move to the cpp. 
-	\ingroup sibr_video
-	*/
-	class SIBR_VIDEO_EXPORT AVinit {
-
-	public:
-
-		/** Init FFMPEG, registering available codec plugins. */
-		static void checkInit() {
-			if (!initDone) {
-				SIBR_LOG << "[FFMPEG] Registering all." << std::endl;
-				// Ignore next line warning.
-				#pragma warning(suppress : 4996)
-				av_register_all();
-				initDone = true;
-			}
-		}
-
-	private:
-
-		static bool initDone; ///< Initialization status.
-	};
-
 	
 	/** Video encoder using ffmpeg.
 	Adapted from adapted from https://github.com/leixiaohua1020/simplest_ffmpeg_video_encoder/blob/master/simplest_ffmpeg_video_encoder/simplest_ffmpeg_video_encoder.cpp
@@ -110,6 +86,8 @@ namespace sibr {
 		AVCodecContext* pCodecCtx; ///< Codec context.
 		AVCodec* pCodec; ///< Codec.
 		AVPacket * pkt; ///< Encoding packet.
+		
+		static bool ffmpegInitDone; ///< FFMPEG initialization status.
 
 	};
 

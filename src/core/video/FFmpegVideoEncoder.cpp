@@ -7,7 +7,7 @@
 
 namespace sibr {
 
-	bool AVinit::initDone = false;
+	bool FFVideoEncoder::ffmpegInitDone = false;
 
 	FFVideoEncoder::FFVideoEncoder(
 		const std::string & _filepath,
@@ -15,7 +15,15 @@ namespace sibr {
 		const sibr::Vector2i & size
 	) : filepath(_filepath), fps(_fps)
 	{
-		AVinit::checkInit();
+		/** Init FFMPEG, registering available codec plugins. */
+		if (!ffmpegInitDone) {
+			SIBR_LOG << "[FFMPEG] Registering all." << std::endl;
+			// Ignore next line warning.
+#pragma warning(suppress : 4996)
+			av_register_all();
+			ffmpegInitDone = true;
+		}
+
 		init(size);
 	}
 
@@ -55,7 +63,6 @@ namespace sibr {
 
 		auto out_file = filepath.c_str();
 
-		int res;
 
 		pFormatCtx = avformat_alloc_context();
 
@@ -111,7 +118,7 @@ namespace sibr {
 
 		av_dump_format(pFormatCtx, 0, out_file, 1);
 
-		res = avcodec_open2(pCodecCtx, pCodec, &param);
+		int res = avcodec_open2(pCodecCtx, pCodec, &param);
 		if(res < 0){
 			SIBR_WRG << "[FFMPEG] Failed to open encoder, error: " << res << std::endl;
 			return;
