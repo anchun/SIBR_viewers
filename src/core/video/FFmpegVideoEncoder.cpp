@@ -32,8 +32,23 @@ namespace sibr {
 			av_register_all();
 			ffmpegInitDone = true;
 		}
-
-		init(size);
+		
+		sibr::Vector2i sizeFix = size;
+		bool hadToFix = false;
+		if(sizeFix[0]%2 != 0) {
+			sizeFix[0] -= 1;
+			hadToFix = true;
+		}
+		if (sizeFix[1] % 2 != 0) {
+			sizeFix[1] -= 1;
+			hadToFix = true;
+		}
+		if(hadToFix) {
+			SIBR_WRG << "Non-even video dimensions, resized to " << sizeFix[0] << "x" << sizeFix[1] << "." << std::endl;
+			_forceResize = true;
+		}
+		
+		init(sizeFix);
 	}
 
 	bool FFVideoEncoder::isFine() const

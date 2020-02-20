@@ -29,7 +29,7 @@ namespace sibr {
 		/** Constructor.
 		\param _filepath destination file, the extension will be used to infer the container type.
 		\param fps target video framerate
-		\param size target video size, prefer using power of 2 dimensions
+		\param size target video size, should be even else a resize will happen
 		\param forceResize resize frames that are not at the target dimensions instead of ignoring them
 		*/
 		FFVideoEncoder(
