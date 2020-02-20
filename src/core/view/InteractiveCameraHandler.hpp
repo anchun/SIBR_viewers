@@ -8,6 +8,7 @@
 #include "core/graphics/Shader.hpp"
 #include "core/assets/InputCamera.hpp"
 
+#include "core/view/IBRBasicUtils.hpp"
 #include "core/view/FPSCamera.hpp"
 #include "core/view/Orbit.hpp"
 #include "core/view/TrackBall.h"
