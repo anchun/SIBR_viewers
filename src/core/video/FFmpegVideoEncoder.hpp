@@ -30,11 +30,13 @@ namespace sibr {
 		\param _filepath destination file, the extension will be used to infer the container type.
 		\param fps target video framerate
 		\param size target video size, prefer using power of 2 dimensions
+		\param forceResize resize frames that are not at the target dimensions instead of ignoring them
 		*/
 		FFVideoEncoder(
 			const std::string & _filepath,
 			double fps,
-			const sibr::Vector2i & size
+			const sibr::Vector2i & size,
+			bool forceResize = false
 		);
 
 		/** \return true if the encoder was properly setup. */
@@ -77,7 +79,8 @@ namespace sibr {
 		int w, h; ///< Dimensions.
 		int frameCount = 0; ///< Current frame.
 		double fps; ///< Framerate.
-
+		bool _forceResize = false; ///< Resize frames.
+		
 		AVFrame * frameYUV = NULL; ///< Working frame.
 		cv::Mat cvFrameYUV; ///< Working frame data.
 		sibr::Vector2i yuSize; ///< Working size.
