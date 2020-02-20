@@ -9,6 +9,7 @@ using namespace sibr;
 
 
 struct TexturingAppArgs : virtual BasicIBRAppArgs {
+	Arg<std::string> meshPath = { "mesh", "" };
 	RequiredArg<std::string> output_path = { "output", "output texture path" };
 	Arg<int> output_size = { "size", 8192, "texture side" };
 	Arg<bool> flood_fill = { "flood", "perform flood fill" };
@@ -30,8 +31,21 @@ int main(int ac, char** av) {
 		return 0;
 	}
 
+	BasicIBRScene::SceneOptions opts;
+	opts.renderTargets = false;
+	if (!args.meshPath.get().empty()) {
+		opts.mesh = false;
+	}
+
 	SIBR_LOG << "[Texturing] Loading data..." << std::endl;
-	BasicIBRScene scene(args, true);
+	BasicIBRScene scene(args, opts);
+	
+	if (!scene.proxies()->hasProxy()) {
+		sibr::Mesh::Ptr customMesh;
+		customMesh.reset(new Mesh());
+		customMesh->load(args.meshPath);
+		scene.proxies()->replaceProxyPtr(customMesh);
+	}
 
 	MeshTexturing texturer(args.output_size);
 	texturer.setMesh(scene.proxies()->proxyPtr());
