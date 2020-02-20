@@ -20,8 +20,9 @@ namespace sibr {
 	FFVideoEncoder::FFVideoEncoder(
 		const std::string & _filepath,
 		double _fps,
-		const sibr::Vector2i & size
-	) : filepath(_filepath), fps(_fps)
+		const sibr::Vector2i & size,
+		bool forceResize
+	) : filepath(_filepath), fps(_fps), _forceResize(forceResize)
 	{
 		/** Init FFMPEG, registering available codec plugins. */
 		if (!ffmpegInitDone) {
@@ -157,12 +158,20 @@ namespace sibr {
 	{
 		if (!video_st) {
 			return false;
-		} else if (frame.cols != w || frame.rows != h) {
-			SIBR_WRG << "[FFMPEG] Frame doesn't have the same dimensions as the video." << std::endl;
-			return false;
+		}
+		cv::Mat local;
+		if (frame.cols != w || frame.rows != h) {
+			if(_forceResize) {
+				cv::resize(frame, local, cv::Size(w,h));
+			} else {
+				SIBR_WRG << "[FFMPEG] Frame doesn't have the same dimensions as the video." << std::endl;
+				return false;
+			}
+		} else {
+			local = frame;
 		}
 
-		cv::cvtColor(frame, cvFrameYUV, cv::COLOR_BGR2YUV_I420);
+		cv::cvtColor(local, cvFrameYUV, cv::COLOR_BGR2YUV_I420);
 		frameYUV->data[0] = cvFrameYUV.data;
 		frameYUV->data[1] = frameYUV->data[0] + yuSize[0];
 		frameYUV->data[2] = frameYUV->data[1] + yuSize[1];
