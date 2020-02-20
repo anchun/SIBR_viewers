@@ -217,26 +217,32 @@ namespace sibr {
 
 	int	InteractiveCameraHandler::findNearestCamera(const std::vector<sibr::InputCamera>& inputCameras) const
 	{
-
-		const sibr::Vector3f currentPos = _currentCamera.position();
-
 		if (inputCameras.size() == 0)
 			return -1;
 
 		int selectedCam = 0;
-		float dist = (inputCameras[0].position() - currentPos).norm();
-		for (uint i = 1; i < inputCameras.size(); ++i)
-		{
-			if (inputCameras[i].isActive() == false)
-				continue;
+		int numCams = inputCameras.size();
 
-			float d = (inputCameras[i].position() - currentPos).norm();
-			if (d < dist)
-			{
-				dist = d;
-				selectedCam = i;
-			}
+		std::vector<uint> sortByDistance = sibr::IBRBasicUtils::selectCamerasSimpleDist(inputCameras, _currentCamera, numCams);
+		std::vector<uint> sortByAngle = sibr::IBRBasicUtils::selectCamerasAngleWeight(inputCameras, _currentCamera, numCams);
+
+		std::map<uint, int> weights;
+		for (uint cam_id = 0; cam_id < sortByDistance.size(); cam_id++) {
+			weights[sortByDistance[cam_id]] = cam_id;
 		}
+
+		for (uint cam_id = 0; cam_id < sortByAngle.size(); cam_id++) {
+			weights[sortByAngle[cam_id]] += cam_id;
+		}
+
+		std::multimap<int, uint> combinedWeight;
+
+		for (auto const& weight : weights) {
+			combinedWeight.insert(std::make_pair(weight.second, weight.first));
+		}
+
+		selectedCam = combinedWeight.begin()->second;
+		
 		return selectedCam;
 	}
 

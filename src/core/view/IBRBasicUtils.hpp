@@ -36,8 +36,7 @@ namespace sibr{
 		*/
 		static std::vector<uint> selectCamerasSimpleDist(const std::vector<InputCamera>& cams, const sibr::Camera& eye, uint count);
 
-	protected:
-
+	
 		/** Select cameras based on distance and orientation to a given viewpoint. Cameras with an orientation that is more than 45° off compared to the reference are ignored.
 		\param cams cameras to select from
 		\param eye novel viewpoint

@@ -56,6 +56,7 @@ namespace sibr
 		* \brief Function to check if the camera is used for rendering.
 		*
 		* \param camId Integer ID of the cameras to be checked if it is being used for rendering
+		* \return true if used for rendering
 		*/
 		bool	isCameraUsedForRendering(size_t camId) const;
 		
