@@ -188,8 +188,10 @@ sibr::Mesh::Ptr UVUnwrapper::unwrap() {
 	std::vector<sibr::Vector3f> positions;
 	std::vector<sibr::Vector3f> normals;
 	std::vector<sibr::Vector2f> texcoords;
+	std::vector<sibr::Vector3f> colors;
 	std::vector<sibr::Vector3u> triangles;
-
+	
+	// We could preallocate and paraellize if needed.
 	for (uint32_t i = 0; i < _atlas->meshCount; i++) {
 		const xatlas::Mesh& xmesh = _atlas->meshes[i];
 		for (uint32_t v = 0; v < xmesh.vertexCount; v++) {
@@ -199,6 +201,10 @@ sibr::Mesh::Ptr UVUnwrapper::unwrap() {
 			if (_mesh.hasNormals()) {
 				const sibr::Vector3f& n = _mesh.normals()[vertex.xref];
 				normals.emplace_back(n);
+			}
+			if (_mesh.hasColors()) {
+				const sibr::Vector3f& c = _mesh.colors()[vertex.xref];
+				colors.emplace_back(c);
 			}
 			
 			_mapping.emplace_back(vertex.xref);
@@ -216,6 +222,7 @@ sibr::Mesh::Ptr UVUnwrapper::unwrap() {
 	finalMesh->vertices(positions);
 	finalMesh->normals(normals);
 	finalMesh->texCoords(texcoords);
+	finalMesh->colors(colors);
 	finalMesh->triangles(triangles);
 
 	SIBR_LOG << "[UVMapper] Done." << std::endl;
