@@ -76,8 +76,8 @@ int main(const int argc, const char** argv)
 
 	outputSceneMetadata << "\n// Always specify active/exclude images after list images\n\n[exclude_images]\n<image1_idx> <image2_idx> ... <image3_idx>" << std::endl;
 
-	for (int i = 0; i < scene.data()->excludeImages().size(); i++) {
-		if (scene.data()->excludeImages()[i])
+	for (int i = 0; i < scene.data()->activeImages().size(); i++) {
+		if (!scene.data()->activeImages()[i])
 			outputSceneMetadata << i << " ";
 	}
 

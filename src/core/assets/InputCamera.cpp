@@ -337,10 +337,23 @@ namespace sibr
 				for (int j = 0; j < rotation_parameter_num; ++j) in >> q[j];
 				in >> c[0] >> c[1] >> c[2] >> d[0] >> d[1];
 
+				std::string     image_path = sibr::parentDirectory(nvmPath) + "/" + token;
+				sibr::Vector2i	resolution = sibr::IImage::imageResolution(image_path);
+
+				if (resolution.x() < 0 || resolution.y() < 0)
+				{
+					std::cerr << "Could not get resolution for input image: " << image_path << std::endl;
+					return std::vector<InputCamera>();
+				}
+
 				int wIm = 1, hIm = 1;
 				if (ncam == wh.size()) {
 					wIm = wh[i].x();
 					hIm = wh[i].y();
+				}
+				else {
+					wIm = resolution.x();
+					hIm = resolution.y();
 				}
 
 				//camera_data[i].SetFocalLength(f);
@@ -849,7 +862,7 @@ namespace sibr
 
 	std::vector<InputCamera> InputCamera::loadMeshroom(const std::string& meshroomSFMPath, const float zNear, const float zFar)
 	{
-
+		
 		std::string file_path = meshroomSFMPath + "/cameras.sfm";
 
 		std::ifstream json_file(file_path, std::ios::in);
@@ -859,7 +872,109 @@ namespace sibr
 			std::cerr << "file loading failed: " << file_path << std::endl;
 			return std::vector<InputCamera>();
 		}
-		return std::vector<InputCamera>();
+
+		std::vector<sibr::InputCamera> cameras;
+
+		picojson::value v;
+		picojson::set_last_error(std::string());
+		std::string err = picojson::parse(v, json_file);
+		if (!err.empty()) {
+			picojson::set_last_error(err);
+			json_file.setstate(std::ios::failbit);
+		}
+
+		picojson::array& views = v.get("views").get<picojson::array>();
+		picojson::array& intrinsincs = v.get("intrinsics").get<picojson::array>();
+		picojson::array& poses = v.get("poses").get<picojson::array>();
+
+		int numCameras = int(poses.size());
+		//meras.resize(numCameras);
+
+		sibr::Matrix3f converter;
+		converter << 1.0f, 0, 0,
+			0, -1, 0,
+			0, 0, -1;
+
+		size_t pose_idx, view_idx, intrinsic_idx;
+		std::vector<std::string> splitS;
+
+
+		for (size_t i = 0; i < numCameras; ++i)
+		{
+			
+			Matrix4f m;
+			//std::vector<std::string> splitS;
+
+			pose_idx = i;
+			std::string pose_id = poses[pose_idx].get("poseId").get<std::string>();
+
+			for (size_t j = 0; j < views.size(); j++) {
+				if (pose_id.compare(views[j].get("poseId").get<std::string>()) == 0) {
+					view_idx = j;
+					break;
+				}
+			}
+
+			std::string intrinsics_id = views[view_idx].get("intrinsicId").get<std::string>();
+
+			for (size_t k = 0; k < intrinsincs.size(); k++) {
+				if (intrinsics_id.compare(intrinsincs[k].get("intrinsicId").get<std::string>()) == 0) {
+					intrinsic_idx = k;
+					break;
+				}
+			}
+
+			m(0) = std::stof(intrinsincs[intrinsic_idx].get("pxFocalLength").get<std::string>());
+			float dx = std::stof(intrinsincs[intrinsic_idx].get("principalPoint").get<picojson::array>()[0].get<std::string>());
+			float dy = std::stof(intrinsincs[intrinsic_idx].get("principalPoint").get<picojson::array>()[1].get<std::string>());
+
+			//std::stof(intrinsincs[intrinsic_idx].get("distortionParams").get<picojson::array>()[0].get<std::string>());
+			m(1) = dx;
+			//std::stof(intrinsincs[intrinsic_idx].get("distortionParams").get<picojson::array>()[1].get<std::string>());
+			m(2) = dy;
+			
+			std::string camName = pose_id + ".exr";
+			int width = std::stoi(views[view_idx].get("width").get<std::string>());
+			int height = std::stoi(views[view_idx].get("height").get<std::string>());
+
+			uint camId = uint(i);
+
+			picojson::array& center = poses[pose_idx].get("pose").get("transform").get("center").get<picojson::array>();
+			picojson::array& rotation = poses[pose_idx].get("pose").get("transform").get("rotation").get<picojson::array>();
+
+			std::vector<Eigen::Vector3f> rows;
+			Eigen::Vector3f row;
+			Eigen::Vector3f position(std::stof(center[0].get<std::string>()), std::stof(center[1].get<std::string>()), std::stof(center[2].get<std::string>()));
+			Eigen::Matrix3f orientation;
+
+			for (int ii = 0; ii < 3; ++ii) {
+				for (int jj = 0; jj < 3; ++jj)
+					row(jj) = std::stof(rotation[jj + ii * 3].get<std::string>());
+				rows.push_back(row);
+			}
+
+			orientation.row(0) = rows[0];
+			orientation.row(1) = rows[1];
+			orientation.row(2) = rows[2];
+			orientation = orientation * converter;
+			
+			for (int ii = 0; ii < 9; ii++) {
+				m(3 + ii) = orientation(ii);
+			}
+
+			const sibr::Vector3f finTrans = -orientation.transpose() * position;
+			for (int ii = 0; ii < 3; ii++) {
+				m(12 + ii) = finTrans[ii];
+			}
+
+			sibr::InputCamera cam(sibr::InputCamera(camId, width, height, m, true));
+			cam.name(camName);
+			cam.znear(zNear);
+			cam.zfar(zFar);
+			cameras.push_back(cam);
+
+		}
+		return cameras;
 	}
 
 	Vector3f			InputCamera::unprojectImgSpaceInvertY(const sibr::Vector2i& pixelPos, const float& depth) const

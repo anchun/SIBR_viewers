@@ -14,7 +14,10 @@ namespace sibr
 			for (int i = 0; i < data->imgInfos().size(); ++i) {
 				if (data->activeImages()[i]) {
 					_inputImages[i] = std::make_shared<ImageRGB>();
-					_inputImages[i]->load(data->basePathName() + "/images/" + data->imgInfos().at(i).filename, false);
+					_inputImages[i]->load(data->imgPath() + "/" + data->imgInfos().at(i).filename, false);
+				}
+				else {
+					_inputImages[i] = std::make_shared<ImageRGB>(16,16, 0);
 				}
 			}
 									

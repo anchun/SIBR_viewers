@@ -107,6 +107,17 @@ namespace sibr
 		return ret;
 	}
 
+	SIBR_SYSTEM_EXPORT std::string to_lower(const std::string& str)
+	{
+		std::string out;
+		out.reserve(str.length());
+
+		for (size_t i = 0; i < str.length(); ++i)
+			out.push_back(tolower(str[i]));
+
+		return out;
+	}
+
 
 	std::string timestamp(const std::string & format) {
 		auto now = std::time(nullptr);

@@ -84,20 +84,8 @@ namespace sibr
 
 		// setup calibrated cameras
 		if (_currentOpts.cameras) {
-			//_cams->sibr::CalibratedCameras::setupFromData(_data);
-			//_cams->sibr::CalibratedCameras::setupFromData(_data);
-
-			if (_data->datasetType() != ParseData::Type::NVM) {
-				_cams->sibr::CalibratedCameras::setupFromData(_data);
-			}
-			else {
-				std::vector<Vector2u> imgSizes(_data->imgInfos().size());
-				for (int i = 0; i < _data->imgInfos().size(); i++) {
-					imgSizes[i].x() = _data->imgInfos()[i].width;
-					imgSizes[i].y() = _data->imgInfos()[i].height;
-				}
-				_cams->setupCamerasFromExisting(sibr::InputCamera::loadNVM(_data->basePathName() + "/scene.nvm", 0.001f, 1000.0f, imgSizes));
-			}
+			
+			_cams->sibr::CalibratedCameras::setupFromData(_data);
 
 			std::cout << "Number of Cameras set up: " << _cams->inputCameras().size() << std::endl;
 		}
