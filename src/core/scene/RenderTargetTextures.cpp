@@ -207,9 +207,10 @@ namespace sibr {
 		for (int i = 0; i < cams->inputCameras().size(); i++) {
 			if (cams->inputCameras()[i].isActive()) {
 				_initActiveCam = i;
-				break;
+				return;
 			}
 		}
+		SIBR_ERR << "No cameras active! Fail to initialize RenderTarget!!" << std::endl;
 	}
 
 	void RenderTargetTextures::initRGBandDepthTextureArrays(CalibratedCameras::Ptr cams, InputImages::Ptr imgs, ProxyMesh::Ptr proxies, int textureFlags, int texture_width, bool faceCull)

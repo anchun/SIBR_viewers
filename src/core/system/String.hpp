@@ -81,6 +81,12 @@ namespace sibr
 	 */
 	SIBR_SYSTEM_EXPORT int 		sprintf(char* buffer, size_t size, const char* format, ...);
 
+	/** Convert the input string to lowert case.
+	 * \param str the input string
+	 * \return the input string in lower case
+	 */
+	SIBR_SYSTEM_EXPORT std::string					to_lower(const std::string& str);
+
 	/** Write the current timestamp to a string.
 	 * \param format the formatting to use for the timestamp (see default value for an example)
 	 * \return a string containing the timestamp

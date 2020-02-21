@@ -5,6 +5,7 @@
 # include "core/graphics/Config.hpp"
 # include "core/graphics/Camera.hpp"
 # include "core/assets/Config.hpp"
+#include "core/system/picojson/picojson.hpp"
 
 namespace sibr
 {
