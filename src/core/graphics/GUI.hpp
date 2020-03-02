@@ -12,6 +12,7 @@
 
 namespace sibr
 {
+	
 	/**	Show the content of a rendertarget in an ImGui window.
 	\param windowTitle the window name (unique)
 	\param rt the rendrtarget to display

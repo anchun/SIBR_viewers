@@ -213,7 +213,7 @@ namespace sibr
 			return _currentStates[(size_t)code];
 		}
 
-		/** Is an item released.
+		/** Is an item released (lasts one frame).
 		\param code the item code (key or mouse)
 		\return true if the item is released at this frame
 		*/
@@ -222,7 +222,8 @@ namespace sibr
 				&& !_currentStates[(size_t)code];
 		}
 
-		/** Is an item currently pressed.
+		/** Is an item pressed at this frame (lasts one frame).
+		\sa isActivated
 		\param code the item code (key or mouse)
 		\return true if the item is pressed at this frame
 		*/
@@ -231,7 +232,8 @@ namespace sibr
 				&& _currentStates[(size_t)code];
 		}
 		
-		/** Is an item currently pressed and only this one.
+		/** Is an item currently pressed and only this one (lasts one frame).
+		\sa isActivated
 		\param code the item code (key or mouse)
 		\return true if the item is the only one pressed
 		*/
@@ -247,14 +249,14 @@ namespace sibr
 			return KeyCombination(1,isActivated(code));
 		}
 
-		/** Declare an item as pressed.
+		/** Declare an item as pressed at this frame.
 		\param code the item code (Key or Mouse).
 		*/
 		void	press( TEnum code ) {
 			_currentStates[(size_t)code] = true;
 		}
 
-		/** Declare an item as released.
+		/** Declare an item as released at this frame.
 		\param code the item code (Key or Mouse).
 		*/
 		void	release( TEnum code ) {
