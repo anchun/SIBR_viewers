@@ -59,8 +59,8 @@ namespace sibr {
 			std::shared_ptr<Texture2D<T_Type, T_NumComp>> tex(new Texture2D<T_Type, T_NumComp>(img));
 			_tex = tex;
 			_texHandle = _tex->handle();
-			_size.get()[0] = _tex->w();
-			_size.get()[1] = _tex->h();
+			_size.get()[0] = float(_tex->w());
+			_size.get()[1] = float(_tex->h());
 		}
 
 		/** Set if the GUI panel should be displayed or not.

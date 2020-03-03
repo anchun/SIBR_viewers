@@ -108,14 +108,14 @@ namespace sibr {
 	void ImageView::setRenderTarget(const IRenderTarget& rt, uint handle) {
 		_tex = nullptr;
 		_texHandle = rt.handle(handle);
-		_size.get()[0] = rt.w(); _size.get()[1] = rt.h();
+		_size.get()[0] = float(rt.w()); _size.get()[1] = float(rt.h());
 	}
 
 	void ImageView::setTexture(const ITexture2D& tex)
 	{
 		_tex = nullptr;
 		_texHandle = tex.handle();
-		_size.get()[0] = tex.w(); _size.get()[1] = tex.h();
+		_size.get()[0] = float(tex.w()); _size.get()[1] = float(tex.h());
 	}
 
 	
