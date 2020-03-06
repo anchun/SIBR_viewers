@@ -111,11 +111,12 @@ namespace sibr
 			}
 
 			//// Load the texture.
-			//sibr::ImageRGB inputTextureImg;
-			//if (sibr::fileExists(_data->texImgPath())) {
-			//	inputTextureImg.load(_data->texImgPath());
-			//	_inputMeshTexture.reset(new sibr::Texture2DRGB(inputTextureImg, SIBR_GPU_LINEAR_SAMPLING));
-			//}
+			sibr::ImageRGB inputTextureImg;
+			const std::string texturePath = sibr::parentDirectory(_data->meshPath()) + "/mesh_u1_v1.png";
+			if (sibr::fileExists(texturePath)) {
+				inputTextureImg.load(texturePath);
+				_inputMeshTexture.reset(new sibr::Texture2DRGB(inputTextureImg, SIBR_GPU_LINEAR_SAMPLING));
+			}
 
 		}
 
