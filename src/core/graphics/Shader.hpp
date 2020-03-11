@@ -222,6 +222,21 @@ namespace sibr
 		*/
 		SIBR_OPT_INLINE void	setArray( const std::vector<int>& pv, int size );
 
+		/** Set the uniform ivec2 value.
+		\param v the new value
+		*/
+		SIBR_OPT_INLINE void	set(const Vector2i& v);
+
+		/** Set the uniform ivec3 value.
+		\param v the new value
+		*/
+		SIBR_OPT_INLINE void	set(const Vector3i& v);
+
+		/** Set the uniform ivec4 value.
+		\param v the new value
+		*/
+		SIBR_OPT_INLINE void	set(const Vector4i& v);
+		
 		/** Set the uniform vec2 value.
 		\param v the new value
 		*/
