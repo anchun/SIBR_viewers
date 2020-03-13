@@ -44,10 +44,10 @@ namespace sibr
 	SIBR_SYSTEM_EXPORT std::string parentDirectory(const std::string& str);
 
 	/**
-	* Process a string (a path) to return the parent directory.
+	* Process a string (a path) to return the file name.
 	* \param str the string to process
-	* \return the string with the last component removed
-	* \note Will return the empty string if no separator was found.
+	* \return the string with all but the last component removed
+	* \note Will return the full string if no separator was found.
 	*/
 	SIBR_SYSTEM_EXPORT std::string getFileName(const std::string& str);
 
