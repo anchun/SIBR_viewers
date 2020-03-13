@@ -30,6 +30,7 @@ void sibr::TexturedMeshView::onRenderIBR(sibr::IRenderTarget & dst, const sibr::
 {
 	// Perform ULR rendering, either directly to the destination RT, or to the intermediate RT when poisson blending is enabled.
 	glViewport(0, 0, dst.w(), dst.h());
+	dst.clear();
 	_textureRenderer->process(
 			_scene->proxies()->proxy(),
 			eye, _scene->inputMeshTextures()->handle(), 
