@@ -181,7 +181,7 @@ namespace sibr
 			"	out_color = out_color * vec4(colorsModified,1);\n}"
 			"	out_color = out_color * vec4(coeffLight,coeffLight,coeffLight,1);\n"
 			"	out_color = vec4(out_color.x,out_color.y,out_color.z,out_color.a);\n"
-			"	if (out_color.x < 0.01f && out_color.y < 0.01f && out_color.z < 0.01f) discard;		\n"
+			//"	if (out_color.x < 0.01f && out_color.y < 0.01f && out_color.z < 0.01f) discard;		\n"
 			"}																	\n";
 
 	public:
@@ -550,7 +550,6 @@ namespace sibr
 	void MaterialMesh::typeOfRender(const RenderCategory& type) {
 		_typeOfRender = type;
 	}
-
 
 
 } // namespace sibr
