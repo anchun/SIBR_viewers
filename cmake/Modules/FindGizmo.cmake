@@ -54,6 +54,7 @@ FIND_LIBRARY(GIZMO_LIBRARY
 	PATHS
 		${GIZMO_DIR}/${GIZMO_SEARCH_LIB}
 		${GIZMO_DIR}/lib
+		${GIZMO_DIR}/lib/Debug
 		## linux
 		/usr/${GIZMO_SEARCH_LIB}
 		/usr/local/${GIZMO_SEARCH_LIB}
