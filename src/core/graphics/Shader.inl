@@ -109,7 +109,26 @@ namespace sibr
 		glUniform1iv(m_Handle,size,&pv[0]);
 	}
 
+	void	GLParameter::set(const Vector2i& v)
+	{
+		authorize();
+		if (!m_Strict && m_Handle == -1) return;
+		glUniform2i(m_Handle, v[0], v[1]);
+	}
 
+	void	GLParameter::set(const Vector3i& v)
+	{
+		authorize();
+		if (!m_Strict && m_Handle == -1) return;
+		glUniform3i(m_Handle, v[0], v[1], v[2]);
+	}
+
+	void	GLParameter::set(const Vector4i& v)
+	{
+		authorize();
+		if (!m_Strict && m_Handle == -1) return;
+		glUniform4i(m_Handle, v[0], v[1], v[2], v[3]);
+	}
 
 	void	GLParameter::set( const Vector2f& v )
 	{

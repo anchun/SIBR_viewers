@@ -6,7 +6,7 @@
 namespace sibr
 {
 	
-	bool		showImGuiWindow(const std::string& windowTitle, const IRenderTarget& rt, ImGuiWindowFlags flags, Viewport & viewport, const bool invalidTexture, const bool updateLayout )
+	bool		showImGuiWindow(const std::string& windowTitle, const IRenderTarget& rt, ImGuiWindowFlags flags, Viewport & viewport,  bool invalidTexture,  bool updateLayout, int handle )
 	{
 		bool isWindowFocused = false;
 		// If we are asked to, we need to update the viewport at launch.
@@ -34,7 +34,7 @@ namespace sibr
 			ImGui::SetCursorPos(ImVec2(offset.x(), ImGui::GetTitleBarHeight()+offset.y()));
 			ImGui::InvisibleButton((windowTitle + "--TEXTURE-INVISIBLE_BUTTON").c_str(), ImVec2(size.x(), size.y()));
 			if (!invalidTexture) {
-				::ImGui::GetWindowDrawList()->AddImage((void*)(intptr_t)(rt.handle()),
+				::ImGui::GetWindowDrawList()->AddImage((void*)(intptr_t)(rt.handle(handle)),
 					pos, ImVec2(pos.x + size.x(), pos.y + size.y()),
 					ImVec2(0, 1), ImVec2(1, 0));
 			}

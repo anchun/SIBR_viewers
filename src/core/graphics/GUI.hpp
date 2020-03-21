@@ -12,6 +12,7 @@
 
 namespace sibr
 {
+	
 	/**	Show the content of a rendertarget in an ImGui window.
 	\param windowTitle the window name (unique)
 	\param rt the rendrtarget to display
@@ -22,7 +23,7 @@ namespace sibr
 	\return true if window is focused (useful for managing interactions).
 	\ingroup sibr_graphics
 	*/
-	SIBR_GRAPHICS_EXPORT bool		showImGuiWindow(const std::string& windowTitle, const IRenderTarget& rt, ImGuiWindowFlags flags, Viewport & viewport, const bool invalidTexture, const bool updateLayout);
+	SIBR_GRAPHICS_EXPORT bool		showImGuiWindow(const std::string& windowTitle, const IRenderTarget& rt, ImGuiWindowFlags flags, Viewport & viewport,  bool invalidTexture,  bool updateLayout, int handle = 0);
 
 	/**
 	Helper that compute the location and extent to display an image in a given region without cropping or distorting it

@@ -51,6 +51,9 @@ namespace sibr
 	SIBR_SYSTEM_EXPORT std::string getFileName(const std::string & str)
 	{
 		const std::string::size_type pos = str.find_last_of("/\\");
+		if (pos == std::string::npos) {
+			return str;
+		}
 		return str.substr(pos+1);
 	}
 
