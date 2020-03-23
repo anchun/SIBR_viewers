@@ -59,8 +59,8 @@ int main(int ac, char** av) {
 	// Fix rendering aspect ratio if user provided rendering size
 	uint scene_width = scene->cameras()->inputCameras()[0].w();
 	uint scene_height = scene->cameras()->inputCameras()[0].h();
-	float scene_aspect_ratio = scene_width / scene_height;
-	float rendering_aspect_ratio = rendering_width / rendering_height;
+	float scene_aspect_ratio = scene_width * 1.0f / scene_height;
+	float rendering_aspect_ratio = rendering_width * 1.0f / rendering_height;
 
 	if ((rendering_width > 0)) {
 		if (abs(scene_aspect_ratio - rendering_aspect_ratio) > 0.001f) {
