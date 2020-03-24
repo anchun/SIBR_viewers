@@ -29,7 +29,7 @@ int main(const int argc, const char** argv)
 	std::vector<std::string> dirs = { "cameras", "images", "meshes"};
 
 	std::cout << "Generating SIBR scene." << std::endl;
-	BasicIBRScene scene(myArgs, true);
+	BasicIBRScene scene(myArgs, true, true);
 
 	// load the cams
 	std::vector<InputCamera>	cams = scene.cameras()->inputCameras();
