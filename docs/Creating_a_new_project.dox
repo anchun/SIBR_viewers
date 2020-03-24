@@ -1,15 +1,40 @@
 /*! \page help_new_project Creating a new project
- *
- * \section app_sec Application
- Example below. The parts to modify are the project name and the linked libraries. Put the CMakeLists.txt in your application project directory.
- \code
+\section gen_steup_create General setup
+
+Create a repository in src/projects/your_project, and create the following hierarchy:
+\verbatim	
+	apps/
+	renderer/
+	preprocess/
+\endverbatim
+In renderer/, create a library CMake file as described below.
+In preprocess/, you will probably have multiple subdirectories (one per executable). In each subdirectory, create an executable CMake file. In preprocess/ create a listing CMake file to register all preprocess executables.
+In apps/, proceed similarly to preprocess/.
+Re-run configure for the main SIBR CMakeLists.txt. The project should be automatically detected, then check BUILD_YOUR_PROJECT in CMake and re-generate.
+
+\section listing_sec Listing
+This CMakeLists.txt is registering the projects in subdirectories against the main CMake, putting them together in a custom named group. They will appear as multiple solutions in a subdirectory in Visual Studio for instance. Useful to group the apps/ or preprocess/ executables of a project.
+\code
+project(SIBR_my_project_group)
+add_subdirectory(myExe1/)
+add_subdirectory(myExe2/)
+#...
+\endcode
+
+
+\section exe_sec Executable
+This example can be used for application and preprocess executables. The parts to modify are the project name, the linked libraries and the folder property. Put the CMakeLists.txt in your application project directory.
+\code
 
 project(SIBR_my_project_app)
 
 file(GLOB SOURCES "*.cpp" "*.h" "*.hpp")
 source_group("Source Files" FILES ${SOURCES})
 
+# Define build output for project
 add_executable(${PROJECT_NAME} ${SOURCES})
+
+# Define dependencies
 target_link_libraries(${PROJECT_NAME}
 	${Boost_LIBRARIES}
 	${ASSIMP_LIBRARIES}
@@ -19,7 +44,9 @@ target_link_libraries(${PROJECT_NAME}
 	sibr_system
 	#...
 )
-set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER ${SIBR_APP_FOLDER})
+
+# Define location in solution.
+set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER "__projects__/__my_project__/__apps__")
 
 #define postfix for various debug/release
 set_target_properties(${PROJECT_NAME} PROPERTIES
@@ -39,16 +66,12 @@ ibr_install_target(${PROJECT_NAME}
 )
 set_target_properties(${PROJECT_NAME}_install PROPERTIES FOLDER ${SIBR_INSTALL_FOLDER})
 \endcode
-You can then reference this CMake project in the global CMake file where all projects are listed, <code>src/CMakeLists.txt</code>.
-\code
-option(BUILD_MY_PROJECT_APP			"Build my project app"	OFF)
-## Lower in the file:
-if (BUILD_MY_PROJECT_APP)
-  add_subdirectory(apps/my_project_app)
-endif()
-\endcode
+
+
 
 \section lib_sec Library
+This example can be used for libraries. The parts to modify are the project name, the linked libraries, the export/import flag for Windows libraries, and the folder property. Put the CMakeLists.txt in your library project directory. This example also supports displaying shaders and copying them to the bin/resources common directory.
+
 \code
 project(sibr_my_library)
 
@@ -58,37 +81,40 @@ source_group("Source Files" FILES ${SOURCES})
 file(GLOB SHADERS "shaders/*.frag" "shaders/*.vert" "shaders/*.geom" "shaders/*.fp" "shaders/*.vp" "shaders/*.gp")
 source_group("Source Files\\shaders" FILES ${SHADERS})
 
+# Redefine sources ad all the files to display in the IDE.
 file(GLOB SOURCES "*.cpp" "*.h" "*.hpp" "shaders/*.frag" "shaders/*.vert" "shaders/*.geom"  "shaders/*.fp" "shaders/*.vp" "shaders/*.gp")
 
-## Specify target rules
+# Declare library.
 add_library(${PROJECT_NAME} SHARED ${SOURCES})
 
+# Define dependencies.
 include_directories(${Boost_INCLUDE_DIRS} .)
 target_link_libraries(${PROJECT_NAME}
-${Boost_LIBRARIES}
-${ASSIMP_LIBRARIES}
-${GLEW_LIBRARIES}
-${OPENGL_LIBRARIES}
-${OpenCV_LIBRARIES}
-glfw3
-sibr_system
-##...
+	${Boost_LIBRARIES}
+	${ASSIMP_LIBRARIES}
+	${GLEW_LIBRARIES}
+	${OPENGL_LIBRARIES}
+	${OpenCV_LIBRARIES}
+	glfw3
+	sibr_system
+	#...
 )
 
-#define postfix for various debug/release
+# Define export/import flag.
+add_definitions( -DSIBR_MY_LIBRARY_EXPORTS -DBOOST_ALL_DYN_LINK  )
+
+# Define location in solution.
+set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER "__projects__/__my_project__/__renderer__")
+
+# Define postfix for various debug/release
 set_target_properties(${PROJECT_NAME} PROPERTIES
 	DEBUG_POSTFIX "_d"
 	RELWITHDEBINFO_POSTFIX "_rwdi"
 	MINSIZEREL_POSTFIX "_msr"
 )
 
-add_definitions( -DSIBR_MY_LIBRARY_EXPORTS -DBOOST_ALL_DYN_LINK  )
-
-set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER ${SIBR_FOLDER}) # or ${SIBR_RENDERERS_FOLDER}
-
 set(RESOURCES ${SHADERS})
 set_target_properties(${PROJECT_NAME} PROPERTIES RESOURCE "${RESOURCES}")
-set(DOXY_DOC_REPETITIONS_IMG_PATH "${CMAKE_CURRENT_SOURCE_DIR}/doc" CACHE INTERNAL "") ## globale variable used in doxyfile.in)
 
 ## Hight level macro to install in an homogen way all our ibr targets
 include(install_runtime)
@@ -105,7 +131,7 @@ add_custom_target(${PROJECT_NAME}_CopyShaders ALL COMMAND python ${CMAKE_SOURCE_
 add_dependencies( ${PROJECT_NAME} ${PROJECT_NAME}_CopyShaders )
 set_target_properties(${PROJECT_NAME}_CopyShaders PROPERTIES FOLDER ${SIBR_INSTALL_FOLDER})
 \endcode
-Also need a Config.hpp file in your library directory.
+To handle export/import of library methods properly on Windows, you also need a Config.hpp file in your library directory.
 \code
 #ifndef __SIBR_MY_LIBRARY_CONFIG_HPP__
 # define __SIBR_MY_LIBRARY_CONFIG_HPP__

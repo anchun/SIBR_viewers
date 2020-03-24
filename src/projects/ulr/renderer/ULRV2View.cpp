@@ -105,8 +105,8 @@ void ULRV2View::onUpdate(Input & input)
 }
 
 void ULRV2View::onGUI() {
-
-		if(ImGui::Begin("ULRV2 Settings")) {
+		const std::string guiName = "ULRV2 Settings (" + name() + ")";
+		if(ImGui::Begin(guiName.c_str())) {
 			
 			ImGui::PushScaledItemWidth(80);
 			const bool v1_changed = ImGui::InputInt("#Dist", &_numDistUlr, 1, 10);
@@ -159,7 +159,7 @@ void ULRV2View::computeVisibilityMap(const sibr::ImageL32F & depthMap, sibr::Ima
 	}
 
 	cv::Mat distance(depthMap.h(), depthMap.w(), CV_32FC1);
-	cv::distanceTransform(edgeMap.toOpenCVnonConst(), distance, CV_DIST_L2, CV_DIST_MASK_PRECISE);
+	cv::distanceTransform(edgeMap.toOpenCVnonConst(), distance, cv::DIST_L2, cv::DIST_MASK_PRECISE);
 
 	sibr::ImageL32F outF;
 	outF.fromOpenCV(distance);
@@ -168,9 +168,7 @@ void ULRV2View::computeVisibilityMap(const sibr::ImageL32F & depthMap, sibr::Ima
 }
 
 	// -----------------------------------------------------------------------
-/// Select a subset from imput images speed up URL
-/// \todo TODO: This function needs serious cleanup
-//
+
 std::vector<uint> ULRV2View::chosen_cameras(const sibr::Camera& eye) {
     std::vector<uint> imgs_id;
     std::multimap<float,uint> distMap;									// distance wise closest input cameras
@@ -181,18 +179,10 @@ std::vector<uint> ULRV2View::chosen_cameras(const sibr::Camera& eye) {
 			// Convert following to Eigen versions
             float dist = sibr::distance(inputCam.position(), eye.position());
             float angle = sibr::dot(inputCam.dir(),eye.dir());
- //           if (angle > 0.707) {									// cameras with 45 degrees
                 distMap.insert(std::make_pair(dist,i));					// sort distances in increasing order
 				dang.insert(std::make_pair( acos(angle),i));				// sort angles in increasing order
-//			}
         }
     }
-
-   // HACK GD -- should really look at camera angles as well and sort them
-////   bool not_enough = false;
-	// if you have < 2 cameras, choose the (NUM_DIST+NUM_ANGL)/2 closest ones
-////   if( dang.size() + distMap.size() < 2 )
-////		not_enough = true;
 	for (uint i=0; i< _scene->cameras()->inputCameras().size(); i++) {
         const sibr::InputCamera& inputCam = _scene->cameras()->inputCameras()[i];
         if (inputCam.isActive() && distMap.size() <= (_numDistUlr+_numAnglUlr)/2 ) {

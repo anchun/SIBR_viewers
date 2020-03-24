@@ -30,7 +30,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *************************************************************************/
 
-/** \mainpage nanoflann C++ API documentation
+/** nanoflann C++ API documentation
  *  nanoflann is a C++ header-only library for building KD-Trees, mostly
  *  optimized for 2D or 3D point clouds.
  *
@@ -57,6 +57,9 @@
 #include <limits> // std::reference_wrapper
 #include <stdexcept>
 #include <vector>
+
+ /** \cond
+ */
 
 /** Library version: 0xMmP (M=Major,m=minor,P=patch) */
 #define NANOFLANN_VERSION 0x130
@@ -2037,4 +2040,6 @@ public:
 /** @} */ // end of grouping
 } // namespace nanoflann
 
+/** \endcond
+*/
 #endif /* NANOFLANN_HPP_ */

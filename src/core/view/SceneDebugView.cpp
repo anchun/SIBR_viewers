@@ -2,7 +2,6 @@
 # include "core/graphics/RenderUtility.hpp"
 # include "core/graphics/Input.hpp"
 # include "core/graphics/GUI.hpp"
-#include "ViewUtils.hpp"
 #include <core/raycaster/CameraRaycaster.hpp>
 
 #include <sstream>
@@ -71,41 +70,8 @@ namespace sibr
 		return out;
 	}
 
-	void ShaderImageArraySlice::initShader(const std::string & name, const std::string & vert, const std::string & frag)
-	{
-		ShaderAlphaMVP::initShader(name, vert, frag);
-		slice.init(shader, "slice");
-	}
 
-	void ShaderImageArraySlice::render(const Camera & eye, const MeshData & data, GLuint textureArrayId, int image_id)
-	{
-		if (!data.meshPtr) {
-			return;
-		}
-		shader.begin();
-		ShaderAlphaMVP::setUniforms(eye, data);
-		slice.set(image_id);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D_ARRAY, textureArrayId);
-		data.renderGeometry();
-		shader.end();
-	}
-
-
-	void ShaderImageSlice::render(const Camera & eye, const MeshData & data, GLuint textureId)
-	{
-		if (!data.meshPtr) {
-			return;
-		}
-		shader.begin();
-		ShaderAlphaMVP::setUniforms(eye, data);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, textureId);
-		data.renderGeometry();
-		shader.end();
-	}
-
-	CameraInfos::CameraInfos(const InputCamera& cam, uint id, bool highlight)
+	LabelsManager::CameraInfos::CameraInfos(const InputCamera& cam, uint id, bool highlight)
 		: cam(cam), id(id), highlight(highlight) {
 	}
 
@@ -173,33 +139,45 @@ namespace sibr
 	{
 		const std::string vertex_str = loadFile(Resources::Instance()->getResourceFilePathName("uv_mesh.vert"));
 
-		_cameraImageShader.initShader("cameraImageShader",
-			vertex_str,
-			loadFile(Resources::Instance()->getResourceFilePathName("alpha_uv_tex.frag")));
+		_shader2D.init("cameraImageShader", vertex_str, loadFile(Resources::Instance()->getResourceFilePathName("alpha_uv_tex.frag")));
+		_mvp2D.init(_shader2D, "mvp");
+		_alpha2D.init(_shader2D, "alpha");
 
-		_cameraImageShaderArray.initShader("cameraImageShaderArray",
-			vertex_str,
-			loadFile(Resources::Instance()->getResourceFilePathName("alpha_uv_tex_array.frag")));
+		_shaderArray.init("cameraImageShaderArray", vertex_str, loadFile(Resources::Instance()->getResourceFilePathName("alpha_uv_tex_array.frag")));
+		_mvpArray.init(_shaderArray, "mvp");
+		_alphaArray.init(_shaderArray, "alpha");
+		_sliceArray.init(_shaderArray, "slice");
 	}
 
 	void ImageCamViewer::renderImage(const Camera & eye, const InputCamera & cam,
-		const std::vector<RenderTargetRGBA32F::Ptr> rts, int cam_id)
+		const std::vector<RenderTargetRGBA32F::Ptr> & rts, int cam_id)
 	{
-		MeshData quad("", generateCamQuadWithUvs(cam, _cameraScaling));
-		quad.setBackFace(false).setAlpha(_alphaImage);
+		const auto quad = generateCamQuadWithUvs(cam, _cameraScaling);
 		if (cam_id < rts.size() && rts[cam_id]) {
-			_cameraImageShader.render(eye, quad, rts[cam_id]->handle());
+			_shader2D.begin();
+			_mvp2D.set(eye.viewproj());
+			_alpha2D.set(_alphaImage);
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, rts[cam_id]->handle());
+			quad->render(true, false, Mesh::FillRenderMode, false, false);
+			_shader2D.end();
 		}
 	}
 
 	void ImageCamViewer::renderImage(const Camera & eye, const InputCamera & cam, uint tex2Darray_handle, int cam_id)
 	{
-		MeshData quad("", generateCamQuadWithUvs(cam, _cameraScaling));
-		quad.setBackFace(false).setAlpha(_alphaImage);
-		_cameraImageShaderArray.render(eye, quad, tex2Darray_handle, cam_id);
+		const auto quad = generateCamQuadWithUvs(cam, _cameraScaling);
+		_shaderArray.begin();
+		_mvpArray.set(eye.viewproj());
+		_alphaArray.set(_alphaImage);
+		_sliceArray.set(cam_id);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D_ARRAY, tex2Darray_handle);
+		quad->render(true, false, Mesh::FillRenderMode, false, false);
+		_shaderArray.end();
 	}
 
-	SceneDebugView::SceneDebugView(const BasicIBRScene::Ptr & scene, const Viewport & viewport,
+	SceneDebugView::SceneDebugView(const BasicIBRScene::Ptr & scene, 
 		const InteractiveCameraHandler::Ptr & camHandler, const BasicDatasetArgs & myArgs)
 	{
 		initImageCamShaders();
@@ -214,12 +192,24 @@ namespace sibr
 		}
 
 		_showImages = true;
-		camera_path = myArgs.dataset_path.get() + "/cameras";
-		if (!directoryExists(camera_path)) {
-			makeDirectory(camera_path);
+
+		const std::string camerasDir = myArgs.dataset_path.get() + "/cameras";
+		if (directoryExists(camerasDir)) {
+			_topViewPath = camerasDir + "/topview.txt";
+				if (!directoryExists(camerasDir)) {
+					makeDirectory(camerasDir);
+				}
+		}
+		else {
+			_topViewPath = parentDirectory(myArgs.dataset_path) + "/topview.txt";
 		}
 
 		setup();
+	}
+
+	SceneDebugView::SceneDebugView(const BasicIBRScene::Ptr & scene, const Viewport & viewport,
+		const InteractiveCameraHandler::Ptr & camHandler, const BasicDatasetArgs & myArgs) : SceneDebugView(scene, camHandler, myArgs) {
+		SIBR_WRG << "Deprecated SceneDebugView constructor, use the version without viewport passed as argument." << std::endl;
 	}
 
 	void SceneDebugView::onUpdate(Input & input, const float deltaTime, const Viewport & viewport)
@@ -331,9 +321,9 @@ namespace sibr
 
 	void SceneDebugView::save()
 	{
-		const std::string filename = camera_path + "/topview.txt";
-		std::ofstream outfile(filename, std::ios::out | std::ios::trunc);
-		std::cerr << "Saving topview camera to topview.txt" << std::endl;
+		
+		std::ofstream outfile(_topViewPath, std::ios::out | std::ios::trunc);
+		std::cerr << "Saving topview camera to " << _topViewPath << std::endl;
 		// save camera view proj matrix
 		camera_handler.getCamera().writeToFile(outfile);
 	}
@@ -398,7 +388,7 @@ namespace sibr
 	{
 		if (ImGui::CollapsingHeader("Cameras##SceneDebugView")) {
 			
-			ImGui::SliderInt("Camera ID info", &_camera_id_info_gui, 0, static_cast<int>(_cameras.size()) - 1);
+			ImGui::SliderInt("Camera ID info", &_cameraIdInfoGUI, 0, static_cast<int>(_cameras.size()) - 1);
 
 
 			ImGui::Columns(4); // 0 name | snapto | active| size 
@@ -409,10 +399,10 @@ namespace sibr
 			ImGui::Text("Active"); ImGui::NextColumn();
 
 			static std::vector<std::string> cam_info_option_str = { "size", "focal", "fov_y","aspect" };
-			if (ImGui::BeginCombo("Info", cam_info_option_str[cam_info_option].c_str())) {
+			if (ImGui::BeginCombo("Info", cam_info_option_str[_camInfoOption].c_str())) {
 				for (int i = 0; i < (int)cam_info_option_str.size(); ++i) {
-					if (ImGui::Selectable(cam_info_option_str[i].c_str(), cam_info_option == i)) {
-						cam_info_option = (CameraInfoDisplay)i;
+					if (ImGui::Selectable(cam_info_option_str[i].c_str(), _camInfoOption == i)) {
+						_camInfoOption = (CameraInfoDisplay)i;
 					}					
 				}
 				ImGui::EndCombo();
@@ -422,7 +412,7 @@ namespace sibr
 	
 			//for (uint i = 0; i < _cameras.size(); ++i) 
 			{
-				std::string name = "cam_" + intToString<4>(_camera_id_info_gui);
+				std::string name = "cam_" + intToString<4>(_cameraIdInfoGUI);
 				ImGui::Text(name.c_str());
 				ImGui::NextColumn();
 
@@ -432,7 +422,7 @@ namespace sibr
 					auto size = camera_handler.getViewport().finalSize();
 					float ratio_dst = size[0] / size[1];
 					float ratio_src = input_cam.w() / (float)input_cam.h();
-					InputCamera cam = InputCamera(_cameras[_camera_id_info_gui].cam, (int)size[0], (int)size[1]);
+					InputCamera cam = InputCamera(_cameras[_cameraIdInfoGUI].cam, (int)size[0], (int)size[1]);
 
 					if (ratio_src < ratio_dst) {
 						float fov_h = 2 * atan(tan(input_cam.fovy() / 2) * ratio_src / ratio_dst);
@@ -446,12 +436,12 @@ namespace sibr
 				}
 				ImGui::NextColumn();
 
-				ImGui::Checkbox(("##is_valid" + name).c_str(), &_cameras[_camera_id_info_gui].highlight);
+				ImGui::Checkbox(("##is_valid" + name).c_str(), &_cameras[_cameraIdInfoGUI].highlight);
 				ImGui::NextColumn();
 
-				const auto & cam = _cameras[_camera_id_info_gui].cam;
+				const auto & cam = _cameras[_cameraIdInfoGUI].cam;
 				std::stringstream tmp;
-				switch (cam_info_option)
+				switch (_camInfoOption)
 				{
 					case SIZE: tmp << cam.w() << " x " << cam.h(); break;
 					case FOCAL: tmp << cam.focal(); break;
@@ -482,12 +472,11 @@ namespace sibr
 		_snapToImage = 0;
 		_showLabels = false;
 
-		std::string filename = camera_path + "/topview.txt";
 		// check if topview.txt exists
-		std::ifstream topViewFile(filename);
+		std::ifstream topViewFile(_topViewPath);
 		if (topViewFile.good())
 		{
-			SIBR_LOG << "Loaded saved topview (" << filename << ")." << std::endl;
+			SIBR_LOG << "Loaded saved topview (" << _topViewPath << ")." << std::endl;
 			// Intialize a temp camera (used to load the saved top view pose) with
 			// the current top view camera to get the resolution/fov right.
 			InputCamera cam(camera_handler.getCamera());
@@ -503,8 +492,8 @@ namespace sibr
 	{
 		addMesh("proxy", _scene->proxies()->proxyPtr());
 
-		//gizmo
-		addMeshAsLines("guizmo", RenderUtility::createAxisGizmoPtr())
+		// Add a gizmo.
+		addMeshAsLines("guizmo", RenderUtility::createAxisGizmo())
 			.setDepthTest(false).setColorMode(MeshData::ColorMode::VERTEX);
 	}
 

@@ -32,5 +32,13 @@ namespace sibr
 		return _focus;
 	}
 
+	void ViewBase::setName(const std::string& name) {
+		_name = name;
+	}
+
+	const std::string & ViewBase::name() const {
+		return _name;
+	}
+
 
 } // namespace sibr

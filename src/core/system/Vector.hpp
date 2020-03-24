@@ -9,7 +9,7 @@
 namespace Eigen
 {
 	/**
-	* \addtogroup sibr_graphics
+	* \addtogroup sibr_system
 	* @{
 	*/
 
@@ -18,6 +18,11 @@ namespace Eigen
 	// you would have to do sibr::operator < (left, right)
 	// instead of simple left < right)
 
+	/** Lexicographic comparison (from left to right).
+	 *\param left first element
+	 *\param right second element
+	 *\return true if left is lexicographically smaller than right.
+	 */
 	template <typename T, int N, int Options>
 	bool operator<(const Eigen::Matrix<T, N, 1, Options>& left, const Eigen::Matrix<T, N, 1, Options>& right) {
 
@@ -31,6 +36,11 @@ namespace Eigen
 
 	// stream
 
+	/** Output matrix to a stream.
+	 *\param s stream
+	 *\param t matrix
+	 *\return the stream for chaining
+	 */
 	template <typename T, int N, int Options>
 	std::ostream& operator<<( std::ostream& s, const Eigen::Matrix<T, N, 1, Options>& t ) {
 		s << '(';
@@ -39,6 +49,11 @@ namespace Eigen
 		return (s);
 	}
 
+	/** Read matrix from a stream.
+	 *\param s stream
+	 *\param t matrix
+	 *\return the stream for chaining
+	 */
 	template <typename T, int N, int Options>
 	std::istream& operator>>( std::istream& s, Eigen::Matrix<T, N, 1, Options>& t ) {
 		char tmp = 0;
@@ -66,7 +81,10 @@ namespace sibr
 	template <typename T, int N>
 	using Vector = Eigen::Matrix<T, N, 1, Eigen::DontAlign>;
 
-	// Return the fractional part
+	/** Fractional part of each component.
+	 *\param A vector
+	 *\return the fractional matrix
+	 **/
 	template <typename T, int N, int Options>
 	Eigen::Matrix<T, N, 1, Options>			frac( const Eigen::Matrix<T, N, 1, Options>& A ) {
 		Eigen::Matrix<T, N, 1, Options> out = A;
@@ -75,45 +93,89 @@ namespace sibr
 		return out;
 	}
 
+	/** Distance between two vectors
+	 *\param A first vector
+	 *\param B second vector
+	 *\return norm(A-B)
+	 */
 	template <typename T, int N, int Options>
 	inline T			distance( const Eigen::Matrix<T, N, 1, Options>& A, const Eigen::Matrix<T, N, 1, Options>& B ) {
 		return (A-B).norm();
 	}
 
+	/** Return the length of a vector.
+	 *\param A vector
+	 *\return norm(A)
+	 */
 	template <typename T, int N, int Options>
 	inline T			length( const Eigen::Matrix<T, N, 1, Options>& A ) {
 		return A.norm();
 	}
 
+	/** Return the squared length of a vector.
+	 *\param A vector
+	 *\return norm(A)^2
+	 */
 	template <typename T, int N, int Options>
 	inline T			sqLength( const Eigen::Matrix<T, N, 1, Options>& A ) {
 		return A.squaredNorm();
 	}
 
+	/** Compute the dot product of two vectors
+	 *\param A first vector
+	 *\param B second vector
+	 *\return A.B
+	 */
 	template <typename T, int N, int Options>
 	inline T			dot( const Eigen::Matrix<T, N, 1, Options>& A, const Eigen::Matrix<T, N, 1, Options>& B ) {
 		return A.dot(B);
 	}
 
+	/** Compute the cross product of two vectors
+	 *\param A first vector
+	 *\param B second vector
+	 *\return AxB
+	 */
 	template <typename T, int N, int Options>
 	inline Eigen::Matrix<T, N, 1, Options>	cross( const Eigen::Matrix<T, N, 1, Options>& A, const Eigen::Matrix<T, N, 1, Options>& B ) {
 		return A.cross(B);
 	}
 
+	/** Clamp each component of a vector between two values.
+	 * \param A vector
+	 * \param min min values vector
+	 * \param max max values vector
+	 * \return min(max(A, min), max)
+	 */
 	template <typename T, int N>
 	inline Vector<T,N> clamp(const Vector<T, N>& A, const Vector<T, N> & min, const Vector<T, N> & max) {
 		return A.cwiseMax(min).cwiseMin(max);
 	}
 
+	/** Compute the cotangent of the angle between two vectors.
+	 *\param A first vector
+	 *\param B second vector
+	 *\return the cotangent
+	 */
 	template <typename T, int N, int Options>
 	inline T cotan(const Eigen::Matrix<T, N, 1, Options>& A, const Eigen::Matrix<T, N, 1, Options>& B) {
 		return A.dot(B) / A.cross(B).norm();
 	}
 
+	/** Convert an unsigned char color in [0,255] to a float color in [0,1].
+	 *\param colorUB the color vector
+	 *\return the [0,1] float vector
+	 */
 	SIBR_SYSTEM_EXPORT Eigen::Matrix<float, 3,	1, Eigen::DontAlign>  toColorFloat( Vector<unsigned char, 3> & colorUB );
 
+	/** Convert a float color in [0,1] to an unsigned char color in [0,255].
+	 *\param colorFloat the color vector
+	 *\return the [0,255] float vector
+	 */
 	SIBR_SYSTEM_EXPORT Eigen::Matrix<unsigned char, 3,1,Eigen::DontAlign> toColorUB( Vector<float,3> & colorFloat );
-	
+
+	// Typedefs.
+
 	typedef	Eigen::Matrix<float, 1,			1,Eigen::DontAlign>			Vector1f;
 	typedef	Eigen::Matrix<int, 1,			1,Eigen::DontAlign>			Vector1i;
 
@@ -137,7 +199,7 @@ namespace sibr
 	typedef	Eigen::Matrix<double, 4,		1,Eigen::DontAlign>			Vector4d;
 
 	/**
-		Return a 4x4 3D rotation matrix that align the first vector onto the second one.
+		Return a 4x4 3D rotation matrix that aligns the first vector onto the second one.
 		\param from source vector, current direction
 		\param to destination vector, target direction
 		\return the rotation matrix

@@ -20,7 +20,17 @@
 
 namespace sibr
 {
-	bool		Mesh::saveToObj(const std::string& filename, bool universal)  const
+
+	Mesh::Mesh(bool withGraphics) : _meshPath("") {
+		if (withGraphics) {
+			_gl.bufferGL.reset(new MeshBufferGL);
+		}
+		else {
+			_gl.bufferGL = nullptr;
+		}
+	}
+
+	bool		Mesh::saveToObj(const std::string& filename)  const
 	{
 		aiScene scene;
 		scene.mRootNode = new aiNode();
@@ -43,17 +53,26 @@ namespace sibr
 
 		auto pMesh = scene.mMeshes[0];
 
-		const auto& vVertices = _vertices;
+		const auto& vVertices = _vertices; 
 
 		pMesh->mVertices = new aiVector3D[vVertices.size()];
-		pMesh->mNormals = new aiVector3D[vVertices.size()];
 		pMesh->mNumVertices = static_cast<unsigned int>(vVertices.size());
 
-		pMesh->mTextureCoords[0] = new aiVector3D[vVertices.size()];
-		pMesh->mNumUVComponents[0] = static_cast<unsigned int>(vVertices.size());
-
+		if(hasNormals()) {
+			pMesh->mNormals = new aiVector3D[vVertices.size()];
+		} else {
+			pMesh->mNormals = nullptr;
+		}
+		
+		if (hasTexCoords()) {
+			pMesh->mTextureCoords[0] = new aiVector3D[vVertices.size()];
+			pMesh->mNumUVComponents[0] = 2;
+		} else {
+			pMesh->mTextureCoords[0] = nullptr;
+			pMesh->mNumUVComponents[0] =0;
+		}
+		
 		int j = 0;
-		SIBR_LOG << "Has normals " << hasNormals() << " has textures " << hasTexCoords() << std::endl;
 		for (auto itr = vVertices.begin(); itr != vVertices.end(); ++itr)
 		{
 			pMesh->mVertices[itr - vVertices.begin()] = aiVector3D(vVertices[j].x(), vVertices[j].y(), vVertices[j].z());
@@ -322,7 +341,7 @@ namespace sibr
 		}
 		Assimp::Importer	importer;
 		//importer.SetPropertyBool(AI_CONFIG_PP_FD_REMOVE, true); // cause Assimp to remove all degenerated faces as soon as they are detected
-		const aiScene* scene = importer.ReadFile(filename,  aiProcess_Triangulate | aiProcess_JoinIdenticalVertices | aiProcess_FindDegenerates);
+		const aiScene* scene = importer.ReadFile(filename, aiProcess_Triangulate | aiProcess_JoinIdenticalVertices | aiProcess_FindDegenerates);
 
 		if (!scene)
 		{
@@ -588,15 +607,22 @@ namespace sibr
 		// This function is a just a switch (so we can change format details
 		// internally).
 
-		// If you encounter problem with the resulting mesh, you can switch
-		// to the ASCII version for easy reading
-		// Meshlab does not support uint16 colors, if you want see you mesh in such
-		// program, set 'universal' = true
-
-		if (universal)
-			saveToASCIIPLY(filename, true);
-		else
-			saveToBinaryPLY(filename, false);
+		const std::string ext = sibr::getExtension(filename);
+		if(ext == "obj") {
+			saveToObj(filename);
+		} else {
+			// If you encounter problem with the resulting mesh, you can switch
+			// to the ASCII version for easy reading
+			// Meshlab does not support uint16 colors, if you want to use the mesh in such
+			// program, set 'universal' = true
+			if (universal) {
+				saveToASCIIPLY(filename, true);
+			}
+			else {
+				saveToBinaryPLY(filename, false);
+			}
+		}
+		
 	}
 
 	void	Mesh::vertices(const std::vector<float>& vertices)
@@ -681,7 +707,6 @@ namespace sibr
 
 	void	Mesh::generateNormals(void)
 	{
-		//SIBR_LOG << "Generate vertex normals..." << std::endl;
 
 		// will store a list of normals (of all triangles around each vertex)
 		std::vector<std::vector<Vector3f>>	vertexNormals(_vertices.size());
@@ -970,7 +995,6 @@ namespace sibr
 					newVertices[vid] += _vertices[ovid];
 				}
 				newVertices[vid] /= float(neighbors[vid].size());
-				//newVertices[vid] += _vertices[vid];
 			}
 
 			vertices(newVertices);
@@ -980,6 +1004,97 @@ namespace sibr
 			generateNormals();
 		}
 	}
+
+	void Mesh::adaptativeTaubinSmoothing(int numIter, bool updateNormals) {
+
+		if (numIter < 1) {
+			return;
+		}
+
+		/// Build neighbors information.
+		/// \todo TODO: we could also detect vertices on the edges of the mesh to preserve their positions.
+		std::vector<std::set<unsigned>> neighbors(_vertices.size());
+		std::map<int, std::map<int, std::set<float>>> cotanW;
+		for (const sibr::Vector3u & tri : _triangles) {
+			neighbors[tri[0]].emplace(tri[1]);
+			neighbors[tri[0]].emplace(tri[2]);
+			neighbors[tri[1]].emplace(tri[0]);
+			neighbors[tri[1]].emplace(tri[2]);
+			neighbors[tri[2]].emplace(tri[1]);
+			neighbors[tri[2]].emplace(tri[0]);
+
+			std::vector<sibr::Vector3f> vs;
+			for (int i = 0; i < 3; i++)
+				vs.push_back(_vertices[tri[i]]);
+
+			for (int i = 0; i < 3; i++) {
+				float angle = acos((vs[i] - vs[(i + 2) % 3]).normalized().dot((vs[(i + 1) % 3] - vs[(i + 2) % 3]).normalized()));
+				cotanW[tri[i]][tri[(i + 1) % 3]].emplace(1.0f / (tan(angle) + 0.00001f));
+				cotanW[tri[(i + 1) % 3]][tri[i]].emplace(1.0f / (tan(angle) + 0.00001f));
+			}
+
+		}
+
+		/// Smooth by averaging.
+		const size_t verticesSize = _vertices.size();
+
+		std::vector<sibr::Vector3f> newColors(verticesSize);
+		for (int it = 0; it < numIter; ++it) {
+			std::vector<sibr::Vector3f> newVertices(verticesSize);
+#pragma omp parallel for
+			for (int vid = 0; vid < verticesSize; ++vid) {
+				sibr::Vector3f v = _vertices[vid];
+				sibr::Vector3f dtV = sibr::Vector3f(0.0f, 0.0f, 0.f);
+				float totalW = 0;
+
+				std::vector<sibr::Vector3f> colorsLocal;
+				colorsLocal.push_back(_colors[vid]);
+				for (const auto & ovid : neighbors[vid]) {
+					float w = 0;
+					for (const auto & cot : cotanW[vid][ovid]) {
+						w += 0.5*cot;
+					}
+					totalW += w;
+					dtV += w * _vertices[ovid];
+					colorsLocal.push_back(_colors[ovid]);
+				}
+
+				sibr::Vector3f meanColor;
+				for (const auto & c : colorsLocal) {
+					meanColor += c;
+				}
+				meanColor /= colorsLocal.size();
+				sibr::Vector3f varColor;
+				for (const auto & c : colorsLocal) {
+					pow(c.x() - meanColor.x(), 2);
+					varColor += sibr::Vector3f(pow(c.x() - meanColor.x(), 2), pow(c.y() - meanColor.y(), 2), pow(c.z() - meanColor.z(), 2));
+				}
+				varColor /= colorsLocal.size();
+
+				newColors[vid] = varColor;
+
+				if (totalW > 0) {
+					dtV /= totalW;
+					dtV = dtV - v;
+					if (it % 2 == 0) {
+						newVertices[vid] = v + 0.25*dtV;
+					}
+					else {
+						newVertices[vid] = v + 0.25*dtV;
+					}
+				}
+			}
+
+			vertices(newVertices);
+		}
+
+		colors(newColors);
+		if (updateNormals) {
+			generateNormals();
+		}
+	}
+
+
 
 	Mesh Mesh::generateSubMesh(std::function<bool(int)> func) const
 	{
@@ -1287,7 +1402,6 @@ namespace sibr
 				for (int c = 0; c < 3; c++) {
 					isInRemovedTriangle[t[c]] = true;
 				}
-				//t.unaryExpr([&isInRemovedTriangle](unsigned v_id) { isInRemovedTriangle[v_id] = true; });
 			}
 		}
 
@@ -1313,8 +1427,6 @@ namespace sibr
 				subMesh.complementaryVertices.push_back(id);
 			}
 		}
-
-		//std::cout << " numKeptV : " << numValidNewVertices << " " << subMesh.meshPtr->vertices().size() << " " << subMesh.complementaryVertices.size() << std::endl;
 
 		return subMesh;
 	}
@@ -1476,20 +1588,20 @@ namespace sibr
 		sibr::Mesh::Triangles tri;
 
 		int highLimit = 0, lowLimit = 0;
-		switch(part)
+		switch (part)
 		{
-			case PartOfSphere::WHOLE:
-				highLimit = 90;
-				lowLimit = -90;
-				break;
-			case PartOfSphere::UP:
-				highLimit = 90;
-				lowLimit = 0;
-				break;
-			case PartOfSphere::BOTTOM:
-				highLimit = 0;
-				lowLimit = -90;
-				break;
+		case PartOfSphere::WHOLE:
+			highLimit = 90;
+			lowLimit = -90;
+			break;
+		case PartOfSphere::UP:
+			highLimit = 90;
+			lowLimit = 0;
+			break;
+		case PartOfSphere::BOTTOM:
+			highLimit = 0;
+			lowLimit = -90;
+			break;
 		}
 
 		for (int lat = lowLimit; lat <= highLimit; lat++) {
@@ -1509,9 +1621,6 @@ namespace sibr
 			for (int lgt = 0; lgt < 360; lgt++) {
 
 				int delta = 1;
-				/*if (lgt == 359) {
-				delta = -359;
-				}*/
 				int lgtShift = lgt + 361 * (lat - lowLimit);
 				tri.push_back(sibr::Vector3u(lgtShift, lgtShift + delta, lgtShift + 361 + delta));
 				tri.push_back(sibr::Vector3u(lgtShift, lgtShift + 361 + delta, lgtShift + 361));
@@ -1534,12 +1643,6 @@ namespace sibr
 			centroid /= static_cast<double>(_vertices.size());
 		}
 		return centroid.cast<float>();
-	}
-
-	sibr::Vector2f Mesh::getZnearZfar() const
-	{
-		float diagonal = getBoundingBox().diagonal().norm();
-		return sibr::Vector2f(0.1*diagonal, 2.0f*diagonal);
 	}
 
 	std::stringstream Mesh::getOffStream(bool verbose) const
@@ -1568,7 +1671,6 @@ namespace sibr
 
 	void Mesh::fromOffStream(std::stringstream & stream, bool computeNormals)
 	{
-		//std::string dummy_string;
 		int n_vert;
 		int n_faces;
 		int n_edges;
@@ -1578,12 +1680,7 @@ namespace sibr
 		std::getline(stream, line);
 		std::istringstream iss(line);
 
-		//std::cout << line << std::endl;
-
 		iss >> n_vert >> n_faces >> n_edges;
-
-		//std::cout << n_vert << " " << n_faces << " " << n_edges << std::endl;
-		//std::cout << " end header " << std::endl;
 
 		_vertices.resize(n_vert);
 		for (int v = 0; v < n_vert; ++v) {
@@ -1592,8 +1689,6 @@ namespace sibr
 
 			lineStream >> _vertices[v][0] >> _vertices[v][1] >> _vertices[v][2];
 
-			//std::cout << line << std::endl;
-			//std::cout << _vertices[v].transpose() << std::endl;
 		}
 
 		_triangles.resize(0);
@@ -1619,9 +1714,6 @@ namespace sibr
 				_triangles.push_back(t1);
 				_triangles.push_back(t2);
 			}
-
-			//std::cout << line << std::endl;
-			//std::cout << _triangles[t].transpose() << std::endl;
 		}
 
 		if (computeNormals) {
@@ -1700,7 +1792,7 @@ namespace sibr
 		return sphereMesh;
 	}
 
-	sibr::Mesh::Ptr Mesh::subDivide(float limitSize) const
+	sibr::Mesh::Ptr Mesh::subDivide(float limitSize, size_t maxRecursion) const
 	{
 		struct Less {
 			bool operator()(const sibr::Vector3f &a, const sibr::Vector3f &b) const {
@@ -1710,6 +1802,7 @@ namespace sibr
 
 		struct Edge {
 			sibr::Vector3f midPoint;
+			sibr::Vector3f midNormal;
 			std::vector<int> triangles_ids;
 			float length;
 			int v_ids[2];
@@ -1730,20 +1823,31 @@ namespace sibr
 		int t_id = 0;
 		int e_id = 0;
 		for (const auto & t : triangles()) {
+			bool degenerate = false;
 			for (int k = 0; k < 3; ++k) {
 				int v0 = t[k];
 				int v1 = t[(k + 1) % 3];
-				sibr::Vector3f midPoint = 0.5f*(vertices()[v0] + vertices()[v1]);
-				float length = (vertices()[v0] - vertices()[v1]).norm();
+				// Skip degenerate faces.
+				if (v0 == v1) {
+					degenerate  = true;
+					break;
+				}
+				const sibr::Vector3f midPoint = 0.5f*(vertices()[v0] + vertices()[v1]);
+				sibr::Vector3f midNormal(0.0f, 0.0f, 0.0f);
+				if(hasNormals()) {
+					midNormal = (0.5f*(normals()[v0] + normals()[v1])).normalized();
+				}
+				
+				const float length = (vertices()[v0] - vertices()[v1]).norm();
 				if (mapEdges.count(midPoint) == 0) {
 					mapEdges[midPoint] = e_id;
-					Edge edge = { midPoint, {t_id}, length, {v0,v1} };
+					const Edge edge = { midPoint, midNormal, {t_id}, length, {v0,v1} };
 					tris[t_id].edges_ids[k] = e_id;
 					edges.push_back(edge);
 					++e_id;
 				}
 				else {
-					int edge_id = mapEdges[midPoint];
+					const int edge_id = mapEdges[midPoint];
 					edges[edge_id].triangles_ids.push_back(t_id);
 					tris[t_id].edges_ids[k] = edge_id;
 					if (v0 != edges[edge_id].v_ids[0]) {
@@ -1751,24 +1855,31 @@ namespace sibr
 					}
 				}
 			}
+			if (degenerate) {
+				continue;
+			}
 			++t_id;
 		}
 
-		int nOldVertices = (int)vertices().size();
+		const int nOldVertices = (int)vertices().size();
 		sibr::Mesh::Vertices newVertices = vertices();
+		sibr::Mesh::Normals newNormals = normals();
 
 		std::vector<int> edge_to_divided_edges(edges.size(), -1);
 
 		sibr::Mesh::Triangles newTriangles;
-
-		int tri_id = 0;
+		
+		bool dbg = false;
 		int num_divided_edges = 0;
 		for (const Triangle & t : tris) {
-
+			// Ignore undef triangles.
+			if (t.edges_ids[0] == -1 && t.edges_ids[1] == -1 && t.edges_ids[2] == -1) {
+				continue;
+			}
 			std::vector<int> ks(3, -1);
 			std::vector<int> non_ks(3, -1);
 			for (int k = 0; k < 3; ++k) {
-				int e_id = t.edges_ids[k];
+				const int e_id = t.edges_ids[k];
 				if (edges[e_id].length > limitSize) {
 					if (ks[0] < 0) {
 						ks[0] = k;
@@ -1783,7 +1894,9 @@ namespace sibr
 					if (edge_to_divided_edges[e_id] < 0) {
 						edge_to_divided_edges[e_id] = num_divided_edges;
 						newVertices.push_back(edges[e_id].midPoint);
+						newNormals.push_back(edges[e_id].midNormal);
 						++num_divided_edges;
+						
 					}
 
 				}
@@ -1794,10 +1907,10 @@ namespace sibr
 				}
 			}
 
-			sibr::Vector3i corners_ids = sibr::Vector3i(0, 1, 2).unaryViewExpr([&](int i) {
+			const sibr::Vector3i corners_ids = sibr::Vector3i(0, 1, 2).unaryViewExpr([&](int i) {
 				return edges[t.edges_ids[i]].v_ids[t.edges_flipped[i] ? 1 : 0];
 			});
-			sibr::Vector3i midpoints_ids = sibr::Vector3i(0, 1, 2).unaryViewExpr([&](int i) {
+			const sibr::Vector3i midpoints_ids = sibr::Vector3i(0, 1, 2).unaryViewExpr([&](int i) {
 				return  edge_to_divided_edges[t.edges_ids[i]] >= 0 ? nOldVertices + edge_to_divided_edges[t.edges_ids[i]] : -1;
 			});
 
@@ -1808,12 +1921,12 @@ namespace sibr
 				newTriangles.push_back(midpoints_ids.cast<unsigned>());
 			}
 			else if (ks[1] >= 0) {
-				int candidate_edge_1_v_id_1 = corners_ids[non_ks[0]];
-				int candidate_edge_1_v_id_2 = midpoints_ids[(non_ks[0] + 1) % 3];
-				int candidate_edge_2_v_id_1 = corners_ids[(non_ks[0] + 1) % 3];
-				int candidate_edge_2_v_id_2 = midpoints_ids[(non_ks[0] + 2) % 3];
-				float candidate_edge_1_norm = (newVertices[candidate_edge_1_v_id_1] - newVertices[candidate_edge_1_v_id_2]).norm();
-				float candidate_edge_2_norm = (newVertices[candidate_edge_2_v_id_1] - newVertices[candidate_edge_2_v_id_2]).norm();
+				const int candidate_edge_1_v_id_1 = corners_ids[non_ks[0]];
+				const int candidate_edge_1_v_id_2 = midpoints_ids[(non_ks[0] + 1) % 3];
+				const int candidate_edge_2_v_id_1 = corners_ids[(non_ks[0] + 1) % 3];
+				const int candidate_edge_2_v_id_2 = midpoints_ids[(non_ks[0] + 2) % 3];
+				const float candidate_edge_1_norm = (newVertices[candidate_edge_1_v_id_1] - newVertices[candidate_edge_1_v_id_2]).norm();
+				const float candidate_edge_2_norm = (newVertices[candidate_edge_2_v_id_1] - newVertices[candidate_edge_2_v_id_2]).norm();
 				if (candidate_edge_1_norm < candidate_edge_2_norm) {
 					newTriangles.push_back(sibr::Vector3u(candidate_edge_1_v_id_1, corners_ids[(non_ks[0] + 1) % 3], candidate_edge_1_v_id_2));
 					newTriangles.push_back(sibr::Vector3u(candidate_edge_1_v_id_2, midpoints_ids[(non_ks[0] + 2) % 3], candidate_edge_1_v_id_1));
@@ -1831,16 +1944,16 @@ namespace sibr
 			else {
 				newTriangles.push_back(corners_ids.cast<unsigned>());
 			}
-
-			++tri_id;
 		}
-
+		std::cout << "." << std::flush;
 
 		subMeshPtr->vertices(newVertices);
+		if (hasNormals()) {
+			subMeshPtr->normals(newNormals);
+		}
 		subMeshPtr->triangles(newTriangles);
-
-		if (num_divided_edges > 0) {
-			return subMeshPtr->subDivide(limitSize);
+		if (num_divided_edges > 0 && maxRecursion > 0) {
+			return subMeshPtr->subDivide(limitSize, maxRecursion-1);
 		}
 
 		return subMeshPtr;

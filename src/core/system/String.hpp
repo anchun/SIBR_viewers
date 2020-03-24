@@ -44,10 +44,10 @@ namespace sibr
 	SIBR_SYSTEM_EXPORT std::string parentDirectory(const std::string& str);
 
 	/**
-	* Process a string (a path) to return the parent directory.
+	* Process a string (a path) to return the file name.
 	* \param str the string to process
-	* \return the string with the last component removed
-	* \note Will return the empty string if no separator was found.
+	* \return the string with all but the last component removed
+	* \note Will return the full string if no separator was found.
 	*/
 	SIBR_SYSTEM_EXPORT std::string getFileName(const std::string& str);
 
@@ -80,6 +80,12 @@ namespace sibr
 	 * \return a status code similar to sprintf
 	 */
 	SIBR_SYSTEM_EXPORT int 		sprintf(char* buffer, size_t size, const char* format, ...);
+
+	/** Convert the input string to lowert case.
+	 * \param str the input string
+	 * \return the input string in lower case
+	 */
+	SIBR_SYSTEM_EXPORT std::string					to_lower(const std::string& str);
 
 	/** Write the current timestamp to a string.
 	 * \param format the formatting to use for the timestamp (see default value for an example)

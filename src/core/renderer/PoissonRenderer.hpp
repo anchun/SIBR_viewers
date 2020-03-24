@@ -13,12 +13,14 @@
 # include "core/graphics/Shader.hpp"
 
 namespace sibr { 
+
 	/**
-	* Hole filling by poisson synthesis on an input textures;
+	* Hole filling by poisson synthesis on an input texture;
 	* contains all shaders, render targets and render passes.
 	* All black pixels on the input texture are considered holes
 	* and Poisson synthesis affects these pixels only, all
 	* other pixels are treated at Dirichlet boundary conditions.
+	* \ingroup sibr_renderer
 	*/
 	class SIBR_EXP_RENDERER_EXPORT PoissonRenderer
 	{
@@ -29,30 +31,42 @@ namespace sibr {
 
 		/**
 		* Initialize Poisson solvers render targets and shaders.
-		* \param w width of highest (or highest resolution) multigrid level
-		* \param h height of highest (or highest resolution) multigrid level
+		* \param w width of highest resolution multigrid level
+		* \param h height of highest resolution multigrid level
 		*/
 		PoissonRenderer ( uint w, uint h );
 
+		/** Perform poisson filling.
+		\param src source rendertarget, black pixels will be filled
+		\param dst destination rendertarget
+		*/
 		void	process(
 			/*input*/	const RenderTargetRGBA::Ptr& src,
 			/*ouput*/	RenderTargetRGBA::Ptr& dst );
+
+		/** Perform poisson filling.
+		\param texID source texture handle, black pixels will be filled
+		\param dst destination rendertarget
+		*/
 		void	process(
 			/*input*/	uint texID,
 			/*ouput*/	RenderTargetRGBA::Ptr& dst );
 
 		/**
-		* Return the size used for in/out textures (defined in ctor)
+		* \return the size used for in/out textures (defined in ctor)
 		*/
 		const Vector2i&		getSize( void ) const;
 
+		/** If true, fix a bug caused by erroneous viewport when initializing the internal pyramid.
+			Left exposed for retrocompatibility reasons.
+		\return a reference to the bugfix toggle. */
 		bool & enableFix() { return _enableFix; }
 
 	private:
 		/**
 		* Render the full Poisson synthesis on the holes in texture 'tex'.
 		* \param tex OpenGL texture handle of input texture
-		* \returns OpenGL texture handle of texture containing POisson synthesis solution
+		* \returns OpenGL texture handle of texture containing Poisson synthesis solution
 		*/
 		uint render( uint tex );
 
@@ -83,10 +97,13 @@ namespace sibr {
 		/** Dirichlet constraints for each multigrid level */
 		std::vector<RenderTargetRGBA::Ptr> _poisson_div_RT;
 
+		/** Jacobi step parameters. */
 		sibr::GLParameter _jacobi_weights, _jacobi_scale, _restrict_scale;
+		/** Interpolation scale. */
 		sibr::GLParameter _interp_scale;
 
-		bool _enableFix;
+		/** Enable the "weird large regions of color" bugfix. */
+		bool _enableFix = true;
 	};
 
 } /*namespace sibr*/ 

@@ -17,6 +17,7 @@ namespace sibr
 {
 	namespace Key
 	{
+		/** Key codes (based on GLFW codes). */
 		enum Code
 		{
 			Unknown = 0 /*GLFW_KEY_UNKNOWN*/,   
@@ -148,6 +149,7 @@ namespace sibr
 
 	namespace Mouse
 	{
+		/** Mouse button codes (based on GLFW codes). */
 		enum Code
 		{
 			Button1 = GLFW_MOUSE_BUTTON_1, 
@@ -169,88 +171,120 @@ namespace sibr
 		};
 	} // namespace Mouse
 
+	/** Helper keeping track of the number of keys currently pressed. */
 	struct SIBR_GRAPHICS_EXPORT KeyCombination 
 	{
+		/// Default constructor.
 		KeyCombination();
+
+		/** Constructor.
+		\param n number of keys pressed
+		\param b are they active or not
+		*/
 		KeyCombination(int n, bool b); 
 		
+		/** \return true if they are numKeys pressed keys and their combination is active. */
 		operator bool() const; 
 
-		int numKeys;
-		bool isTrue;
+		int numKeys; ///< Number of pressed keys.
+		bool isTrue; ///< Activations status.
 	};
 	
+	/** Merge two set of pressed keys.
+	\param combA  first set
+	\param combB second set
+	\return the union set
+	*/
 	KeyCombination SIBR_GRAPHICS_EXPORT operator&&( const KeyCombination & combA, const KeyCombination & combB);
 
+	/** Keep track of the pressed/active/released state of a set of keys/buttons.
+	\sa Key::Code, Mouse::Code
+	*/
 	template <int TNbState, typename TEnum>
 	class InputState
 	{
 	public:
+
+		/** Is an item currently active.
+		\param code the item code (key or mouse)
+		\return true if the item is active at this frame
+		*/
 		bool	isActivated( TEnum code ) const {
 			return _currentStates[(size_t)code];
 		}
+
+		/** Is an item released (lasts one frame).
+		\param code the item code (key or mouse)
+		\return true if the item is released at this frame
+		*/
 		bool	isReleased( TEnum code ) const {
 			return _lastStates[(size_t)code] \
 				&& !_currentStates[(size_t)code];
 		}
-		/** Return TRUE if has been pressed since this frame. */
+
+		/** Is an item pressed at this frame (lasts one frame).
+		\sa isActivated
+		\param code the item code (key or mouse)
+		\return true if the item is pressed at this frame
+		*/
 		bool	isPressed( TEnum code ) const {
 			return !_lastStates[(size_t)code] \
 				&& _currentStates[(size_t)code];
 		}
 		
+		/** Is an item currently pressed and only this one (lasts one frame).
+		\sa isActivated
+		\param code the item code (key or mouse)
+		\return true if the item is the only one pressed
+		*/
 		KeyCombination isPressedOnly( TEnum code ) const {
 			return KeyCombination(1,isPressed(code));
 		}
 
+		/** Is an item currently active and only this one.
+		\param code the item code (key or mouse)
+		\return true if the item is the only one active
+		*/
 		KeyCombination isActivatedOnly( TEnum code ) const {
 			return KeyCombination(1,isActivated(code));
 		}
 
-		bool	isActivated( TEnum code, const char* desc ) {
-			size_t c = (size_t)code;
-			if (_shortcuts[c] == nullptr)
-				_shortcuts[c] = desc;
-			else if (_shortcuts[c] != desc)
-				SIBR_ERR << "shortcut already used (current: '"
-				<< _shortcuts[c] << "', conflict with '" << desc << "')"
-				<< std::endl;
-			return _currentStates[(size_t)code];
-		}
-		bool	isReleased( TEnum code, const char* desc ) {
-			size_t c = (size_t)code;
-			if (_shortcuts[c] == nullptr)
-				_shortcuts[c] = desc;
-			else if (_shortcuts[c] != desc)
-				SIBR_ERR << "shortcut already used (current: '"
-				<< _shortcuts[c] << "', conflict with '" << desc << "')"
-				<< std::endl;
-			return _lastStates[(size_t)code] \
-				&& !_currentStates[(size_t)code];
-		}
-
+		/** Declare an item as pressed at this frame.
+		\param code the item code (Key or Mouse).
+		*/
 		void	press( TEnum code ) {
 			_currentStates[(size_t)code] = true;
 		}
+
+		/** Declare an item as released at this frame.
+		\param code the item code (Key or Mouse).
+		*/
 		void	release( TEnum code ) {
 			_currentStates[(size_t)code] = false;
 			_lastStates[(size_t)code] = true;
 		}
+
+		/** Mute an item.
+		\param code the item code (Key or Mouse).
+		*/
 		void	silent( TEnum code ) {
 			_currentStates[(size_t)code] = \
 				_lastStates[(size_t)code] = false;
 		}
 
+		/** Reset all items state.
+		*/
 		void	clearStates( void ) {
 			std::fill(_currentStates.begin(), _currentStates.end(), false);
 			std::fill(_lastStates.begin(), _lastStates.end(), false);
 		}
+
+		/** Update previous frame states with the current frame ones. */
 		void	swapStates( void ) {
 			_lastStates = _currentStates;
-			//std::swap(_lastStates, _currentStates);
-			//std::fill(_currentStates.begin(), _currentStates.end(), false);
 		}
 
+		/** \return the number of keys currently activated. */
 		int getNumActivated( void ) const {
 			int n=0;
 			for(int i=0; i<TNbState; ++i){
@@ -260,12 +294,17 @@ namespace sibr
 		}
 
 	private:
-		std::array<bool, TNbState>			_currentStates;
-		std::array<bool, TNbState>			_lastStates;
-		std::array<const char*, TNbState>	_shortcuts; // test tmp
+		std::array<bool, TNbState>			_currentStates; ///< Current frame state.
+		std::array<bool, TNbState>			_lastStates; ///< Last frame state.
 	};
 
-	/**
+	/** Maintain the complete state of user interactions (mouse, keyboard) for a given view or window.
+	All coordinates are recaled with respect to the associated view.
+	To check if the B key is currently held:
+		input.key().isActivated(Key::B);
+	To check if the right mouse was just released:
+		input.mouseButton().isReleased(Mouse::Right);
+
 	\ingroup sibr_graphics
 	*/
 	class SIBR_GRAPHICS_EXPORT Input
@@ -275,40 +314,68 @@ namespace sibr
 		typedef InputState<Mouse::count, Mouse::Code>	MouseButton;
 
 	public:
-		// Not a single (you can make copies/edits them)
+
+		/** \return the global system input (all others are derived from this one) */
 		static Input&	global( void );
 
+		/** Generate a new Input object based on a parent one and a viewport. Events (clicks) happening outside 
+			the viewport will be ignored, mouse coordinates will be recentered with respect to the viewport.
+			\param global the parent input
+			\param viewport the viewport to retrict the input to
+			\param mouseOutsideDisablesKeyboard if set to true, keyboard inputs are ignored when the mouse is outside the viewport
+			\return the new restricted input
+		*/
 		static Input subInput(const sibr::Input & global, const sibr::Viewport & viewport, const bool mouseOutsideDisablesKeyboard = true);
 
+		/** Is the mouse inside a given viewport.
+		\param viewport the viewport to test against
+		\return true if the mouse is inside.
+		*/
 		bool isInsideViewport(const sibr::Viewport & viewport) const;
 
+		/** Update internal state based on GLFW, call once per frame. */
 		static void		poll( void );
 
+		/** \return the keyboard state. */
 		const Keyboard&	key( void ) const {
 			return _keyboard;
 		}
+
+		/** \return the keyboard state. */
 		Keyboard&	key( void ) {
 			return _keyboard;
 		}
 
+		/** \return the mouse buttons state. */
 		const MouseButton&	mouseButton( void ) const {
 			return _mouseButton;
 		}
+
+		/** \return the mouse buttons state. */
 		MouseButton&	mouseButton( void ) {
 			return _mouseButton;
 		}
 
+		/** \return the current mouse position */
 		const Vector2i&	mousePosition( void ) const {
 			return _mousePos;
 		}
+
+		/** Set the current mouse position.
+		\param mousePos the new position
+		*/
 		void mousePosition( Vector2i mousePos ) {
 			_mousePos = mousePos;
 		}
+
+		/** \return the change in mouse position since last frame. */
 		Vector2i mouseDeltaPosition( void ) const {
 			return _mousePrevPos-_mousePos;
 		}
 		
-		// return 0, 1, 2, ... or 9 if corresponding key pressed (if several, the tinest), -1 otherwise
+		/** If any number key is pressed, return the lowest one.
+		\return the smallest pressed number, or -1 if none is pressed.
+		*/
 		int pressedNumber() const {
 			static const std::vector<sibr::Key::Code> keys = {
 				Key::Num0, Key::Num1, Key::Num2, Key::Num3, Key::Num4,
@@ -323,6 +390,7 @@ namespace sibr
 			return -1;
 		}
 
+		/** Update last frame state with the current one. Call at the end of each frame. */
 		void swapStates( void ) {
 			key().swapStates();
 			mouseButton().swapStates();
@@ -330,26 +398,32 @@ namespace sibr
 			_mouseScroll = 0.0;
 		}
 
+		/** \return the scroll amount along the vertical axis. */
 		double			mouseScroll( void ) const {
 			return _mouseScroll;
 		}
+
+		/** Set the scroll amount.
+		\param  v the scroll amount.
+		*/
 		void			mouseScroll(double v) {
 			_mouseScroll = v;
 		}
 
+		/** \return true if the input is associated to an empty view/window. */
 		bool empty() const {
 			return _empty;
 		}
 
 	private:
 
-		Keyboard			_keyboard;
-		MouseButton			_mouseButton;
+		Keyboard			_keyboard; ///< Keyboard state.
+		MouseButton			_mouseButton; ///< Mouse state.
 
-		Vector2i			_mousePos = {0, 0};
-		Vector2i			_mousePrevPos = { 0, 0 };
-		double				_mouseScroll = 0.0;
-		bool				_empty = true;
+		Vector2i			_mousePos = {0, 0}; ///< Current mouse  position.
+		Vector2i			_mousePrevPos = { 0, 0 }; ///< Previous mouse position.
+		double				_mouseScroll = 0.0; ///< Current scroll amount.
+		bool				_empty = true; ///< Is the input associated to an empty view/window.
 
 	};
 

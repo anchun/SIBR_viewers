@@ -138,16 +138,18 @@ sibr::Vector4f PlaneEstimator::estimatePlane(const float delta, const int numTry
 
 		Eigen::MatrixXi mask;
 		sibr::Vector4f plane = plane3Pts();
-		std::pair<int,float> votePair = votePlane(plane, delta, mask);
+		if (plane.xyz().norm() > 0) {
+			std::pair<int, float> votePair = votePlane(plane, delta, mask);
 
 #pragma omp critical
-		{
-			//std::cout << i << " ";
-			if (votePair.second > bestWVote) {
-				bestWVote = votePair.second;
-				bestVote = votePair.first;
-				bestPlane = plane;
-				bestMask = std::move(mask); // move to avoid copy
+			{
+				//std::cout << i << " ";
+				if (votePair.second > bestWVote) {
+					bestWVote = votePair.second;
+					bestVote = votePair.first;
+					bestPlane = plane;
+					bestMask = std::move(mask); // move to avoid copy
+				}
 			}
 		}
 
@@ -318,7 +320,7 @@ sibr::Mesh PlaneEstimator::getMeshPlane(sibr::Vector4f plane, sibr::Vector3f cen
 
 	sibr::Mesh::Vertices vert;
 	sibr::Mesh::Triangles tri;
-	//sibr::MaterialMesh::MatIds mat;
+	sibr::Mesh::Normals nml;
 	sibr::Mesh::UVs tex;
 
 	sibr::Vector3f u = (projCenter - plane.w()*plane.xyz()).normalized();
@@ -327,17 +329,19 @@ sibr::Mesh PlaneEstimator::getMeshPlane(sibr::Vector4f plane, sibr::Vector3f cen
 	int numP = 50;
 	for (int i = 0; i < numP; i++) {
 		vert.push_back(projCenter + radius * cos(2 * M_PI*i / numP)*u + radius * sin(2 * M_PI*i / numP)*v);
+		nml.push_back(plane.xyz().normalized());
 		tri.push_back(sibr::Vector3u(numP, i, (i + 1) % numP));
 	}
 
 	vert.push_back(projCenter);
 
 	planeMesh.vertices(vert);
+	planeMesh.normals(nml);
 	planeMesh.triangles(tri);
 	return planeMesh;
 }
 
-void PlaneEstimator::displayPCAndPlane(sibr::Window::Ptr _window)
+void PlaneEstimator::displayPCAndPlane(sibr::Window::Ptr window)
 {
 }
 

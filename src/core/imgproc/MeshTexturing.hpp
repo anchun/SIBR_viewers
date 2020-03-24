@@ -34,7 +34,7 @@ namespace sibr {
 
 		/** Set the current mesh to texture.
 		 * \param mesh the mesh to use.
-		 * \warn The mesh MUST have texcoords.
+		 * \warning The mesh MUST have texcoords.
 		 * \note If the mesh has no normals, they will be computed.
 		 */
 		void setMesh(const sibr::Mesh::Ptr mesh);
@@ -50,22 +50,66 @@ namespace sibr {
 		*/
 		sibr::ImageRGB::Ptr getTexture(uint options = NONE) const;
 
-	private:
-
 		/** Performs flood fill of an image, following a mask.
 		* \param image the image to fill
 		* \param mask mask where the zeros regions will be filled
 		* \return the filled image.
 		*/
-		static sibr::ImageRGB32F::Ptr floodFill(const sibr::ImageRGB32F & image, const sibr::ImageL8 & mask);
-		
+		template<typename T_Type, unsigned int T_NumComp>
+		static typename Image< T_Type, T_NumComp>::Ptr floodFill(const Image<T_Type, T_NumComp> & image, const sibr::ImageL8 & mask) {
+
+			typename Image< T_Type, T_NumComp>::Ptr filled(new Image< T_Type, T_NumComp>(image.w(), image.h()));
+
+			SIBR_LOG << "[Texturing] Flood filling..." << std::endl;
+			// Perform filling.
+			// We need the empty pixels marked as non zeros, and the filled marked as zeros.
+			cv::Mat1b flipMask = mask.toOpenCV().clone();
+			flipMask = 255 - flipMask;
+			cv::Mat1f dummyDist(flipMask.rows, flipMask.cols, 0.0f);
+			cv::Mat1i labels(flipMask.rows, flipMask.cols, 0);
+
+			// Run distance transform to obtain the IDs.
+			cv::distanceTransform(flipMask, dummyDist, labels, cv::DIST_L2, cv::DIST_MASK_5, cv::DIST_LABEL_PIXEL);
+
+			// Build a pixel ID to source pixel table, using the pixels in the mask.
+			const sibr::Vector2i basePos(-1, -1);
+			std::vector<sibr::Vector2i> colorTable(flipMask.rows*flipMask.cols, basePos);
+#pragma omp parallel
+			for (int py = 0; py < flipMask.rows; ++py) {
+				for (int px = 0; px < flipMask.cols; ++px) {
+					if (flipMask(py, px) != 0) {
+						continue;
+					}
+					const int label = labels(py, px);
+					colorTable[label] = { px,py };
+				}
+			}
+
+			// Now we can turn the label image into a color image again.
+#pragma omp parallel
+			for (int py = 0; py < flipMask.rows; ++py) {
+				for (int px = 0; px < flipMask.cols; ++px) {
+					// Don't touch existing pixels.
+					if (flipMask(py, px) == 0) {
+						filled(px, py) = image(px, py);
+						continue;
+					}
+					const int label = labels(py, px);
+					filled(px, py) = image(colorTable[label]);
+				}
+			}
+			return filled;
+		}
+
 		/** Performs poisson fill of an image, following a mask.
 		* \param image the image to fill
 		* \param mask mask where the zeros regions will be filled
 		* \return the filled image.
-		* \warn This is slow for large images (>8k).
+		* \warning This is slow for large images (>8k).
 		*/
 		static sibr::ImageRGB32F::Ptr poissonFill(const sibr::ImageRGB32F & image, const sibr::ImageL8 & mask);
+
+	private:
 
 		/** Test if the UV-space mesh covers a pixel of the texture map.
 		* \param px pixel x coordinate

@@ -8,13 +8,13 @@ namespace sibr {
 	}
 
 	MRFSolver::MRFSolver(std::vector<int> labels_list, std::vector<std::vector<int> >* neighborMap, int numIterations,
-		std::shared_ptr<std::function<double(int)> > unaryLabelOnly,
-		std::shared_ptr<std::function<double(int, int)> > unaryFull,
-		std::shared_ptr<std::function<double(int, int)> > pairwiseLabelsOnly,
-		std::shared_ptr<std::function<double(int, int, int, int)> > pairwiseFull)
+		UnaryLabelOnlyFuncPtr unaryLabelOnly,
+		UnaryFuncPtr unaryFull,
+		PairwiseLabelOnlyFuncPtr pairwiseLabelsOnly,
+		PairwiseFuncPtr pairwiseFull)
 		: ignoreIsolatedNode(false)
 	{
-		std::cerr << "MRFSolver initialization ... ";
+		SIBR_LOG << "[MRFSolver] Initialization ... ";
 
 		_labList = labels_list;
 		_neighborMap = neighborMap;
@@ -22,27 +22,27 @@ namespace sibr {
 		_unaryFull = unaryFull;
 		_pairwiseFull = pairwiseFull;
 
-		std::cerr << "labels : ";
+		SIBR_LOG << "[MRFSolver] Labels : ";
 		for (int l_id = 0; l_id < _labList.size(); l_id++) {
-			std::cerr << _labList[l_id] << ",";
+			std::cout << _labList[l_id] << ",";
 		}
-		std::cerr << std::endl;
+		std::cout << std::endl;
 
 		//storing values for the unary part only requiring label
 		if (unaryLabelOnly.get()) {
-			std::cerr << "unaryLabelOnly exists " << std::endl;
+			SIBR_LOG << "[MRFSolver] unaryLabelOnly exists, precomputing." << std::endl;
 			_UnaryLabelOnly.resize(_labList.size());
 			for (int l_id = 0; l_id < _labList.size(); l_id++) {
 				_UnaryLabelOnly[l_id] = (*unaryLabelOnly)(_labList[l_id]);
 			}
 		}
 		else {
-			std::cerr << "unaryLabelOnly does not exist " << std::endl;
+			SIBR_LOG << "[MRFSolver] unaryLabelOnly does not exist, skipping." << std::endl;
 		}
 
 		//storing values for the pairwise part only requiring labels
 		if (pairwiseLabelsOnly.get()) {
-			std::cerr << "pairwiseLabelsOnly exists " << std::endl;
+			SIBR_LOG << "[MRFSolver] pairwiseLabelsOnly exists, precomputing." << std::endl;
 			_PairwiseLabelsOnly.resize(_labList.size());
 
 			for (int l_id1 = 0; l_id1 < _labList.size(); l_id1++) {
@@ -54,30 +54,29 @@ namespace sibr {
 			}
 		}
 		else {
-			std::cerr << "pairwiseLabelsOnly does not exist " << std::endl;
+			SIBR_LOG << "[MRFSolver] pairwiseLabelsOnly does not exist, skipping." << std::endl;
 		}
 
-		std::cerr << " done " << std::endl;
+		SIBR_LOG << "[MRFSolver] Setup complete." << std::endl;
 	}
 
-	void MRFSolver::alphaExpansion(void)
+	void MRFSolver::solveLabels(void)
 	{
-		std::cerr << "run mincut ... " << std::endl;
+		SIBR_LOG << "[MRFSolver] Running mincut... " << std::endl;
 
-		//initialization : labels minimizing unaries
-		std::cerr << "initialization : minimizing unaries ... ";
 		double infty = (double)1e20;
 		double min_unary, temp_unary;
 		int num_nodes = (int)_neighborMap->size();
-		std::cerr << " num nodes = " << num_nodes << " ...";
+		SIBR_LOG << "[MRFSolver] Number of nodes = " << num_nodes;
 		_labels.resize(num_nodes);
 
 		int numLinks = 0;
 		for (auto & links : (*_neighborMap)) {
 			numLinks += (int)links.size();
 		}
-		std::cerr << " num links = " << numLinks / 2 << std::endl;
-
+		SIBR_LOG << ", number of links = " << numLinks / 2 << std::endl;
+		
+		SIBR_LOG << "[MRFSolver] Initialization : minimizing unaries..." << std::flush;
 		for (int p = 0; p < num_nodes; p++) {
 
 			int label_id;
@@ -91,27 +90,22 @@ namespace sibr {
 					label_id = lp_id;
 				}
 			}
-			//std::cerr << min_unary << " ";
 			_labels[p] = label_id;
-			//std::cerr << "[" << p << "," << label << "], ";
 		}
-		std::cout << "done " << std::endl;
+		std::cout << " Done." << std::endl;
 
-		std::cout << " U : " << computeEnergyU() << ", W : " << computeEnergyW() << std::endl;
+		SIBR_LOG << "[MRFSolver] Energies: U: " << computeEnergyU() << ", W: " << computeEnergyW() << std::endl;
 
-		////alpha-expansion algorithm
-		std::cout << "alpha-expansion [label,flow] : " << std::endl;
+		// Alpha-expansion algorithm
+		SIBR_LOG << "[MRFSolver] Alpha-expansion [label,flow]..." << std::endl;
 		for (int it = 0; it < _numIterations; it++) {
-			std::cout << "iteration " << it << " : ";
-			std::cout << std::endl;
+			SIBR_LOG << "[MRFSolver] Iteration " << (it+1)  << "/" << (_numIterations) << ": " << std::endl;
+			
 			for (int label_id = 0; label_id < (int)_labList.size(); label_id++) {
 				int label = _labList.at(label_id);
-				std::cerr << "[" << label; ;
+				
 				buildGraphAlphaExp(label_id);
-				std::cerr << " : ";
-
-				//solve mincut
-				//std::cout << "mincut solving ... " ;
+				// Solve mincut
 				_energy = _graph->maxflow();
 
 
@@ -121,21 +115,14 @@ namespace sibr {
 					if (_graph->what_segment(p) == GraphType::SINK) {
 						if (_labels[p] != label_id) { ++num_change; }
 						_labels[p] = label_id;
-						//if( label_id %2 ) { std::cerr << "^"; } else { std::cerr << "v"; }
-
-
 					}
-					//std::cerr << "[" << p << "," << _labels[p] << "], ";
 				}
-				std::cerr << num_change << ", " << _energy << " ], ";
-				//std::cout  << "etot : " << _energy << std::endl;
-				//std::cout << " U : " << computeEnergyU() << ", W : " << computeEnergyW() << std::endl;
-				//std::cout <<  " / energy : " << compute_energy()  << std::endl ;
+				SIBR_LOG << "[MRFSolver]\t\tLabel " << label << ": modifications = " <<  num_change << ", energy = " << _energy << " ]" << std::endl;
 
 				delete _graph;
 			}
-			std::cerr << std::endl;
 		}
+		SIBR_LOG << "[MRFSolver] Done." << std::endl;
 	}
 
 	void MRFSolver::buildGraphAlphaExp(int label_iteration_id)
@@ -149,28 +136,19 @@ namespace sibr {
 
 		//add nodes associated to pixels
 		int node_id = 0;
-		//std::cerr << "snode : ";
 		for (int p = 0; p < num_nodes; p++) {
-			//std::cerr << p << " : ";
-
 			_graph->add_node();
 
 			if (_labels[p] == label_iteration_id) {
-				//std::cerr << unaryTotal(p,label_iteration_id)<<  ", " << infty;
 				_graph->add_tweights(node_id, unaryTotal(p, label_iteration_id), infty);
-			}
-			else {
-				//std::cerr << unaryTotal(p,label_iteration_id) << ", " << unaryTotal(p,_labels[p]);
+			} else {
 				_graph->add_tweights(node_id, unaryTotal(p, label_iteration_id), unaryTotal(p, _labels[p]));
 			}
-			//std::cerr << std::endl;
 			++node_id;
 		}
-
-		//std::cerr << std::endl << "pnode : ";
+		
 		//add nodes associated to connexions between pixels
 		for (int p = 0; p < num_nodes; p++) {
-			//std::cerr <<  " " << p;
 
 			std::vector<int> & neighors = (*_neighborMap)[p];
 			for (int q_id = 0; q_id < (int)neighors.size(); q_id++) {
@@ -180,20 +158,16 @@ namespace sibr {
 				if (p == q) { std::cerr << "!"; }
 				if (q < p) { continue; }
 
-				//std::cerr << "[" << p <<  "," << q << "] : ";
 				if (_labels[p] != _labels[q]) {
 					//extra node associated to edge {p,q}
 					_graph->add_node();
 
-					//std::cerr << pairwiseTotal(q, p, _labels[q], _labels[p])  << " ";
 					_graph->add_tweights(node_id, 0, pairwiseTotal(q, p, _labels[q], _labels[p]));
 
 					double pairwise_q_a = pairwiseTotal(q, p, _labels[q], label_iteration_id);
-					//std::cerr << pairwise  << " ";
 					_graph->add_edge(q, node_id, pairwise_q_a, pairwise_q_a);
 
 					double pairwise_p_a = pairwiseTotal(q, p, label_iteration_id, _labels[p]);
-					//std::cerr << pairwise  << " ";
 					_graph->add_edge(p, node_id, pairwise_p_a, pairwise_p_a);
 
 					++node_id;
@@ -201,10 +175,8 @@ namespace sibr {
 				else
 				{
 					double pairwise_p_q = pairwiseTotal(q, p, _labels[q], label_iteration_id);
-					//std::cerr << pairwise  << " ";
 					_graph->add_edge(q, p, pairwise_p_q, pairwise_p_q);
 				}
-				//std::cerr << std::endl;
 			}
 		}
 
@@ -214,10 +186,10 @@ namespace sibr {
 	{
 		int numLabels = (int)_labList.size();
 		if (numLabels < 2) {
-			std::cout << " ERROR in MRFSolver::solveBinaryLabels, only " << numLabels << " labels " << std::endl;
+			SIBR_ERR << "[MRFSolver] solveBinaryLabels, expected 2 labels, only " << numLabels << " labels " << std::endl;
 		}
 		else if (numLabels > 2) {
-			std::cout << " WARNING in  MRFSolver::solveBinaryLabels, " << numLabels << " labels, only the first 2 will be used " << std::endl;
+			SIBR_WRG << "[MRFSolver] solveBinaryLabels, found " << numLabels << " labels, only the first two will be used." << std::endl;
 		}
 
 		buildGraphBinaryLabels();
@@ -273,10 +245,10 @@ namespace sibr {
 	double MRFSolver::unaryTotal(int p, int lp_id)
 	{
 		double u = 0;
-		if (_UnaryLabelOnly.size() != 0) {
+		if (!_UnaryLabelOnly.empty()) {
 			u += _UnaryLabelOnly[lp_id];
 		}
-		if (_unaryFull.get()) {
+		if (_unaryFull) {
 			u += (*_unaryFull)(p, _labList[lp_id]);
 		}
 		if (u < 0) { std::cerr << "!"; }
@@ -286,14 +258,13 @@ namespace sibr {
 	double MRFSolver::pairwiseTotal(int p, int q, int lp_id, int lq_id)
 	{
 		double w = 0;
-		if (_PairwiseLabelsOnly.size() != 0) {
+		if (!_PairwiseLabelsOnly.empty()) {
 			w += _PairwiseLabelsOnly[lp_id][lq_id];
 		}
 
-		if (_pairwiseFull.get()) {
+		if (_pairwiseFull) {
 			w += (*_pairwiseFull)(p, q, _labList[lp_id], _labList[lq_id]);
 		}
-		//std::cerr << w <<"|";
 		if (w < 0) { std::cerr << "?" << w << "?"; }
 		return w;
 	}

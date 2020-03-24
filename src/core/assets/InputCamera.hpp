@@ -5,6 +5,7 @@
 # include "core/graphics/Config.hpp"
 # include "core/graphics/Camera.hpp"
 # include "core/assets/Config.hpp"
+#include "core/system/picojson/picojson.hpp"
 
 namespace sibr
 {
@@ -17,67 +18,109 @@ namespace sibr
 	class SIBR_ASSETS_EXPORT InputCamera : public Camera 
 	{
 	public:
+
+		/** Near/far plane representation. */
 		struct Z {
+
+			/** Constructor. */
 			Z() {}
-			float far;
-			float near;
+
+			/** Constructor.
+			 * \warning Ordering of the values is swapped.
+			 * \param f far plane
+			 * \param n near plane
+			 */
 			Z(float f, float n) : far(f), near(n) {}
+
+			float far = 0.0f; ///< Far plane.
+			float near = 0.0f; ///< Near plane.
 		};
 
-		// Default constructor for Cameras.
+		/** Default constructor. */
 		InputCamera() :
 			_focal(0.f), _k1(0.f), _k2(0.f), _w(0), _h(0), _id(0), _active(true)
 		{ }
 
+		/** Partial constructor
+		* \param f focal length in mm
+		* \param k1 first distortion parameter
+		* \param k2 second distortion parameter
+		* \param w  width of input image
+		* \param h  height of input image
+		* \param id ID of input image
+		*/
 		InputCamera(float f, float k1, float k2, int w, int h, int id);
 
+		/** Constructor, initialize the input camera.
+		* \param id ID of input image
+		* \param w  width of input image
+		* \param h  height of input image
+		* \param position camera position
+		* \param rotation camera rotation
+		* \param focal focal length in mm
+		* \param k1 first distortion parameter
+		* \param k2 second distortion parameter
+		* \param active  input image active or not
+		*/
 		InputCamera(int id, int w, int h, sibr::Vector3f & position, sibr::Matrix3f & rotation, float focal, float k1, float k2, bool active);
 
 		/** Constructor, initialize the input camera.
 		* \param id ID of input image
 		* \param w  width of input image
 		* \param h  height of input image
-		* \param n  name of input image			<-- this one has be removed (too specific)
 		* \param m  camera parameters read from Bundler output file
-		* \param a  input image active or not
+		* \param active  input image active or not
 		* \sa Bundler: http://phototour.cs.washington.edu/bundler/
+		* \deprecated Avoid using this legacy constructor.
 		*/
-		//InputCamera( int id, int w, int h, float m[15], bool isActive );
-
 		InputCamera(int id, int w, int h, sibr::Matrix4f m, bool active);
 
-		InputCamera(const InputCamera&) = default;
-		InputCamera(InputCamera&&) = default;
+		/** Constructor from a basic Camera.
+		 * \param c camera
+		 * \param w image width
+		 * \param h image height
+		 */
 		InputCamera(const Camera& c, int w, int h);
+
+		/** Copy constructor. */
+		InputCamera(const InputCamera&) = default;
+
+		/** Move constructor. */
+		InputCamera(InputCamera&&) = default;
+
+		/** Copy operator. */
 		InputCamera&	operator =(const InputCamera&) = default;
+
+		/** Move operator. */
 		InputCamera&	operator =(InputCamera&&) = default;
 
-
-
 		/** Input image width
-		* \returns width of input image
+		* \return width of input image
 		*/
 		uint w(void) const;
 
 		/** Input image height
-		* \returns height of input image
+		* \return height of input image
 		*/
 		uint h(void) const;
 
 		/** Check if the input camera active or inactive,
 		* camera is completely ignored if set to inactive.
-		* \returns true if active, false otherwise
+		* \return true if active, false otherwise
 		*/
 		bool isActive(void) const;
 
 		/** Set camera active status
+		 *\param active if true, camera is in use
 	     */
 		void setActive(bool active) { _active = active ; }
 
-		/** Input image name */
+		/** \return the image name */
 		inline const std::string&	name(void) const { return _name; }
 
-		/** Set camera name */
+		/** Set camera name 
+		 * \param s the new name
+		 */
 		inline void					name( const std::string& s ) { _name = s; }
 
 		/** Update image dimensions. Calls \a update() after changing image width and height
@@ -86,36 +129,46 @@ namespace sibr
 		*/
 		void size( uint w, uint h );
 
-		/** Returns camera id */
+		/** \return the camera id */
 		uint id() const { return _id; }
 
-		/** following there are compatibility functions for depth preprocessing */
-
-		/** project into screen space */
+		/** Project a world space point into screen space.
+		 *\param pt 3d world point
+		 *\return screen space position and depth, in (0,w)x(0,h)x(0,1)
+		 */
 		Vector3f projectScreen( const Vector3f& pt ) const;
 
-		/** focal length */
+		/** \return the focal length */
 		float focal() const;
 
-		/** k1 distorsion param*/
+		/** \return the k1 distorsion parameter */
 		float k1() const;
 
-		/** k2 distorsion param*/
+		/** \return the k2 distorsion parameter */
 		float k2() const;
 
 		/** Back-project pixel coordinates and depth.
-		* \param p pixel coordinates p[0],p[1] in [0,w-1]x[0,h-1] and depth d in [-1,1]
-		* \returns 3D point
+		* \param pixelPos pixel coordinates p[0],p[1] in [0,w-1]x[0,h-1] 
+		* \param depth d in [-1,1]
+		* \returns 3D world point
 		*/
 		Vector3f			unprojectImgSpaceInvertY( const sibr::Vector2i & pixelPos, const float & depth ) const;
 
 		/** Project 3D point using perspective projection.
-		* \param p 3D point
+		* \param point3d 3D point
 		* \returns pixel coordinates in [0,w-1]x[0,h-1] and depth d in [-1,1]
 		*/
 		Vector3f			projectImgSpaceInvertY( const Vector3f& point3d  ) const;
 
+		/** Load from internal binary representation.
+		 * \param filename file path
+		 * \return success boolean
+		 */
 		bool				loadFromBinary( const std::string& filename );
+
+		/** Save to disk using internal binary representation.
+		 * \param filename file path
+		 */
 		void				saveToBinary( const std::string& filename ) const;
 
 		/** Save a file in the IBR TopView format.
@@ -128,19 +181,48 @@ namespace sibr
 		*/
 		void				readFromFile(std::istream& infile);
 
-		/** Return a string that can be used to create a bundle file from this camera
+		/** Conver to Bundle string.
+		 * \param negativeZ should the Z axis be flipped
+		 * \return a string that can be used to create a bundle file from this camera
 		*/
 		std::string toBundleString(bool negativeZ = false) const;
 
 
-		/** Return std::vector or 4 Vector2i coresponding the pixel at the camera corners
+		/** \return A vector of four Vector2i corresponding to the pixels at the camera corners
 		*/
 		std::vector<sibr::Vector2i> getImageCorners() const;
 
+		/** Return a new camera resized to the specified height
+		*/
+		sibr::InputCamera resizedH(int h) const;
+		/** Return a new camera resized to the specified height
+		*/
+		sibr::InputCamera resizedW(int w) const;
 
-		/** Save a vector of cameras as a bundle file
+		/** Return the lookat string of the camera
+		*/
+		std::string lookatString() const;
+		/** save a vector of cameras as lookat
+		*/
+		static void saveAsLookat(const std::vector<sibr::InputCamera> & cams, const std::string & fileName);
+		/** save a vector of cameras sizes to a file to be read by mitsuba rendering script
+		*/
+		static void saveImageSizes(const std::vector<sibr::InputCamera> & cams, const std::string & fileName);
+
+
+		/** Save a vector of cameras as a bundle file.
+		 *\param cams the cameras
+		 * \param fileName output bundle file path
+		 * \param negativeZ should the Z axis be flipped
+		 * \param exportImages should empty images with the proper dimensions be saved in a visualize subdirectory
 		*/
 		static void saveAsBundle(const std::vector<sibr::InputCamera> & cams, const std::string & fileName, bool negativeZ = false, bool exportImages = false);
+
+		/** Save a vector of cameras as a lookat file.
+		 *\param cams the cameras
+		 * \param fileName output lookat file path
+		*/
+		static void saveAsLookat(const std::vector<sibr::Camera> & cams, const std::string & fileName);
 
 		/** Load cameras from a bundler file.
 		 *\param datasetPath path to the root of the dataset, should contain bundle.out, list_images.txt and optionally clipping_planes.txt 
@@ -163,7 +245,7 @@ namespace sibr
 
 		/** Load cameras from a .lookat file generated by our Blender plugin.
 		* \param lookatPath path to the lookAt file
-		* \param wh will contain the sizes of each camera image
+		* \param wh indicative size of each camera image
 		* \returns the loaded cameras
 		*/
 		static std::vector<InputCamera> loadLookat(const std::string& lookatPath, const std::vector<sibr::Vector2u>& wh= std::vector<sibr::Vector2u>());
@@ -206,29 +288,15 @@ namespace sibr
 
 
 	protected:
-		/** focal length */
-		float _focal;
 
-		/** K1 bundler distorsion parameter */
-		float _k1;
-
-		/** K2 bundler dist parame*/
-		float _k2;
-
-		/** Image width */
-		uint _w;
-
-		/** Image height */
-		uint _h;
-
-		/** Input camera id */
-		uint _id;
-
-		/** Input image name */
-		std::string _name;
-
-		/** Image allowed to be used for image-based rendering */
-		bool _active;
+		float _focal; ///< focal length
+		float _k1; ///< K1 bundler distorsion parameter
+		float _k2; ///< K2 bundler dist parameter
+		uint _w; ///< Image width
+		uint _h; ///< Image height
+		uint _id; ///< Input camera id
+		std::string _name; ///< Input image name
+		bool _active; ///< is the camera currently in use.
 	};
 
 } // namespace sibr

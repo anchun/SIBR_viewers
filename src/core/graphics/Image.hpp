@@ -12,93 +12,201 @@
 #  include <boost/filesystem.hpp>
 # pragma warning(pop)
 
-
 namespace cv
 {
-	template <typename T_Type, int cn>
+	/** Extend OpenCV support for Eigen types. 
+	\ingroup sibr_graphics
+	*/
+	/*template <typename T_Type, int cn>
 	class DataType<Eigen::Matrix<T_Type, cn, 1, Eigen::DontAlign> >
 	{
 	public:
-		typedef Eigen::Matrix<T_Type, cn, 1, Eigen::DontAlign> value_type;
-		typedef Eigen::Matrix<typename DataType<T_Type>::work_type, cn, 1, Eigen::DontAlign> work_type;
-		typedef T_Type channel_type;
-		typedef value_type vec_type;
+		typedef Eigen::Matrix<T_Type, cn, 1, Eigen::DontAlign> value_type; ///< Vector type.
+		typedef Eigen::Matrix<typename DataType<T_Type>::work_type, cn, 1, Eigen::DontAlign> work_type; ///< Wrapper type.
+		typedef T_Type channel_type; ///< Component type.
+		typedef value_type vec_type; ///< Vector type.
 		enum { generic_type = 0, depth = DataDepth<channel_type>::value, channels = cn, fmt = ((channels - 1) << 8) + DataDepth<channel_type>::fmt, type = CV_MAKETYPE(depth, channels) };
-	};
+	};*/
 }
 
 namespace sibr
 {
+
+	/**
+	* \addtogroup sibr_graphics
+	* @{
+	*/
+
 	namespace opencv
 	{
+		/** \return the OpenCV type corresponding to a C type. */
 		template <typename T_Type>
 		SIBR_GRAPHICS_EXPORT int		imageType(void);// { return -1; } // default, unknown
+		/** \return the OpenCV type corresponding to a C type. */
+		template <> SIBR_GRAPHICS_EXPORT inline int		imageType< uint8 >(void) { return CV_8U; }
+		/** \return the OpenCV type corresponding to a C type. */
+		template <> SIBR_GRAPHICS_EXPORT inline int		imageType< int8  >(void) { return CV_8S; }
+		/** \return the OpenCV type corresponding to a C type. */
+		template <> SIBR_GRAPHICS_EXPORT inline int		imageType< uint16>(void) { return CV_16U; }
+		/** \return the OpenCV type corresponding to a C type. */
+		template <> SIBR_GRAPHICS_EXPORT inline int		imageType< int16 >(void) { return CV_16S; }
+		/** \return the OpenCV type corresponding to a C type. */
+		template <> SIBR_GRAPHICS_EXPORT inline int		imageType< int32 >(void) { return CV_32S; }
+		/** \return the OpenCV type corresponding to a C type. */
+		template <> SIBR_GRAPHICS_EXPORT inline int		imageType< float >(void) { return CV_32F; }
+		/** \return the OpenCV type corresponding to a C type. */
+		template <> SIBR_GRAPHICS_EXPORT inline int		imageType< double>(void) { return CV_64F; }
 
+		/** \return the size of the range of values a type can take when used in OpenCV. */
 		template <typename T_Type>
 		inline float			imageTypeRange(void) {
 			return (float)std::numeric_limits<T_Type>::max();//-std::numeric_limits<T_Type>::min();
 		}
-
-		template <> SIBR_GRAPHICS_EXPORT inline int		imageType< uint8 >(void) { return CV_8U; }
-		template <> SIBR_GRAPHICS_EXPORT inline int		imageType< int8  >(void) { return CV_8S; }
-		template <> SIBR_GRAPHICS_EXPORT inline int		imageType< uint16>(void) { return CV_16U; }
-		template <> SIBR_GRAPHICS_EXPORT inline int		imageType< int16 >(void) { return CV_16S; }
-		template <> SIBR_GRAPHICS_EXPORT inline int		imageType< int32 >(void) { return CV_32S; }
-		template <> SIBR_GRAPHICS_EXPORT inline int		imageType< float >(void) { return CV_32F; }
-		template <> SIBR_GRAPHICS_EXPORT inline int		imageType< double>(void) { return CV_64F; }
-
+		/** \return the size of the range of values a type can take when used in OpenCV. */
 		template <> SIBR_GRAPHICS_EXPORT inline float			imageTypeRange< float >(void) { return 1.f; }
+		/** \return the size of the range of values a type can take when used in OpenCV. */
 		template <> SIBR_GRAPHICS_EXPORT inline float			imageTypeRange< double>(void) { return 1.f; }
 
+		/** Get the size of the range of values an OpenCV type can take.
+		\param cvDepth the OpenCV type depth
+		\return the size of the range
+		*/
 		SIBR_GRAPHICS_EXPORT float			imageTypeCVRange(int cvDepth);
 
+		/** Convert a BGR cv::Mat into a RGB cv::Mat, in-place.
+		\param dst the matrix to convert
+		*/
 		SIBR_GRAPHICS_EXPORT void			convertBGR2RGB(cv::Mat& dst);
+
+		/** Convert a BGR cv::Mat into a RGB cv::Mat, in-place.
+		\param dst the matrix to convert
+		*/
 		SIBR_GRAPHICS_EXPORT void			convertRGB2BGR(cv::Mat& dst);
 	}
 
-	typedef	Vector4f			ColorRGBA;
+	typedef	Vector4f ColorRGBA;
+
+	/** @} */
 
 	/**
-	* Interface virtual class for all the templated image classes
+	* Interface virtual class for all the templated image classes.
 	* Contains all functions not making reference to the internal type or numComp in their signature/return type
-	* see Image class to know what these functions actually do
+	* \sa Image
+	* \ingroup sibr_graphics
 	*/
-	class IImage {
+	class SIBR_GRAPHICS_EXPORT IImage {
 	public:
 		SIBR_CLASS_PTR(IImage);
 
+		/** Load an image from the disk (png, jpeg, exr, etc., see OpenCV cv::imread documentation for more details).
+		\param filename the path to the file
+		\param verbose display additional informations
+		\param warning_if_not_found log if the file doesn't exist, even if verbose is set to false
+		\return a success flag
+		*/
 		virtual bool			load(const std::string& filename, bool verbose = true, bool warning_if_not_found = true) = 0;
+		
+		/** Load an image from the disk (stored as a raw binary blob).
+		\param filename the path to the file
+		\param verbose display additional informations
+		\return a success flag
+		*/
 		virtual bool			loadByteStream(const std::string& filename, bool verbose = true) = 0;
 
+		/** Save an image to the disk (png, jpeg, see OpenCV cv::imwrite documentation for more details).
+		\param filename the path to the file
+		\param verbose display additional informations
+		\warning HDR images will be converted to LDR, \sa saveHDR .
+		\warning Some image formats can't be stored in some file formats.
+		*/
 		virtual void			save(const std::string& filename, bool verbose = true) const = 0;
+
+		/** Save an image to the disk (as a raw binary blob).
+		\param filename the path to the file
+		\param verbose display additional informations
+		*/
 		virtual void			saveByteStream(const std::string& filename, bool verbose = true) const = 0;
 
+		/** Save an HDR image to the disk (exr, hdr, see OpenCV cv::imwrite documentation for more details).
+		\param filename the path to the file
+		\param verbose display additional informations
+		*/
+		virtual void			saveHDR(const std::string& filename, bool verbose = true) const = 0;
+
+		/** \return the image width. */
 		virtual uint			w(void) const = 0;
+
+		/** \return the image height. */
 		virtual uint			h(void) const = 0;
+
+		/** \return the image size. */
 		virtual sibr::Vector2u	size(void) const = 0;
 
+		/** Check if a pixel (x,y) is inside the image boundaries.
+		\param xy the pixel coordinates
+		\return true if 0<=x<w and 0<=y=<h */
 		virtual bool			isInRange(const sibr::Vector2i & xy)  const = 0;
 
+		/** Get the value stored at a pixel and convert it to a string representation.
+		\param xy the pixel coordinates
+		\return a string representation of the pixel value.
+		*/
 		virtual std::string		pixelStr(const sibr::Vector2i & xy)  const = 0;
 
+		/** \return the number of components of the image. */
 		virtual uint			numComp(void) const = 0;
+
+		/** \return the size of a pixel value in bytes. */
 		virtual uint			sizeOfComp(void) const = 0;
 
+		/** Flip the image along the horizontal axis. */
 		virtual void			flipH(void) = 0;
+
+		/** Flip the image along the vertical axis. */
 		virtual void			flipV(void) = 0;
 
+		/** \return the image OpenCV type. */
 		virtual int				opencvType(void) const = 0;
+
+		/** \return a reference to the underlying OpenCV matrix. */
 		virtual const cv::Mat&	toOpenCV(void) const = 0;
+
+		/** \return a reference to the underlying OpenCV matrix. */
 		virtual cv::Mat&		toOpenCVnonConst(void) = 0;
-		virtual void			fromOpenCV(const cv::Mat& img) = 0;
+
+		/** \return a copy of the matrix with channels flipped.
+		\note Only applies to 3 and 4 channel images.
+		*/
 		virtual cv::Mat			toOpenCVBGR(void) const = 0;
+
+		/** Replace the content of the image with the content of another matrix.
+		\param img the new matrix
+		*/
+		virtual void			fromOpenCV(const cv::Mat& img) = 0;
+
+		/** Replace the content of the image with the content of another matrix, flipping channels.
+		\param img the new matrix
+		\note Only applies to 3 and 4 channel images.
+		*/
 		virtual void			fromOpenCVBGR(const cv::Mat& img) = 0;
 
+		/** Get the size of jpeg image file by reading it's header.
+		\param file the input filestream
+		\return Returns sibr::Vector2i of widthXheight else (-1, -1) if the header cannot be read 
+		*/
+		static sibr::Vector2i			get_jpeg_size(std::ifstream& file);
+
+		/** Get the size of an image file from it's header. Supported file type: {png, jpg, jpeg, bmp, tga}.
+		\param file the input file path
+		\return sibr::Vector2i of widthXheight else (-1, -1) if the header cannot be read 
+		*/
+		static sibr::Vector2i			imageResolution(const std::string& file_path);
 
 	};
 
 
-
+	/** Wrapper around an image pointer.
+	* \ingroup sibr_graphics */
 	template<typename T_Type, unsigned int T_NumComp>
 	class ImagePtr;
 
@@ -107,190 +215,491 @@ namespace sibr
 	* is used. The template parameter define a fixed size/format that
 	* will be used to convert automatically the image format when
 	* you load or copy from another image.
-	* Note that OpenCV uses generally BGR channels (e.g. after loading
-	* an image file). However the internal cv::Mat of this class stores
+	* \warning We disallow copy as we would have to do a costly in-depth copy of the underlying cv::Mat.
+	* If you store images in a vector attribute of a class, you might have to SIBR_DISALLOW_COPY of your class.
+	* \note OpenCV uses generally BGR channels (e.g. after loading an image file). 
+	* However the internal cv::Mat of this class stores
 	* RGB channels. You can get RGB cv::Mat with toOpenCV() or use
 	* toOpenCVBGR(). (Most of OpenCV's features works with RGB too but
 	* not imshow, imwrite, imread.)
-	\ingroup sibr_graphics
+	* \ingroup sibr_graphics
 	*/
 	template<typename T_Type, unsigned int T_NumComp>
-	class /*SIBR_GRAPHICS_EXPORT*/ Image : public IImage {
+	class Image : public IImage {
 	public:
 		typedef T_Type						Type;
-		//SIBR_CLASS_PTR(Image);
 		typedef ImagePtr<T_Type, T_NumComp> Ptr;
 
-		//typedef std::unique_ptr<classname>	UPtr;
-		typedef Eigen::Matrix<T_Type, T_NumComp, 1, Eigen::DontAlign>	Pixel; // RGB
+		typedef Eigen::Matrix<T_Type, T_NumComp, 1, Eigen::DontAlign> Pixel;
 		enum { e_NumComp = T_NumComp };
 
 	public:
+
+		/// Default constructor.
 		Image(void);
+
+		/** Constructor.
+		\param width image width
+		\param height image height
+		\warning The image content will be undefined.
+		*/
 		Image(uint width, uint height);
+
+		/** Constructor.
+		\param width image width
+		\param height image height
+		\param init default value to use for all components of all pixels
+		*/
 		Image(uint width, uint height, const T_Type& init);
+
+		/** Constructor.
+		\param width image width
+		\param height image height
+		\param init default value to use for all pixels
+		*/
 		Image(uint width, uint height, const Pixel& init);
-		// Image( const std::string& filename ); // <== I don't recommand this (how do we check result?)
 
-		// Copy is not authorized, this is a move ctor
+		/** Move constructor.
+		\param other image to move, don't use after move
+		*/
 		Image(Image&& other);
-		Image& operator=(Image&& other);
 
+		/** Move operator.
+		\param other image to move, don't use after move
+		*/
+		Image& operator=(Image&& other) noexcept;
+
+		/**
+		\copydoc IImage::load
+		*/
 		bool		load(const std::string& filename, bool verbose = true, bool warning_if_not_found = true);
+
+		/**
+		\copydoc IImage::loadByteStream
+		*/
 		bool		loadByteStream(const std::string& filename, bool verbose = true);
-		/// ATTENTION: if you try to save an image with a channel depth
-		/// that is not managed by a file format (e.g. saving 32F to .jpeg),
-		/// you will porbably get weird pixel.
-		/// TODO: try to print an error for this.
+		
+		/**
+		\copydoc IImage::save
+		*/
 		void		save(const std::string& filename, bool verbose = true) const;
-		void		saveHDR(const std::string& filename, bool verbose = true) const;
+
+		/**
+		\copydoc IImage::saveByteStream
+		*/
 		void		saveByteStream(const std::string& filename, bool verbose = true) const;
 
-		/*const Pixel&	pixel(uint x, uint y) const;
-		Pixel&			pixel(uint x, uint y);
-		const Pixel&	pixel(const sibr::Vector2i & xy) const;
-		Pixel&			pixel(const sibr::Vector2i & xy);*/
+		/**
+		\copydoc IImage::saveHDR
+		*/
+		void		saveHDR(const std::string& filename, bool verbose = true) const;
 
+		/** Pixel accessor.
+		\param x x coordinate
+		\param y y coordinate
+		\return a reference to the pixel value.
+		*/
 		const Pixel&	operator()(uint x, uint y) const;
+
+		/** Pixel accessor.
+		\param x x coordinate
+		\param y y coordinate
+		\return a reference to the pixel value.
+		*/
 		Pixel&			operator()(uint x, uint y);
+
+		/** Pixel accessor.
+		\param xy pixel coordinates
+		\return a reference to the pixel value.
+		*/
 		const Pixel&	operator()(const sibr::Vector2i & xy) const;
+
+		/** Pixel accessor.
+		\param xy pixel coordinates
+		\return a reference to the pixel value.
+		*/
 		Pixel&			operator()(const sibr::Vector2i & xy);
+
+		/** Pixel accessor.
+		\param xy pixel coordinates
+		\return a reference to the pixel value.
+		*/
 		const Pixel&	operator()(const sibr::Vector2f & xy) const;
+
+		/** Pixel accessor.
+		\param xy pixel coordinates
+		\return a reference to the pixel value.
+		*/
 		Pixel&			operator()(const sibr::Vector2f & xy);
 
+		/** \copydoc IImage::pixelStr */
 		virtual std::string		pixelStr(const sibr::Vector2i & xy)  const;
 
-		void			pixel(uint x, uint y, const Pixel& p); /// \todo TODO: should be removed
+		/** \return a pointer to the raw image data. */
 		const void*		data(void) const;
+
+		/** \return a pointer to the raw image data. */
 		void*			data(void);
 
+
+		/** Convert a pixel value to a 4 components float vector (in 0,1).
+		\param x x coordinate
+		\param y y coordinate
+		\return the normalized expanded value
+		*/
 		ColorRGBA	 color(uint x, uint y) const;
+
+		/** Set a pixel value from 4 components float vector (in 0,1).
+		\param x x coordinate
+		\param y y coordinate
+		\param c the new value
+		*/
 		void		 color(uint x, uint y, const ColorRGBA& c);
+
+		/** Helper to convert a 4 components float vector (in 0,1) to the proper pixel format.
+		\param rgba the value to convert
+		\return the converted value
+		*/
 		static Pixel color(const ColorRGBA& rgba);
 
-		/// Return a resized version of the current image
+		/** Generate a resized version of the current image.
+		\param width the target width
+		\param height the target height
+		\param cv_interpolation_method the up/down scaling method
+		\return the resized image
+		*/ 
 		Image		resized(int width, int height, int cv_interpolation_method = cv::INTER_LINEAR) const;
-		/// Return a resized version of the current image so that
-		/// the maximum length (either width or height) is now equal
-		/// to \param maxlen. Keep original ratio.
-		/// e.g.: src is 2048x1024
-		///          resizedMax(1024) -> dst is 1024x512
+		
+		/** Generate a resized version of the current image so that the maximum 
+		dimension (either width or height) is now equal to maxlen. Preserve the original ratio.
+		Example: src is 2048x1024, resizedMax(1024) -> dst is 1024x512
+		\param maxlen the target maximum dimension value
+		\return the resized image
+		*/ 
 		Image		resizedMax(int maxlen) const;
 
+		/** \return a deep copy of the image. */
 		Image		clone(void) const;
 
+		/** \return a pointer to a deep copy of the image. */
 		ImagePtr<T_Type, T_NumComp>	  clonePtr(void) const;
 
-		/// Image sizes
-		/// Note that 'width' and 'height' would be more coherent than
-		/// just 'w' and 'h'...
+		/** \return the image width. */
 		uint			w(void) const;
+
+		/** \return the image height. */
 		uint			h(void) const;
+
+		/** \return the image size. */
 		sibr::Vector2u size(void) const;
+
+		/** Check if a pixel (x,y) is inside the image boundaries.
+		\param x x coordinate
+		\param y y coordinate
+		\return true if 0<=x<w and 0<=y=<h */
 		template <typename T>
 		bool			isInRange(T x, T y) const { return (x >= 0 && y >= 0 && x < (T)w() && y < (T)h()); }
+
+		/** Check if a pixel (x,y) is inside the image boundaries.
+		\param x x coordinate
+		\param y y coordinate
+		\return true if 0<=x<w and 0<=y=<h 
+		\todo Duplicate call used in inpainting, remove.
+		*/
 		template <typename T>
-		bool			inRange(T x, T y) const { return (x >= 0 && y >= 0 && x < (T)w() && y < (T)h()); }
+		bool			inRange(T x, T y) const { return isInRange(x, y); }
+
+		/** Check if a pixel (x,y) is inside the image boundaries.
+		\param xy the pixel coordinates
+		\return true if 0<=x<w and 0<=y=<h */
 		bool			isInRange(const sibr::Vector2i & xy)  const { return (xy.x() >= 0 && xy.y() >= 0 && xy.x() < (int)w() && xy.y() < (int)h()); }
+		
+		/** Check if a pixel (x,y) is inside the image boundaries.
+		\param xy the pixel coordinates
+		\return true if 0<=x<w and 0<=y=<h */
 		bool			isInRange(const sibr::Vector2f & xy)  const { return (xy.x() >= 0 && xy.y() >= 0 && xy.x() < (float)w() && xy.y() < (float)h()); }
 
+		/** \copydoc IImage::numComp */
 		uint		numComp(void) const;
+
+		/** \copydoc IImage::sizeOfComp */
 		uint		sizeOfComp(void) const;
 
-		/// Flip horizontaly
+		/** \copydoc IImage::flipH */
 		void		flipH(void);
-		/// Flip vertically
+
+		/** \copydoc IImage::flipV */
 		void		flipV(void);
 
+		/** \copydoc IImage::opencvType */
 		int				opencvType(void) const { return CV_MAKETYPE(opencv::imageType<T_Type>(), T_NumComp); }
+
+		/** \copydoc IImage::toOpenCV */
 		const cv::Mat&	toOpenCV(void) const { return _pixels; }
+
+		/** \copydoc IImage::toOpenCVnonConst */
 		cv::Mat&		toOpenCVnonConst(void) { return _pixels; }
-		void			fromOpenCV(const cv::Mat& img);
+		
+		/** \copydoc IImage::toOpenCVBGR */
 		cv::Mat			toOpenCVBGR(void) const;
+		
+		/** \copydoc IImage::fromOpenCV */
+		void			fromOpenCV(const cv::Mat& img);
+		
+		/** \copydoc IImage::fromOpenCVBGR */
 		void			fromOpenCVBGR(const cv::Mat& img);
 
-		// compatibility functions from libsl
-		void findMinMax(Pixel&, Pixel&);
-		void remap(const Pixel&, const Pixel&);
+		/** Find the component-wise minimum and maximum values contained in the image.
+		\param minImage will contain the minimum value
+		\param maxImage will contain the maximum value
+		*/
+		void findMinMax(Pixel& minImage, Pixel& maxImage);
 
-		/// Cast into another image type
+		/** Rescale an image content in a defined range.
+		\param minValue the lower value of the range
+		\param maxValue the upper value of the range
+		*/
+		void remap(const Pixel& minValue, const Pixel& maxValue);
+
+		/** Cast into another image type.
+		\return the converted image
+		*/
 		template<class T_Image> T_Image cast() const {
 			T_Image b;
 			b.fromOpenCV(toOpenCV());
 			return b;
 		}
 
-		/// bilinear interpolation color from a floating 2d position
-		/// \param pixel query position in [0,w[x[0,h[
+		/** Fetch bilinear interpolated value from floating point pixel coordinates.
+			\param pixel query position in [0,w[x[0,h[
+			\return the interpolated value
+		*/
 		Pixel bilinear(const sibr::Vector2f & pixel) const;
 
-		///static helper for bicubic function
-		static Eigen::Matrix<float, T_NumComp, 1, Eigen::DontAlign> monoCubic(float t, const Eigen::Matrix<float, T_NumComp, 4, Eigen::DontAlign> & colors);
-
-		/// bicubic interpolation color from a floating 2d position
-		/// \param pixelPosition query position in [0,w[x[0,h[
+		/** Fetch bicubic interpolated value from floating point pixel coordinates.
+			\param pixelPosition query position in [0,w[x[0,h[
+			\return the interpolated value
+		*/
 		Pixel bicubic(const sibr::Vector2f & pixelPosition) const;
 
-	private:
-		//Image&		operator =( const cv::Mat& img ); // deprecated, use fromOpenCV() instead
+		/** Disallow copy constructor.
+		\param other image to copy
+		*/
+		Image( const Image& other) = delete;
 
-		// I though that opencv was doing something clever when copying images (only duplicate
-		// pixels if we modify them) but no, they just point to the same place. We should use
-		// shared_ptr to do this (or unique_ptr if you can).
-		// Note you can also use no pointer at all and even use it in STL container such as
-		// std::vector. If you do that and use a such vector as a class member, then disallow
-		// the copy of your class using SIBR_DISALLOW_COPY (see example in sibr/view/IBRScene).
-		// Visual Studio is too stupid to automatically disallow copy of your class and will try
-		// to generate copy ctor/ copy operator even if you don't use them (-_-'). In this case
-		// use SIBR_DISALLOW_COPY to specify you clearly don't want to generate them.
-		//		Image( const Image& );					// Disallowed
-		Image& 		operator =(const Image&);	// Disallowed
+		/** Disallow copy operator.
+		\param other image to copy
+		*/
+		Image& 		operator =(const Image& other) = delete;
 
 	protected:
-		cv::Mat			_pixels;	///< pixels stored in RGB format
+
+		/** Helper for bicubic interpolation.
+		\param t blend factor
+		\param colors colors at the four corners
+		\return interpolated value
+		*/
+		static Eigen::Matrix<float, T_NumComp, 1, Eigen::DontAlign> monoCubic(float t, const Eigen::Matrix<float, T_NumComp, 4, Eigen::DontAlign>& colors);
+
+		cv::Mat			_pixels; ///< Pixels stored in RGB format
 	};
 
+	/** Provides a wrapper around a pointer to an image. 
+	\ingroup sibr_graphics
+	*/
 	template<typename T_Type, unsigned int T_NumComp>
 	class ImagePtr {
 	public:
 		
-		using ImageType = Image<T_Type, T_NumComp>;
+		using ImageType = Image<T_Type, T_NumComp>; ///< Underlying image type.
 
-		std::shared_ptr<Image<T_Type, T_NumComp>> imPtr;
+		std::shared_ptr<Image<T_Type, T_NumComp>> imPtr; ///< Pointer type.
 		
+		/// Default constructor.
 		ImagePtr() { imPtr = std::shared_ptr<Image<T_Type, T_NumComp>>(); };
+
+		/** Constructor from a raw pointer.
+		\param imgPtr the raw pointer to wrap
+		*/
 		ImagePtr(Image<T_Type, T_NumComp>* imgPtr) { imPtr = std::shared_ptr<Image<T_Type, T_NumComp>>(imgPtr); };
+		
+		/** Constructor from a shared pointer.
+		\param imgPtr the shared pointer to wrap
+		*/
 		ImagePtr(const std::shared_ptr<Image<T_Type, T_NumComp>>& imgPtr)  {imPtr = std::shared_ptr<Image<T_Type, T_NumComp>>(imgPtr); };
 
+		/** Generate a pointer by cloning an image.
+		\param img the image to clone
+		\return the pointer
+		*/
 		static ImagePtr fromImg(const ImageType & img) { return ImagePtr(std::make_shared<Image<T_Type, T_NumComp>>(img.clone())); }
 
+		/** Set a new pointee.
+		\param ptr the new image pointer
+		*/
 		void reset(ImageType * ptr) { imPtr.reset(ptr); }
 
+		/** \return the image */
 		typename Image<T_Type, T_NumComp>*	get() { return imPtr.get(); };
+
+		/** Pixel accessor.
+		\param x x coordinate
+		\param y y coordinate
+		\return a reference to the pixel value.
+		*/
 		const typename Image<T_Type, T_NumComp>::Pixel&			operator()(uint x, uint y) const;
+
+		/** Pixel accessor.
+		\param x x coordinate
+		\param y y coordinate
+		\return a reference to the pixel value.
+		*/
 		typename Image<T_Type, T_NumComp>::Pixel&				operator()(uint x, uint y);
+
+		/** Pixel accessor.
+		\param xy pixel coordinates
+		\return a reference to the pixel value.
+		*/
 		const typename Image<T_Type, T_NumComp>::Pixel&			operator()(const sibr::Vector2i & xy) const;
+
+		/** Pixel accessor.
+		\param xy pixel coordinates
+		\return a reference to the pixel value.
+		*/
 		typename Image<T_Type, T_NumComp>::Pixel&				operator()(const sibr::Vector2i & xy);
 
+		/** \return the dereferenced image */
 		typename Image<T_Type, T_NumComp>&						operator * () { return imPtr.operator*(); };
+
+		/** \return the dereferenced image */
 		const typename Image<T_Type, T_NumComp>&				operator * () const { return imPtr.operator*(); };
+
+		/** \return raw pointer to the image */
 		typename Image<T_Type, T_NumComp>*						operator -> () { return imPtr.operator->(); };
+
+		/** \return raw pointer to the image */
 		const typename Image<T_Type, T_NumComp>*				operator -> () const { return imPtr.operator->(); };
-		//void													operator = (const std::shared_ptr<Image<T_Type, T_NumComp>> imgShPtr) const { (*this) = imgShPtr; };
-		//typename std::shared_ptr<Image<T_Type, T_NumComp>> & 		operator = (const std::shared_ptr<Image<T_Type, T_NumComp>> & imgShPtr) const { imPtr = imgShPtr; return &imPtr; };
+		
+		/** Assign a shared ptr.
+		\param imgShPtr the shared pointer
+		\return a reference to the updated pointer
+		*/ 
 		typename std::shared_ptr<Image<T_Type, T_NumComp>> & 			operator = (std::shared_ptr<Image<T_Type, T_NumComp>> & imgShPtr) { imPtr = imgShPtr; return &imPtr; };
+		
+		/** \return true if the image pointer is initialized. */
 		operator bool() { return imPtr.get() != nullptr; };
+
+		/** \return true if the image pointer is initialized. */
 		operator bool() const { return imPtr.get() != nullptr; };
 
 	};
 
+	/**
+	* \addtogroup sibr_graphics
+	* @{
+	*/
 
+	/// Standard image types
+	typedef Image<unsigned char, 3> ImageRGB;
+	typedef Image<unsigned char, 4> ImageRGBA;
+	typedef Image<unsigned char, 1> ImageL8;
+	typedef Image<unsigned char, 2> ImageUV8;
+	typedef Image<unsigned short int, 3> ImageRGB16;
+	typedef Image<unsigned short int, 1> ImageL16;
+	typedef Image<float, 3>         ImageRGB32F;
+	typedef Image<float, 3>         ImageFloat3;
+	typedef Image<float, 4>         ImageRGBA32F;
+	typedef Image<float, 4>         ImageFloat4;
+	typedef Image<float, 1>         ImageL32F;
+	typedef Image<float, 1>         ImageFloat1;
+	typedef Image<float, 2>         ImageFloat2;
+	typedef Image<float, 2>         ImageUV32F;
+	typedef Image<bool, 1>          ImageBool1;
+	typedef Image<double, 1>        ImageDouble1;
+	typedef Image<double, 2>        ImageDouble2;
+	typedef Image<double, 3>        ImageDouble3;
+	typedef Image<double, 4>        ImageDouble4;
+	typedef Image<int, 1>        ImageInt1;
+	typedef Image<int, 2>        ImageInt2;
+	typedef Image<int, 3>        ImageInt3;
+
+
+	/** Convert an integer ID map to a colored image using a different random color for each ID. Note that 255 is black.
+	\param imClass the ID map
+	\return a color coded map
+	*/
+	SIBR_GRAPHICS_EXPORT Image<unsigned char, 3> coloredClass(const Image<unsigned char, 1>::Ptr imClass);
+
+	/** Convert an integer ID map to a colored image using a different random color for each ID. Note that 255 is black.
+	\param imClass the ID map
+	\return a color coded map
+	*/
+	SIBR_GRAPHICS_EXPORT Image<unsigned char, 3> coloredClass(const Image<int, 1>::Ptr imClass);
+
+	/** Display a 32F image in a debug window, using the Parula colormap after normalizing the values.
+	\param im the float image to display
+	\param logScale display log(img)
+	\param min optional lower bound for the normalization
+	\param max optional upper bound for the normalization
+	*/
+	SIBR_GRAPHICS_EXPORT void showFloat(const Image<float, 1> & im, bool logScale = false, double min = -DBL_MAX, double max = DBL_MAX);
+
+	/** Convert a L32F into a RGBA image while preserving bit-level representation.
+	Useful to save float maps as PNG, and benefit from PNG compression on disk.
+	\param imgF the image to convert
+	\return the packed RGBA image 
+	*/
+	SIBR_GRAPHICS_EXPORT sibr::ImageRGBA convertL32FtoRGBA(const sibr::ImageL32F & imgF);
+
+	/** Convert a RGBA into a L32F image while preserving bit-level representation.
+	Useful to decode float maps stored as as PNG.
+	\param imgRGBA the image to convert
+	\return the unpacked float image 
+	*/
+	SIBR_GRAPHICS_EXPORT sibr::ImageL32F convertRGBAtoL32F(const sibr::ImageRGBA  & imgRGBA);
+
+	/** Convert a RGB32F into a RGBA image (3 times wider) while preserving bit-level representation.
+	Useful to save float maps as PNG, and benefit from PNG compression on disk.
+	\param imgF the image to convert
+	\return the packed RGBA image 
+	*/
+	SIBR_GRAPHICS_EXPORT sibr::ImageRGBA convertRGB32FtoRGBA(const sibr::ImageRGB32F & imgF);
+
+	/** Convert a RGBA into a RGB32F image while preserving bit-level representation.
+	Useful to decode float maps stored as as PNG.
+	\param imgRGBA the image to convert
+	\return the unpacked float image 
+	*/
+	SIBR_GRAPHICS_EXPORT sibr::ImageRGB32F convertRGBAtoRGB32F(const sibr::ImageRGBA & imgRGBA);
+
+	/** Convert a RGB32 normal map into a UV16 map storing theta and phi as half floats, packed into a RGBA8.
+	\param imgF the XYZ normal map
+	\return the packed theta,phi normal map
+	*/
+	SIBR_GRAPHICS_EXPORT sibr::ImageRGBA convertNormalMapToSphericalHalf(const sibr::ImageRGB32F & imgF);
+
+	/** Convert a RGBA map, packing theta and phi as half floats, into a RGB32 normal map.
+	\param imgF packed theta,phi normal map
+	\return the XYZ normal map
+	*/
+	SIBR_GRAPHICS_EXPORT sibr::ImageRGB32F convertSphericalHalfToNormalMap(const sibr::ImageRGBA & imgF);
+
+	/** Create a three channels cv::Mat by repeating a single channel cv::Mat.
+	\param c the input cv::Mat
+	\return a three channels cv::Mat
+	*/
+	SIBR_GRAPHICS_EXPORT cv::Mat duplicate3(cv::Mat c);
+
+	/** Display an image into a popup OpenCV window.
+	\param img the image to display
+	\param windowTitle the window title
+	\param closeWindow close the window after key presses
+	*/
 	template <typename T_Type, unsigned T_NumComp>
 	static void		show(const Image<T_Type, T_NumComp> & img, const std::string& windowTitle = "sibr::show()", bool closeWindow = true) {
-		cv::namedWindow(windowTitle, CV_WINDOW_AUTOSIZE | CV_WINDOW_KEEPRATIO | CV_GUI_EXPANDED);
-		// Note: CV_GUI_EXPANDED does only work with Qt :s
-		//SIBR_ASSERT(img.w() > 1 || img.h() > 1);
-
+		cv::namedWindow(windowTitle, cv::WINDOW_AUTOSIZE | cv::WINDOW_KEEPRATIO | cv::WINDOW_GUI_EXPANDED);
+		// Note: CV_GUI_EXPANDED does only work with Qt
+		
 		cv::imshow(windowTitle, img.toOpenCVBGR());
 		cv::waitKey(0);
 		if (closeWindow) {
@@ -298,9 +707,9 @@ namespace sibr
 		}
 	}
 
-	SIBR_GRAPHICS_EXPORT Image<unsigned char, 3> coloredClass(const Image<unsigned char, 1>::Ptr imClass);
-	SIBR_GRAPHICS_EXPORT Image<unsigned char, 3> coloredClass(const Image<int, 1>::Ptr imClass);
-	SIBR_GRAPHICS_EXPORT void showFloat(const Image<float, 1> & im, bool logScale = false, double min = -DBL_MAX, double max = DBL_MAX);
+	/*** @} */
+
+	// ----- DEFINITIONS -------------
 
 	template<typename T_Type, unsigned int T_NumComp>
 	Image<T_Type, T_NumComp>::Image(void) :
@@ -331,7 +740,7 @@ namespace sibr
 	}
 
 	template<typename T_Type, unsigned int T_NumComp>
-	Image<T_Type, T_NumComp>& Image<T_Type, T_NumComp>::operator=(Image<T_Type, T_NumComp>&& other) {
+	Image<T_Type, T_NumComp>& Image<T_Type, T_NumComp>::operator=(Image<T_Type, T_NumComp>&& other) noexcept {
 		_pixels = std::move(other._pixels);
 		return *this;
 	}
@@ -418,7 +827,7 @@ namespace sibr
 			SIBR_LOG << "Loading image file '" << filename << "'." << std::endl;
 		else
 			std::cerr << ".";
-		cv::Mat img = cv::imread(filename, CV_LOAD_IMAGE_UNCHANGED | CV_LOAD_IMAGE_ANYDEPTH | CV_LOAD_IMAGE_ANYCOLOR);
+		cv::Mat img = cv::imread(filename, cv::IMREAD_UNCHANGED | cv::IMREAD_ANYDEPTH | cv::IMREAD_ANYCOLOR);
 		if (img.data == nullptr)
 		{
 			operator =(Image<T_Type, T_NumComp>()); // reset mat
@@ -488,7 +897,7 @@ namespace sibr
 
 		cv::Mat img;
 		if (T_NumComp == 1) {
-			cv::cvtColor(toOpenCVBGR(), img, CV_GRAY2BGR);
+			cv::cvtColor(toOpenCVBGR(), img, cv::COLOR_GRAY2BGR);
 		} /// \todo TODO: support for 2 channels images.
 		else {
 			// For 3 and 4 channels, leave the image untouched.
@@ -527,13 +936,6 @@ namespace sibr
 				boost::filesystem::create_directories(outdir);
 		}
 
-		// Important Note:
-		// If you have a problem when saving an image (e.g. black image) then
-		// check the targeted image file format manages correctly the T_Type and
-		// T_NumpComp you provide.
-		// OpenCV doesn't seem to check always for such incompatibility (and just
-		// save empty pixels)
-
 		if (verbose)
 			SIBR_LOG << "Saving image file '" << filename << "'." << std::endl;
 
@@ -564,7 +966,6 @@ namespace sibr
 			SIBR_WRG << "failed to save (image is empty)" << std::endl;
 	}
 
-	/* Save and Load function for images of arbitrary types*/
 	template <typename T_Type, unsigned int T_NumComp>
 	void		Image<T_Type, T_NumComp>::saveByteStream(const std::string& filename, bool verbose) const {
 		{ // Create the output dir if doesn't exists
@@ -621,8 +1022,6 @@ namespace sibr
 #endif
 		SIBR_ASSERT(x < w() && y < h());
 		return _pixels.at<typename Image<T_Type, T_NumComp>::Pixel>(y, x);
-		//return reinterpret_cast<Image<T_Type, T_NumComp>::Pixel>(_pixels.at<cv::Vec<T_Type, T_NumComp>>(y, x));
-		// return _pixels.at<typename T_Type>(y, x);
 	}
 
 	template<typename T_Type, unsigned int T_NumComp>
@@ -631,15 +1030,6 @@ namespace sibr
 		return (*imPtr)(x, y);
 	}
 
-
-
-	template<typename T_Type, unsigned int T_NumComp>
-	void		Image<T_Type, T_NumComp>::pixel(uint x, uint y, const Pixel& p) {
-		SIBR_ASSERT(x < w() && y < h());
-		cv::Vec<T_Type, T_NumComp> v;//(p.data(), T_NumComp);
-		for (uint i = 0; i < T_NumComp; ++i) v[i] = p[i];
-		_pixels.at<cv::Vec<T_Type, T_NumComp>>(y, x) = v;
-	}
 
 	template<typename T_Type, unsigned int T_NumComp>
 	inline const typename Image<T_Type, T_NumComp>::Pixel& Image<T_Type, T_NumComp>::operator()(const sibr::Vector2i & xy) const {
@@ -758,25 +1148,7 @@ namespace sibr
 	void		Image<T_Type, T_NumComp>::flipV(void) {
 		cv::flip(_pixels, _pixels, 1 /*!=1 means vertical*/);
 	}
-	//template<typename T_Type, unsigned int T_NumComp>
-	//typename Image<T_Type, T_NumComp>::SLArray		Image<T_Type, T_NumComp>::toSLArray( void ) const {
-	//	SLArray out(w(), h());
 
-	//	Vertex<T_Type, T_NumComp> v;
-	//	for (uint y = 0; y < h(); ++y)
-	//	{
-	//		for (uint x = 0; x < w(); ++x)
-	//		{
-	//			Pixel p = pixel(x, y);
-	//			for (uint i = 0; i < T_NumComp; ++i)
-	//				v[i] = p[i];
-	//			out.at(x, y) = v;
-	//		}
-	//	}
-	//	return out;
-	//}
-
-	/// Compute min/max over image
 	template<typename T_Type, unsigned int T_NumComp>
 	void Image<T_Type, T_NumComp>::findMinMax(Pixel& minImage, Pixel& maxImage) {
 		for (uint c = 0; c < T_NumComp; ++c) {
@@ -796,7 +1168,6 @@ namespace sibr
 		}
 	}
 
-	// remap into a given range -- useful eg going from 0..1 to 0...255
 	template<typename T_Type, unsigned int T_NumComp>
 	void		Image<T_Type, T_NumComp>::remap(const Pixel& minVal, const Pixel& maxVal) {
 		Pixel minImage;
@@ -809,7 +1180,7 @@ namespace sibr
 				Pixel v = operator()(x, y);
 				for (uint i = 0; i < T_NumComp; ++i)
 					p[i] = minVal[i] + ((maxVal[i] - minVal[i])*(v[i] - minImage[i])) / (maxImage[i] - minImage[i]);
-				pixel(x, y, p);
+				operator()(x, y) = p;
 			}
 		}
 	}
@@ -905,81 +1276,6 @@ namespace sibr
 		}
 		return out;
 	}
-
-	//template<typename T_Type, unsigned int T_NumComp>
-	//void		Image<T_Type, T_NumComp>::fromSLArray( const SLArray& pixels ) {
-	//	_pixels.create(pixels.ysize(), pixels.xsize(), opencvType());
-
-	//	Pixel p;
-	//	for (uint y = 0; y < h(); ++y)
-	//	{
-	//		for (uint x = 0; x < w(); ++x)
-	//		{
-	//			Pixel v = pixels.at(x, y);
-	//			for (uint i = 0; i < T_NumComp; ++i)
-	//				p[i] = v[i];
-	//			pixel(x, y, p);
-	//		}
-	//	}
-	//}
-
-	//template<typename T_Type, unsigned int T_NumComp>
-	//void		Image<T_Type, T_NumComp>::fromSLRenderTarget( const SLRenderTarget& img, uint target=0 ) {
-	//	SLRenderTarget::PixelArray pa(img.w(), img.h());
-	//	img.readBack(pa, target);
-	//	fromSLArray(pa);
-	//}
-
-	/// Standard image types
-	typedef Image<unsigned char, 3> ImageRGB;
-	typedef Image<unsigned char, 4> ImageRGBA;
-	typedef Image<unsigned char, 1> ImageL8;
-	typedef Image<unsigned char, 2> ImageUV8;
-	typedef Image<unsigned short int, 3> ImageRGB16;
-	typedef Image<unsigned short int, 1> ImageL16;
-	typedef Image<float, 3>         ImageRGB32F;
-	typedef Image<float, 3>         ImageFloat3;
-	typedef Image<float, 4>         ImageRGBA32F;
-	typedef Image<float, 4>         ImageFloat4;
-	typedef Image<float, 1>         ImageL32F;
-	typedef Image<float, 1>         ImageFloat1;
-	typedef Image<float, 2>         ImageFloat2;
-	//typedef Image<half,3>          ImageRGB16F;
-	//typedef Image<half,4>          ImageRGBA16F;
-	//typedef Image<half,1>          ImageL16F;
-	typedef Image<bool, 1>          ImageBool1;
-	typedef Image<double, 1>        ImageDouble1;
-	typedef Image<double, 2>        ImageDouble2;
-	typedef Image<double, 3>        ImageDouble3;
-	typedef Image<double, 4>        ImageDouble4;
-
-	typedef Image<int, 1>        ImageInt1;
-
-	/**
-	*convert a 1 channel 32 bits into a 4 channels 8 bits, useful to save float maps as png, and such get png compression for free
-	*/
-	SIBR_GRAPHICS_EXPORT sibr::ImageRGBA convertL32FtoRGBA(const sibr::ImageL32F & imgF);
-
-	/**
-	*convert a 4 channels 8 bits into a 1 channel 32 bits, see convertL32FtoRGBA()
-	*/
-	SIBR_GRAPHICS_EXPORT sibr::ImageL32F convertRGBAtoL32F(const sibr::ImageRGBA  & imgRGBA);
-
-	SIBR_GRAPHICS_EXPORT sibr::ImageRGBA convertRGB32FtoRGBA(const sibr::ImageRGB32F & imgF);
-	//SIBR_GRAPHICS_EXPORT sibr::ImageRGBA convertRGB32FtoRGBA_2(const sibr::ImageRGB32F & imgF);
-
-	SIBR_GRAPHICS_EXPORT sibr::ImageRGB32F convertRGBAtoRGB32F(const sibr::ImageRGBA & imgF);
-
-	/**
-	*convert a normal map 3 channels bits into 2 channels 16 bits as 4 channels 8 bits, keeping theta and phi as half float
-	*/
-	SIBR_GRAPHICS_EXPORT sibr::ImageRGBA convertNormalMapToSphericalHalf(const sibr::ImageRGB32F & imgF);
-	SIBR_GRAPHICS_EXPORT sibr::ImageRGB32F convertSphericalHalfToNormalMap(const sibr::ImageRGBA & imgF);
-
-	/**
-	* create a 3 channel mat from a single channel mat
-	*/
-	SIBR_GRAPHICS_EXPORT cv::Mat duplicate3(cv::Mat c);
 
 } // namespace sibr
 

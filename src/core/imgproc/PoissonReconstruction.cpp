@@ -181,6 +181,26 @@ std::vector< sibr::Vector2i > PoissonReconstruction::getNeighbors( sibr::Vector2
 	return output;
 }
 
+void PoissonReconstruction::computeGradients(const cv::Mat3f& src, cv::Mat3f& gradX, cv::Mat3f& gradY) {
+	gradX = cv::Mat3f(src.size());
+	gradY = cv::Mat3f(src.size());
+	for (int i = 0; i < src.rows; ++i) {
+		for (int j = 0; j < src.cols; ++j) {
+			// Compute forward differences.
+			const int ip = std::min(i + 1, src.rows - 1);
+			const int jp = std::min(j + 1, src.cols - 1);
+			
+			const cv::Vec3f c = src.at<cv::Vec3f>(i, j);
+			const cv::Vec3f d = src.at<cv::Vec3f>(ip, j);
+			const cv::Vec3f r = src.at<cv::Vec3f>(i, jp);
+			const cv::Vec3f dX = d - c;
+			const cv::Vec3f dY = r - c;
+			gradX.at<cv::Vec3f>(i, j) = dX;
+			gradY.at<cv::Vec3f>(i, j) = dY;
+		}
+	}
+}
+
 void PoissonReconstruction::checkConnectivity( void )
 {
 	// R(x) : 0 -> not connected to boundary, 1 -> connected, G(y) : 0 -> not checked, 1 -> checked

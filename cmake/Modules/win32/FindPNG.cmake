@@ -57,6 +57,7 @@ FIND_LIBRARY(PNG_LIBRARY
 	PATHS
 		${PNG_DIR}/${PNG_SEARCH_LIB}
 		${PNG_DIR}/lib
+    ${PNG_DIR}/lib64
 		## linux
 		/usr/${PNG_SEARCH_LIB}
 		/usr/local/${PNG_SEARCH_LIB}

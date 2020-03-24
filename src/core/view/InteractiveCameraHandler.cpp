@@ -22,8 +22,8 @@ namespace sibr {
 		_supportRecording = supportRecording;
 		_radius = 100.0f;
 		_currentCamId = 0;
-		_saveFrame = 0;
-		_saveFrameDebug = 0;
+		_saveFrame = false;
+		_saveFrameVideo = false;
 		_viewport = Viewport(0, 0, 0, 0);
 		_triggerCameraUpdate = false;
 		_isSetup = false;
@@ -217,26 +217,32 @@ namespace sibr {
 
 	int	InteractiveCameraHandler::findNearestCamera(const std::vector<sibr::InputCamera>& inputCameras) const
 	{
-
-		const sibr::Vector3f currentPos = _currentCamera.position();
-
 		if (inputCameras.size() == 0)
 			return -1;
 
 		int selectedCam = 0;
-		float dist = (inputCameras[0].position() - currentPos).norm();
-		for (uint i = 1; i < inputCameras.size(); ++i)
-		{
-			if (inputCameras[i].isActive() == false)
-				continue;
+		int numCams = inputCameras.size();
 
-			float d = (inputCameras[i].position() - currentPos).norm();
-			if (d < dist)
-			{
-				dist = d;
-				selectedCam = i;
-			}
+		std::vector<uint> sortByDistance = sibr::IBRBasicUtils::selectCamerasSimpleDist(inputCameras, _currentCamera, numCams);
+		std::vector<uint> sortByAngle = sibr::IBRBasicUtils::selectCamerasAngleWeight(inputCameras, _currentCamera, numCams);
+
+		std::map<uint, int> weights;
+		for (uint cam_id = 0; cam_id < sortByDistance.size(); cam_id++) {
+			weights[sortByDistance[cam_id]] = cam_id;
 		}
+
+		for (uint cam_id = 0; cam_id < sortByAngle.size(); cam_id++) {
+			weights[sortByAngle[cam_id]] += cam_id;
+		}
+
+		std::multimap<int, uint> combinedWeight;
+
+		for (auto const& weight : weights) {
+			combinedWeight.insert(std::make_pair(weight.second, weight.first));
+		}
+
+		selectedCam = combinedWeight.begin()->second;
+		
 		return selectedCam;
 	}
 
@@ -395,6 +401,7 @@ namespace sibr {
 				std::getline(std::cin, filename);
 				_cameraRecorder.save(filename);
 				_cameraRecorder.saveAsBundle(filename + ".out", _currentCamera.h());
+				_cameraRecorder.saveAsLookAt(filename + ".lookat");
 				if (_fribrExport) {
 					const int height = int(std::floor(1920.0f / _currentCamera.aspect()));
 					_cameraRecorder.saveAsFRIBRBundle(filename + "_fribr/", 1920, height);
@@ -413,6 +420,7 @@ namespace sibr {
 				std::getline(std::cin, filename);
 				_cameraRecorder.playback();
 				_cameraRecorder.saveAsBundle(filename + ".out", _currentCamera.h());
+				_cameraRecorder.saveAsLookAt(filename + ".lookat");
 				if (_fribrExport) {
 					const int height = int(std::floor(1920.0f / _currentCamera.aspect()));
 					_cameraRecorder.saveAsFRIBRBundle(filename + "_fribr/", 1920, height);
@@ -584,6 +592,8 @@ namespace sibr {
 							_cameraRecorder.reset();
 							if (boost::filesystem::extension(selectedFile) == ".out")
 								_cameraRecorder.loadBundle(selectedFile, 1920, 1080);
+							else if (boost::filesystem::extension(selectedFile) == ".lookat")
+								_cameraRecorder.loadLookat(selectedFile, 1920, 1080);
 							else
 								_cameraRecorder.load(selectedFile);
 							_cameraRecorder.playback();
@@ -600,6 +610,7 @@ namespace sibr {
 							SIBR_LOG << "Saving" << std::endl;
 							_cameraRecorder.save(selectedFile + ".path");
 							_cameraRecorder.saveAsBundle(selectedFile + ".out", _currentCamera.h());
+							_cameraRecorder.saveAsLookAt(selectedFile + ".lookat");
 							if (_fribrExport) {
 								const int height = int(std::floor(1920.0f / _currentCamera.aspect()));
 								_cameraRecorder.saveAsFRIBRBundle(selectedFile + "_fribr/", 1920, height);
@@ -608,32 +619,33 @@ namespace sibr {
 					}
 				}
 				
+				
 
 				//ImGui::SameLine();
 				ImGui::Checkbox("Save video (from playing)", (&_saveFrame));
 				if (_saveFrame) {
-					_cameraRecorder.frameDebug(_saveFrame);
+					_cameraRecorder.savingVideo(_saveFrame);
 				}
 				
 				ImGui::SameLine();
-				const bool saveFrameOld = _saveFrameDebug;
-				ImGui::Checkbox("Save frames (from playing)", (&_saveFrameDebug));
-				if (_saveFrameDebug && !saveFrameOld) {
-					if (sibr::showFilePicker(selectedFile, Save)) {
+				const bool saveFrameOld = _saveFrameVideo;
+				ImGui::Checkbox("Save frames (from playing)", (&_saveFrameVideo));
+				if (_saveFrameVideo && !saveFrameOld) {
+					if (sibr::showFilePicker(selectedFile, Directory)) {
 						if (!selectedFile.empty()) {
 							_cameraRecorder.saving(selectedFile + "/");
-							_cameraRecorder.frameDebug(_saveFrameDebug);
+							_cameraRecorder.savingVideo(_saveFrameVideo);
 						}
 						else {
 							_cameraRecorder.stopSaving();
-							_saveFrameDebug = false;
-							_cameraRecorder.frameDebug(_saveFrameDebug);
+							_saveFrameVideo = false;
+							_cameraRecorder.savingVideo(_saveFrameVideo);
 						}
 					}
 				}
-				else if (!_saveFrameDebug && saveFrameOld) {
+				else if (!_saveFrameVideo && saveFrameOld) {
 					_cameraRecorder.stopSaving();
-					_cameraRecorder.frameDebug(_saveFrameDebug);
+					_cameraRecorder.savingVideo(_saveFrameVideo);
 				}
 				
 				//ImGui::SameLine();

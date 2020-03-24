@@ -3,8 +3,8 @@
 # define __SIBR_RAYCASTER_RAYCASTER_HPP__
 
 # pragma warning(push, 0)
-#  include <embree2/rtcore.h>
-#  include <embree2/rtcore_ray.h>
+#  include <embree3/rtcore.h>
+#  include <embree3/rtcore_ray.h>
 #  include <xmmintrin.h>	// functions for setting the control register
 #  include <pmmintrin.h>	// functions for setting the control register
 # pragma warning(pop)
@@ -14,130 +14,153 @@
 # include "core/raycaster/Config.hpp"
 # include "core/raycaster/Ray.hpp"
 
-// Force export
-//template class SIBR_RAYCASTER_EXPORT std::shared_ptr<__RTCDevice>;
-//template class SIBR_RAYCASTER_EXPORT std::shared_ptr<__RTCScene>;
-
-
-
 namespace sibr
 {
-	//template class SIBR_RAYCASTER_EXPORT std::shared_ptr<__RTCDevice>;
-
 	///
-	/// This class can be used to cast rays in scene containing triangulate
-	/// meshes. Thus you can see if rays intersect geometry and get
+	/// This class can be used to cast rays against a scene containing triangular
+	/// meshes. You can check for intersections with the geometry and get
 	/// information about the hit (such as coordinates, distance, triangle id).
 	///
 	/// You should have one or few instance of this class (for performance
 	/// purposes). Each instance can run in parallel.
 	///
-	/// DevNote: This abstract the underlying embree library.
+	/// \note This abstraction is built on top of Embree.
+	/// \warning There is no backface culling applied.
 	/// \ingroup sibr_raycaster
 	///
 	class SIBR_RAYCASTER_EXPORT Raycaster
 	{
 	public:
-		typedef std::shared_ptr<__RTCDevice>	RTCDevicePtr;
-		typedef std::shared_ptr<__RTCScene>		RTCScenePtr;
+		typedef std::shared_ptr<RTCDevice>	RTCDevicePtr;
+		typedef std::shared_ptr<RTCScene>		RTCScenePtr;
 		typedef std::shared_ptr<Raycaster>		Ptr;
 
 		typedef	uint	geomId;
-		/// stores a number representing an invalid geom id
+		/// Stores a number representing an invalid geom id.
 		static const geomId InvalidGeomId; 
 
+		/// Destructor.
 		~Raycaster( void );
 
 
-		/// Init the raycaster and return TRUE if everything
-		/// is good.
+		/// Init the raycaster.
 		/// Called automatically whenever you call a member that need this
 		/// instance to be init. However, you can call it manually to check
 		/// error on init.
-		bool	init( RTCSceneFlags sceneType = RTC_SCENE_STATIC, RTCAlgorithmFlags intersectType = RTC_INTERSECT1);
+		/// \param sceneType the type of scene, see Embree doc.
+		/// \return a success flag
+		bool	init(RTCSceneFlags sceneType = RTC_SCENE_FLAG_NONE );
 
-		/// Add a triangulate mesh to the raycast scene. Return the id
-		/// of the geometry added so you can track your mesh (and compare
+		/// Add a triangle mesh to the raycast scene, taht you won't modify frequently
+		/// Return the id  of the geometry added so you can track your mesh (and compare
 		/// its id to the one stored in RayHits).
-		/// Return Raycaster::InvalidGeomId if it fails.
+		/// \param mesh the mesh to add
+		/// \return the mesh ID or Raycaster::InvalidGeomId if it fails.
 		geomId	addMesh( const sibr::Mesh& mesh );
 
-		/// Like addMesh but for dynamic geometry
+		/// Add a triangle mesh to the raycast scene, that you will frequently update.
+		/// \param mesh the mesh to add
+		/// \return the mesh ID or Raycaster::InvalidGeomId if it fails.
 		geomId	addDynamicMesh( const sibr::Mesh& mesh );
 
-		/// Like addMesh but with a switch for DYNAMIC or STATIC geometry
-		geomId	addGenericMesh( const sibr::Mesh& mesh, RTCGeometryFlags type );
+		/// Add a triangle mesh to the raycast scene.
+		/// \param mesh the mesh to add
+		/// \param type the type of mesh
+		/// \return the mesh ID or Raycaster::InvalidGeomId if it fails.
+		geomId	addGenericMesh( const sibr::Mesh& mesh, RTCBuildQuality type );
 
-		/// Transform the vertices of a mesh by sibr::Matrix4f mat
-		/// Note that the original positions are always stored *unchanged* in mesh.vertices -- 
-		/// we only xform the vertices in the embree buffer
-		void xformRtcMeshOnly(sibr::Mesh& mesh, geomId mesh_id, sibr::Matrix4f& mat, sibr::Vector3f&, float&);
+		/// Transform the vertices of a mesh by applying a sibr::Matrix4f mat.
+		/// \note The original positions are always stored *unchanged* in mesh.vertices -- we only xform the vertices in the embree buffer
+		/// \param mesh the mesh to transform
+		/// \param mesh_id the corresponding raycaster mesh id
+		/// \param mat the transformation to apply
+		/// \param centerPt will contain the new centroid
+		/// \param maxlen will contain the maximum distance from a vertex to the centroid
+		/// \bug maxlen is computed incrementally and may be incorrect
+		void xformRtcMeshOnly(sibr::Mesh& mesh, geomId mesh_id, sibr::Matrix4f& mat, sibr::Vector3f& centerPt, float& maxlen);
 
-		/// Launch a ray into the raycast scene. Return information about
-		/// this cast in RayHit.
-		/// To simply know if something has been hit,
-		/// 'use RayHit::hitSomething()'.
-		/// Optionally you can define \param minDist that is how far from
-		/// the ray's origin the raycasting actually begins. (e.g. you
-		/// use to avoid colliding with the triangle where you start or
-		/// to walk through the ray, collecting even occluded triangles).
+		/// Launch a ray into the raycaster scene. Return information about
+		/// this cast in RayHit. To simply know if something has been hit, use RayHit::hitSomething().
+		/// \sa hitSomething
+		/// \param ray the ray to cast
+		/// \param minDist Any intersection closer than minDist from the ray origin will be ignored. Useful to avoid self intersections. 
+		/// \return the (potential) intersection information
 		RayHit	intersect( const Ray& ray, float minDist=0.f  );
 
+		/// Launch 8 rays into the raycaster scene in an optimized fashion, reporting intersections infos.
+		/// \param inray the rays to cast
+		/// \param valid8 an indication of which of the rays should be cast
+		/// \param minDist Any intersection closer than minDist from the ray origin will be ignored. Useful to avoid self intersections. 
+		/// \return the list of (potential) intersection informations
 		std::array<RayHit, 8>	intersect8(const std::array<Ray, 8>& inray,const std::vector<int> & valid8=std::vector<int>(8,-1), float minDist = 0.f );
 
-		/// Optimized ray-cast that only informs you either the ray
-		/// hit something or not. Return TRUE if the ray hit something.
-		/// (This is the implementation of rtcOccluded)
-		/// Optionally you can define \param minDist that is how far from
-		/// the ray's origin the raycasting actually begins. (e.g. you
-		/// use to avoid colliding with the triangle where you start or
-		/// to walk through the ray, collecting even occluded triangles).
+		/// Optimized ray-cast that only tells you if an intersection occured.
+		/// \sa intersect
+		/// \param ray the ray to cast
+		/// \param minDist Any intersection closer than minDist from the ray origin will be ignored. Useful to avoid self intersections. 
+		/// \return true if an intersection took place
 		bool	hitSomething( const Ray& ray, float minDist=0.f );
 
+		/// Launch 8 rays into the raycaster scene in an optimized fashion, reporting if intersections occured.
+		/// \param inray the rays to cast
+		/// \param minDist Any intersection closer than minDist from the ray origin will be ignored. Useful to avoid self intersections. 
+		/// \return a list of boolean denoting if intersections happened
 		std::array<bool, 8>	hitSomething8(const std::array<Ray, 8>& inray, float minDist = 0.f);
 
-		/// Disable geometry to avoid ray tracing it (eg background
-		/// when only intersecting a foreground object). \todo TODO -- doesnt work
-		void	disableGeom(geomId id) { rtcDisable((_scene.get()), id); rtcUpdate(_scene.get(), id); rtcCommit(_scene.get()); }
+		/// Disable geometry to avoid raycasting against it (eg background when only intersecting a foreground object).
+		/// \param id the mesh to disable
+		/// \todo Untested.
+		void	disableGeom(geomId id) { rtcDisableGeometry(rtcGetGeometry((*_scene.get()),id)); rtcCommitGeometry(rtcGetGeometry(*_scene.get(),id)); rtcCommitScene(*_scene.get()); }
 
-		/// Enable geometry to avoid ray tracing it (eg background
-		/// when only intersecting a foreground object). \todo TODO -- doesnt work
-		void	enableGeom(geomId id) { rtcEnable((_scene.get()), id); rtcUpdate(_scene.get(), id); rtcCommit(_scene.get());}
+		/// Enable geometry to start raycasting it again.
+		/// \param id the geometry to enable 
+		/// \todo Untested.
+		void	enableGeom(geomId id) { rtcEnableGeometry(rtcGetGeometry((*_scene.get()),id)); rtcCommitGeometry(rtcGetGeometry(*_scene.get(),id)); rtcCommitScene(*_scene.get());}
 
 		/// Delete geometry
-		void	deleteGeom(geomId id) { rtcDeleteGeometry((_scene.get()), id); rtcUpdate(_scene.get(), id); rtcCommit(_scene.get());} 
+		/// \param id the geometry to delete
+		void	deleteGeom(geomId id) { rtcReleaseGeometry(rtcGetGeometry((*_scene.get()),id)); rtcCommitGeometry(rtcGetGeometry(*_scene.get(),id)); rtcCommitScene(*_scene.get());} 
 
-		/// clears RTCScenePtr
+		/// Clears internal scene..
 		void clearGeometry();
 
-		/// returns the normalized smooth normal (shading normal) from a hit, assuming the mesh has normals
+		/// Returns the normalized smooth normal (shading normal) from a hit, assuming the mesh has normals
 		/// \param mesh sibr::Mesh used by raycaster
 		/// \param hit intersection basic information
+		/// \return the interpolated normalized normal
 		static sibr::Vector3f smoothNormal(const sibr::Mesh & mesh, const RayHit & hit);
 
-		/// \return smooth color from a hit (barycentric interpolation), assuming the mesh has colors
+		/// Interpolate color at a hit (barycentric interpolation), assuming the mesh has colors.
 		/// \param mesh sibr::Mesh used by raycaster
 		/// \param hit intersection basic information
+		/// \return the interpolated color
 		static sibr::Vector3f smoothColor(const sibr::Mesh & mesh, const RayHit & hit);
 
-		/// \return smooth texcoords from a hit (barycentric interpolation), assuming the mesh has UVs
+		/// Interpolate texcoords from a hit (barycentric interpolation), assuming the mesh has UVs.
 		/// \param mesh sibr::Mesh used by raycaster
 		/// \param hit intersection basic information
+		/// \‚eturn the interpolated texture coordinates
 		static sibr::Vector2f smoothUV(const sibr::Mesh & mesh, const RayHit & hit);
 
-	private: // STATIC //
+		/// \return true if the raycaster is initialized. 
+		bool isInit() { return g_device && _scene; }
+
+	private: 
 
 		/// Will be called by embree whenever an error occurs
+		/// \param userPtr the user data pointer
+		/// \param code the error code
+		/// \param msg additional info message.
 		static void rtcErrorCallback(void* userPtr, RTCError code, const char* msg);
 
-		/// Used to initialize flag of registers used by SSE
-		static bool g_initRegisterFlag; // = false
+		
+		static bool g_initRegisterFlag; ///< Used to initialize flag of registers used by SSE
 		static RTCDevicePtr	g_device;	///< embree device (context for a raycaster)
 
-	private: // MEMBER //
+		/// \return the internal scene pointer
+		RTCScenePtr	scene() 	{ return _scene; }
 
 		RTCScenePtr		_scene;		///< scene storing raycastable meshes
-		RTCScenePtr	scene() 	{ return _scene; }
 		RTCDevicePtr	_devicePtr;	///< embree device (context for a raycaster)
 	};
 

@@ -1,9 +1,9 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8.9)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.16.3)
 set (CMAKE_SYSTEM_VERSION 10.0.15063.0 CACHE TYPE INTERNAL FORCE)
 PROJECT(sibr_projects)
 
 ## Check the cmake version
-set(CHECKED_VERSION "3.15.3")
+set(CHECKED_VERSION "3.16.4")
 if (CMAKE_VERSION VERSION_GREATER CHECKED_VERSION)
     message(WARNING "Untested version of cmake. If you checked everything is working properly, please update ${CHECKED_VERSION} in the main CmakeLists.txt with the version you tested.")
 endif()
@@ -26,6 +26,9 @@ get_filename_component(currentBuildTool ${CMAKE_BUILD_TOOL} NAME_WE)	# tool that
 if(${currentBuildTool} MATCHES "(msdev|devenv|nmake|MSBuild)")
     add_definitions(/W3 /DNOMINMAX /MP -D_USE_MATH_DEFINES)# /D_ITERATOR_DEBUG_LEVEL=1 because you need all external DLl to compile with this flag too
     set(CMAKE_CONFIGURATION_TYPES "RelWithDebInfo;Release;Debug" CACHE STRING "" FORCE)
+    set(CMAKE_CXX_STANDARD 14)
+	set(CMAKE_CXX_STANDARD_REQUIRED ON)
+	set(CMAKE_CXX_EXTENSIONS OFF)
     #set(CMAKE_CONFIGURATION_TYPES "RelWithDebInfo;Release" CACHE STRING "" FORCE)
     # "Warning level 4 generates a lot of warning messages for STL headers and is not currently recommended for that reason."
     # from support.microsoft.com

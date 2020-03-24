@@ -1,4 +1,5 @@
 #include "XMLTree.h"
+#include "rapidxml-1.13/rapidxml_print.hpp"
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -15,7 +16,7 @@ namespace sibr {
 			file.close();
 			xmlString = std::move(std::string(buffer.str()));
 			this->parse<0>(&xmlString[0]);
-			std::cout << "succes " << std::endl;
+			std::cout << "success " << std::endl;
 		}
 		else {
 			std::cout << "error, cant open file " << std::endl;
@@ -25,6 +26,19 @@ namespace sibr {
 
 	XMLTree::~XMLTree(void)
 	{
+	}
+
+
+	bool XMLTree::save(const std::string & path) const {
+		std::ofstream file(path);
+		if(!file.is_open()) {
+			SIBR_WRG << "Unable to save XML to path \"" << path << "\"." << std::endl;
+			return false;
+		}
+
+		file << *this;
+		file.close();
+		return true;
 	}
 
 }

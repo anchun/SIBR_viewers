@@ -10,20 +10,37 @@
 # include <core/scene/BasicIBRScene.hpp>
 
 namespace sibr { 
+
+	/** Legacy ULR renderer. Process each input image separately and accumulate them.
+	 **/
 	class SIBR_EXP_ULR_EXPORT ULRRenderer : public RenderMaskHolder
 	{
 		SIBR_CLASS_PTR(ULRRenderer);
 
-		//ULRRenderer(const sibr::BasicIBRScene::Ptr& ibrScene );
+		/** Constructor.
+		 *\param w rendering width
+		 *\param h rendering height
+		 */
 		ULRRenderer(const uint w, const uint h);
 
+		/** Render.
+		 *\param imgs_ulr vector of selected image IDs
+		 *\param eye novel viewpoint
+		 *\param scene the scene to render
+		 *\param altMesh optional alternative mesh
+		 *\param inputRTs the RGBD input images
+		 *\param output destination target
+		 */
 		void process(std::vector<uint>& imgs_ulr, const sibr::Camera& eye,
 			const sibr::BasicIBRScene::Ptr scene,
 			std::shared_ptr<sibr::Mesh>& altMesh,
 			const std::vector<std::shared_ptr<RenderTargetRGBA32F> >& inputRTs,
 			IRenderTarget& output);
 
-			void doOccl(bool val) { _doOccl = val; }
+		/** Toggle occlusion testing.
+		 *\param val should occlusion testing be performed
+		 */
+		void doOccl(bool val) { _doOccl = val; }
 
 	private:
 		sibr::RenderTargetRGBA32F::Ptr _ulr0_RT;

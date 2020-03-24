@@ -16,16 +16,20 @@
 namespace sibr{
 
 	/**
-	* Class used to hold the data required for defining an IBR Scene
+	* Class used to store the data required for defining an IBR Scene
 	* 
 	*
 	* Members:
-	* - basePathName: Base dataset path name
-	* - 
-	* - 
-	* - 
+	* - _basePathName: Base dataset directory path.
+	* - _camInfos: Vector of sibr::InputCamera holding all data attached with the scene cameras.
+	* - _meshPath: Filepath of the mesh associated to the scene.
+	* - _imgInfos: Vector of sibr::ImageListFile::Infos holding filename, width, height, and id of the input images.
+	* - _imgPath: Path to the calibrated images directory.
+	* - _activeImages: Vector of bools storing active state of the camera.
+	* - _numCameras: Number of cameras associated with the dataset
+	* - _datasetType: Type if dataset being used. Currently supported: COLMAP, SIBR_BUNDLER, NVM, MESHROOM
 	*
-	* \ingroup sibr_assets
+	* \ingroup sibr_scene
 	*/
 
 	class SIBR_SCENE_EXPORT ParseData{
@@ -34,10 +38,10 @@ namespace sibr{
 
 		/**
 		 * \brief Denotes the type of dataset represented by a ParseData object.
-		* \ingroup sibr_view
+		* \ingroup sibr_scene
 		*/
 		enum class Type {
-			EMPTY, SIBR, COLMAP, NVM, MESHROOM
+			EMPTY, SIBR, COLMAP, NVM, MESHROOM, EXTERNAL
 		};
 
 		/**
@@ -81,13 +85,14 @@ namespace sibr{
 		* \brief Function to parse data from a template dataset path.
 		* \param dataset_path Path to the folder containing data
 		* \param customPath Path to algorithm specific data
-		* \param scene_metadata_filename Specify the filename of the Scene Metadata file to load specific scene
+		* \param nvm_path Specify the filename of the NVM path.
 		*/
 		void  getParsedNVMData(const std::string & dataset_path, const std::string & customPath, const std::string & nvm_path);
 
 		/**
 		* \brief Function to parse data from a dataset path. Will automatically determine the type of dataset based on the files present.
 		* \param myArgs Arguments containing the dataset path and other infos
+		* \param customPath additional data path
 		*/
 		void  getParsedData(const BasicIBRAppArgs & myArgs, const std::string & customPath = "");
 
@@ -98,10 +103,10 @@ namespace sibr{
 		const std::vector<sibr::ImageListFile::Infos>&	imgInfos(void) const;
 
 		/**
-		* \brief Getter to the list of camera matrices associated with each input camera.
+		* \brief Setter for the information regarding the input images.
 		*
 		*/
-		const std::vector<Matrix4f>&					outputCamsMatrix(void) const;
+		void											imgInfos(std::vector<sibr::ImageListFile::Infos>& infos);
 
 		/**
 		* \brief Getter to the number of cameras defined in the bundle file.
@@ -110,10 +115,10 @@ namespace sibr{
 		const int										numCameras(void) const;
 
 		/**
-		* \brief Getter to the list of near and far clipping plane defined for each camera.
+		* \brief Setter to the number of cameras defined in the bundle file.
 		*
 		*/
-		const std::vector<InputCamera::Z>&				nearsFars(void) const;
+		void											numCameras(int numCams);
 
 		/**
 		* \brief Getter for the list of active cameras/images.
@@ -122,22 +127,22 @@ namespace sibr{
 		const std::vector<bool>&						activeImages(void) const;
 
 		/**
-		* \brief Getter for the list of in-active cameras/images.
+		* \brief Setter for the list of active cameras/images.
 		*
 		*/
-		const std::vector<bool>&						excludeImages(void) const;
-
-		/**
-		* \brief Setter for the list of in-active cameras/images.
-		*
-		*/
-		void										excludeImages(std::vector<bool> & excImg);
+		void											activeImages(std::vector<bool>& activeCams);
 
 		/**
 		* \brief Getter for the base path name where the dataset is located.
 		*
 		*/
 		const std::string&								basePathName(void) const;
+
+		/**
+		* \brief Setter for the base path name where the dataset is located.
+		*
+		*/
+		void											basePathName(std::string & path) ;
 		
 		/**
 		* \brief Getter for the mesh path where the dataset is located.
@@ -146,74 +151,75 @@ namespace sibr{
 		const std::string&								meshPath(void) const;
 
 		/**
-		* \brief Getter for the mesh texture image path where the dataset is located.
+		* \brief Setter for the mesh path where the dataset is located.
 		*
 		*/
-		const std::string&								texImgPath(void) const;
+		void											meshPath(std::string & path) ;
 
 		/**
 		* \brief Getter for the dataset type.
 		*
 		*/
-		const ParseData::Type&								datasetType(void) const;
+		const ParseData::Type&							datasetType(void) const;
 
 		/**
 		* \brief Setter for the dataset type.
 		*
 		*/
-		void												datasetType(ParseData::Type dataType);
+		void											datasetType(ParseData::Type dataType);
 
+		/**
+		* \brief Getter for the camera infos.
+		*
+		*/
+		const std::vector<sibr::InputCamera>			cameras(void) const;
 
-	public:
-			/**
+		/**
+		* \brief Setter for the camera infos.
+		*
+		*/
+		void											cameras(std::vector<sibr::InputCamera>& cams);
+
+		/**
+		* \brief Getter for the image path.
+		*
+		*/
+		const std::string								imgPath(void) const;
+
+		/**
+		* \brief Setter for the image path.
+		*
+		*/
+		void											imgPath(std::string& imPath);
+
+		/**
 		* \brief Function to parse the scene metadata file to read image data.
 		*
 		*/
 			bool parseSceneMetadata(const std::string & scene_metadata_path);
 
 	protected:
-
-		struct CameraParametersColmap {
-			size_t id;
-			size_t width;
-			size_t height;
-			float  fx;
-			float  fy;
-			float  dx;
-			float  dy;
-		};
-
+		
 		/**
 		* \brief Function to parse the camera calibration files to read camera properties (camera matrix etc.).
 		*
 		*/
 		bool parseBundlerFile(const std::string & bundler_file_path);
 
+		
 		/**
-		* \brief Function to parse the colmap sparse data files to read camera and image data.
+		* \brief Function to populate scene info from camera infos to appropriate location.
 		*
 		*/
-		bool parseColmapSparseData(const std::string & scene_sparse_path);
+		void populateFromCamInfos();
 
-		/**
-		* \brief Function to parse the NVM data files to read camera and image data.
-		*
-		*/
-		bool parseNVMData(const std::string & nvm_path);
-
-
-		bool parseMeshroomData(const std::string & sfm_path);
-
-
+		std::vector<sibr::InputCamera>				_camInfos;
 		std::string									_basePathName;
 		std::string									_meshPath;
-		std::string									_texImgPath;
 		std::vector<sibr::ImageListFile::Infos>		_imgInfos;
+		std::string									_imgPath = "";
 		std::vector<bool>							_activeImages;
-		std::vector<bool>							_excludeImages;
-		std::vector<Matrix4f>						_outputCamsMatrix;
-		int											_numCameras;
-		std::vector<InputCamera::Z>					_nearsFars;
+		int											_numCameras;		
 		Type										_datasetType = Type::EMPTY;
 		
 	};
@@ -224,27 +230,28 @@ namespace sibr{
 	inline const std::vector<sibr::ImageListFile::Infos>&	ParseData::imgInfos(void) const {
 		return _imgInfos;
 	}
-	
-	inline const std::vector<Matrix4f>& ParseData::outputCamsMatrix(void) const {
-		return _outputCamsMatrix;
+
+	inline void ParseData::imgInfos(std::vector<sibr::ImageListFile::Infos>& infos)
+	{
+		_imgInfos = infos;
 	}
 
-	inline const int ParseData::numCameras( void ) const {		return _numCameras;		}
-	
-	inline const std::vector<InputCamera::Z>& ParseData::nearsFars(void) const {
-		return _nearsFars;
+	inline const int ParseData::numCameras( void ) const {		
+		return _numCameras;		
+	}
+
+	inline void ParseData::numCameras(int numCams)
+	{
+		_numCameras = numCams;
 	}
 	
 	inline const std::vector<bool>& ParseData::activeImages(void) const {
 		return _activeImages;
 	}
 
-	inline const std::vector<bool>& ParseData::excludeImages(void) const {
-		return _excludeImages;
-	}
-
-	inline void ParseData::excludeImages(std::vector<bool> & excImg) {
-		_excludeImages = excImg;
+	inline void ParseData::activeImages(std::vector<bool>& activeCams)
+	{
+		_activeImages = activeCams;
 	}
 
 	inline const std::string & ParseData::basePathName(void) const
@@ -252,18 +259,43 @@ namespace sibr{
 		return _basePathName;
 	}
 
+	inline void ParseData::basePathName(std::string& path)
+	{
+		_basePathName = path;
+	}
+
 	inline const std::string & ParseData::meshPath(void) const
 	{
 		return _meshPath;
 	}
 
-	inline const std::string & ParseData::texImgPath(void) const
+	inline void ParseData::meshPath(std::string& path)
 	{
-		return _texImgPath;
+		_meshPath = path;
 	}
 
 	inline void		ParseData::datasetType(ParseData::Type dataType) {
 		_datasetType = dataType;
+	}
+
+	inline const std::vector<sibr::InputCamera> ParseData::cameras(void) const
+	{
+		return _camInfos;
+	}
+
+	inline void ParseData::cameras(std::vector<sibr::InputCamera>& cams)
+	{
+		_camInfos = cams;
+	}
+
+	inline const std::string ParseData::imgPath(void) const
+	{
+		return _imgPath;
+	}
+
+	inline void ParseData::imgPath(std::string& imPath)
+	{
+		_imgPath = imPath;
 	}
 
 	inline const ParseData::Type & ParseData::datasetType(void) const

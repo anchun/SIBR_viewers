@@ -7,8 +7,7 @@
 
 namespace sibr
 {
-	/**
-	Represents a simple aligned axis rectangle
+	/** Represents a simple aligned axis rectangle
 	
 	I use left, top, right, bottom and not x1, x2, y1, y2
 	or x, y, w, h for being free of coordinate systems.
@@ -18,7 +17,7 @@ namespace sibr
 	
 	Note this class is currently what I call a constclass:
 	once built you cannot modify it.
-	* \ingroup sibr_graphics
+	* \ingroup sibr_system
 	*/
 	template <typename T>
 	class Rect
@@ -30,26 +29,36 @@ namespace sibr
 
 		/// Default constructor (null everything)
 		Rect( void );
-		/// Build from given side
+		
+		/** Constructor
+		 \param left x-coordinate of the left border
+		 \param top y-coordinate of the top border
+		 \param right x-coordinate of the right border
+		 \param bottom y-coordinate of the bottom border
+		*/
 		Rect( T left, T top, T right, T bottom );
 
-		/// Return the position of the left side
+		/// \return the position of the left side
 		inline T		left( void ) const;
-		/// Return the position of the right side
+		/// \return the position of the right side
 		inline T		right( void ) const;
-		/// Return the position of the top side
+		/// \return the position of the top side
 		inline T		top( void ) const;
-		/// Return the position of the bottom side
+		/// \return the position of the bottom side
 		inline T		bottom( void ) const;
 
-		/// Return the width
+		/// \return the width
 		inline T		width( void ) const;
-		/// Return the height
+		/// \return the height
 		inline T		height( void ) const;
 
+		/// \return the top left rectangle corner location.
 		inline Eigen::Matrix<T, 2, 1,Eigen::DontAlign>	cornerLeftTop( void ) const;
+		/// \return the bottom left rectangle corner location.
 		inline Eigen::Matrix<T, 2, 1,Eigen::DontAlign>	cornerLeftBottom( void ) const;
+		/// \return the bottom right rectangle corner location.
 		inline Eigen::Matrix<T, 2, 1,Eigen::DontAlign>	cornerRightBottom( void ) const;
+		/// \return the top right rectangle corner location.
 		inline Eigen::Matrix<T, 2, 1,Eigen::DontAlign>	cornerRightTop( void ) const;
 
 	private:
@@ -60,8 +69,6 @@ namespace sibr
 	};
 
 	///// EXPORT DEFAULT TYPES /////
-	//template class SIBR_EXPORT Rect<float>;
-	//template class SIBR_EXPORT Rect<int>;
 
 	typedef Rect<float>		Rectf;
 	typedef Rect<int>		Recti;

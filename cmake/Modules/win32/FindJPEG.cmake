@@ -56,6 +56,7 @@ FIND_LIBRARY(JPEG_LIBRARY
 	PATHS
 		${JPEG_DIR}/${JPEG_SEARCH_LIB}
 		${JPEG_DIR}/lib
+		${JPEG_DIR}/lib64
 		## linux
 		/usr/${JPEG_SEARCH_LIB}
 		/usr/local/${JPEG_SEARCH_LIB}

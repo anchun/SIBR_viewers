@@ -1,11 +1,13 @@
 #pragma once
 
 #include "core/scene/Config.hpp"
-#include "core/graphics/MaterialMesh.hpp"
 #include "core/scene/ParseData.hpp"
+#include "core/graphics/Mesh.hpp"
 
 namespace sibr {
-
+	/**
+	\ingroup sibr_scene
+	*/
 	class SIBR_SCENE_EXPORT ProxyMesh {
 		SIBR_DISALLOW_COPY(ProxyMesh);
 	public:

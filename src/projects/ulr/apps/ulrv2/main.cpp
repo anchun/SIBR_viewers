@@ -27,10 +27,11 @@ int legacyV2main(ULRAppArgs & myArgs);
 
 int main(int ac, char** av) {
 
-	// Parse Commad-line Args
+	// Parse Command-line Args
 	CommandLineArgs::parseMainArgs(ac, av);
 	ULRAppArgs myArgs;
-	
+	myArgs.displayHelpIfRequired();
+
 	if (myArgs.version == 2) {
 		return legacyV2main(myArgs);
 	}
@@ -38,11 +39,11 @@ int main(int ac, char** av) {
 		return legacyV1main(myArgs);
 	}
 
-
 	const bool doVSync = !myArgs.vsync;
 	// rendering size
 	uint rendering_width = myArgs.rendering_size.get()[0];
 	uint rendering_height = myArgs.rendering_size.get()[1];
+	
 	// window size
 	uint win_width = myArgs.win_width;
 	uint win_height = myArgs.win_height;
@@ -55,6 +56,24 @@ int main(int ac, char** av) {
 	// Setup the scene: load the proxy, create the texture arrays.
 	const uint flags = SIBR_GPU_LINEAR_SAMPLING | SIBR_FLIP_TEXTURE;
 
+	// Fix rendering aspect ratio if user provided rendering size
+	uint scene_width = scene->cameras()->inputCameras()[0].w();
+	uint scene_height = scene->cameras()->inputCameras()[0].h();
+	float scene_aspect_ratio = scene_width / scene_height;
+	float rendering_aspect_ratio = rendering_width / rendering_height;
+
+	if ((rendering_width > 0)) {
+		if (abs(scene_aspect_ratio - rendering_aspect_ratio) > 0.001f) {
+			if (scene_width > scene_height) {
+				rendering_height = rendering_width / scene_aspect_ratio;
+			}
+			else {
+				rendering_width = rendering_height * scene_aspect_ratio;
+			}
+		}
+	}
+
+	
 	// check rendering size
 	rendering_width = (rendering_width <= 0) ? scene->cameras()->inputCameras()[0].w() : rendering_width;
 	rendering_height = (rendering_height <= 0) ? scene->cameras()->inputCameras()[0].h() : rendering_height;
@@ -98,7 +117,7 @@ int main(int ac, char** av) {
 	multiViewManager.addCameraForView("ULR view", generalCamera);
 
 	// Top view
-	const std::shared_ptr<sibr::SceneDebugView> topView(new sibr::SceneDebugView(scene, multiViewManager.getViewport(), generalCamera, myArgs));
+	const std::shared_ptr<sibr::SceneDebugView> topView(new sibr::SceneDebugView(scene, generalCamera, myArgs));
 	multiViewManager.addSubView("Top view", topView, usedResolution);
 
 	CHECK_GL_ERROR;
@@ -169,7 +188,7 @@ int legacyV2main(ULRAppArgs & myArgs)
 		multiViewManager.addCameraForView("ULR view", generalCamera);
 
 		// Top view
-		const std::shared_ptr<sibr::SceneDebugView>    topView(new sibr::SceneDebugView(scene, multiViewManager.getViewport(), generalCamera, myArgs));
+		const std::shared_ptr<sibr::SceneDebugView>    topView(new sibr::SceneDebugView(scene, generalCamera, myArgs));
 		multiViewManager.addSubView("Top view", topView, usedResolution);
 
 		// Soft Visibility masks
@@ -331,7 +350,7 @@ int legacyV1main(ULRAppArgs & myArgs)
 		multiViewManager.addCameraForView("ULR view", generalCamera);
 
 		// Top view
-		const std::shared_ptr<sibr::SceneDebugView>    topView(new sibr::SceneDebugView(scene, multiViewManager.getViewport(), generalCamera, myArgs));
+		const std::shared_ptr<sibr::SceneDebugView>    topView(new sibr::SceneDebugView(scene, generalCamera, myArgs));
 		multiViewManager.addSubView("Top view", topView);
 
 		while (window.isOpened())

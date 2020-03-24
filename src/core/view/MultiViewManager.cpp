@@ -15,8 +15,6 @@ namespace sibr
 		_timeLastFrame = std::chrono::steady_clock::now();
 		_deltaTime = 0.0;
 		_exportPath = "./screenshots";
-		_vdoPath = "./video.mp4";
-		_savingVideo = false;
 	}
 
 	void MultiViewBase::onUpdate(Input& input)
@@ -114,14 +112,14 @@ namespace sibr
 
 	void MultiViewBase::addSubView(const std::string & title, ViewBase::Ptr view, const Vector2u & res, const ImGuiWindowFlags flags)
 	{
-		const ViewUpdateFonc updateFunc =
+		const ViewUpdateFunc updateFunc =
 			[](ViewBase::Ptr& vi, Input& in, const Viewport& vp, const float dt) {
 			vi->onUpdate(in, vp);
 		};
 		addSubView(title, view, updateFunc, res, flags);
 	}
 
-	void MultiViewBase::addSubView(const std::string & title, ViewBase::Ptr view, const ViewUpdateFonc updateFunc, const Vector2u & res, const ImGuiWindowFlags flags)
+	void MultiViewBase::addSubView(const std::string & title, ViewBase::Ptr view, const ViewUpdateFunc updateFunc, const Vector2u & res, const ImGuiWindowFlags flags)
 	{
 		// We have to shift vertically to avoid an overlap with the menu bar.
 		const Viewport viewport(0.0f, ImGui::GetTitleBarHeight(),
@@ -132,7 +130,7 @@ namespace sibr
 
 	}
 
-	void MultiViewBase::addIBRSubView(const std::string & title, ViewBase::Ptr view, const IBRViewUpdateFonc updateFunc, const Vector2u & res, const ImGuiWindowFlags flags, const bool defaultFuncUsed)
+	void MultiViewBase::addIBRSubView(const std::string & title, ViewBase::Ptr view, const IBRViewUpdateFunc updateFunc, const Vector2u & res, const ImGuiWindowFlags flags, const bool defaultFuncUsed)
 	{
 		// We have to shift vertically to avoid an overlap with the menu bar.
 		const Viewport viewport(0.0f, ImGui::GetTitleBarHeight(),
@@ -147,8 +145,6 @@ namespace sibr
 		else {
 			_ibrSubViews[title] = { view, rtPtr, viewport, title, flags, updateFunc, defaultFuncUsed };
 		}
-		
-
 	}
 
 	void MultiViewBase::addIBRSubView(const std::string & title, ViewBase::Ptr view, const Vector2u & res, const ImGuiWindowFlags flags)
@@ -160,7 +156,7 @@ namespace sibr
 		addIBRSubView(title, view, updateFunc, res, flags, true);
 	}
 
-	void MultiViewBase::addIBRSubView(const std::string & title, ViewBase::Ptr view, const IBRViewUpdateFonc updateFunc, const Vector2u & res, const ImGuiWindowFlags flags)
+	void MultiViewBase::addIBRSubView(const std::string & title, ViewBase::Ptr view, const IBRViewUpdateFunc updateFunc, const Vector2u & res, const ImGuiWindowFlags flags)
 	{
 		addIBRSubView(title, view, updateFunc, res, flags, false);
 	}
@@ -175,7 +171,7 @@ namespace sibr
 		if (_subViews.count(title) > 0) {
 			return _subViews.at(title).view;
 		}
-		else if (_ibrSubViews.count(title) > 0) {
+		if (_ibrSubViews.count(title) > 0) {
 			return _ibrSubViews.at(title).view;
 		}
 
@@ -200,13 +196,8 @@ namespace sibr
 
 	void MultiViewBase::renderSubView(SubView & subview) 
 	{
-		bool invalidTexture = false;
 		
 		if (!_onPause) {
-
-			/// \todo Offline video dumping.
-			int camIdDump = 0;
-			
 
 			const Viewport renderViewport(0.0, 0.0, (float)subview.rt->w(), (float)subview.rt->h());
 			subview.render(_renderingMode, renderViewport);
@@ -214,7 +205,6 @@ namespace sibr
 			// Offline video dumping, continued. We ignore additional rendering as those often are GUI overlays.
 			if (subview.handler != NULL && (subview.handler->getCamera().needVideoSave() || subview.handler->getCamera().needSave())) {
 				
-				//std::cout << "Need video save: " << subview.handler->getCamera().needVideoSave()<< "; Need Image and Video save: " << subview.handler->getCamera().needSave() << std::endl;
 				ImageRGB frame;
 
 				subview.rt->readBack(frame);
@@ -225,24 +215,7 @@ namespace sibr
 				_videoFrames.push_back(frame.toOpenCVBGR());
 				
 			}
-
-			if (_savingVideo) {
-
-				if (_videoFrames.size() > 0) {
-					std::cout << "Exporting video to : " << _vdoPath << std::endl;
-					FFVideoEncoder vdoEncoder(_vdoPath, 30, Vector2i(subview.rt->w(), subview.rt->h()));
-					for (int i = 0; i < _videoFrames.size(); i++) {
-						vdoEncoder << _videoFrames[i];
-					}
-					_videoFrames.clear();
-				}
-				else {
-					std::cout << "No frames to export!! Check save frames in camera options for the view you want to render and play the path and re-export!" << std::endl;
-				}
-				_savingVideo = false;
-				std::cout << "Fin!" << std::endl;
-			}
-
+			
 			// Additional rendering.
 			subview.renderFunc(subview.view, renderViewport, std::static_pointer_cast<IRenderTarget>(subview.rt));
 
@@ -256,25 +229,25 @@ namespace sibr
 		}
 
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
-		subview.view->setFocus(showImGuiWindow(subview.name, *subview.rt, subview.flags, subview.viewport, invalidTexture, subview.shouldUpdateLayout));
+		subview.view->setFocus(showImGuiWindow(subview.view->name(), *subview.rt, subview.flags, subview.viewport, false, subview.shouldUpdateLayout));
 		ImGui::PopStyleVar();
 		// If we have updated the layout, don't do it next frame.
 		subview.shouldUpdateLayout = false;
 	}
 
-	ViewBase::Ptr MultiViewBase::removeSubView(const std::string & name)
+	ViewBase::Ptr MultiViewBase::removeSubView(const std::string & title)
 	{
 		ViewBase::Ptr viewPtr = nullptr;
-		if (_subViews.count(name) > 0) {
-			viewPtr = _subViews.at(name).view;
-			_subViews.erase(name);
+		if (_subViews.count(title) > 0) {
+			viewPtr = _subViews.at(title).view;
+			_subViews.erase(title);
 		}
-		else if (_ibrSubViews.count(name) > 0) {
-			viewPtr = _ibrSubViews.at(name).view;
-			_ibrSubViews.erase(name);
+		else if (_ibrSubViews.count(title) > 0) {
+			viewPtr = _ibrSubViews.at(title).view;
+			_ibrSubViews.erase(title);
 		}
 		else {
-			SIBR_WRG << "No view named <" << name << "> found." << std::endl;
+			SIBR_WRG << "No view named <" << title << "> found." << std::endl;
 		}
 		return viewPtr;
 	}
@@ -305,7 +278,7 @@ namespace sibr
 
 	}
 
-	void MultiViewBase::addAdditionalRenderingForView(const std::string & name, const AdditionalRenderFonc renderFunc)
+	void MultiViewBase::addAdditionalRenderingForView(const std::string & name, const AdditionalRenderFunc renderFunc)
 	{
 		if (_subViews.count(name) > 0) {
 			_subViews.at(name).renderFunc = renderFunc;
@@ -337,7 +310,7 @@ namespace sibr
 			finalPath.append(filename);
 		}
 		else {
-			const std::string autoName = view.name + "_" + sibr::timestamp();
+			const std::string autoName = view.view->name() + "_" + sibr::timestamp();
 			finalPath.append(autoName + ".png");
 		}
 
@@ -396,6 +369,35 @@ namespace sibr
 	void MultiViewBase::setExportPath(const std::string & path) {
 		_exportPath = path;
 		sibr::makeDirectory(path);
+	}
+
+	MultiViewBase::SubView::SubView(ViewBase::Ptr view_, RenderTargetRGB::Ptr rt_, const sibr::Viewport viewport_, const std::string& name_, const ImGuiWindowFlags flags_) :
+		view(view_), rt(rt_), handler(), viewport(viewport_), flags(flags_), shouldUpdateLayout(false) {
+		renderFunc = [](ViewBase::Ptr&, const Viewport&, const IRenderTarget::Ptr&) {};
+		view->setName(name_);
+	}
+
+	MultiViewBase::BasicSubView::BasicSubView(ViewBase::Ptr view_, RenderTargetRGB::Ptr rt_, const sibr::Viewport viewport_, const std::string& name_, const ImGuiWindowFlags flags_, ViewUpdateFunc f_) :
+		SubView(view_, rt_, viewport_, name_, flags_), updateFunc(f_) {
+	}
+
+	void MultiViewBase::BasicSubView::render(const IRenderingMode::Ptr& rm, const Viewport& renderViewport) const  {
+		rt->bind();
+		renderViewport.bind();
+		renderViewport.clear();
+		view->onRender(renderViewport);
+		rt->unbind();
+	}
+
+	MultiViewBase::IBRSubView::IBRSubView(ViewBase::Ptr view_, RenderTargetRGB::Ptr rt_, const sibr::Viewport viewport_, const std::string& name_, const ImGuiWindowFlags flags_, IBRViewUpdateFunc f_, const bool defaultUpdateFunc_) :
+		SubView(view_, rt_, viewport_, name_, flags_), updateFunc(f_), defaultUpdateFunc(defaultUpdateFunc_) {
+		cam = sibr::InputCamera();
+	}
+
+	void MultiViewBase::IBRSubView::render(const IRenderingMode::Ptr& rm, const Viewport& renderViewport) const  {
+		if (rm) {
+			rm->render(*view, cam, renderViewport, rt.get());
+		}
 	}
 
 	MultiViewManager::MultiViewManager(Window& window, bool resize)
@@ -524,6 +526,30 @@ namespace sibr
 				if (ImGui::MenuItem("Metrics", "", _fpsCounter.active())) {
 					_fpsCounter.toggleVisibility();
 				}
+				if (ImGui::BeginMenu("Front when focus"))
+				{
+					for (auto & subview : _subViews) {
+						const bool isLockedInBackground = subview.second.flags & ImGuiWindowFlags_NoBringToFrontOnFocus;
+						if (ImGui::MenuItem(subview.first.c_str(), "", !isLockedInBackground)) {
+							if(isLockedInBackground) {
+								subview.second.flags &= ~ImGuiWindowFlags_NoBringToFrontOnFocus;
+							} else {
+								subview.second.flags |= ImGuiWindowFlags_NoBringToFrontOnFocus;
+							}
+						}
+					}
+					for (auto & subview : _ibrSubViews) {
+						const bool isLockedInBackground = subview.second.flags & ImGuiWindowFlags_NoBringToFrontOnFocus;
+						if (ImGui::MenuItem(subview.first.c_str(), "", !isLockedInBackground)) {
+							if (isLockedInBackground) {
+								subview.second.flags &= ~ImGuiWindowFlags_NoBringToFrontOnFocus;
+							} else {
+								subview.second.flags |= ImGuiWindowFlags_NoBringToFrontOnFocus;
+							}
+						}
+					}
+					ImGui::EndMenu();
+				}
 				ImGui::EndMenu();
 			}
 
@@ -553,9 +579,19 @@ namespace sibr
 				if (ImGui::MenuItem("Export Video")) {
 					std::string saveFile;
 					if (showFilePicker(saveFile, FilePickerMode::Save)) {
-						std::cout << saveFile << std::endl;
-						_vdoPath = saveFile + ".mp4";
-						_savingVideo = true;
+						const std::string outputVideo = saveFile + ".mp4";
+						if(!_videoFrames.empty()) {
+							SIBR_LOG << "Exporting video to : " << outputVideo << " ..." << std::flush;
+							FFVideoEncoder vdoEncoder(outputVideo, 30, Vector2i(_videoFrames[0].cols, _videoFrames[0].rows));
+							for (int i = 0; i < _videoFrames.size(); i++) {
+								vdoEncoder << _videoFrames[i];
+							}
+							_videoFrames.clear();
+							std::cout << " Done." << std::endl;
+							
+						} else {
+							SIBR_WRG << "No frames to export!! Check save frames in camera options for the view you want to render and play the path and re-export!" << std::endl;
+						}
 					}
 				}
 
@@ -574,5 +610,6 @@ namespace sibr
 		}
 		toggleSubViewsGUI();
 	}
+
 
 } // namespace sibr

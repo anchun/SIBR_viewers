@@ -259,12 +259,12 @@ sibr_addlibrary(
 )
 
 ###################
-## Find embree2
+## Find embree3
 ###################
 sibr_addlibrary(
-    NAME embree2
+    NAME embree3
     MSVC11 "https://gforge.inria.fr/frs/download.php/file/35964/embree2.7.0.x64.windows.7z"
-    MSVC14 "https://gforge.inria.fr/frs/download.php/file/38041/embree-2.17.7.x64.windows.zip"     # TODO SV: provide a valid version if required
+    MSVC14 "https://gforge.inria.fr/frs/download.php/file/38140/embree-3.6.1.x64.vc14.windows.7z"     # TODO SV: provide a valid version if required
     REQUIREDFOR BUILD_SIBR
 )
 
@@ -443,14 +443,14 @@ find_package(TIFF REQUIRED)
 include_directories(${TIFF_INCLUDE_DIR})
 
 ##############
-## Find Embree (v2)
+## Find Embree (v3)
 ##############
 if (BUILD_MVIIR)
 	win3rdParty(EMBREE #VERBOSE ON
         	MSVC11 "win3rdParty/MSVC11/embree" "https://gforge.inria.fr/frs/download.php/file/35275/embree-2.7.0.x64.windows.7z"
         	MSVC12 "win3rdParty/MSVC11/embree" "https://gforge.inria.fr/frs/download.php/file/35275/embree-2.7.0.x64.windows.7z"
-        	MSVC14 "win3rdParty/MSVC14/embree" "https://gforge.inria.fr/frs/download.php/file/35275/embree-2.7.0.x64.windows.7z"    # TODO SV: provide a valid version if required
-        	SET CHECK_CACHED_VAR EMBREE_DIR PATH "embree-2.7.0.x64.windows"
+        	MSVC14 "win3rdParty/MSVC14/embree3" "https://gforge.inria.fr/frs/download.php/file/38140/embree-3.6.1.x64.vc14.windows.7z"    # TODO SV: provide a valid version if required
+        	SET CHECK_CACHED_VAR EMBREE_DIR PATH "embree-3.6.1.x64.vc14.windows"
 			)
 	find_package(Embree REQUIRED)
 	include_directories(${EMBREE_INCLUDE_DIR})
@@ -758,8 +758,9 @@ if(1)
 		set(Boost_REQUIRED_COMPONENTS ${Boost_NEEDED_COMPONENTS})
 	endif()
 
+
     if(Boost_NEEDED_COMPONENTS)
-        find_package(Boost REQUIRED COMPONENTS ${Boost_REQUIRED_COMPONENTS})
+        find_package(Boost 1.71.0 REQUIRED COMPONENTS ${Boost_REQUIRED_COMPONENTS})
     else()
         find_package(Boost)
     endif()
@@ -826,7 +827,7 @@ if(1)#BUILD_MVIIR OR BUILD_VBR OR BUILD_IBR_UTILITIES_MVSEG OR BUILD_UTILITIES_D
         )
     elseif (MSVC14)
         set(opencv_set_arguments 
-            CHECK_CACHED_VAR OpenCV_DIR PATH "opencv-3.4.1/build" ## see OpenCVConfig.cmake
+            CHECK_CACHED_VAR OpenCV_DIR PATH "opencv-4.2.0/build" ## see OpenCVConfig.cmake
         )
     else ()
         message("There is no provided OpenCV library for your version of MSVC")
@@ -835,7 +836,7 @@ if(1)#BUILD_MVIIR OR BUILD_VBR OR BUILD_IBR_UTILITIES_MVSEG OR BUILD_UTILITIES_D
     win3rdParty(OpenCV #VERBOSE ON
             MSVC11 "win3rdParty/MSVC11/OpenCV" "https://gforge.inria.fr/frs/download.php/file/35599/opencv.7z"
             MSVC12 "win3rdParty/MSVC11/OpenCV" "https://gforge.inria.fr/frs/download.php/file/35599/opencv.7z"
-            MSVC14 "win3rdParty/MSVC14/OpenCV" "https://gforge.inria.fr/frs/download.php/file/37552/opencv-3.4.1.7z"    # opecv compatible with msvc14 and with contribs
+            MSVC14 "win3rdParty/MSVC14/OpenCV" "https://gforge.inria.fr/frs/download.php/file/38280/opencv-4.2.0.7z"    # opecv compatible with msvc14 and with contribs
             SET ${opencv_set_arguments}
         )
     find_package(OpenCV REQUIRED) ## Use directly the OpenCVConfig.cmake provided
@@ -868,13 +869,16 @@ sibr_addlibrary(
 
 
 if (BUILD_IBR_TFGL_INTEROP)
+ 	find_package(CUDA REQUIRED)
+	## Select the right version of the library based on the version of CUDA
+	SET(SIBR_TF_CUDA_PATH "https://gforge.inria.fr/frs/download.php/file/37881/tfinterop.7z" INTERNAL)
+	if(CUDA_VERSION_MAJOR GREATER_EQUAL 10)
+		SET(SIBR_TF_CUDA_PATH "https://gforge.inria.fr/frs/download.php/file/38123/tfinterop_cuda10.7z" INTERNAL)
+	endif()
     sibr_addlibrary(
         NAME tfgl_interop
         MSVC11 "https://gforge.inria.fr/frs/download.php/file/37881/tfinterop.7z"
-        MSVC14 "https://gforge.inria.fr/frs/download.php/file/37881/tfinterop.7z"  
-        # If you need CUDA10, you can use this version instead.
-        # TODO: find a way to check the CUDA version automatically, looking at CUDA_VERSION.
-        # MSVC14 "https://gforge.inria.fr/frs/download.php/file/38123/tfinterop_cuda10.7z"
+        MSVC14 "${SIBR_TF_CUDA_PATH}"
         REQUIREDFOR BUILD_IBR_TFGL_INTEROP
     )
 endif()
@@ -882,8 +886,8 @@ endif()
 if (BUILD_IBR_TORCHGL_INTEROP)
     sibr_addlibrary(
         NAME libtorch
-        MSVC11 "https://gforge.inria.fr/frs/download.php/file/38120/libtorch.7z"
-        MSVC14 "https://gforge.inria.fr/frs/download.php/file/38120/libtorch.7z"  
+        MSVC11 "https://gforge.inria.fr/frs/download.php/file/38148/libtorch.7z"
+        MSVC14 "https://gforge.inria.fr/frs/download.php/file/38282/libtorch-1.4.0.7z"
         REQUIREDFOR BUILD_IBR_TORCHGL_INTEROP
     )
 endif()

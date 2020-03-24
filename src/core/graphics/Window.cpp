@@ -12,6 +12,39 @@ namespace sibr
 		SIBR_ERR << description << std::endl;
 	}
 
+	static void glErrorCallback(GLenum src, GLenum type, GLuint id, GLenum severity, GLsizei size, const GLchar* str, const void* user) {
+		// For now we only log errors, and we ignore severity.
+		if(type != GL_DEBUG_TYPE_ERROR) {
+			//SIBR_LOG << "[API]" << "(" << src << "," << type << "," << id << "," << severity << "): " << std::string(str, size) << std::endl;
+			return;
+		}
+		std::string errStr;
+		switch(src) {
+		case GL_DEBUG_SOURCE_API:
+			errStr = "[API] ";
+			break;
+		case GL_DEBUG_SOURCE_SHADER_COMPILER:
+			errStr = "[Shader] ";
+			break;
+		case GL_DEBUG_SOURCE_THIRD_PARTY:
+			errStr = "[3rd party] ";
+			break;
+		case GL_DEBUG_SOURCE_APPLICATION:
+			errStr = "[Application] ";
+			break;
+		case GL_DEBUG_SOURCE_OTHER:
+			errStr = "[Other] ";
+			break;
+		default:
+			break;
+		}
+
+		const std::string errStr2(str, size);
+
+		SIBR_ERR << "OpenGL: " << errStr << errStr2 << std::endl;
+	
+	}
+
 	static void glfwKeyboardCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 	{
 		key = std::max(0, key);
@@ -144,7 +177,7 @@ namespace sibr
 		// try to load compat 3.2 instead of core 4.2
 
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
 		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE);
 		// or
 		//glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE);
@@ -169,9 +202,10 @@ namespace sibr
 		if (_glfwWin == nullptr)
 			SIBR_ERR << "failed to create a glfw window (is your graphics driver updated ?)" << std::endl;
 
-		//std::cout << _glfwWin.get() << ", a" << glfwGetCurrentContext() << std::endl;
 		makeContextCurrent();
-		//std::cout << _glfwWin.get() << ", a" << glfwGetCurrentContext() << std::endl;
+
+		
+
 		//SR, TT fix for image size non divisible by 4
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 		glPixelStorei(GL_PACK_ALIGNMENT, 1);
@@ -202,7 +236,12 @@ namespace sibr
 		glfwSetCursorPosCallback(_glfwWin.get(), glfwCursorPosCallback);
 		glfwSetWindowSizeCallback(_glfwWin.get(), glfwResizeCallback);
 
-		
+		// SR: we don't use it by default because you won't get callstack/file/line info.
+		if(args.gl_debug) {
+			glEnable(GL_DEBUG_OUTPUT);
+			glDebugMessageCallback(glErrorCallback, nullptr);
+		}
+
 		//contextId
 		++Window::contextId;
 
@@ -211,10 +250,6 @@ namespace sibr
 		ImGui_ImplGlfwGL3_Init(_glfwWin.get(), false);
 		glfwSetCharCallback(_glfwWin.get(), ImGui_ImplGlfw_CharCallback);
 		ImGui_ImplGlfwGL3_NewFrame();
-
-		/// \todo TODO: each Window/Context should have its set of helpers
-		/// (cause for the moment we can't have two windows at the same time).
-		//RenderUtility::forceRebuildAllHelpers();
 
 		_oldPosition = position();
 		_oldSize = size();
@@ -348,50 +383,6 @@ namespace sibr
 		return _glfwWin.get();
 	}
 
-
-	WindowTest::WindowTest(int width, int height, const std::string& title, bool fullScreen, bool doVSync, bool useGUI)
-	{
-
-		if (!glfwInit())
-			SIBR_ERR << "cannot init glfw" << std::endl;
-
-		setup(width, height, title, fullScreen, doVSync, useGUI);
-
-		if (!fullScreen) {
-			glfwSetWindowPos(_glfwWin, 200, 200);
-		}
-	}
-
-	void WindowTest::setup(int width, int height, const std::string& title, bool fullScreen, bool doVSync, bool useGUI) {
-		// IMPORTANT NOTE: if you got compatibility problem with old opengl function,
-		// try to load compat 3.2 instead of core 4.2
-
-		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
-		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE);
-		// or
-		//glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE);
-		//glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-		//glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-
-		glfwWindowHint(GLFW_RED_BITS, 8);
-		glfwWindowHint(GLFW_GREEN_BITS, 8);
-		glfwWindowHint(GLFW_BLUE_BITS, 8);
-		glfwWindowHint(GLFW_ALPHA_BITS, 8);
-		glfwWindowHint(GLFW_DEPTH_BITS, 24);
-		glfwWindowHint(GLFW_STENCIL_BITS, 8);
-
-		//_glfwWin = GLFWwindowptr(glfwCreateWindow(width, height, title.c_str(), fullScreen ? glfwGetPrimaryMonitor() : NULL, NULL), [](GLFWwindow* f) { std::cout << "DESTROYED MTFUCKA" << std::endl; } /*glfwDestroyWindow*/);
-
-		_glfwWin = glfwCreateWindow(width, height, title.c_str(), NULL, NULL);
-
-		if (_glfwWin == nullptr)
-			SIBR_ERR << "failed to create a glfw window (is your graphics driver updated ?)" << std::endl;
-	}
-
-	GLFWwindow * WindowTest::GLFW(void) {
-		return _glfwWin;
-	}
 
 
 } // namespace sibr

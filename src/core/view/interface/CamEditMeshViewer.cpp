@@ -351,6 +351,12 @@ void sibr::CamEditMeshViewer::onGUI() {
 				//load();
 				SIBR_WRG << "Uninmplemented for now." << std::endl;
 			}
+			if (ImGui::Button("Set output directory")) {
+				std::string output;
+				if(sibr::showFilePicker(output, Directory, _outputPath) && !output.empty()) {
+					_outputPath = output;
+				}
+			}
 			if (ImGui::CollapsingHeader("Parameters")) {
 				ImGui::InputFloat("Size of cameras", &_scaleCam, 0.4f, 128.f);
 				ImGui::InputInt("Number of interpolations",
@@ -642,22 +648,91 @@ void sibr::CamEditMeshViewer::onGUI() {
 			SIBR_WRG << "Uninmplemented for now." << std::endl;
 		}*/
 		if (ImGui::CollapsingHeader("Parameters")) {
-			static int e = 0;
-			ImGui::RadioButton("Sphere", &e, 0);
-			//ImGui::RadioButton("Spot", &e, 1);
-			ImGui::InputFloat("Radius", &_currentRadius, 0.4f, 128.f);
+			ImGui::RadioButton("Sphere", &_currentTypeOfLight, 0);
+			ImGui::RadioButton("Spot",	&_currentTypeOfLight, 1);
+			ImGui::RadioButton("Rectangle",	&_currentTypeOfLight, 2);
 
-			ImGui::InputFloat("Radiance", &_currentRadiance, 0.4f, 128.f);
-
+			ImGui::Separator();
+			
+			if (ImGui::CollapsingHeader("Sphere light options")) {
+				ImGui::InputFloat("Radius", &_currentRadius, 0.4f, 128.f);
+				ImGui::InputFloat("Radiance", &_currentRadianceSphere, 
+									0.4f, 128.f);
+			}
+			if (ImGui::CollapsingHeader("Spot light options")) {
+				ImGui::InputFloat("Intensity", &_currentIntensity, 0.4f, 128.f);
+				ImGui::SliderFloat("Theta angle", &_thetaAngleSpot, 0.01f, M_PI);
+				ImGui::SliderFloat("Phi angle", &_phiAngleSpot, 0.01f, 2.f*M_PI);
+				ImGui::SliderFloat("Cut off angle", &_currentCutOffAngle, 
+													1.f, 90.f);
+				ImGui::SliderFloat("Scale spot", &_currentScaleSpot, 
+													0.1f, 10.f);
+			}
+			if (ImGui::CollapsingHeader("Rectangle light options")) {
+				ImGui::InputFloat("Radiance", &_currentRadianceRectangle, 
+									0.4f, 128.f);
+				ImGui::SliderFloat("Rotation X angle", 
+									&_rotationXAngleRectangle, 
+									0.01f, 360);
+				ImGui::SliderFloat("Rotation Y angle", 
+									&_rotationYAngleRectangle, 
+									0.01f, 360);
+				ImGui::SliderFloat("Rotation Z angle", 
+									&_rotationZAngleRectangle, 
+									0.01f, 360);
+				ImGui::InputFloat("Width", &_widthRectangle, 
+													0.1f, 100.f);
+				ImGui::InputFloat("Height", &_heightRectangle, 
+													0.1f, 100.f);
+			}
 			ImGui::Separator();
 		}
 		if (ImGui::CollapsingHeader("Current set")) {
 			if (ImGui::Button("Place light")) {
-				InputCamera camera = interactCam->getCamera();
-				_currentLightSpheres.push_back(
-					LightSphere(camera.position() + camera.dir() * _currentDeltaLight
-						, _currentRadius, _currentRadiance)
-				);
+				const InputCamera camera = interactCam->getCamera();
+				if (_currentTypeOfLight == 0) {
+					_currentLightSpheres.push_back(
+						LightSphere(
+							camera.position() + camera.dir() * 
+											_currentDeltaLight
+							, _currentRadius, _currentRadianceSphere));
+				}
+				else if (_currentTypeOfLight == 1 ){
+					const sibr::Vector3f positionSpot(
+						camera.position() + camera.dir() * _currentDeltaLight
+					);
+
+					const sibr::Vector3f dirSpot(
+						sin(_thetaAngleSpot) * cos(_phiAngleSpot),
+						sin(_thetaAngleSpot) * sin(_phiAngleSpot),
+						cos(_thetaAngleSpot));
+					_currentLightSpots.push_back(
+						LightSpot(	positionSpot,
+									positionSpot + dirSpot,
+									_currentIntensity,
+									_currentCutOffAngle));
+				}
+				else {
+
+					const sibr::Vector3f positionRectangle(
+						camera.position() + camera.dir() * _currentDeltaLight
+					);
+					const sibr::Vector2f scaleRectangle(_widthRectangle,
+													_heightRectangle);
+
+					const sibr::Vector3f rotationRectangle(
+						_rotationXAngleRectangle ,
+						_rotationYAngleRectangle ,
+						_rotationZAngleRectangle );
+
+
+					_currentLightRectangles.push_back(
+						LightRectangle(	positionRectangle,
+										scaleRectangle,
+										rotationRectangle,
+										_currentRadianceRectangle));
+						
+				}
 
 				float* viewMat = interactCam->getCamera().view().data();
 				float* projMat = interactCam->getCamera().proj().data();
@@ -678,19 +753,56 @@ void sibr::CamEditMeshViewer::onGUI() {
 				gizmoMove->SetEditMatrix(sharedDataGizmo);
 			}
 			if (ImGui::Button("Validate")) {
+				//Spheres
 				_lightSpheresValidated.insert(
 					_lightSpheresValidated.end(),
 					_currentLightSpheres.begin(),
 					_currentLightSpheres.end());
 				_currentLightSpheres.clear();
+
+				//Spots
+				_lightSpotsValidated.insert(
+					_lightSpotsValidated.end(),
+					_currentLightSpots.begin(),
+					_currentLightSpots.end());
+				_currentLightSpots.clear();
+
+				//Rectangles
+				_lightRectanglesValidated.insert(
+					_lightRectanglesValidated.end(),
+					_currentLightRectangles.begin(),
+					_currentLightRectangles.end());
+				_currentLightRectangles.clear();
+
 			}
 			ImGui::SameLine();
 			if (ImGui::Button("Clear")) {
+				if (_currentTypeOfLight == 0)
 				_currentLightSpheres.clear();
+				else if (_currentTypeOfLight == 1){
+				_currentLightSpots.clear();
+				}
+				else {
+				_currentLightRectangles.clear();
+				}
 			}
 			ImGui::SameLine();
 			if (ImGui::Button("Remove last")) {
-				if (!_currentLightSpheres.empty()) _currentLightSpheres.pop_back();
+				if (_currentTypeOfLight == 0) {
+					if (!_currentLightSpheres.empty()) {
+						_currentLightSpheres.pop_back();
+					}
+				}
+				else if (_currentTypeOfLight == 1) {
+					if (!_currentLightSpots.empty()) {
+						_currentLightSpots.pop_back();
+					}
+				}
+				else {
+					if (!_currentLightRectangles.empty()) {
+						_currentLightRectangles.pop_back();
+					}
+				}
 			}
 			ImGui::SliderFloat("Delta camera",
 				&_currentDeltaLight, _initialDeltaLight/100.f, _initialDeltaLight*5.f);
@@ -699,20 +811,52 @@ void sibr::CamEditMeshViewer::onGUI() {
 		//static unsigned int currentSetToSnapping = 0;
 		//static unsigned int currentCamToSnapping = 0;
 
-		auto itSet = _lightSpheresValidated.begin();
-		unsigned int currentIndexCamera = 0;
+		auto itSetSphere = _lightSpheresValidated.begin();
 		for (unsigned int i = 0; i < _lightSpheresValidated.size(); i++)
 		{
-
-			std::string nameSet = std::string(std::string("Light") + std::to_string(i));
+			std::string nameSet = std::string(std::string("Sphere Light") 
+				+ std::to_string(i));
 			if (ImGui::CollapsingHeader(nameSet.c_str())) {
-				std::string deleteButton = std::string("Delete Light##") + nameSet;
+				std::string deleteButton = std::string("Delete Sphere Light##") 
+					+ nameSet;
 				if (ImGui::Button(deleteButton.c_str())) {
-					_lightSpheresValidated.erase(itSet);
+					_lightSpheresValidated.erase(itSetSphere);
 					break;
 				}
 			}
-			itSet++;
+			itSetSphere++;
+		}
+
+		auto itSetSpot = _lightSpotsValidated.begin();
+		for (unsigned int i = 0; i < _lightSpotsValidated.size(); i++)
+		{
+			std::string nameSet = std::string(std::string("Spot Light") 
+				+ std::to_string(i));
+			if (ImGui::CollapsingHeader(nameSet.c_str())) {
+				std::string deleteButton = std::string("Delete Spot Light##") 
+					+ nameSet;
+				if (ImGui::Button(deleteButton.c_str())) {
+					_lightSpotsValidated.erase(itSetSpot);
+					break;
+				}
+			}
+			itSetSpot++;
+		}
+
+		auto itSetRectangle = _lightRectanglesValidated.begin();
+		for (unsigned int i = 0; i < _lightRectanglesValidated.size(); i++)
+		{
+			std::string nameSet = std::string(std::string("Rectangle Light") 
+				+ std::to_string(i));
+			if (ImGui::CollapsingHeader(nameSet.c_str())) {
+				std::string deleteButton = 
+					std::string("Delete Rectangle Light##") + nameSet;
+				if (ImGui::Button(deleteButton.c_str())) {
+					_lightRectanglesValidated.erase(itSetRectangle);
+					break;
+				}
+			}
+			itSetRectangle++;
 		}
 	}
 	ImGui::End();
@@ -837,43 +981,38 @@ void sibr::CamEditMeshViewer::renderLights()
 {
 
 	static unsigned long int animation = 0;
-	auto getSphere = [](const Vector3f& center, float radius,bool anim = false)
+	auto getSphere = [](const Vector3f& center, float radius, bool anim = false)
 		-> std::vector<std::pair<sibr::Vector3f, sibr::Vector3f> > {
 
 		std::vector<std::pair<sibr::Vector3f, sibr::Vector3f> > lines;
 		for (int lat = -90; lat < 90; lat+=5) {
-			for (int lgt = 0; lgt < 360; lgt+=30) {
+			for (int lgt = 0; lgt < 360; lgt += 30) {
 
 
 				sibr::Vector3f pointA = cos(0.5* M_PI * lat / 90.0f)*
 					(cos(2 * M_PI * lgt / 360.0f)*
-						 sibr::Vector3f(1.0f, 0.f, 0.f) + sin(2 * M_PI * lgt / 360.0f)*
-						 sibr::Vector3f(0.f, 1.f, 0.f))
+						sibr::Vector3f(1.0f, 0.f, 0.f) + sin(2 * M_PI * lgt / 360.0f)*
+						sibr::Vector3f(0.f, 1.f, 0.f))
 					+ sin(0.5* M_PI * lat / 90.0f)*sibr::Vector3f(0.0f, 0.f, 1.f);
 
 				sibr::Vector3f pointB = cos(0.5* M_PI * lat / 90.0f)*
-					(cos(2 * M_PI * (lgt+30) / 360.0f)*
-						 sibr::Vector3f(1.0f, 0.f, 0.f) + sin(2 * M_PI * (lgt+30) / 360.0f)*
-						 sibr::Vector3f(0.f, 1.f, 0.f))
+					(cos(2 * M_PI * (lgt + 30) / 360.0f)*
+						sibr::Vector3f(1.0f, 0.f, 0.f) + sin(2 * M_PI * (lgt + 30) / 360.0f)*
+						sibr::Vector3f(0.f, 1.f, 0.f))
 					+ sin(0.5* M_PI * lat / 90.0f)*sibr::Vector3f(0.0f, 0.f, 1.f);
-
-
-				sibr::Vector4f pointA4(pointA.x(),pointA.y(),pointA.z(),1.f);
-				sibr::Vector4f pointB4(pointB.x(),pointB.y(),pointB.z(),1.f);
+				sibr::Vector4f pointA4(pointA.x(), pointA.y(), pointA.z(), 1.f);
+				sibr::Vector4f pointB4(pointB.x(), pointB.y(), pointB.z(), 1.f);
 				if (anim) {
 					sibr::Transform3f t;
-					t.rotation(static_cast<float>(animation), 0.f,0.f);
-
+					t.rotation(static_cast<float>(animation), 0.f, 0.f);
 					sibr::Matrix4f m(t.matrix());
-
 					pointA4 = m * pointA4;
 					pointB4 = m * pointB4;
-				}
 
+				}
 				lines.push_back(std::pair<sibr::Vector3f, sibr::Vector3f>(
-					radius*sibr::Vector3f(pointA4.xyz()) + center,
-					radius*sibr::Vector3f(pointB4.xyz()) + center));
-				
+					radius * sibr::Vector3f(pointA4.xyz()) + center,
+					radius * sibr::Vector3f(pointB4.xyz()) + center));
 
 			}
 		}
@@ -881,7 +1020,124 @@ void sibr::CamEditMeshViewer::renderLights()
 		return lines;
 	};
 
-	for (LightSphere s : _currentLightSpheres)
+	auto displaySpot = [](	const LightSpot& ls, const sibr::Vector3f color,
+							float scale, 
+							const std::shared_ptr<MeshRenderer>& renderer) {
+
+			renderer->addPoint(ls._position, 
+									 sibr::Vector3f(1, 1, 1));
+			sibr::Vector3f dirSpot = ls._target - ls._position;
+
+			
+			dirSpot.normalize();
+			sibr::Vector3f dirNormal1 (-dirSpot.y(), dirSpot.x(), 0.f);
+			dirNormal1.normalize();
+			sibr::Vector3f dirNormal2 (dirSpot.cross(dirNormal1));
+			dirNormal2.normalize();
+
+			std::vector<sibr::Vector3f> dirs;
+			sibr::Vector3f dir1 (dirSpot + tan(ls._cutOffAngle * M_PI / 180.f)
+							* dirNormal1);
+			dir1.normalize();
+
+			sibr::Vector3f dir2 (dirSpot - tan(ls._cutOffAngle * M_PI / 180.f)
+							* dirNormal1);
+			dir2.normalize();
+
+			sibr::Vector3f dir3 (dirSpot + tan(ls._cutOffAngle * M_PI / 180.f)
+							* dirNormal2);
+			dir3.normalize();
+
+			sibr::Vector3f dir4 (dirSpot - tan(ls._cutOffAngle * M_PI / 180.f)
+							* dirNormal2);
+			dir4.normalize();
+
+			dirs.push_back(dir1);
+			dirs.push_back(dir3);
+			dirs.push_back(dir2);
+			dirs.push_back(dir4);
+
+
+			std::vector<Vector3f> vertices;
+			for (const auto & d : dirs) {
+				vertices.push_back(ls._position + scale * d);
+
+				renderer->addPoint(ls._position + scale * d, color);
+				renderer->addLines({ ls._position, ls._position + scale * d },
+									color);
+			}
+
+			// We bind the points of the square
+			renderer->addLines({ vertices[0] , vertices[1] },
+				sibr::Vector3f(1, 0, 1));
+			renderer->addLines({ vertices[1] , vertices[2] },
+				sibr::Vector3f(1, 0, 1));
+			renderer->addLines({ vertices[2] , vertices[3] },
+				sibr::Vector3f(1, 0, 1));
+			renderer->addLines({ vertices[3] , vertices[0] },
+				sibr::Vector3f(1, 0, 1));
+	};
+
+	auto displayRectangle = [](	const LightRectangle& lr, 
+								const sibr::Vector3f color,
+								const std::shared_ptr<MeshRenderer>& renderer) {
+
+			renderer->addPoint(lr._position, 
+								sibr::Vector3f(1, 1, 1));
+			const sibr::Vector3f p1(1.f, 1.f, 0.f);
+			const sibr::Vector3f p2(-1.f, 1.f, 0.f);
+			const sibr::Vector3f p3(-1.f, -1.f, 0.f);
+			const sibr::Vector3f p4(1.f, -1.f, 0.f);
+
+			std::array < sibr::Vector3f, 4 > points{ p1,p2,p3,p4 };
+
+			for (sibr::Vector3f& p : points) {
+				p.x() *= lr._scale.x();
+				p.y() *= lr._scale.y();
+
+				Transform3f transformRotationX;
+				transformRotationX.rotation(lr._rotation.x(),0,0);
+
+				Transform3f transformRotationY;
+				transformRotationY.rotation(0.f,lr._rotation.y(),0);
+
+				Transform3f transformRotationZ;
+				transformRotationZ.rotation(0.f,0.f,lr._rotation.z());
+
+				/*Transform3f transformTranslation;
+				transformRotation.translate(lr._position);*/
+				
+				sibr::Vector4f pTransform( p.x(),p.y(),p.z(),1.f );
+				pTransform = transformRotationZ.matrix() * 
+							 transformRotationY.matrix() *
+							 transformRotationX.matrix()* pTransform;
+				
+				p.x() = pTransform.x() + lr._position.x();
+				p.y() = pTransform.y() + lr._position.y();
+				p.z() = pTransform.z() + lr._position.z();
+			}
+
+			sibr::Vector3f directionNormal =
+				sibr::cross(sibr::Vector3f(points.at(1)-points.at(0)),
+							sibr::Vector3f(points.at(3)-points.at(0)));
+			sibr::Vector3f center = (points.at(0) + points.at(1) + points.at(2)
+									+ points.at(3)) / 4.f;
+
+				
+			// We bind the points of the square
+			renderer->addLines({ points.at(0),points.at(1)}, color);
+			renderer->addLines({ points.at(1),points.at(2)}, color);
+			renderer->addLines({ points.at(2),points.at(3)}, color);
+			renderer->addLines({ points.at(3),points.at(0)}, color);
+			renderer->addLines({ points.at(0),points.at(2)}, color);
+			renderer->addLines({ points.at(1),points.at(3)}, color);
+			renderer->addLines({ center,center + (3 * directionNormal) },
+								sibr::Vector3f(1.f, 0.f,0.f));
+
+	};
+
+
+	for (const LightSphere& s : _currentLightSpheres)
 	{
 		std::vector<std::pair<sibr::Vector3f, sibr::Vector3f> > linesSphere
 			= getSphere(s._position,s._radius);
@@ -891,7 +1147,7 @@ void sibr::CamEditMeshViewer::renderLights()
 		}
 	}
 
-	for (LightSphere s : _lightSpheresValidated)
+	for (const LightSphere& s : _lightSpheresValidated)
 	{
 		std::vector<std::pair<sibr::Vector3f, sibr::Vector3f> > linesSphere
 			= getSphere(s._position,s._radius);
@@ -900,17 +1156,79 @@ void sibr::CamEditMeshViewer::renderLights()
 				sibr::Vector3f(1.0f, 1.0f, 0.0f));
 		}
 	}
+
+	for (const LightSpot& s : _lightSpotsValidated)
+	{
+			displaySpot(s, sibr::Vector3f(1.f, 1.f, 0.f),
+						_currentScaleSpot, renderer);
+	}
+
+	for (const LightSpot& s : _currentLightSpots)
+	{
+			displaySpot(s, sibr::Vector3f(0.5f, 0.5f, 0.5f),
+						_currentScaleSpot, renderer);
+	}
+
+	for (const LightRectangle& r : _lightRectanglesValidated)
+	{
+			displayRectangle(r, sibr::Vector3f(1.f, 1.f, 0.f), renderer);
+	}
+
+	for (const LightRectangle& r : _currentLightRectangles)
+	{
+			displayRectangle(r, sibr::Vector3f(0.5f, 0.5f, 0.5f), renderer);
+	}
 	
 	if (_typeOfApp == CamEditMeshViewer::TypeOfApp::CamEditor) {
-		InputCamera camera = interactCam->getCamera();
-		LightSphere s(camera.position() + camera.dir() * _currentDeltaLight,
-			_currentRadius, _currentRadiance);
 
-		std::vector<std::pair<sibr::Vector3f, sibr::Vector3f> > linesSphere
-			= getSphere(s._position, s._radius, true);
-		for (std::pair<sibr::Vector3f, sibr::Vector3f> line : linesSphere) {
-			this->renderer->addLines({ line.first, line.second },
-				sibr::Vector3f(0.5f,0.5f, 0.5f));
+		const InputCamera camera = interactCam->getCamera();
+		if (_currentTypeOfLight == 0) {
+			const LightSphere s(camera.position() + 
+								camera.dir() * _currentDeltaLight,
+								_currentRadius, _currentRadianceSphere);
+
+			const std::vector<std::pair<sibr::Vector3f, sibr::Vector3f> > 
+				linesSphere = getSphere(s._position, s._radius, true);
+			for (const std::pair<sibr::Vector3f, sibr::Vector3f>& line : 
+				linesSphere) {
+				this->renderer->addLines({ line.first, line.second },
+					sibr::Vector3f(0.5f, 0.5f, 0.5f));
+			}
+		}
+		else if (_currentTypeOfLight == 1 ) {
+
+			const sibr::Vector3f positionSpot(
+				camera.position() + camera.dir() * _currentDeltaLight
+			);
+			const sibr::Vector3f dirSpot(
+				sin(_thetaAngleSpot) * cos(_phiAngleSpot),
+				sin(_thetaAngleSpot) * sin(_phiAngleSpot),
+				cos(_thetaAngleSpot));
+
+			const LightSpot s(positionSpot, positionSpot+dirSpot,
+						_currentIntensity, _currentCutOffAngle );
+
+			displaySpot(s, sibr::Vector3f(0.5f, 0.5f, 0.5f),
+						_currentScaleSpot, renderer);
+		}
+		else {
+
+			const sibr::Vector3f positionRectangle(
+				camera.position() + camera.dir() * _currentDeltaLight
+			);
+			const sibr::Vector2f scaleRectangle(	_widthRectangle, 
+											_heightRectangle );
+			const sibr::Vector3f rotationRectangle(	
+									_rotationXAngleRectangle ,
+									_rotationYAngleRectangle ,
+									_rotationZAngleRectangle );
+
+			const LightRectangle r (	positionRectangle, scaleRectangle,
+										rotationRectangle, 
+										_currentRadianceRectangle);
+
+			displayRectangle(r, sibr::Vector3f(0.5f, 0.5f, 0.5f), renderer);
+
 		}
 		animation++;
 	}
@@ -1327,13 +1645,140 @@ void sibr::CamEditMeshViewer::writeCameras() {
 
 }
 
+void sibr::CamEditMeshViewer::writeLightSpot(std::string& s,
+												const LightSpot& spot) {
+
+		s.append("\t<emitter type=\"spot\">\n");
+		s.append("\t\t<transform name=\"toWorld\">\n");
+		s.append("\t\t\t<lookat origin=\"");
+		s.append(std::to_string(spot._position.x()));
+		s.append(", ");
+		s.append(std::to_string(spot._position.y()));
+		s.append(", ");
+		s.append(std::to_string(spot._position.z()));
+		s.append("\" target=\"");
+		s.append(std::to_string(spot._target.x()));
+		s.append(", ");
+		s.append(std::to_string(spot._target.y()));
+		s.append(", ");
+		s.append(std::to_string(spot._target.z()));
+		s.append("\"/>\n");
+		s.append("\t\t</transform>\n");
+		s.append("\t\t<spectrum name=\"intensity\" value=\"");
+		s.append(std::to_string(spot._intensity));
+		s.append("\"/>\n");
+		s.append("\t\t<float name=\"cutoffAngle\" value=\"");
+		s.append(std::to_string(spot._cutOffAngle));
+		s.append("\"/>\n");
+		s.append("\t</emitter>\n");
+
+}
+
+void sibr::CamEditMeshViewer::writeLightSphere( std::string& s,
+												const LightSphere& sphere) {
+
+		s.append("\t<shape type=\"sphere\">\n");
+		s.append("\t\t<point name=\"center\" x=\"");
+		s.append(std::to_string(sphere._position.x()));
+		s.append("\" y=\"");
+		s.append(std::to_string(sphere._position.y()));
+		s.append("\" z=\"");
+		s.append(std::to_string(sphere._position.z()));
+		s.append("\"/>\n");
+		s.append("\t\t<float name=\"radius\" value=\"");
+		s.append(std::to_string(sphere._radius));
+		s.append("\"/>\n\n");
+		s.append("\t\t<emitter type=\"area\">\n");
+		s.append("\t\t\t<spectrum name=\"radiance\" value=\"");
+		s.append(std::to_string(sphere._radiance));
+		s.append("\"/>\n");
+		s.append("\t\t</emitter>\n");
+		s.append("\t</shape>\n");
+}
+
+void sibr::CamEditMeshViewer::writeLightRectangle(std::string& s,
+	const LightRectangle& rectangle) {
+
+
+	/*const sibr::Vector3f EulerAngles{	-rectangle._rotation.x(),
+										-rectangle._rotation.y(),
+										-rectangle._rotation.z()};*/
+	//transformRotation.rotation(EulerAngles);
+	Transform3f transformRotationX;
+	transformRotationX.rotation(-rectangle._rotation.x(),0.f,0.f);
+	Transform3f transformRotationY;
+	transformRotationY.rotation(0.f,-rectangle._rotation.y(),0.f);
+	Transform3f transformRotationZ;
+	transformRotationZ.rotation(0.f,0.f,-rectangle._rotation.z());
+	const sibr::Matrix4f rotationX = transformRotationX.matrix();
+	const sibr::Matrix4f rotationY= transformRotationY.matrix();
+	const sibr::Matrix4f rotationZ = transformRotationZ.matrix();
+
+	//---------------------
+	s.append("\t<shape type=\"rectangle\">\n");
+	s.append("\t\t<transform name=\"toWorld\">\n");
+	s.append("\t\t\t<scale x=\"");
+	s.append(std::to_string(rectangle._scale.x()));
+	s.append("\" y=\"");
+	s.append(std::to_string(rectangle._scale.y()));
+	s.append("\" z=\"1\"/>\n");
+
+	const float* dataMatrixRotationX = rotationX.data();
+	s.append("\t\t\t<matrix value=\"");
+	for (unsigned int i = 0; i < 16; i++) {
+		s.append(std::to_string(dataMatrixRotationX[i]));
+		s.append(" ");
+	}
+	s.append("\"/>\n");
+
+	const float* dataMatrixRotationY = rotationY.data();
+	s.append("\t\t\t<matrix value=\"");
+	for (unsigned int i = 0; i < 16; i++) {
+		s.append(std::to_string(dataMatrixRotationY[i]));
+		s.append(" ");
+	}
+	s.append("\"/>\n");
+
+	const float* dataMatrixRotationZ = rotationZ.data();
+	s.append("\t\t\t<matrix value=\"");
+	for (unsigned int i = 0; i < 16; i++) {
+		s.append(std::to_string(dataMatrixRotationZ[i]));
+		s.append(" ");
+	}
+	s.append("\"/>\n");
+	/*s.append("\t\t\t<rotate x=\"");
+	s.append(std::to_string(rectangle._rotation.x()));
+	s.append("\" y=\"");
+	s.append(std::to_string(rectangle._rotation.y()));
+	s.append("\" z=\"");
+	s.append(std::to_string(rectangle._rotation.z()));
+	s.append("\" angle = 1/>\n");*/
+	s.append("\t\t\t<translate x=\"");
+	s.append(std::to_string(rectangle._position.x()));
+	s.append("\" y=\"");
+	s.append(std::to_string(rectangle._position.y()));
+	s.append("\" z=\"");
+	s.append(std::to_string(rectangle._position.z()));
+	s.append("\"/>\n");
+	s.append("\t\t</transform>\n");
+	s.append("\t\t<emitter type=\"area\">\n");
+	s.append("\t\t\t<spectrum name=\"radiance\" value=\"");
+	s.append(std::to_string(rectangle._radiance));
+	s.append("\"/>\n");
+	s.append("\t\t</emitter>\n");
+	s.append("\t</shape>\n");
+	//------------------
+
+}
+
 void sibr::CamEditMeshViewer::writeLightsSeparatively() {
 
 	unsigned int counterLights = 0;
 
 	// Safety: if validate was not press, the cameras won't be saved.
 	// So if there are no cameras to save, try to validate.
-	if (_lightSpheresValidated.empty()) {
+	if (_lightSpheresValidated.empty() ||
+			_lightSpotsValidated.empty()) {
 		SIBR_WRG << "There were no validated sets, trying to validate any available camera list..."
 			<< std::endl;
 		validateSpline();
@@ -1341,37 +1786,62 @@ void sibr::CamEditMeshViewer::writeLightsSeparatively() {
 
 	for (auto light : _lightSpheresValidated)
 	{
+		std::ofstream fileLights(_outputPath + "/outLight" + 
+									std::to_string(counterLights) + ".xml",
+			std::ios::out | std::ios::trunc);
+		if (fileLights) {
 
-	std::ofstream fileLights(_outputPath + "/outLight"+ std::to_string(counterLights) + ".xml",
-		std::ios::out | std::ios::trunc);
-	if (fileLights) {
-		
-		std::string data;
-		data.append("<scene version=\"0.6.0\">\n");
-		data.append("\t<shape type=\"sphere\">\n");
-		data.append("\t\t<point name=\"center\" x=\"");
-		data.append(std::to_string(light._position.x()));
-		data.append("\" y=\"");
-		data.append(std::to_string(light._position.y()));
-		data.append("\" z=\"");
-		data.append(std::to_string(light._position.z()));
-		data.append("\"/>\n");
-		data.append("\t\t<float name=\"radius\" value=\"");
-		data.append(std::to_string(light._radius));
-		data.append("\"/>\n\n");
-		data.append("\t\t<emitter type=\"area\">\n");
-		data.append("\t\t\t<spectrum name=\"radiance\" value=\"");
-		data.append(std::to_string(light._radiance));
-		data.append("\"/>\n");
-		data.append("\t\t</emitter>\n");
-		data.append("\t</shape>\n");
-		data.append("</scene>");
-		fileLights << data;
-		fileLights.close();
-		counterLights++;
+			std::string data;
+			data.append("<scene version=\"0.6.0\">\n");
+			writeLightSphere(data, light);
+			data.append("</scene>");
+
+			fileLights << data;
+			fileLights.close();
+			counterLights++;
+		}
+		else
+			std::cerr << "Impossible to open this file !" << std::endl;
 	}
-	else
-		std::cerr << "Impossible to open this file !" << std::endl;
+
+	for (auto light : _lightSpotsValidated)
+	{
+		std::ofstream fileLights(_outputPath + "/outLight" + 
+									std::to_string(counterLights) + ".xml",
+			std::ios::out | std::ios::trunc);
+		if (fileLights) {
+
+			std::string data;
+			data.append("<scene version=\"0.6.0\">\n");
+			writeLightSpot(data, light);
+			data.append("</scene>");
+
+			fileLights << data;
+			fileLights.close();
+			counterLights++;
+		}
+		else
+			std::cerr << "Impossible to open this file !" << std::endl;
+	}
+
+	for (auto light : _lightRectanglesValidated)
+	{
+		std::ofstream fileLights(_outputPath + "/outLight" + 
+									std::to_string(counterLights) + ".xml",
+			std::ios::out | std::ios::trunc);
+		if (fileLights) {
+
+			std::string data;
+			data.append("<scene version=\"0.6.0\">\n");
+			writeLightRectangle(data, light);
+			data.append("</scene>");
+
+			fileLights << data;
+			fileLights.close();
+			counterLights++;
+		}
+		else
+			std::cerr << "Impossible to open this file !" << std::endl;
 	}
 
 }
@@ -1386,7 +1856,9 @@ void sibr::CamEditMeshViewer::writeLights() {
 
 	// Safety: if validate was not press, the cameras won't be saved.
 	// So if there are no cameras to save, try to validate.
-	if (_lightSpheresValidated.empty()) {
+	if (_lightSpheresValidated.empty() ||
+			_lightSpotsValidated.empty()) {
+
 		SIBR_WRG << "There were no validated sets, trying to validate any available camera list..."
 			<< std::endl;
 		validateSpline();
@@ -1398,24 +1870,15 @@ void sibr::CamEditMeshViewer::writeLights() {
 		data.append("<scene version=\"0.6.0\">\n");
 		for (auto light : _lightSpheresValidated)
 		{
-
-			data.append("\t<shape type=\"sphere\">\n");
-			data.append("\t\t<point name=\"center\" x=\"");
-			data.append(std::to_string(light._position.x()));
-			data.append("\" y=\"");
-			data.append(std::to_string(light._position.y()));
-			data.append("\" z=\"");
-			data.append(std::to_string(light._position.z()));
-			data.append("\"/>\n");
-			data.append("\t\t<float name=\"radius\" value=\"");
-			data.append(std::to_string(light._radius));
-			data.append("\"/>\n\n");
-			data.append("\t\t<emitter type=\"area\">\n");
-			data.append("\t\t\t<spectrum name=\"radiance\" value=\"");
-			data.append(std::to_string(light._radiance));
-			data.append("\"/>\n");
-			data.append("\t\t</emitter>\n");
-			data.append("\t</shape>\n");
+			writeLightSphere(data,light);
+		}
+		for (auto light : _lightSpotsValidated)
+		{
+			writeLightSpot(data,light);
+		}
+		for (auto light : _lightRectanglesValidated)
+		{
+			writeLightRectangle(data,light);
 		}
 		data.append("</scene>");
 		fileLights << data;
@@ -1427,7 +1890,7 @@ void sibr::CamEditMeshViewer::writeLights() {
 }
 
 void sibr::CamEditMeshViewer::listenKey() {
-	if (input.global().key().isPressed(sibr::Key::B)) {
+	if (input.global().key().isPressed(sibr::Key::N)) {
 		InputCamera camToAdd = interactCam->getCamera();
 		InputCamera& refToCam = camToAdd;
 		addCamera(refToCam);

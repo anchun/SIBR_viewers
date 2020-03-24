@@ -8,8 +8,7 @@
 
 namespace sibr
 {
-	/**
-	Represent a active_images.txt file use to select a subset of a scene images.
+	/** Represent a active_images.txt file use to select a subset of a scene images.
 	\ingroup sibr_assets
 	*/
 	class SIBR_ASSETS_EXPORT ActiveImageFile : public IFileLoader
@@ -29,7 +28,7 @@ namespace sibr
 		\param verbose output additional informations to the standard output.
 		\return a boolean indicating if the loading was successful or not.
 		*/
-		bool load( const std::string& filename, bool verbose = true );
+		bool load( const std::string& filename, bool verbose = true ) override;
 		
 		/**
 		Load an active cameras listing from a file on disk, expecting numImage images in total.
@@ -39,7 +38,7 @@ namespace sibr
 		\param verbose output additional informations to the standard output.
 		\return a boolean indicating if the load was successful or not.
 		*/
-		bool load( const std::string& filename, int numImage, bool verbose = true );
+		bool load( const std::string& filename, int numImages, bool verbose = true );
 		
 		/**
 		Return a reference to a boolean vector indicating, for each picture of 
@@ -50,8 +49,8 @@ namespace sibr
 
 
 	private:
-		std::vector<bool> _active;
-		int _numImages;
+		std::vector<bool> _active; ///< Flags denoting which images are active.
+		int _numImages = 0; ///< Number of images.
 
 	};
 

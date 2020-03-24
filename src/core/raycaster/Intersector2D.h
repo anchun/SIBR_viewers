@@ -8,9 +8,8 @@
 
 
 
-/**
-	Struct representing a 3D quad, along with load/save utilities.
-	// \todo TODO: move in proper namespace without breaking anything.
+/** Struct representing a 3D quad, along with load/save utilities.
+	\todo move in proper namespace without breaking anything.
 	\ingroup sibr_raycaster
 */
 struct  quad {
@@ -49,15 +48,18 @@ struct  quad {
 namespace sibr {
 
 
-	/**
-	This class provides utilities to compute point/line/triangle/quad intersections.
+	/** This class provides utilities to compute point/line/triangle/quad intersections.
 	\ingroup sibr_raycaster
 	*/
 	class SIBR_RAYCASTER_EXPORT Intersector2D
 	{
 
 	public:
-		Intersector2D(void) { } /// \todo TODO: move to private/delete.
+		/// Constructor.
+		Intersector2D(void) = delete;
+
+		/// Destructor
+		~Intersector2D(void) = delete;
 
 		/**
 		Having defined a straight line in the 2D plane, this method can be used to know in which half-space (defined by the line) a point lies.
@@ -120,12 +122,11 @@ namespace sibr {
 		Perform multiple quads/camera frusta intersections at once.
 		\warning Requires an existing and current OpenGL context.
 		\param quads an array of quads to test against each camera frustum.
-		\param cameras an array of cameras against which frusta the intersections tests should be performed.
+		\param cams an array of cameras against which frusta the intersections tests should be performed.
 		\return a double-array of booleans denoting, for each camera, for each quad, if the quad intersects the frustum volume.
 		*/
 		static std::vector<std::vector<bool>> frustrumQuadsIntersect(std::vector<quad> & quads, const std::vector<sibr::InputCamera> & cams);
 
-		~Intersector2D(void) { } /// \todo TODO: move to private/delete.
 	};
 
 }

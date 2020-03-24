@@ -10,19 +10,6 @@
 
 namespace sibr { 
 	
-	struct ULRAppArgs :
-		virtual BasicIBRAppArgs {
-		Arg<int> version = { "v", 3 };
-		ArgSwitch softVisibility = { "soft-visibility", true };
-		Arg<bool> masks = { "masks" };
-		Arg<std::string> maskParams = { "masks-param" , "" };
-		Arg<std::string> maskParamsExtra = { "masks-param-extra" , "" };
-		Arg<bool> invert = { "invert" };
-		Arg<bool> alphas = { "alphas" };
-		Arg<bool> poisson = { "poisson-blend" };
-
-	};
-
 	/**
 	 * \class ULRV3Renderer
 	 * \brief Perform per-pixel Unstructured Lumigraph Rendering (Buehler et al., 2001). No selection is done on the CPU side.
@@ -78,11 +65,20 @@ namespace sibr {
 			bool passthroughDepth = false
 			);
 
+		/**
+		 * Performs ULR rendering to a given destination rendertarget.
+		 * \param mesh The mesh to use as geometric proxy.
+		 * \param eye The novel viewpoint.
+		 * \param dst The destination rendertarget.
+		 * \param inputRGBHandle The handle of a texture array containing the input RGB images.
+		 * \param inputDepths A texture array containing the input depth maps.
+		 * \param passthroughDepth If true, depth from the position map will be output to the depth buffer for ulterior passes.
+		 */
 		virtual void process(
 			const sibr::Mesh & mesh,
 			const sibr::Camera& eye,
 			IRenderTarget& dst,
-			uint input_texs_handle,
+			uint inputRGBHandle,
 			const sibr::Texture2DArrayLum32F::Ptr & inputDepths,
 			bool passthroughDepth = false
 		);
@@ -101,6 +97,9 @@ namespace sibr {
 
 		/// Flip the RGB images before using them.
 		bool & flipRGBs() { return _flipRGBs.get(); }
+
+		/// Enable or diable occlusion testing.
+		bool& occTest() { return _occTest.get(); }
 
 		/// Show debug weights.
 		bool & showWeights() { return _showWeights.get(); }
@@ -124,7 +123,7 @@ namespace sibr {
 		bool & clearDst() { return _clearDst; }
 
 		/// \return The ID of the first pass position map texture.
-		uint depthHandle() { return _depthRT->texture(); }
+		uint depthHandle() const { return _depthRT->texture(); }
 
 		/**
 		 * Render the world positions of the proxy points in an intermediate rendertarget.
@@ -137,22 +136,14 @@ namespace sibr {
 		* Perform ULR blending.
 		* \param eye The novel viewpoint.
 		* \param dst The destination rendertarget.
-		* \param inputRGBs A texture array containing the input RGB images.
+		* \param inputRGBHandle The handle to a texture array containing the input RGB images.
 		* \param inputDepths A texture array containing the input depth maps.
 		* \param passthroughDepth If true, depth from the position map will be output to the depth buffer for ulterior passes.
 		*/
 		void renderBlending(
 			const sibr::Camera& eye,
 			IRenderTarget& dst,
-			const sibr::Texture2DArrayRGB::Ptr & inputRGBs,
-			const sibr::Texture2DArrayLum32F::Ptr & inputDepths,
-			bool passthroughDepth
-		);
-
-		void renderBlending(
-			const sibr::Camera& eye,
-			IRenderTarget& dst,
-			uint input_texs_handle,
+			uint inputRGBHandle,
 			const sibr::Texture2DArrayLum32F::Ptr & inputDepths,
 			bool passthroughDepth
 		);
@@ -187,14 +178,14 @@ namespace sibr {
 		bool								_backFaceCulling = true;
 		bool								_clearDst = true;
 
-		/// Camera infos data structure shared between the CPU and GPU.
-		/// We have to be careful about alignment if we want to send those struct directly into the UBO.
+		/** Camera infos data structure shared between the CPU and GPU.
+			We have to be careful about alignment if we want to send those struct directly into the UBO. */
 		struct CameraUBOInfos {	 
-			Matrix4f vp; 
-			Vector3f pos;
-			int selected = 0;
-			Vector3f dir;
-			float dummy = 0.0f; // padding to a multiple of 16 bytes.
+			Matrix4f vp; ///< Matrix viewproj.
+			Vector3f pos; ///< Camera position.
+			int selected = 0; ///< Is the camera selected (0/1).
+			Vector3f dir; ///< Camera direction.
+			float dummy = 0.0f; ///< Padding to a multiple of 16 bytes for alignment on the GPU.
 		};
 
 		std::vector<CameraUBOInfos> _cameraInfos;

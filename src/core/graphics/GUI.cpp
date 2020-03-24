@@ -6,7 +6,7 @@
 namespace sibr
 {
 	
-	bool		showImGuiWindow(const std::string& windowTitle, const IRenderTarget& rt, ImGuiWindowFlags flags, Viewport & viewport, const bool invalidTexture, const bool updateLayout )
+	bool		showImGuiWindow(const std::string& windowTitle, const IRenderTarget& rt, ImGuiWindowFlags flags, Viewport & viewport,  bool invalidTexture,  bool updateLayout, int handle )
 	{
 		bool isWindowFocused = false;
 		// If we are asked to, we need to update the viewport at launch.
@@ -26,7 +26,6 @@ namespace sibr
 			
 			size = size.cwiseMax( sibr::Vector2f( 1.0f,1.0f) );
 
-			//std::cout << windowTitle << " : " <<  rtSize << availRegionSize << offset << " / " << size << std::endl;
 				
 			pos.x += offset.x();
 			pos.y += offset.y();
@@ -35,7 +34,7 @@ namespace sibr
 			ImGui::SetCursorPos(ImVec2(offset.x(), ImGui::GetTitleBarHeight()+offset.y()));
 			ImGui::InvisibleButton((windowTitle + "--TEXTURE-INVISIBLE_BUTTON").c_str(), ImVec2(size.x(), size.y()));
 			if (!invalidTexture) {
-				::ImGui::GetWindowDrawList()->AddImage((void*)(intptr_t)(rt.texture()),
+				::ImGui::GetWindowDrawList()->AddImage((void*)(intptr_t)(rt.handle(handle)),
 					pos, ImVec2(pos.x + size.x(), pos.y + size.y()),
 					ImVec2(0, 1), ImVec2(1, 0));
 			}
@@ -44,7 +43,6 @@ namespace sibr
 
 			viewport = Viewport(pos.x, pos.y, pos.x+size.x(), pos.y+size.y());
 
-			//std::cout << "RT is " << rt.w() << "," << rt.h() << ", view is " << size.x() << "," << size.y() << std::endl;
 			// Hand back the inputs to sibr.
 			if (ImGui::IsItemHovered()) {
 				ImGui::CaptureKeyboardFromApp(false);
@@ -59,7 +57,7 @@ namespace sibr
 	Mesh::Ptr generateMeshForText(const std::string & text, unsigned int & separationIndex){
 		// Technically we don't care if we already are in the middle of a ImGui frame.
 		// as long as we clear the draw list. ImGui will detect the empty draw lists and cull them.
-		ImGui::PushID(1234);
+		ImGui::PushID(1234567809);
 		ImGui::SetNextWindowPos(ImVec2(0,0));
 		ImGui::Begin(text.c_str(), nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoInputs);
 		ImGui::SetWindowFontScale(ImGui::GetIO().FontGlobalScale);
@@ -158,9 +156,6 @@ namespace sibr
 
 		sibr::Vector2f posF = zoomData.uvFromBoxPos(d.positionRatio);
 
-		//ImGui::Text(std::string(std::to_string(zoomData.center[0]) + " " + std::to_string(zoomData.center[1])).c_str());
-		//ImGui::Text(std::string(std::to_string(zoomData.diagonal[0]) + " " + std::to_string(zoomData.diagonal[1])).c_str());
-
 		if (d.isHoovered && d.isClickedRight && !zoomData.underMofidication) {
 			zoomData.underMofidication = true;
 			zoomData.tmpTopLeft = posF;
@@ -172,9 +167,6 @@ namespace sibr
 		}
 
 		if (zoomData.underMofidication) {
-			//ImGui::Text(std::string(std::to_string(zoomData.tmpTopLeft[0]) + " " + std::to_string(zoomData.tmpTopLeft[1])).c_str());
-			//ImGui::Text(std::string(std::to_string(zoomData.tmpBottonRight[0]) + " " + std::to_string(zoomData.tmpBottonRight[1])).c_str());
-
 			ImGui::GetWindowDrawList()->AddRect(
 				ImVec2(zoomData.firstClickPixel[0], zoomData.firstClickPixel[1]),
 				ImVec2(zoomData.secondClickPixel[0], zoomData.secondClickPixel[1]),
@@ -261,13 +253,6 @@ namespace sibr
 		for (int i = 0; i <= l; ++i) {
 			rasterizedLine[i] = (firstPosIm.cast<float>() + (i / (float)l)*diff.cast<float>()).cast<int>();
 		}
-
-		std::cout << firstPosIm << " " << secondPosIm << std::endl;
-		std::cout << rasterizedLine.front() << " " << rasterizedLine.back() << std::endl;
-		//for (const auto & p : rasterizedLine) {
-		//	std::cout << p << " ";
-		//}
-		std::cout << std::endl;
 	}
 
 	void DisplayImageGui(
@@ -318,15 +303,6 @@ namespace sibr
 namespace ImGui {
 
 	const float GetTitleBarHeight() { return GetTextLineHeight() + GetStyle().FramePadding.y * 2.0f; }
-
-	void DrawTextWindow(const char * title, const float x, const float y, const char * text) {
-		ImGui::SetNextWindowPos(ImVec2(x, y));
-		if (ImGui::Begin(title, NULL, ImVec2(0, 0), 0.5f, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings))
-		{
-			ImGui::Text("%s", text);
-		}
-		ImGui::End();
-	}
 
 	void PushScaledItemWidth(float item_width)
 	{

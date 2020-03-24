@@ -1,7 +1,12 @@
 project(sibr_assets)
 
-file(GLOB SOURCES "*.cpp" "*.h" "*.hpp")
+file(GLOB SOURCES "*.cpp" "*.h" "*.hpp" )
 source_group("Source Files" FILES ${SOURCES})
+
+file(GLOB XATLAS_SOURCES "xatlas/*.cpp" "xatlas/*.h" )
+source_group("Source Files\\xatlas" FILES ${XATLAS_SOURCES})
+
+file(GLOB SOURCES "*.cpp" "*.h" "*.hpp" "xatlas/*.cpp" "xatlas/*.h")
 
 
 ## Specify target rules

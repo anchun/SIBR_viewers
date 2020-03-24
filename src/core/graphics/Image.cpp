@@ -28,10 +28,10 @@ namespace sibr
 			switch (img.channels())
 			{
 			case 3:
-				cv::cvtColor(img, img, CV_BGR2RGB);
+				cv::cvtColor(img, img, cv::COLOR_BGR2RGB);
 				break;
 			case 4:
-				cv::cvtColor(img, img, CV_BGRA2RGBA);
+				cv::cvtColor(img, img,  cv::COLOR_BGRA2RGBA);
 				break;
 			default:
 				break;
@@ -43,10 +43,10 @@ namespace sibr
 			switch (img.channels())
 			{
 			case 3:
-				cv::cvtColor(img, img, CV_RGB2BGR);
+				cv::cvtColor(img, img, cv::COLOR_RGB2BGR);
 				break;
 			case 4:
-				cv::cvtColor(img, img, CV_RGBA2BGRA);
+				cv::cvtColor(img, img, cv::COLOR_RGBA2BGRA);
 				break;
 			default:
 				break;
@@ -101,17 +101,16 @@ namespace sibr
 		return out;
 	}
 
-
-	SIBR_GRAPHICS_EXPORT sibr::ImageRGB32F convertRGBAtoRGB32F(const sibr::ImageRGBA & imgRGBA)
+	 sibr::ImageRGB32F convertRGBAtoRGB32F(const sibr::ImageRGBA& imgRGBA)
 	{
-		sibr::ImageRGB32F out(imgRGBA.w()/3, imgRGBA.h());
+		sibr::ImageRGB32F out(imgRGBA.w() / 3, imgRGBA.h());
 #pragma omp parallel for
 		for (int y = 0; y < int(out.h()); ++y) {
 			for (uint x = 0; x < out.w(); ++x) {
 				for (int k = 0; k < 3; k++) {
-					unsigned char * p = reinterpret_cast<unsigned char *>(&out(x, y)[k]);
+					unsigned char* p = reinterpret_cast<unsigned char*>(&out(x, y)[k]);
 					for (std::size_t i = 0; i != sizeof(float); ++i) {
-						p[i] = imgRGBA(k*out.w() + x, y)[i];
+						p[i] = imgRGBA(k * out.w() + x, y)[i];
 					}
 				}
 			}
@@ -119,7 +118,7 @@ namespace sibr
 		return out;
 	}
 
-	SIBR_GRAPHICS_EXPORT sibr::ImageRGBA convertNormalMapToSphericalHalf(const sibr::ImageRGB32F & imgF)
+	 sibr::ImageRGBA convertNormalMapToSphericalHalf(const sibr::ImageRGB32F & imgF)
 	{
 		uint phi_uint; 
 		uint theta_uint;
@@ -146,7 +145,7 @@ namespace sibr
 		return out;
 	}
 
-	SIBR_GRAPHICS_EXPORT sibr::ImageRGB32F convertSphericalHalfToNormalMap(const sibr::ImageRGBA & imgRGBA)
+	 sibr::ImageRGB32F convertSphericalHalfToNormalMap(const sibr::ImageRGBA & imgRGBA)
 	{	
 		uint phi_uint;
 		uint theta_uint; 
@@ -176,8 +175,8 @@ namespace sibr
 		return out;
 	}
 
-	Image<unsigned char, 3> coloredClass(const Image<unsigned char, 1>::Ptr imClass) { // note that 255 is black
-		//SIBR_ASSERT(T_NumComp==1 && typdeId(T_Type)==typeId(unsigned char));
+	Image<unsigned char, 3> coloredClass(const Image<unsigned char, 1>::Ptr imClass) { 
+		
 		const int color_list[25][3] = {
 			{255, 179, 0},{128, 62, 117},{166, 189, 215} ,{193, 0, 32},{0,128,255},{0, 125, 52},
 			{246, 118, 142},{0, 83, 138},{255, 122, 92} ,{0, 255, 0},{255, 142, 0},{179, 40, 81},
@@ -200,8 +199,8 @@ namespace sibr
 		return imClassColor;
 	}
 
-	Image<unsigned char, 3> coloredClass(const Image<int, 1>::Ptr imClass) { // note that 255 is black
-																					   //SIBR_ASSERT(T_NumComp==1 && typdeId(T_Type)==typeId(unsigned char));
+	Image<unsigned char, 3> coloredClass(const Image<int, 1>::Ptr imClass) { 
+																					   
 		const int color_list[25][3] = {
 			{ 255, 179, 0 },{ 128, 62, 117 },{ 166, 189, 215 } ,{ 193, 0, 32 },{ 0,128,255 },{ 0, 125, 52 },
 			{ 246, 118, 142 },{ 0, 83, 138 },{ 255, 122, 92 } ,{ 0, 255, 0 },{ 255, 142, 0 },{ 179, 40, 81 },
@@ -252,8 +251,6 @@ namespace sibr
 			max = log(max);
 		}
 
-		std::cout << max << " & " << min << std::endl;
-
 		for (unsigned int j = 0; j < im.h(); j++) {
 			for (unsigned int i = 0; i < im.w(); i++) {
 				if (logScale)
@@ -273,6 +270,116 @@ namespace sibr
 		cv::Mat in[] = { c, c, c };
 		cv::merge(in, 3, out);
 		return out;
+	}
+
+	// Adopted from http://www.64lines.com/jpeg-width-height. Gets the JPEG size from the file stream passed
+	// to the function, file reference: http://www.obrador.com/essentialjpeg/headerinfo.htm
+	sibr::Vector2i IImage::get_jpeg_size(std::ifstream& file)
+	{
+		// Check for valid JPG
+		if (file.get() != 0xFF || file.get() != 0xD8)
+			return Eigen::Vector2i(-1, -1);
+		file.get(); file.get(); // Skip the rest of JPG identifier.
+
+		std::streampos block_length = static_cast<std::streampos>(file.get() * 256 + file.get() - 2);
+		for (;;)
+		{
+			// Skip the first block since it doesn't contain the resolution
+			file.seekg(file.tellg() + block_length);
+
+			// Check if we are at the start of another block
+			if (!file.good() || file.get() != 0xFF)
+				break;
+
+			// If the block is not the "Start of frame", skip to the next block
+			if (file.get() != 0xC0)
+			{
+				block_length = static_cast<std::streampos>(file.get() * 256 + file.get() - 2);
+				continue;
+			}
+
+			// Found the appropriate block. Extract the dimensions.
+			for (int i = 0; i < 3; ++i) file.get();
+
+			int height = file.get() * 256 + file.get();
+			int width = file.get() * 256 + file.get();
+			return sibr::Vector2i(width, height);
+		}
+		return sibr::Vector2i(-1, -1);
+	}
+
+	// Adopted from http://stackoverflow.com/questions/22638755/image-dimensions-without-loading
+	// kudos to Lukas (http://stackoverflow.com/users/643315/lukas).
+	sibr::Vector2i IImage::imageResolution(const std::string& file_path)
+	{
+		enum ValidFormats {
+			PNG = 0,
+			BMP,
+			TGA,
+			JPG,
+			JPEG,
+			VALID_COUNT
+		};
+
+		std::string valid_extensions[] = {
+			"png",
+			"bmp",
+			"tga",
+			"jpg",
+			"jpeg"
+		};
+
+		std::string extension = sibr::to_lower(sibr::getExtension(file_path));
+		
+		int extension_id = 0;
+		while (extension_id < VALID_COUNT &&
+			extension != valid_extensions[extension_id])
+			extension_id++;
+
+		if (extension_id == VALID_COUNT)
+			return Eigen::Vector2i(-1, -1);
+
+		std::ifstream file(file_path, std::ios::binary);
+		if (!file.good())
+			return Eigen::Vector2i(-1, -1);
+
+		uint32_t temp = 0;
+		int32_t  width = -1;
+		int32_t  height = -1;
+		switch (extension_id)
+		{
+		case PNG:
+			file.seekg(16);
+			file.read(reinterpret_cast<char*>(&width), 4);
+			file.read(reinterpret_cast<char*>(&height), 4);
+			width = sibr::ByteStream::ntohl(width);
+			height = sibr::ByteStream::ntohl(height);
+			break;
+		case BMP:
+			file.seekg(14);
+			file.read(reinterpret_cast<char*>(&temp), 4);
+			if (temp == 40) // Windows Format
+			{
+				file.read(reinterpret_cast<char*>(&width), 4);
+				file.read(reinterpret_cast<char*>(&height), 4);
+			}
+			else if (temp == 20) // MAC Format
+			{
+				file.read(reinterpret_cast<char*>(&width), 2);
+				file.read(reinterpret_cast<char*>(&height), 2);
+			}
+			break;
+		case TGA:
+			file.seekg(12);
+			file.read(reinterpret_cast<char*>(&width), 2);
+			file.read(reinterpret_cast<char*>(&height), 2);
+			break;
+		case JPG:
+		case JPEG:
+			return get_jpeg_size(file);
+			break;
+		}
+		return sibr::Vector2i(width, height);
 	}
 
 } // namespace sibr

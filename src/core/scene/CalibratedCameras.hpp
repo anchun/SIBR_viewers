@@ -4,7 +4,9 @@
 
 namespace sibr
 {
-
+	/**
+	\ingroup sibr_scene
+	*/
 	class SIBR_SCENE_EXPORT CalibratedCameras {
 	public:
 
@@ -46,7 +48,7 @@ namespace sibr
 		/**
 		* \brief Function to mark the cameras used for rendering.
 		* Generally used for debugging purposes
-		* \param selectedImages Vector of camera IDs that are used for rendering
+		* \param selectedCameras list of camera IDs that are used for rendering
 		*/
 		void	debugFlagCameraAsUsed(const std::vector<uint>& selectedCameras);
 
@@ -54,6 +56,7 @@ namespace sibr
 		* \brief Function to check if the camera is used for rendering.
 		*
 		* \param camId Integer ID of the cameras to be checked if it is being used for rendering
+		* \return true if used for rendering
 		*/
 		bool	isCameraUsedForRendering(size_t camId) const;
 		

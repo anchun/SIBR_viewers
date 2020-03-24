@@ -20,11 +20,18 @@ namespace sibr {
 	* 
 	* \ingroup sibr_scene
 	*/
-
 	class SIBR_SCENE_EXPORT BasicIBRScene
 	{
 		
 	public:
+		/** Scene initialization infos. */
+		struct SceneOptions
+		{
+			bool		renderTargets = true; ///< Load rendertargets?
+			bool		mesh = true; ///< Load mesh?
+			bool		images = true; ///< Load images?
+			bool		cameras = true; ///< Load cameras?
+		};
 
 		/**
 		* \brief Pointer to the instance of class sibr::BasicIBRScene.
@@ -41,28 +48,31 @@ namespace sibr {
 		 * The scene may be created using either dataset path, or explicitly specifying individual componenets.
 		 * \param myArgs to provide all command line arguments containing path to specific components.
 		 * \param noRTs to specify whether to initialize render target textures or not.
+		 * \param noMesh skip loading the mesh
 		 */
-		BasicIBRScene(const BasicIBRAppArgs & myArgs, bool noRTs = false, bool noMesh = false);
+		BasicIBRScene(const BasicIBRAppArgs & myArgs, bool noRTs, bool noMesh = false);
 
+		/**
+		 * \brief Constructor to create a BasicIBRScene given command line arguments.
+		 * The scene may be created using either dataset path, or explicitly specifying individual componenets.
+		 * \param myArgs to provide all command line arguments containing path to specific components.
+		 * \param myOpts to specify initialization paramters for the scene.
+		 */
+		BasicIBRScene(const BasicIBRAppArgs& myArgs, SceneOptions myOpts = SceneOptions());
+
+
+		/** Detructor. */
 		~BasicIBRScene() {};
 
 		/**
 		* \brief Creates a BasicIBRScene given custom data argument.
 		* The scene will be created using the custom data (cameras/images/proxies/textures etc.) provided.
 		* \param data to provide data instance holding customized components.
-		* \param noRTs to specify whether to initialize render target textures or not.
 		* \param width the constrained width for GPU texture data.
+		* \param myOpts to specify whether to initialize specific parts of the scene (RTs, geometry,...)
 		*/
-		void createFromCustomData(const ParseData::Ptr & data, bool noRTs = false, const uint width = 0);
-
-		/**
-		* \brief Creates a BasicIBRScene from the internal stored data component in the scene.
-		* The data could be populated either from dataset path or customized by the user externally.
-		* \param noRTs to specify whether to initialize render target textures or not.
-		* \param width the constrained width for GPU texture data.
-		*/
-		void createFromData(bool noRTs = false, const uint width = 0, bool noMesh = false);
-
+		void createFromCustomData(const ParseData::Ptr & data, const uint width = 0, SceneOptions myOpts = SceneOptions());
+		
 		/**
 		 * \brief Function to create a scene directly using the dataset path specified in command-line.
 		 */
@@ -82,7 +92,7 @@ namespace sibr {
 
 		/**
 		* \brief Setter for the pointer holding the data related to the scene for scene creation.
-		*
+		* \param data the setup data
 		*/
 		void									data(const sibr::ParseData::Ptr & data);
 
@@ -122,33 +132,28 @@ namespace sibr {
 		 *
 		 */
 		Texture2DRGB::Ptr &					inputMeshTextures(void);
-
-		/**
-		 * \brief Getter for the pointer holding the user camera viewing the scene.
-		 * 
-		 * \todo Move to somwhere more appropriate.
-		 */
-		const sibr::InputCamera&					userCamera(void);
-
-		/**
-		 * \brief Setter for the pointer holding the user camera viewing the scene.
-		 * \param cam The camera to which the user camera should be set.
-		 * \todo Move to somwhere more appropriate.
-		 */
-		void										userCamera(const InputCamera& cam);
 		
 
 	protected:
 		BasicIBRScene(BasicIBRScene & scene);
 		BasicIBRScene& operator =(const BasicIBRScene&) = delete;
 
-		ParseData::Ptr								_data;
-		CalibratedCameras::Ptr						_cams;
-		InputImages::Ptr							_imgs;
-		ProxyMesh::Ptr								_proxies;
-		Texture2DRGB::Ptr							_inputMeshTexture;
-		RenderTargetTextures::Ptr					_renderTargets;
-		InputCamera									_userCamera;
+		ParseData::Ptr				_data;
+		CalibratedCameras::Ptr		_cams;
+		InputImages::Ptr			_imgs;
+		ProxyMesh::Ptr				_proxies;
+		Texture2DRGB::Ptr			_inputMeshTexture;
+		RenderTargetTextures::Ptr	_renderTargets;
+
+		SceneOptions				_currentOpts;
+
+		/**
+		* \brief Creates a BasicIBRScene from the internal stored data component in the scene.
+		* The data could be populated either from dataset path or customized by the user externally.
+		* \param width the constrained width for GPU texture data.
+		*/
+		void createFromData(const uint width = 0);
+
 		
 	};
 
@@ -193,16 +198,5 @@ namespace sibr {
 	{
 		return _inputMeshTexture;
 	}
-
-	inline const sibr::InputCamera & BasicIBRScene::userCamera(void)
-	{
-		return _userCamera;
-	}
-
-	inline void BasicIBRScene::userCamera(const InputCamera & cam)
-	{
-		_userCamera = cam;
-	}
-
 
 }

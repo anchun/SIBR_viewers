@@ -16,9 +16,9 @@
 
 // (used by Image)
 # pragma warning(push, 0)
-#  include <opencv/cv.h>
-#  include <opencv/cxcore.h>
-#  include <opencv/highgui.h>
+#  include <opencv2/opencv.hpp>
+#  include <opencv2/core.hpp>
+#  include <opencv2/highgui.hpp>
 # pragma warning(pop)
 
 
@@ -87,6 +87,13 @@
 
 namespace sibr
 {
+	/** Clamp a value.
+	\param value value to clamp
+	\param min min value
+	\param max max value
+	\return min(max(value, min), max)
+	\ingroup sibr_graphics
+	*/
 	template <typename T>
 	inline T	clamp( T value, T min, T max ) {
 		return std::max(min, std::min(max, value));
