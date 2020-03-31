@@ -1,8 +1,6 @@
-/** @page Mitsuba Rendering with Mitsuba
-  *
-  * \tableofcontents
-  *
-  * \section Cluster Compiling Mitsuba on Cluster
-  * Follow the given steps to compile Mitsuba on cluster
-  * 
+/** @page MitsubaPipelineGroup Rendering with Mitsuba
+  
+   - \subpage mitsuba_intro_sec
+   - \subpage mitsuba_tools
+   - \subpage mitsuba_data
   **/
