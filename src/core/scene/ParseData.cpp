@@ -245,12 +245,13 @@ namespace sibr {
 				while (std::getline(blackListFile, line)) {
 					split(splitS, line, is_any_of(" "));
 					//std::cout << splitS.size() << std::endl;
-					if (splitS.size() >= 1) {
-						for (auto& s : splitS)
-							if (!s.empty())
-								_camInfos[stoi(s)].setActive(false);
+					if (splitS.size() > 0) {
+						for (uint cam_id = 0; cam_id < _camInfos.size(); cam_id++) {
+							if (find_any(splitS, _camInfos[cam_id].name())) {
+								_camInfos[cam_id].setActive(false);
+							}
+						}
 						splitS.clear();
-						break;
 					}
 					else
 						break;
