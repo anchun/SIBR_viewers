@@ -3,7 +3,11 @@
 For projects that led to publications, the link to the paper is available.
   - \subpage ulrPage 
   - \subpage spixelWarpPage (http://www-sop.inria.fr/reves/Basilic/2013/CDSD13/)
+  - \subpage md_src_projects_deep_blending_README (http://www-sop.inria.fr/reves/Basilic/2018/HPPFDB18/)
   - \subpage facadeRepetitionsPage (http://www-sop.inria.fr/reves/Basilic/2018/RBDD18/)
-  - \subpage syntheticPage
+  - \subpage semanticReflections (http://www-sop.inria.fr/reves/Basilic/2020/RPHD20/)
+
+Other projects are helper libraries that can be used to augment SIBR with new functionalities.
+  - \subpage md_src_projects_optix_documentation_README
 
  **/

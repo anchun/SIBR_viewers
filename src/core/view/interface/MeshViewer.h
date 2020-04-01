@@ -71,11 +71,11 @@ namespace sibr {
 		static const std::string meshVertexShader;
 		static const std::string meshFragmentShader;
 
+		sibr::GLShader				shaderLines;
 
 	private:
 
 		sibr::GLShader				shaderMesh;
-		sibr::GLShader				shaderLines;
 		sibr::GLShader				shaderPoints;
 
 		sibr::GLParameter			mvpLines;

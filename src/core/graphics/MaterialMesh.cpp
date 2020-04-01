@@ -522,7 +522,7 @@ namespace sibr
 							{
 								std::string textureName =
 									nodeString->first_attribute("value")->value();
-								sibr::ImageRGB::Ptr texture(new sibr::ImageRGB());
+								sibr::ImageRGBA::Ptr texture(new sibr::ImageRGBA());
 								// If we skip loading the textures, still set them as empty images.
 								if (!loadTextures || texture->load(pathFolder + "/" + textureName)) {
 									/*std::cout << "Diffuse " << pathFolder + "/"
@@ -577,18 +577,20 @@ namespace sibr
 									float redComponent, greenComponent, blueComponent;
 									sscanf_s(colorString.c_str(), "%f, %f, %f",
 										&redComponent, &greenComponent, &blueComponent);
-									const sibr::ImageRGB::Pixel color(
+									const sibr::ImageRGBA::Pixel color(
 										static_cast<const unsigned char>(redComponent * 255),
 										static_cast<const unsigned char>(greenComponent * 255),
-										static_cast<const unsigned char>(blueComponent * 255));
-									sibr::ImageRGB::Ptr texture(new sibr::ImageRGB(
+										static_cast<const unsigned char>(blueComponent * 255),
+										255);
+									sibr::ImageRGBA::Ptr texture(new sibr::ImageRGBA(
 										1, 1, color));
 									if (texture) {
 										/*std::cout << "Diffuse color : " <<
 											redComponent << ", " << blueComponent <<
 											", " << greenComponent << ", " << std::endl;*/
 										_diffuseMaps[nameMat] = texture;
-										uniformColorMtlList.push_back(nameMat);
+										_tagsCoveringMaps[nameMat] = nullptr;
+
 										breakBool = true;
 										break;
 									}
@@ -619,17 +621,23 @@ namespace sibr
 					float g = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
 					float b = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
 
-					const sibr::ImageRGB::Pixel color(
+					const sibr::ImageRGBA::Pixel color(
 						static_cast<const unsigned char>(r * 255),
 						static_cast<const unsigned char>(g * 255),
-						static_cast<const unsigned char>(b * 255)
+						static_cast<const unsigned char>(b * 255),
+						static_cast<const unsigned char> (255)
 					);
-					sibr::ImageRGB::Ptr texture(new sibr::ImageRGB(
+					sibr::ImageRGBA::Ptr texture(new sibr::ImageRGBA(
 						1, 1, color));
 					SIBR_WRG << "Warning: No color and no texture found for " << nameMat << ", " <<
 						"material will be chosen randomly." << std::endl;
 					_diffuseMaps[nameMat] = texture;
-					uniformColorMtlList.push_back(nameMat);
+
+					_tagsCoveringMaps[nameMat] = nullptr;
+					/*if (_hasTagsCoveringFile) {
+						_tagsCoveringMaps[nameMat] = _listCoveringImagesTags.at(
+							_tagsCoveringMaps.size() % _listCoveringImagesTags.size());
+					}*/
 				}
 
 
@@ -694,6 +702,36 @@ namespace sibr
 
 		createSubMeshes();
 		return true;
+
+	}
+
+	void	MaterialMesh::loadCoveringTagsTexture(
+		const std::vector<std::string>& listFilesTags) {
+
+		for (const std::string filename : listFilesTags) {
+
+			sibr::ImageRGB::Ptr textureTag(new sibr::ImageRGB());
+			if (textureTag->load(filename)) {
+				_listCoveringImagesTags.push_back(textureTag);
+			}
+			else {
+				SIBR_ERR << "Diffuse layer for: " <<
+					filename << " not found" << std::endl;
+			}
+		}
+		if (_listCoveringImagesTags.size() > 0)
+			_hasTagsCoveringFile = true;
+
+		if (_hasTagsCoveringFile) {
+			unsigned int counter = 0;
+			for (auto it = matId2Name().begin(); it != matId2Name().end(); ++it) {
+				if (_tagsCoveringMaps.find(*it) != _tagsCoveringMaps.end()) {
+					_tagsCoveringMaps[*it] = _listCoveringImagesTags.at(
+						counter % _listCoveringImagesTags.size());
+					counter++;
+				}
+			}
+		}
 
 	}
 
@@ -1230,22 +1268,22 @@ namespace sibr
 			it != matId2Name().end();
 			++it)
 		{
-			sibr::ImageRGB::Ptr texturePtr = diffuseMap(*it);
+			sibr::ImageRGBA::Ptr texturePtr = diffuseMap(*it);
 			if (texturePtr) {
-				_albedoTextures[i] = std::shared_ptr<sibr::Texture2DRGB>(
-					new sibr::Texture2DRGB(*texturePtr));
+				_albedoTextures[i] = std::shared_ptr<sibr::Texture2DRGBA>(
+					new sibr::Texture2DRGBA(*texturePtr,SIBR_GPU_LINEAR_SAMPLING));
 				_idTextures[i] = _albedoTextures[i]->handle();
 			}
 			else {
-				_albedoTextures[i] = std::shared_ptr<sibr::Texture2DRGB>(
-					new sibr::Texture2DRGB());
+				_albedoTextures[i] = std::shared_ptr<sibr::Texture2DRGBA>(
+					new sibr::Texture2DRGBA());
 				_idTextures[i] = _albedoTextures[i]->handle();
 			}
 
 			sibr::ImageRGB::Ptr texturePtrOpacity = opacityMap(*it);
 			if (texturePtrOpacity && texturePtr) {
 				_opacityTextures[i] = std::shared_ptr<sibr::Texture2DRGB>(
-					new sibr::Texture2DRGB(*texturePtrOpacity));
+					new sibr::Texture2DRGB(*texturePtrOpacity,SIBR_GPU_LINEAR_SAMPLING));
 				_idTexturesOpacity[i] = _opacityTextures[i]->handle();
 			}
 			else {
@@ -1253,62 +1291,94 @@ namespace sibr
 					new sibr::Texture2DRGB());
 				_idTexturesOpacity[i] = _opacityTextures[i]->handle();
 			}
+
+			if (_hasTagsCoveringFile && _tagsCoveringMaps[*it]) {
+				sibr::ImageRGB::Ptr texturePtrTag = tagsCoveringMap(*it);
+				_tagsCoveringTexture[*it] = std::shared_ptr<sibr::Texture2DRGB>(
+					new sibr::Texture2DRGB(*texturePtrTag,SIBR_GPU_LINEAR_SAMPLING));
+				_idTagsCoveringTexture[*it] = _tagsCoveringTexture[*it]->handle();
+			}
+
+			_switchTags[*it] = false;
+
 			i++;
 		}
 		if (_hasTagsFile) {
 			sibr::ImageRGB::Ptr texturePtr = _tagsMap;
 			_tagTexture = std::shared_ptr<sibr::Texture2DRGB>(
-				new sibr::Texture2DRGB(*texturePtr));
+				new sibr::Texture2DRGB(*texturePtr,SIBR_GPU_LINEAR_SAMPLING));
 			_idTagTexture = _tagTexture->handle();
 		}
 
-		if (_hasTagsCoveringFile) {
-			sibr::ImageRGB::Ptr texturePtr = _tagsCoveringMap;
-			_tagCoveringTexture = std::shared_ptr<sibr::Texture2DRGB>(
-				new sibr::Texture2DRGB(*texturePtr));
-			_idTagCoveringTexture = _tagCoveringTexture->handle();
-		}
 
 		_albedoTexturesInitialized = true;
 	}
 
 	void	MaterialMesh::renderAlbedo(bool depthTest, bool backFaceCulling,
-		RenderMode mode, bool frontFaceCulling, bool invertDepthTest) const
+		RenderMode mode, bool frontFaceCulling, bool invertDepthTest,
+		bool specificMaterial, std::string nameOfSpecificMaterial
+		) const
 	{
-
 		if (_subMeshes.empty()) {
 			return;
 		}
+
 		unsigned int i = 0;
-		for (auto it = matId2Name().begin();
-			it != matId2Name().end();
-			++it)
-		{
+		bool textureFound = false;
+		std::string  texName;
+		for (auto it = matId2Name().begin(); it != matId2Name().end() && !textureFound; ++it) {
+
 			if (_albedoTextures[i] != nullptr) {
-				//sibr::Texture2DRGB diffuseTexture(*texturePtr);
-				glActiveTexture(GL_TEXTURE0);
-				glBindTexture(GL_TEXTURE_2D, _idTextures[i]);
 
-				if (_hasTagsCoveringFile && _tagCoveringTexture != nullptr
-					&& (std::find(uniformColorMtlList.begin(), uniformColorMtlList.end(), *it)
-						!= uniformColorMtlList.end())) {
-					glActiveTexture(GL_TEXTURE1);
-					glBindTexture(GL_TEXTURE_2D, _idTagCoveringTexture);
+				sibr::ImageRGB::Ptr coveringTagImage = tagsCoveringMap(*it);
+				if (_hasTagsCoveringFile && coveringTagImage
+					&& tagsCoveringMaps().find(*it) != tagsCoveringMaps().end()) {
+					texName = *it;
+					textureFound = true;
 				}
-				else if (_hasTagsFile && _tagTexture != nullptr) {
-					glActiveTexture(GL_TEXTURE1);
-					glBindTexture(GL_TEXTURE_2D, _idTagTexture);
-				}
-
-				glActiveTexture(GL_TEXTURE2);
-				glBindTexture(GL_TEXTURE_2D, _idTexturesOpacity[i]);
-				_subMeshes[i].render(depthTest, backFaceCulling, mode,
-					frontFaceCulling, invertDepthTest);
 			}
 			i++;
 		}
 
+		i = 0;
+		for (auto it = matId2Name().begin(); it != matId2Name().end(); ++it)
+		{
+			if (!specificMaterial || *it == nameOfSpecificMaterial)
+				if (_albedoTextures[i] != nullptr) {
+					glActiveTexture(GL_TEXTURE0);
+					glBindTexture(GL_TEXTURE_2D, _idTextures[i]);
+
+					sibr::ImageRGB::Ptr coveringTagImage = tagsCoveringMap(*it);
+					if (_hasTagsCoveringFile && coveringTagImage
+						&& tagsCoveringMaps().find(*it) != tagsCoveringMaps().end()) {
+						glActiveTexture(GL_TEXTURE1);
+						if (_switchTags.find(*it) != _switchTags.end() && _switchTags.at(*it)
+							&& _hasTagsFile && _tagTexture)
+							glBindTexture(GL_TEXTURE_2D, _idTagTexture);
+						else
+							glBindTexture(GL_TEXTURE_2D, _idTagsCoveringTexture.at(*it));
+					}
+					else if (_hasTagsFile && _tagTexture != nullptr) {
+
+						glActiveTexture(GL_TEXTURE1);
+						if (_switchTags.find(*it) != _switchTags.end() && _switchTags.at(*it)
+							&& _idTagsCoveringTexture.size() > 0)
+							glBindTexture(GL_TEXTURE_2D, _idTagsCoveringTexture.at(texName));
+						else
+							glBindTexture(GL_TEXTURE_2D, _idTagTexture);
+					}
+
+					glActiveTexture(GL_TEXTURE2);
+					glBindTexture(GL_TEXTURE_2D, _idTexturesOpacity[i]);
+					_subMeshes[i].render(depthTest, backFaceCulling, mode,
+						frontFaceCulling, invertDepthTest);
+				}
+			i++;
+		}
+
+		
 	}
+
 
 	void	MaterialMesh::renderThreeSixty(bool depthTest, bool backFaceCulling,
 		RenderMode mode, bool frontFaceCulling, bool invertDepthTest) const
@@ -1549,10 +1619,11 @@ namespace sibr
 			sphere.matId2Name(materialNames);
 			sphere.matIds(matIdsSphere);
 
-			const sibr::ImageRGB::Pixel color(0,
+			const sibr::ImageRGBA::Pixel color(0,
+				255,
 				255,
 				255);
-			sibr::ImageRGB::Ptr textureDiffuse(new sibr::ImageRGB(1, 1, color));
+			sibr::ImageRGBA::Ptr textureDiffuse(new sibr::ImageRGBA(1, 1, color));
 			_diffuseMaps[matName] = textureDiffuse;
 
 			const sibr::ImageRGB::Pixel opacityAlpha(255, 255, 255);

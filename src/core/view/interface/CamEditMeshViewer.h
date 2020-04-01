@@ -2,6 +2,7 @@
 #include "core/view/interface/MeshViewer.h"
 #include <core/graphics/MaterialMesh.hpp>
 #include <core/assets/InputCamera.hpp>
+#include <libGizmo/IGizmo.h>
 #include <random>
 
 namespace sibr {
@@ -115,6 +116,7 @@ namespace sibr {
 	  //!
 	  void renderLights();
 
+	  void renderGizmo();
 
 
 	  //!
@@ -295,11 +297,17 @@ namespace sibr {
 
 	  float _maximumAngle = 20.f; //!< the maximum angle variation between the basic camera
 										//!< and the camera created around it
+      std::vector<float> _tagsScaleFactor; //!< The scale factor of the tags covering textures
 
 	  CamEditMeshViewer::TypeOfMesh _typeOfMesh = CamEditMeshViewer::TypeOfMesh::mesh;
 	  CamEditMeshViewer::TypeOfApp _typeOfApp = CamEditMeshViewer::TypeOfApp::CamEditor;
 
 	  sibr::MaterialMesh _materialMesh;
+
+	  //Gizmo
+	  IGizmo* gizmoMove = CreateMoveGizmo();
+	  float* sharedDataGizmo = new float[16];
+	  bool gizmoIsUsing = false;
 
 	  //Shaders
 	  sibr::GLShader _shaderAlbedo;
@@ -309,6 +317,15 @@ namespace sibr {
 	  //uniform variable mtx
 	  sibr::GLParameter _MVP_layer;
 
+	  //uniform variable boolean to know if a light is placed
+	  sibr::GLParameter _lightIsPlaced_layer;
+	  //uniform variable boolean to know the position of the light is placed
+	  sibr::GLParameter _positionLight_layer;
+	  //uniform variable real to know the intensity of the placed light
+	  sibr::GLParameter _intensityLight_layer;
+
+
+
 	  //uniform variable  boolean of ao
 	  sibr::GLParameter _activeAoColors_layer;
 
@@ -317,6 +334,8 @@ namespace sibr {
 
 	  sibr::GLParameter _positionDepth_layer;
 	  sibr::GLParameter _positionMaterials_layer;
+
+	  sibr::GLParameter _tagsScaleFactor_layer;
 
 	  std::string _outputPath;
   };

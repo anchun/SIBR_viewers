@@ -8,4 +8,6 @@ We provide pre-processing documentation following which you can create SIBR comp
   - \subpage ULR_Preprocess
   - \subpage SPixelWarp_Preprocess
 
+We also provide a synthetic data generation pipeline leveraging Mitsuba for offline rendering of training data.
+	- \subpage MitsubaPipelineGroup
  **/

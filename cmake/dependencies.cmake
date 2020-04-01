@@ -456,6 +456,19 @@ if (BUILD_MVIIR)
 	include_directories(${EMBREE_INCLUDE_DIR})
 endif()
 
+
+##############
+## Find GIZMO
+##############
+win3rdParty(GIZMO #VERBOSE ON
+        MSVC11 "win3rdParty/MSVC11/gizmo" "https://gforge.inria.fr/frs/download.php/file/38211/libGizmo-win64.7z"
+        MSVC12 "win3rdParty/MSVC11/gizmo" "https://gforge.inria.fr/frs/download.php/file/38211/libGizmo-win64.7z"
+        MSVC14 "win3rdParty/MSVC14/gizmo" "https://gforge.inria.fr/frs/download.php/file/38211/libGizmo-win64.7z"    # TODO SV: provide a valid version if required
+        SET CHECK_CACHED_VAR GIZMO_DIR PATH "libGizmo-win64"
+		)
+find_package(GIZMO REQUIRED)
+include_directories(${GIZMO_INCLUDE_DIR})
+
 ##############
 
 if (BUILD_PREPROCESS OR BUILD_IBR_VIDEO_BLENDING OR BUILD_IBR_SYNTHETIC_IBR)

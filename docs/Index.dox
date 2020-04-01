@@ -1,4 +1,4 @@
-/*! \mainpage SIBR - Documentation
+/*! \mainpage General
  *
  * \section intro_sec Introduction
 
@@ -38,7 +38,7 @@
  * \subsection sibr_projects_generate_and_compile Adding projects to SIBR
  *
  * SIBR comes with ULR as the default project. If you need to create a new project, it can be based upon ULR and created.
- * For more information see \subpage help_new_project.
+ * For more information see \ref help_new_project "Creating a new project".
  *
  * In addition to ULR, there are several IBR algorithms already implemented in SIBR.
  * Existing projects can be added as subdirectories in the src/projects directory.
@@ -106,7 +106,7 @@
  * - A renderer/ subdirectory contains a library with the bulk of the project-specific code.
  * - A preprocess/ subdirectory containing one or more preprocessing executables.
  * - An apps/ subdirectory contains one or more demo applications demonstrating the rendering algorithms of the project.
- * For more details on the setup, see \subpage help_new_project
+ * For more details on the setup, see \ref help_new_project "Creating a new project".
  *
  *
  * \section sibr_troubleshooting Troubleshoot
