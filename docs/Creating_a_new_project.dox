@@ -136,7 +136,7 @@ To handle export/import of library methods properly on Windows, you also need a 
 #ifndef __SIBR_MY_LIBRARY_CONFIG_HPP__
 # define __SIBR_MY_LIBRARY_CONFIG_HPP__
 
-# include <sibr/system/Config.hpp>
+# include <core/system/Config.hpp>
 
 # ifdef SIBR_OS_WINDOWS
 #  ifdef SIBR_STATIC_DEFINE

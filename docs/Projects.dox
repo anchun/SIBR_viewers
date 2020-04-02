@@ -10,4 +10,7 @@ For projects that led to publications, the link to the paper is available.
 Other projects are helper libraries that can be used to augment SIBR with new functionalities.
   - \subpage md_src_projects_optix_documentation_README
 
+You can find an example of a simple SIBR project here
+  - \subpage sibrSimplePage (https://gitlab.inria.fr/mbenadel/sibr_simple)
+
  **/
