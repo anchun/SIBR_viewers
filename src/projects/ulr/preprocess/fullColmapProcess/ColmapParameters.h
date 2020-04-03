@@ -10,6 +10,9 @@ public:
 	//-------CONSTRUCTORS--------//
 	ColmapParameters(Quality q = Quality::DEFAULT);
 
+	//-------STATIC METHODS------//
+	static std::shared_ptr<Quality> stringToQuality(const std::string& sQuality);
+
 private :
 
 	//--------ATTRIBUTES---------//
@@ -42,8 +45,6 @@ private :
 	//Stereo fusion
 	uint	_stereoFusion_CheckNumImages;
 	int		_stereoFusion_MaxImageSize;
-
-
 
 
 	//--------CONST METHODS---------//
@@ -135,6 +136,7 @@ private :
 	//Stereo fusion
 	uint	initStereoFusion_CheckNumImages(Quality q);
 	int		initStereoFusion_MaxImageSize(Quality q);
+	
 
 };
 

@@ -1,7 +1,11 @@
 project(fullColmapPreprocess)
 
+file(GLOB SOURCES "*.cpp" "*.h" "*.hpp")
+source_group("Source Files" FILES ${SOURCES})
+
+
 # Define build output for project
-add_executable(${PROJECT_NAME} main.cpp)
+add_executable(${PROJECT_NAME} ${SOURCES})
 
 target_link_libraries(${PROJECT_NAME}
     ${Boost_LIBRARIES}

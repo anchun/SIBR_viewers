@@ -5,6 +5,7 @@
 #include <core/raycaster/CameraRaycaster.hpp>
 #include <core/assets/ImageListFile.hpp>
 #include <core/system/Utils.hpp>
+#include "ColmapParameters.h"
 
 
 #define PROGRAM_NAME "sibr_full_process_colmap"
@@ -16,41 +17,85 @@ const char* usage = ""
 
 struct FullProcessColmapPreprocessArgs :
 	virtual BasicIBRAppArgs {
-	RequiredArg<std::string> colmapPath = { "colmapPath","colmap .bat path directory" };
-	Arg<std::string> quality = { "quality","high","quality of the reconstruction" };
-	Arg<uint> numberOfGPUs = { "GPU",1,"Number of GPUs" };
+	RequiredArg<std::string>	colmapPath = { "colmapPath","colmap .bat path directory" };
+
+	Arg<std::string>			quality = 
+								{ "quality","","quality of the reconstruction" };
+	Arg<uint>					numberOfGPUs = { "GPU",1,"Number of GPUs" };
+
+	//Feature extractor 
+	Arg<uint>	_siftExtraction_ImageSize = 
+				{"",0,"( default value : 3200)"};
+	Arg<uint>	_siftExtraction_EstimateAffineShape = 
+				{"",0,"( default value : 0)"}; 
+	Arg<uint>	_siftExtraction_DomainSizePooling = 
+				{"",0,"( default value :0)"};
+	Arg<uint>	_siftExtraction_MaxNumFeatures = 
+				{"",0,"( default value : 8192)"};
+
+	//Exhaustive matcher
+	Arg<uint>	_exhaustiveMatcher_ExhaustiveMatchingBlockSize = 
+				{"",0,"( default value : 50)"};
+
+	//Mapper
+	Arg<uint>	_mapper_MapperDotbaLocalMaxNumIterations = 
+				{"",0,"( default value : 25 )"};
+	Arg<uint>	_mapper_MapperDotbaGlobalMaxNumIterations = 
+				{"",0,"( default value : 50)"};
+	Arg<float>	_mapper_MapperDotbaGlobalImagesRatio = 
+				{"",0,"( default value : 1.100001)"};
+	Arg<float>	_mapper_MapperDotbaGlobalPointsRatio = 
+				{"",0,"( default value : 1.100001)"};
+	Arg<uint>	_mapper_MapperDotbaGlobalMaxRefinements = 
+				{"",0,"( default value : 5)"};
+	Arg<uint>	_mapper_MapperDotbaLocalMaxRefinements = 
+				{"",0,"( default value : 2)"};
+
+	//Patch match stereo
+	Arg<int>	_patchMatchStereo_PatchMatchStereoDotMaxImageSize = 
+				{"",0,"( default value : -1)"};
+	Arg<uint>	_patchMatchStereo_PatchMatchStereoDotWindowRadius = 
+				{"",0,"( default value : 5)"};
+	Arg<uint>	_patchMatchStereo_PatchMatchStereoDotWindowStep = 
+				{"",0,"( default value : 1)"};
+	Arg<uint>	_patchMatchStereo_PatchMatchStereoDotNumSamples = 
+				{"",0,"( default value : 15)"};
+	Arg<uint>	_patchMatchStereo_PatchMatchStereoDotNumIterations = 
+				{"",0,"( default value : 5)"};
+	Arg<uint>	_patchMatchStereo_PatchMatchStereoDotGeomConsistency = 
+				{"",0,"( default value : 5)"};
+
+	//Stereo fusion
+	Arg<uint>	_stereoFusion_CheckNumImages = 
+				{"",0,"( default value : 50)"};
+	Arg<uint>	_stereoFusion_MaxImageSize = 
+				{"",0,"( default value : -1)"};
+
 };
 
-struct ColmapParameters {
-	enum class Qualities { LOW, MEDIUM, HIGH, EXTREME };
-	
-};
+std::shared_ptr<ColmapParameters::Quality> getUserQuality(
+			const CommandLineArgs& globalArgs,
+			const FullProcessColmapPreprocessArgs& userArgs) {
 
+	std::shared_ptr<ColmapParameters::Quality> userQuality;
+	if (globalArgs.contains("quality")) {
+		const std::string userQuality = userArgs.quality.get();
+		return ColmapParameters::stringToQuality(userQuality);
+	}
+	else {
+		userQuality = std::make_shared<ColmapParameters::Quality>(
+			ColmapParameters::Quality::DEFAULT );
+	}
+	return userQuality;
+}
 int main(const int argc, const char** argv)
 {
 
 	CommandLineArgs::parseMainArgs(argc, argv);
+	CommandLineArgs globalArgs = CommandLineArgs::getGlobal();
 	FullProcessColmapPreprocessArgs myArgs;
 
 	//------------------Quality Argument---------------//
-	constexpr uint numberOfQualities = 4;
-	std::array<std::string, numberOfQualities> qualitiesList
-	{ "low","medium","high","extreme" };
-
-	bool foundOption = false;
-	std::string qualitiesString;
-	for ( const std::string& quality : qualitiesList){
-			qualitiesString.append(quality);
-			qualitiesString.append(" ");
-			if (myArgs.quality.get().compare(quality) == 0) {
-				foundOption = true;
-			}
-	}
-	if (!foundOption) {
-		SIBR_ERR << "Your quality paremeter is unknown ... the available values are:"
-			<< qualitiesString << std::endl;
-		return EXIT_FAILURE;
-	}
 	//-------------------------------------------------//
 
 	//-----------------PATH ARGUMENT-------------------//
@@ -64,6 +109,14 @@ int main(const int argc, const char** argv)
 	}
 	//-------------------------------------------------//
 
+	//----------------COLMAP PARAMETERS----------------//
+	std::shared_ptr < ColmapParameters::Quality > qualityRecon =
+		getUserQuality(globalArgs, myArgs);
+	if (!qualityRecon) { 
+		return EXIT_FAILURE; 
+	}
+
+	//-------------------------------------------------//
 
 	const std::vector<std::string> colmapDirs = { "cameras", "images", "meshes"};
 
