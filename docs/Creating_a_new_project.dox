@@ -1,32 +1,62 @@
 /*! \page help_new_project Creating a new project
 \section gen_steup_create General setup
 
-Create a repository in src/projects/your_project, and create the following hierarchy:
+- Create a repository in `src/projects/my_project` (name your project at your convenience) and create the following hierarchy:
+
 \verbatim	
 	apps/
-	renderer/
+		CMakeLists.txt																# for listing apps to compile
+		my_app_1/																	# one of your apps, named at your convenience
+			CMakeLists.txt
+			main.cpp
+		my_app_2/
+			CMakeLists.txt
+			main.cpp
 	preprocess/
+		CMakeLists.txt																# for listing preprocesses to compile
+		my_preprocess_1/															# one of your preprocesses, named at your convenience
+			CMakeLists.txt
+			main.cpp
+		my_preprocess_2/
+			CMakeLists.txt
+			main.cpp
+	renderer/
+		CMakeLists.txt																# for compiling your library
+		my_library_code.cpp
+	documentation/																	# you can add optional documentation pages in this folder
+		my_doc.dox
 \endverbatim
-In renderer/, create a library CMake file as described below.
-In preprocess/, you will probably have multiple subdirectories (one per executable). In each subdirectory, create an executable CMake file. In preprocess/ create a listing CMake file to register all preprocess executables.
-In apps/, proceed similarly to preprocess/.
-Re-run configure for the main SIBR CMakeLists.txt. The project should be automatically detected, then check BUILD_YOUR_PROJECT in CMake and re-generate.
 
-\section listing_sec Listing
-This CMakeLists.txt is registering the projects in subdirectories against the main CMake, putting them together in a custom named group. They will appear as multiple solutions in a subdirectory in Visual Studio for instance. Useful to group the apps/ or preprocess/ executables of a project.
+- In `renderer/`, create a library CMake file as described below.
+- In `preprocess/`, you will probably have multiple subdirectories (one per executable).
+- In each subdirectory, create an executable CMake file.
+- In `preprocess/` create a listing CMake file to register all preprocess executables.
+- In `apps/`, proceed similarly to `preprocess/`.
+- Re-run configure for the main SIBR `CMakeLists.txt`.
+- The project should be automatically detected; If so, check `BUILD_IBR_MY_PROJECT` (`MY_PROJECT` being your project name folder) in CMake and re-generate.
+
+\section listing_sec Listing app & preprocesses projects
+
+This `CMakeLists.txt` is registering the projects in subdirectories against the main CMake, putting them together in a custom named group.\n
+They will appear as multiple solutions in a subdirectory in Visual Studio for instance.\n
+Useful to group the `apps/` or `preprocess/` executables of a project.
+
 \code
-project(SIBR_my_project_group)
-add_subdirectory(myExe1/)
-add_subdirectory(myExe2/)
+project(SIBR_my_apps_group)																					# Please rename this project at your convenience
+add_subdirectory(my_app_1/)
+add_subdirectory(my_app_2/)
 #...
 \endcode
 
 
-\section exe_sec Executable
-This example can be used for application and preprocess executables. The parts to modify are the project name, the linked libraries and the folder property. Put the CMakeLists.txt in your application project directory.
-\code
+\section exe_sec App and preprocess projects
 
-project(SIBR_my_project_app)
+This example can be used for application and preprocess executables.\n
+The parts to modify are the project name, the linked libraries and the folder property.\n
+Put the `CMakeLists.txt` in your application project directory.
+
+\code
+project(SIBR_my_project_app)																				# Please rename this project at your convenience
 
 file(GLOB SOURCES "*.cpp" "*.h" "*.hpp")
 source_group("Source Files" FILES ${SOURCES})
@@ -42,11 +72,12 @@ target_link_libraries(${PROJECT_NAME}
 	${OPENGL_LIBRARIES}
   	${OpenCV_LIBRARIES}
 	sibr_system
-	#...
+
+	# you can add your internal or external dependencies here (sibr_renderer, sibr_view, sibr_graphics, sibr_assets,...)
 )
 
 # Define location in solution.
-set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER "__projects__/__my_project__/__apps__")
+set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER "__projects__/__my_project__/__apps__")				# Please replace my_project with your project folder name
 
 #define postfix for various debug/release
 set_target_properties(${PROJECT_NAME} PROPERTIES
@@ -69,11 +100,15 @@ set_target_properties(${PROJECT_NAME}_install PROPERTIES FOLDER ${SIBR_INSTALL_F
 
 
 
-\section lib_sec Library
-This example can be used for libraries. The parts to modify are the project name, the linked libraries, the export/import flag for Windows libraries, and the folder property. Put the CMakeLists.txt in your library project directory. This example also supports displaying shaders and copying them to the bin/resources common directory.
+\section lib_sec Library project
+
+This example can be used for libraries.\n
+The parts to modify are the project name, the linked libraries, the export/import flag for Windows libraries, and the folder property. \n
+Put the `CMakeLists.txt` in your library project directory.\n
+This example also supports displaying shaders and copying them to the bin/resources common directory.
 
 \code
-project(sibr_my_library)
+project(sibr_my_library)																					# Please rename this project at your convenience
 
 file(GLOB SOURCES "*.cpp" "*.h" "*.hpp")
 source_group("Source Files" FILES ${SOURCES})
@@ -97,14 +132,15 @@ target_link_libraries(${PROJECT_NAME}
 	${OpenCV_LIBRARIES}
 	glfw3
 	sibr_system
-	#...
+
+	# you can add your internal or external dependencies here (sibr_renderer, sibr_view, sibr_graphics, sibr_assets,...)
 )
 
 # Define export/import flag.
-add_definitions( -DSIBR_MY_LIBRARY_EXPORTS -DBOOST_ALL_DYN_LINK  )
+add_definitions( -DSIBR_MY_LIBRARY_EXPORTS -DBOOST_ALL_DYN_LINK  )											# Please refactor it with your library export/import flag from Config.hpp
 
 # Define location in solution.
-set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER "__projects__/__my_project__/__renderer__")
+set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER "__projects__/__my_project__/__renderer__")			# Please replace my_project with your project folder name
 
 # Define postfix for various debug/release
 set_target_properties(${PROJECT_NAME} PROPERTIES
@@ -131,10 +167,12 @@ add_custom_target(${PROJECT_NAME}_CopyShaders ALL COMMAND python ${CMAKE_SOURCE_
 add_dependencies( ${PROJECT_NAME} ${PROJECT_NAME}_CopyShaders )
 set_target_properties(${PROJECT_NAME}_CopyShaders PROPERTIES FOLDER ${SIBR_INSTALL_FOLDER})
 \endcode
-To handle export/import of library methods properly on Windows, you also need a Config.hpp file in your library directory.
+
+To handle export/import of library methods properly on Windows, you also need a `Config.hpp` file in your library directory.
+
 \code
-#ifndef __SIBR_MY_LIBRARY_CONFIG_HPP__
-# define __SIBR_MY_LIBRARY_CONFIG_HPP__
+#ifndef __SIBR_MY_LIBRARY_CONFIG_HPP__																		// Please refactor it with your library name
+# define __SIBR_MY_LIBRARY_CONFIG_HPP__																		// Please refactor it with your library name
 
 # include <core/system/Config.hpp>
 
@@ -143,13 +181,13 @@ To handle export/import of library methods properly on Windows, you also need a 
 #    define SIBR_EXPORT
 #    define SIBR_NO_EXPORT
 #  else
-#    ifndef SIBR_MY_LIBRARY_EXPORT
-#      ifdef SIBR_MY_LIBRARY_EXPORTS
+#    ifndef SIBR_MY_LIBRARY_EXPORT																			// Please refactor it with your library name
+#      ifdef SIBR_MY_LIBRARY_EXPORTS																		// Please refactor it with your library name
 /* We are building this library */
-#        define SIBR_MY_LIBRARY_EXPORT __declspec(dllexport)
+#        define SIBR_MY_LIBRARY_EXPORT __declspec(dllexport)												// Please refactor it with your library name
 #      else
 /* We are using this library */
-#        define SIBR_MY_LIBRARY_EXPORT __declspec(dllimport)
+#        define SIBR_MY_LIBRARY_EXPORT __declspec(dllimport)												// Please refactor it with your library name
 #      endif
 #    endif
 #    ifndef SIBR_NO_EXPORT
@@ -157,11 +195,16 @@ To handle export/import of library methods properly on Windows, you also need a 
 #    endif
 #  endif
 # else
-#  define SIBR_MY_LIBRARY_EXPORT
+#  define SIBR_MY_LIBRARY_EXPORT																			// Please refactor it with your library name
 # endif
 
-#endif  //__SIBR_MY_LIBRARY_CONFIG_HPP__
+#endif  //__SIBR_MY_LIBRARY_CONFIG_HPP__																	// Please refactor it with your library name
 
 \endcode
+
+\section doc_sec Documentation
+
+You can document your project code with doxygen syntax. It will be added to the documentation compilation project `compileDocs`. See \ref help_docu "Documenting projects".\n
+You can also create documentation pages with `dox` files. Please add them to your project `documentation/` folder.
  */
 

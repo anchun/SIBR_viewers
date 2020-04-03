@@ -42,7 +42,7 @@
  *
  * In addition to ULR, there are several IBR algorithms already implemented in SIBR.
  * Existing projects can be added as subdirectories in the src/projects directory.
- * Users need access to the project's gitlab repository to clone it and ise ot.
+ * Users need access to the project's gitlab repository to clone it and use it.
  * You can follow the given steps to add a project once access is given.
  *
  * - Go to the sibr_basic2 repository and pull.
