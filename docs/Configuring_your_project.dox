@@ -1,37 +1,12 @@
-/*! \page help_new_project Creating a new project
-\section gen_steup_create General setup
+/*! \page configure_project Configuring your project
 
-- Create a repository in `src/projects/my_project` (name your project at your convenience) and create the following hierarchy:
+@ingroup setup_project
 
-\verbatim	
-	apps/
-		CMakeLists.txt																# for listing apps to compile
-		my_app_1/																	# one of your apps, named at your convenience
-			CMakeLists.txt
-			main.cpp
-		my_app_2/
-			CMakeLists.txt
-			main.cpp
-	preprocess/
-		CMakeLists.txt																# for listing preprocesses to compile
-		my_preprocess_1/															# one of your preprocesses, named at your convenience
-			CMakeLists.txt
-			main.cpp
-		my_preprocess_2/
-			CMakeLists.txt
-			main.cpp
-	renderer/
-		CMakeLists.txt																# for compiling your library
-		my_library_code.cpp
-	documentation/																	# you can add optional documentation pages in this folder
-		my_doc.dox
-\endverbatim
+\section gen_setup_config General setup
 
-- In `renderer/`, create a library CMake file as described below.
-- In `preprocess/`, you will probably have multiple subdirectories (one per executable).
-- In each subdirectory, create an executable CMake file.
-- In `preprocess/` create a listing CMake file to register all preprocess executables.
-- In `apps/`, proceed similarly to `preprocess/`.
+- Create a repository in `src/projects/my_project` (name your project at your convenience)
+- Setup your project structure as stated in \ref project_structure "Project Structure"
+- Use the following sample files (form the following sections) for your `CMakeLists.txt` files and `Config.hpp` structure
 - Re-run configure for the main SIBR `CMakeLists.txt`.
 - The project should be automatically detected; If so, check `BUILD_IBR_MY_PROJECT` (`MY_PROJECT` being your project name folder) in CMake and re-generate.
 
@@ -39,7 +14,9 @@
 
 This `CMakeLists.txt` is registering the projects in subdirectories against the main CMake, putting them together in a custom named group.\n
 They will appear as multiple solutions in a subdirectory in Visual Studio for instance.\n
-Useful to group the `apps/` or `preprocess/` executables of a project.
+Useful to group the `apps/` or `preprocess/` executables of a project.\n
+\n
+You can use it as sample structure for `apps/CMakeLists.txt` and `preprocess/CMakeLists.txt`.
 
 \code
 project(SIBR_my_apps_group)																					# Please rename this project at your convenience
@@ -102,7 +79,7 @@ set_target_properties(${PROJECT_NAME}_install PROPERTIES FOLDER ${SIBR_INSTALL_F
 
 \section lib_sec Library project
 
-This example can be used for libraries.\n
+This example can be used for libraries, in `renderer\CMakeLists.txt`.\n
 The parts to modify are the project name, the linked libraries, the export/import flag for Windows libraries, and the folder property. \n
 Put the `CMakeLists.txt` in your library project directory.\n
 This example also supports displaying shaders and copying them to the bin/resources common directory.
@@ -201,10 +178,5 @@ To handle export/import of library methods properly on Windows, you also need a 
 #endif  //__SIBR_MY_LIBRARY_CONFIG_HPP__																	// Please refactor it with your library name
 
 \endcode
-
-\section doc_sec Documentation
-
-You can document your project code with doxygen syntax. It will be added to the documentation compilation project `compileDocs`. See \ref help_docu "Documenting projects".\n
-You can also create documentation pages with `dox` files. Please add them to your project `documentation/` folder.
  */
 
