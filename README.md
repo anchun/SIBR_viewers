@@ -15,6 +15,10 @@ If you have Chocolatey, you can grab most of these with this command:
 
 ```sh
 choco install cmake 7zip python3 doxygen.install cuda
+
+# Visual Studio is available on Chocolatey,
+# though we do advise to set it from Visual Studio Installer and to choose your licensing accordingly
+choco install visualstudio2019community
 ```
 
 ## Generation of the solution
