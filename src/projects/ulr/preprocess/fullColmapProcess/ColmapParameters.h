@@ -17,7 +17,7 @@ public:
 	uint	siftExtractionImageSize() const;
 	bool	siftExtractionEstimateAffineShape() const;
 	bool	siftExtractionDomainSizePooling() const;
-	bool	siftExtractionMaxNumFeatures() const;
+	uint	siftExtractionMaxNumFeatures() const;
 
 	//Exhaustive matcher
 	uint	exhaustiveMatcherExhaustiveMatchingBlockSize() const;
@@ -48,7 +48,7 @@ public:
 	void	siftExtractionImageSize(uint value);
 	void	siftExtractionEstimateAffineShape(bool value);
 	void	siftExtractionDomainSizePooling(bool value);
-	void	siftExtractionMaxNumFeatures(bool value);
+	void	siftExtractionMaxNumFeatures(uint value);
 
 	//Exhaustive matcher
 	void	exhaustiveMatcherExhaustiveMatchingBlockSize(uint value);
@@ -85,7 +85,7 @@ private :
 	uint	_siftExtraction_ImageSize;
 	bool	_siftExtraction_EstimateAffineShape;
 	bool	_siftExtraction_DomainSizePooling;
-	bool	_siftExtraction_MaxNumFeatures;
+	uint	_siftExtraction_MaxNumFeatures;
 
 	//Exhaustive matcher
 	uint	_exhaustiveMatcher_ExhaustiveMatchingBlockSize;
@@ -115,7 +115,7 @@ private :
 	uint	initSiftExtraction_ImageSize(Quality q);
 	bool	initSiftExtraction_EstimateAffineShape(Quality q);
 	bool	initSiftExtraction_DomainSizePooling(Quality q);
-	bool	initSiftExtraction_MaxNumFeatures(Quality q);
+	uint	initSiftExtraction_MaxNumFeatures(Quality q);
 
 	//Exhaustive matcher
 	uint	initExhaustiveMatcher_ExhaustiveMatchingBlockSize(Quality q);

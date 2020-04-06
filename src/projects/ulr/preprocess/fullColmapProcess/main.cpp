@@ -6,6 +6,8 @@
 #include <core/assets/ImageListFile.hpp>
 #include <core/system/Utils.hpp>
 #include <boost/process.hpp> 
+#include <boost/assign/list_of.hpp> 
+
 
 #include "ColmapParameters.h"
 
@@ -177,8 +179,107 @@ void setPersonalParameters(const CommandLineArgs& globalArgs,
 	}
 }
 
-void runColmap(const std::string& colmapPath) {
-	
+void runColmap(	const std::string& colmapPath,
+				const std::string& datasetPath,
+				const ColmapParameters& parameters
+	){
+		
+	constexpr size_t colmapCalls = 9;
+	const std::array<std::string, colmapCalls> calls{
+		"feature_extractor",
+		"exhaustive_matcher",
+		"mapper",
+		"image_undistorter",
+		"image_undistorter",
+		"patch_match_stereo",
+		"stereo_fusion",
+		"delaunay_mesher",
+		"model_converter"
+	};
+
+	const std::array<std::string, colmapCalls> params{
+		"--database_path " + datasetPath + "\\colmap\\dataset.db " +
+		"--image_path " + datasetPath + "\\images\\ " + "--ImageReader.single_camera 0 " +
+		"--ImageReader.camera_model OPENCV " +
+		" --SiftExtraction.max_image_size " +
+			std::to_string(parameters.siftExtractionImageSize()) +
+		" --SiftExtraction.estimate_affine_shape " +
+			std::to_string(parameters.siftExtractionEstimateAffineShape()) +
+		" --SiftExtraction.domain_size_pooling " +
+			std::to_string(parameters.siftExtractionDomainSizePooling()) +
+		" --SiftExtraction.max_num_features " +
+			std::to_string(parameters.siftExtractionMaxNumFeatures()),
+
+		"--database_path " + datasetPath + "\\colmap\\dataset.db " +
+		" --SiftMatching.guided_matching 1"
+		" --ExhaustiveMatching.block_size " +
+			std::to_string(parameters.exhaustiveMatcherExhaustiveMatchingBlockSize()),
+
+		"--database_path " + datasetPath + "\\colmap\\dataset.db " +
+		"--image_path " + datasetPath + "\\images\\ " + "--output_path " +
+		datasetPath + "\\colmap\\sparse\\ "
+		" --Mapper.ba_local_max_num_iterations " +
+			std::to_string(parameters.mapperMapperDotbaLocalMaxNumIterations()) +
+		" --Mapper.ba_global_max_num_iterations " +
+			std::to_string(parameters.mapperMapperDotbaGlobalMaxNumIterations()) +
+		" --Mapper.ba_global_images_ratio " +
+			std::to_string(parameters.mapperMapperDotbaGlobalImagesRatio()) +
+		" --Mapper.ba_global_points_ratio " +
+			std::to_string(parameters.mapperMapperDotbaGlobalPointsRatio()) +
+		" --Mapper.ba_global_max_refinements " +
+			std::to_string(parameters.mapperMapperDotbaGlobalMaxRefinements()) +
+		" --Mapper.ba_local_max_refinements " +
+			std::to_string(parameters.mapperMapperDotbaLocalMaxRefinements()),
+
+		"--image_path " + datasetPath + "\\images\\ " + "--input_path " +
+		datasetPath + "\\colmap\\sparse\\0\\ " + "--output_path " +
+		datasetPath + "\\colmap\\stereo\\ " + "--output_type COLMAP",
+
+		"--image_path " + datasetPath + "\\images\\ " + "--input_path " +
+		datasetPath + "\\colmap\\sparse\\0\\ " + "--output_path " +
+		datasetPath + "\\capreal\\undistorted\\ " + "--output_type CMP-MVS",
+
+		"--workspace_path " + datasetPath + "\\colmap\\stereo\\ " + "--workspace_format COLMAP " +
+		" --PatchMatchStereo.max_image_size " +
+			std::to_string(parameters.patchMatchStereoPatchMatchStereoDotMaxImageSize()) +
+		" --PatchMatchStereo.window_radius " +
+			std::to_string(parameters.patchMatchStereoPatchMatchStereoDotWindowRadius()) +
+		" --PatchMatchStereo.window_step " +
+			std::to_string(parameters.patchMatchStereoPatchMatchStereoDotWindowStep()) +
+		" --PatchMatchStereo.num_samples " +
+			std::to_string(parameters.patchMatchStereoPatchMatchStereoDotNumSamples()) +
+		" --PatchMatchStereo.num_iterations " +
+			std::to_string(parameters.patchMatchStereoPatchMatchStereoDotNumIterations()) +
+		" --PatchMatchStereo.geom_consistency " +
+			std::to_string(parameters.patchMatchStereoPatchMatchStereoDotGeomConsistency()),
+
+		"--workspace_path " + datasetPath + "\\colmap\\stereo\\ " + "--workspace_format COLMAP " +
+		"--input_type geometric --output_path " + datasetPath + "\\colmap\\stereo\\fused.ply " +
+		" --StereoFusion.max_image_size " +
+			std::to_string(parameters.stereoFusionMaxImageSize()) +
+		" --StereoFusion.check_num_images " +
+			std::to_string(parameters.stereoFusionCheckNumImages()),
+
+		"--input_path " + datasetPath + "\\colmap\\stereo\\ " "--output_path " +
+		datasetPath + "\\colmap\\stereo\\meshed-delaunay.ply --input_type dense",
+
+		"--input_path " + datasetPath + "\\colmap\\stereo\\sparse " "--output_path " +
+		datasetPath + "\\colmap\\stereo\\sparse --output_type TXT"
+
+	};
+
+	for (size_t i = 0; i < colmapCalls; ++i) {
+		std::error_code ec;
+		const std::string command = colmapPath + "\\COLMAP.bat " +
+			calls.at(i) + " " + params.at(i);
+		const std::string program = calls.at(i) ;
+		SIBR_LOG << "Running: " << command << std::endl;
+		const int result = boost::process::system(command,ec);
+		std::cout << ec.message() << std::endl;
+		SIBR_LOG << "Program " << program << " is finished ..." << std::endl << std::endl ;
+	}
+
+
 }
 
 int main(const int argc, const char** argv)
@@ -209,30 +310,21 @@ int main(const int argc, const char** argv)
 		return EXIT_FAILURE; 
 	}
 
-	//boost::process::system
+	ColmapParameters colmapParams(*qualityRecon);
+	setPersonalParameters(globalArgs, myArgs, colmapParams);
 
-	//-------------------------------------------------//
-
-	const std::vector<std::string> colmapDirs = { "cameras", "images", "meshes"};
-
-
-	std::vector<std::string> dirs = { "cameras", "images", "meshes"};
-
-	std::cout << "Generating SIBR scene." << std::endl;
-	BasicIBRScene scene(myArgs, true, true);
-
-	// load the cams
-	std::vector<InputCamera>	cams = scene.cameras()->inputCameras();
-	const int maxCam = int(cams.size());
-	const int minCam = 0;
-
-	for (auto dir : dirs) {
+	const std::vector<std::string> colmapDirs = { 
+		"colmap", "capreal", "capreal/undistorted", "colmap/stereo", "colmap/sparse"};
+	for (auto dir : colmapDirs) {
 		std::cout << dir << std::endl;
 		if (!directoryExists(pathScene + "/" + dir.c_str())) {
 			makeDirectory(pathScene + "/" + dir.c_str());
 		}
 	}
 
+	runColmap(myArgs.colmapPath, myArgs.dataset_path, colmapParams);
+
+	std::vector<std::string> dirs = { "cameras", "images", "meshes"};
 
 	return EXIT_SUCCESS;
 }

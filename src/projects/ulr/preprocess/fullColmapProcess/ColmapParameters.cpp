@@ -61,7 +61,7 @@ bool ColmapParameters::initSiftExtraction_DomainSizePooling(ColmapParameters::Qu
 	}
 }
 
-bool ColmapParameters::initSiftExtraction_MaxNumFeatures(ColmapParameters::Quality q) {
+uint ColmapParameters::initSiftExtraction_MaxNumFeatures(ColmapParameters::Quality q) {
 	return 8192;
 }
 
@@ -220,7 +220,7 @@ bool	ColmapParameters::siftExtractionDomainSizePooling() const {
 	return _siftExtraction_DomainSizePooling;
 }
 
-bool	ColmapParameters::siftExtractionMaxNumFeatures() const {
+uint	ColmapParameters::siftExtractionMaxNumFeatures() const {
 	return _siftExtraction_MaxNumFeatures;
 }
 
@@ -293,7 +293,7 @@ void	ColmapParameters::siftExtractionEstimateAffineShape(bool value) {
 void	ColmapParameters::siftExtractionDomainSizePooling(bool value) {
 	_siftExtraction_DomainSizePooling = value;
 }
-void	ColmapParameters::siftExtractionMaxNumFeatures(bool value) {
+void	ColmapParameters::siftExtractionMaxNumFeatures(uint value) {
 	_siftExtraction_MaxNumFeatures = value;
 }
 void	ColmapParameters::exhaustiveMatcherExhaustiveMatchingBlockSize(uint value) {
