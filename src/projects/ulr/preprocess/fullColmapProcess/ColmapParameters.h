@@ -7,44 +7,9 @@ public:
 	//----------TYPES------------//
 	enum class Quality {DEFAULT,LOW,MEDIUM,HIGH,EXTREME};
 
+
 	//-------CONSTRUCTORS--------//
 	ColmapParameters(Quality q = Quality::DEFAULT);
-
-	//-------STATIC METHODS------//
-	static std::shared_ptr<Quality> stringToQuality(const std::string& sQuality);
-
-private :
-
-	//--------ATTRIBUTES---------//
-	//Feature extractor 
-	uint	_siftExtraction_ImageSize;
-	bool	_siftExtraction_EstimateAffineShape;
-	bool	_siftExtraction_DomainSizePooling;
-	bool	_siftExtraction_MaxNumFeatures;
-
-	//Exhaustive matcher
-	uint	_exhaustiveMatcher_ExhaustiveMatchingBlockSize;
-
-	//Mapper
-	uint	_mapper_MapperDotbaLocalMaxNumIterations;
-	uint	_mapper_MapperDotbaGlobalMaxNumIterations;
-	float	_mapper_MapperDotbaGlobalImagesRatio;
-	float	_mapper_MapperDotbaGlobalPointsRatio;
-	uint	_mapper_MapperDotbaGlobalMaxRefinements;
-	uint	_mapper_MapperDotbaLocalMaxRefinements;
-
-	//Patch match stereo
-	int		_patchMatchStereo_PatchMatchStereoDotMaxImageSize;
-	uint	_patchMatchStereo_PatchMatchStereoDotWindowRadius;
-	uint	_patchMatchStereo_PatchMatchStereoDotWindowStep;
-	uint	_patchMatchStereo_PatchMatchStereoDotNumSamples;
-	uint	_patchMatchStereo_PatchMatchStereoDotNumIterations;
-	bool	_patchMatchStereo_PatchMatchStereoDotGeomConsistency;
-
-
-	//Stereo fusion
-	uint	_stereoFusion_CheckNumImages;
-	int		_stereoFusion_MaxImageSize;
 
 
 	//--------CONST METHODS---------//
@@ -108,6 +73,44 @@ private :
 	void	stereoFusionCheckNumImages(uint value);
 	void	stereoFusionMaxImageSize(int value);
 
+
+	//-------STATIC METHODS------//
+	static std::shared_ptr<Quality> stringToQuality(const std::string& sQuality);
+
+
+private :
+
+	//--------ATTRIBUTES---------//
+	//Feature extractor 
+	uint	_siftExtraction_ImageSize;
+	bool	_siftExtraction_EstimateAffineShape;
+	bool	_siftExtraction_DomainSizePooling;
+	bool	_siftExtraction_MaxNumFeatures;
+
+	//Exhaustive matcher
+	uint	_exhaustiveMatcher_ExhaustiveMatchingBlockSize;
+
+	//Mapper
+	uint	_mapper_MapperDotbaLocalMaxNumIterations;
+	uint	_mapper_MapperDotbaGlobalMaxNumIterations;
+	float	_mapper_MapperDotbaGlobalImagesRatio;
+	float	_mapper_MapperDotbaGlobalPointsRatio;
+	uint	_mapper_MapperDotbaGlobalMaxRefinements;
+	uint	_mapper_MapperDotbaLocalMaxRefinements;
+
+	//Patch match stereo
+	int		_patchMatchStereo_PatchMatchStereoDotMaxImageSize;
+	uint	_patchMatchStereo_PatchMatchStereoDotWindowRadius;
+	uint	_patchMatchStereo_PatchMatchStereoDotWindowStep;
+	uint	_patchMatchStereo_PatchMatchStereoDotNumSamples;
+	uint	_patchMatchStereo_PatchMatchStereoDotNumIterations;
+	bool	_patchMatchStereo_PatchMatchStereoDotGeomConsistency;
+
+
+	//Stereo fusion
+	uint	_stereoFusion_CheckNumImages;
+	int		_stereoFusion_MaxImageSize;
+
 	//Feature extractor 
 	uint	initSiftExtraction_ImageSize(Quality q);
 	bool	initSiftExtraction_EstimateAffineShape(Quality q);
@@ -136,7 +139,6 @@ private :
 	//Stereo fusion
 	uint	initStereoFusion_CheckNumImages(Quality q);
 	int		initStereoFusion_MaxImageSize(Quality q);
-	
 
 };
 

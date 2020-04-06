@@ -5,6 +5,8 @@
 #include <core/raycaster/CameraRaycaster.hpp>
 #include <core/assets/ImageListFile.hpp>
 #include <core/system/Utils.hpp>
+#include <boost/process.hpp> 
+
 #include "ColmapParameters.h"
 
 
@@ -24,52 +26,52 @@ struct FullProcessColmapPreprocessArgs :
 	Arg<uint>					numberOfGPUs = { "GPU",1,"Number of GPUs" };
 
 	//Feature extractor 
-	Arg<uint>	_siftExtraction_ImageSize = 
-				{"",0,"( default value : 3200)"};
-	Arg<uint>	_siftExtraction_EstimateAffineShape = 
-				{"",0,"( default value : 0)"}; 
-	Arg<uint>	_siftExtraction_DomainSizePooling = 
-				{"",0,"( default value :0)"};
-	Arg<uint>	_siftExtraction_MaxNumFeatures = 
-				{"",0,"( default value : 8192)"};
+	Arg<uint>	siftExtraction_ImageSize = 
+				{"SiftExtraction.max_image_size",0,"( default value : 3200)"};
+	Arg<uint>	siftExtraction_EstimateAffineShape = 
+				{"SiftExtraction.estimate_affine_shape",0,"( default value : 0)"}; 
+	Arg<uint>	siftExtraction_DomainSizePooling = 
+				{"SiftExtraction.domain_size_pooling",0,"( default value :0)"};
+	Arg<uint>	siftExtraction_MaxNumFeatures = 
+				{"SiftExtraction.max_num_features",0,"( default value : 8192)"};
 
 	//Exhaustive matcher
-	Arg<uint>	_exhaustiveMatcher_ExhaustiveMatchingBlockSize = 
-				{"",0,"( default value : 50)"};
+	Arg<uint>	exhaustiveMatcher_ExhaustiveMatchingBlockSize = 
+				{"ExhaustiveMatching.block_size",0,"( default value : 50)"};
 
 	//Mapper
-	Arg<uint>	_mapper_MapperDotbaLocalMaxNumIterations = 
-				{"",0,"( default value : 25 )"};
-	Arg<uint>	_mapper_MapperDotbaGlobalMaxNumIterations = 
-				{"",0,"( default value : 50)"};
-	Arg<float>	_mapper_MapperDotbaGlobalImagesRatio = 
-				{"",0,"( default value : 1.100001)"};
-	Arg<float>	_mapper_MapperDotbaGlobalPointsRatio = 
-				{"",0,"( default value : 1.100001)"};
-	Arg<uint>	_mapper_MapperDotbaGlobalMaxRefinements = 
-				{"",0,"( default value : 5)"};
-	Arg<uint>	_mapper_MapperDotbaLocalMaxRefinements = 
-				{"",0,"( default value : 2)"};
+	Arg<uint>	mapper_MapperDotbaLocalMaxNumIterations = 
+				{"Mapper.ba_local_max_num_iterations",0,"( default value : 25 )"};
+	Arg<uint>	mapper_MapperDotbaGlobalMaxNumIterations = 
+				{"Mapper.ba_global_max_num_iterations",0,"( default value : 50)"};
+	Arg<float>	mapper_MapperDotbaGlobalImagesRatio = 
+				{"Mapper.ba_global_images_ratio",0,"( default value : 1.100001)"};
+	Arg<float>	mapper_MapperDotbaGlobalPointsRatio = 
+				{"Mapper.ba_global_points_ratio",0,"( default value : 1.100001)"};
+	Arg<uint>	mapper_MapperDotbaGlobalMaxRefinements = 
+				{"Mapper.ba_global_max_refinements",0,"( default value : 5)"};
+	Arg<uint>	mapper_MapperDotbaLocalMaxRefinements = 
+				{"Mapper.ba_local_max_refinements",0,"( default value : 2)"};
 
 	//Patch match stereo
-	Arg<int>	_patchMatchStereo_PatchMatchStereoDotMaxImageSize = 
-				{"",0,"( default value : -1)"};
-	Arg<uint>	_patchMatchStereo_PatchMatchStereoDotWindowRadius = 
-				{"",0,"( default value : 5)"};
-	Arg<uint>	_patchMatchStereo_PatchMatchStereoDotWindowStep = 
-				{"",0,"( default value : 1)"};
-	Arg<uint>	_patchMatchStereo_PatchMatchStereoDotNumSamples = 
-				{"",0,"( default value : 15)"};
-	Arg<uint>	_patchMatchStereo_PatchMatchStereoDotNumIterations = 
-				{"",0,"( default value : 5)"};
-	Arg<uint>	_patchMatchStereo_PatchMatchStereoDotGeomConsistency = 
-				{"",0,"( default value : 5)"};
+	Arg<int>	patchMatchStereo_PatchMatchStereoDotMaxImageSize = 
+				{"PatchMatchStereo.max_image_size",0,"( default value : -1)"};
+	Arg<uint>	patchMatchStereo_PatchMatchStereoDotWindowRadius = 
+				{"PatchMatchStereo.window_radius",0,"( default value : 5)"};
+	Arg<uint>	patchMatchStereo_PatchMatchStereoDotWindowStep = 
+				{"PatchMatchStereo.window_step",0,"( default value : 1)"};
+	Arg<uint>	patchMatchStereo_PatchMatchStereoDotNumSamples = 
+				{"PatchMatchStereo.num_samples",0,"( default value : 15)"};
+	Arg<uint>	patchMatchStereo_PatchMatchStereoDotNumIterations = 
+				{"PatchMatchStereo.num_iterations",0,"( default value : 5)"};
+	Arg<uint>	patchMatchStereo_PatchMatchStereoDotGeomConsistency = 
+				{"PatchMatchStereo.geom_consistency",0,"( default value : 5)"};
 
 	//Stereo fusion
-	Arg<uint>	_stereoFusion_CheckNumImages = 
-				{"",0,"( default value : 50)"};
-	Arg<uint>	_stereoFusion_MaxImageSize = 
-				{"",0,"( default value : -1)"};
+	Arg<uint>	stereoFusion_CheckNumImages = 
+				{"StereoFusion.check_num_images",0,"( default value : 50)"};
+	Arg<uint>	stereoFusion_MaxImageSize = 
+				{"StereoFusion.max_image_size",0,"( default value : -1)"};
 
 };
 
@@ -88,6 +90,97 @@ std::shared_ptr<ColmapParameters::Quality> getUserQuality(
 	}
 	return userQuality;
 }
+
+void setPersonalParameters(const CommandLineArgs& globalArgs,
+						const FullProcessColmapPreprocessArgs& userArgs,
+						ColmapParameters& parameters) {
+
+	if (globalArgs.contains("SiftExtraction.max_image_size")) {
+		parameters.siftExtractionImageSize(
+			userArgs.siftExtraction_ImageSize.get());
+	}
+	if (globalArgs.contains("SiftExtraction.estimate_affine_shape")) {
+		parameters.siftExtractionEstimateAffineShape(
+			userArgs.siftExtraction_EstimateAffineShape.get());
+	}
+	if (globalArgs.contains("SiftExtraction.domain_size_pooling")) {
+		parameters.siftExtractionDomainSizePooling(
+			userArgs.siftExtraction_DomainSizePooling.get());
+	}
+	if (globalArgs.contains("SiftExtraction.max_num_features")) {
+		parameters.siftExtractionMaxNumFeatures (
+			userArgs.siftExtraction_MaxNumFeatures.get());
+	}
+
+	if (globalArgs.contains("ExhaustiveMatching.block_size")) {
+		parameters.exhaustiveMatcherExhaustiveMatchingBlockSize (
+			userArgs.exhaustiveMatcher_ExhaustiveMatchingBlockSize.get());
+	}
+
+	if (globalArgs.contains("Mapper.ba_local_max_num_iterations")) {
+		parameters.mapperMapperDotbaLocalMaxNumIterations (
+			userArgs.mapper_MapperDotbaLocalMaxNumIterations.get());
+	}
+	if (globalArgs.contains("Mapper.ba_global_max_num_iterations")) {
+		parameters.mapperMapperDotbaGlobalMaxNumIterations (
+			userArgs.mapper_MapperDotbaGlobalMaxNumIterations.get());
+	}
+	if (globalArgs.contains("Mapper.ba_global_images_ratio")) {
+		parameters.mapperMapperDotbaGlobalImagesRatio (
+			userArgs.mapper_MapperDotbaGlobalImagesRatio.get());
+	}
+	if (globalArgs.contains("Mapper.ba_global_points_ratio")) {
+		parameters.mapperMapperDotbaGlobalPointsRatio (
+			userArgs.mapper_MapperDotbaGlobalImagesRatio.get());
+	}
+	if (globalArgs.contains("Mapper.ba_global_max_refinements")) {
+		parameters.mapperMapperDotbaGlobalMaxRefinements (
+			userArgs.mapper_MapperDotbaGlobalMaxRefinements.get());
+	}
+	if (globalArgs.contains("Mapper.ba_local_max_refinements")) {
+		parameters.mapperMapperDotbaLocalMaxRefinements (
+			userArgs.mapper_MapperDotbaLocalMaxRefinements.get());
+	}
+
+	if (globalArgs.contains("PatchMatchStereo.max_image_size")) {
+		parameters.patchMatchStereoPatchMatchStereoDotMaxImageSize (
+			userArgs.patchMatchStereo_PatchMatchStereoDotMaxImageSize.get());
+	}
+	if (globalArgs.contains("PatchMatchStereo.window_radius")) {
+		parameters.patchMatchStereoPatchMatchStereoDotWindowRadius (
+			userArgs.patchMatchStereo_PatchMatchStereoDotWindowRadius.get());
+	}
+	if (globalArgs.contains("PatchMatchStereo.window_step")) {
+		parameters.patchMatchStereoPatchMatchStereoDotWindowStep (
+			userArgs.patchMatchStereo_PatchMatchStereoDotWindowStep.get());
+	}
+	if (globalArgs.contains("PatchMatchStereo.num_samples")) {
+		parameters.patchMatchStereoPatchMatchStereoDotNumSamples (
+			userArgs.patchMatchStereo_PatchMatchStereoDotNumSamples.get());
+	}
+	if (globalArgs.contains("PatchMatchStereo.num_iterations")) {
+		parameters.patchMatchStereoPatchMatchStereoDotNumIterations (
+			userArgs.patchMatchStereo_PatchMatchStereoDotNumIterations.get());
+	}
+	if (globalArgs.contains("PatchMatchStereo.geom_consistency")) {
+		parameters.patchMatchStereoPatchMatchStereoDotGeomConsistency (
+			userArgs.patchMatchStereo_PatchMatchStereoDotGeomConsistency.get());
+	}
+
+	if (globalArgs.contains("StereoFusion.check_num_images")) {
+		parameters.stereoFusionCheckNumImages (
+			userArgs.stereoFusion_CheckNumImages.get());
+	}
+	if (globalArgs.contains("StereoFusion.max_image_size")) {
+		parameters.stereoFusionMaxImageSize (
+			userArgs.stereoFusion_MaxImageSize.get());
+	}
+}
+
+void runColmap(const std::string& colmapPath) {
+	
+}
+
 int main(const int argc, const char** argv)
 {
 
@@ -110,11 +203,13 @@ int main(const int argc, const char** argv)
 	//-------------------------------------------------//
 
 	//----------------COLMAP PARAMETERS----------------//
-	std::shared_ptr < ColmapParameters::Quality > qualityRecon =
+	const std::shared_ptr < ColmapParameters::Quality > qualityRecon =
 		getUserQuality(globalArgs, myArgs);
 	if (!qualityRecon) { 
 		return EXIT_FAILURE; 
 	}
+
+	//boost::process::system
 
 	//-------------------------------------------------//
 
