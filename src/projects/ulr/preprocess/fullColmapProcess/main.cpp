@@ -20,59 +20,59 @@ const char* usage = ""
 
 struct FullProcessColmapPreprocessArgs :
 	virtual BasicIBRAppArgs {
-	RequiredArg<std::string>	colmapPath = { "colmapPath","colmap .bat path directory" };
-
+	RequiredArg<std::string>	colmapPath = { "colmapPath","colmap path directory which contains COLMAP.bat" };
+	RequiredArg<std::string>	sibrBinariesPath = { "sibrBinariesPath","binaries directory of SIBR" };
 	Arg<std::string>			quality = 
 								{ "quality","","quality of the reconstruction" };
-	Arg<uint>					numberOfGPUs = { "GPU",1,"Number of GPUs" };
+	Arg<uint>					numGPUs = { "numGPUs",1,"Number of GPUs" };
 
 	//Feature extractor 
 	Arg<uint>	siftExtraction_ImageSize = 
-				{"SiftExtraction.max_image_size",3200,"( default value : 3200)"};
+				{"SiftExtraction.max_image_size",3200,"colmap feature extractor param"};
 	Arg<uint>	siftExtraction_EstimateAffineShape = 
-				{"SiftExtraction.estimate_affine_shape",0,"( default value : 0)"}; 
+				{"SiftExtraction.estimate_affine_shape",0,"colmap feature extractor param"}; 
 	Arg<uint>	siftExtraction_DomainSizePooling = 
-				{"SiftExtraction.domain_size_pooling",0,"( default value :0)"};
+				{"SiftExtraction.domain_size_pooling",0,"colmap feature extractor param"};
 	Arg<uint>	siftExtraction_MaxNumFeatures = 
-				{"SiftExtraction.max_num_features",8192,"( default value : 8192)"};
+				{"SiftExtraction.max_num_features",8192,"colmap feature extractor param"};
 
 	//Exhaustive matcher
 	Arg<uint>	exhaustiveMatcher_ExhaustiveMatchingBlockSize = 
-				{"ExhaustiveMatching.block_size",50,"( default value : 50)"};
+				{"ExhaustiveMatching.block_size",50,"colmap exhaustive matcher param"};
 
 	//Mapper
 	Arg<uint>	mapper_MapperDotbaLocalMaxNumIterations = 
-				{"Mapper.ba_local_max_num_iterations",25,"( default value : 25 )"};
+				{"Mapper.ba_local_max_num_iterations",25,"colmap mapper param"};
 	Arg<uint>	mapper_MapperDotbaGlobalMaxNumIterations = 
-				{"Mapper.ba_global_max_num_iterations",50,"( default value : 50)"};
+				{"Mapper.ba_global_max_num_iterations",50,"colmap mapper param"};
 	Arg<float>	mapper_MapperDotbaGlobalImagesRatio = 
-				{"Mapper.ba_global_images_ratio",1.10001f,"( default value : 1.100001)"};
+				{"Mapper.ba_global_images_ratio",1.10001f,"colmap mapper param"};
 	Arg<float>	mapper_MapperDotbaGlobalPointsRatio = 
-				{"Mapper.ba_global_points_ratio",1.10001f,"( default value : 1.100001)"};
+				{"Mapper.ba_global_points_ratio",1.10001f,"colmap mapper param"};
 	Arg<uint>	mapper_MapperDotbaGlobalMaxRefinements = 
-				{"Mapper.ba_global_max_refinements",5,"( default value : 5)"};
+				{"Mapper.ba_global_max_refinements",5,"colmap mapper param"};
 	Arg<uint>	mapper_MapperDotbaLocalMaxRefinements = 
-				{"Mapper.ba_local_max_refinements",2,"( default value : 2)"};
+				{"Mapper.ba_local_max_refinements",2,"colmap mapper param"};
 
 	//Patch match stereo
 	Arg<int>	patchMatchStereo_PatchMatchStereoDotMaxImageSize = 
-				{"PatchMatchStereo.max_image_size",-1,"( default value : -1)"};
+				{"PatchMatchStereo.max_image_size",-1,"colmap patch match stereo param"};
 	Arg<uint>	patchMatchStereo_PatchMatchStereoDotWindowRadius = 
-				{"PatchMatchStereo.window_radius",5,"( default value : 5)"};
+				{"PatchMatchStereo.window_radius",5,"colmap patch match stereo param"};
 	Arg<uint>	patchMatchStereo_PatchMatchStereoDotWindowStep = 
-				{"PatchMatchStereo.window_step",1,"( default value : 1)"};
+				{"PatchMatchStereo.window_step",1,"colmap patch match stereo param"};
 	Arg<uint>	patchMatchStereo_PatchMatchStereoDotNumSamples = 
-				{"PatchMatchStereo.num_samples",15,"( default value : 15)"};
+				{"PatchMatchStereo.num_samples",15,"colmap patch match stereo param"};
 	Arg<uint>	patchMatchStereo_PatchMatchStereoDotNumIterations = 
-				{"PatchMatchStereo.num_iterations",5,"( default value : 5)"};
+				{"PatchMatchStereo.num_iterations",5,"colmap patch match stereo param"};
 	Arg<uint>	patchMatchStereo_PatchMatchStereoDotGeomConsistency = 
-				{"PatchMatchStereo.geom_consistency",5,"( default value : 5)"};
+				{"PatchMatchStereo.geom_consistency",5,"colmap patch match stereo param"};
 
 	//Stereo fusion
 	Arg<uint>	stereoFusion_CheckNumImages = 
-				{"StereoFusion.check_num_images",50,"( default value : 50)"};
+				{"StereoFusion.check_num_images",50,"colmap stereo fusion param"};
 	Arg<uint>	stereoFusion_MaxImageSize = 
-				{"StereoFusion.max_image_size",-1,"( default value : -1)"};
+				{"StereoFusion.max_image_size",-1,"colmap stereo fusion param"};
 
 };
 
@@ -176,6 +176,10 @@ void setPersonalParameters(const CommandLineArgs& globalArgs,
 		parameters.stereoFusionMaxImageSize (
 			userArgs.stereoFusion_MaxImageSize.get());
 	}
+	if (globalArgs.contains("numGPUs")) {
+		parameters.numGPUs(
+			userArgs.numGPUs.get());
+	}
 }
 
 void runColmap(	const std::string& colmapPath,
@@ -183,6 +187,16 @@ void runColmap(	const std::string& colmapPath,
 				const ColmapParameters& parameters
 	){
 		
+	auto gpusToString = [](uint nbGPUs) {
+	
+		std::string sGPUs = "0";
+		for (uint i = 1; i < nbGPUs; i++) {
+			sGPUs.append("," + std::to_string(i));
+		}
+		return sGPUs;
+	};
+
+	const std::string gpusIndices = gpusToString(parameters.numGPUs());
 	constexpr size_t colmapCalls = 9;
 	const std::array<std::string, colmapCalls> calls{
 		"feature_extractor",
@@ -207,12 +221,14 @@ void runColmap(	const std::string& colmapPath,
 		" --SiftExtraction.domain_size_pooling " +
 			std::to_string(parameters.siftExtractionDomainSizePooling()) +
 		" --SiftExtraction.max_num_features " +
-			std::to_string(parameters.siftExtractionMaxNumFeatures()),
+			std::to_string(parameters.siftExtractionMaxNumFeatures()) +
+		" --SiftExtraction.gpu_index=" + gpusIndices,
 
 		"--database_path " + datasetPath + "\\colmap\\dataset.db " +
 		" --SiftMatching.guided_matching 1"
 		" --ExhaustiveMatching.block_size " +
-			std::to_string(parameters.exhaustiveMatcherExhaustiveMatchingBlockSize()),
+			std::to_string(parameters.exhaustiveMatcherExhaustiveMatchingBlockSize()) +
+		" --SiftMatching.gpu_index =" + gpusIndices,
 
 		"--database_path " + datasetPath + "\\colmap\\dataset.db " +
 		"--image_path " + datasetPath + "\\images\\ " + "--output_path " +
@@ -250,7 +266,8 @@ void runColmap(	const std::string& colmapPath,
 		" --PatchMatchStereo.num_iterations " +
 			std::to_string(parameters.patchMatchStereoPatchMatchStereoDotNumIterations()) +
 		" --PatchMatchStereo.geom_consistency " +
-			std::to_string(parameters.patchMatchStereoPatchMatchStereoDotGeomConsistency()),
+			std::to_string(parameters.patchMatchStereoPatchMatchStereoDotGeomConsistency()) +
+		" --PatchMatchStereo.gpu_index =" + gpusIndices,
 
 		"--workspace_path " + datasetPath + "\\colmap\\stereo\\ " + "--workspace_format COLMAP " +
 		"--input_type geometric --output_path " + datasetPath + "\\colmap\\stereo\\fused.ply " +
@@ -301,7 +318,6 @@ int fixEndLinesMesh(const std::string& datasetPath) {
 	while ((!endHeaderFound) && std::getline(inputMesh, line)) {
 		const std::string lineWithoutWindowsEndline(line.begin(), line.end() - 1);
 		outputMesh<< lineWithoutWindowsEndline << "\n";
-		std::cout << line << std::endl;
 		if (lineWithoutWindowsEndline .compare("end_header") == 0) {
 			endHeaderFound = true;
 		}
@@ -319,14 +335,49 @@ int fixEndLinesMesh(const std::string& datasetPath) {
 	return EXIT_SUCCESS;
 }
 
-void runUnwrapMesh(const std::string& datasetPath) {
+std::string checkProgram(const std::string& binariesPath, const std::string& programName) {
 
+	std::string programPath;
+	if (fileExists(binariesPath + "/" + programName + ".exe")) {
+		programPath = binariesPath + "/" + programName + ".exe";
+	} 
+	else if (fileExists(binariesPath + "/" + programName + "_rdwi.exe")) {
+		programPath = binariesPath + "/" + programName + "_rdwi.exe";
+	} else if (fileExists(binariesPath + "/" + programName + "_d.exe")) {
+		programPath = binariesPath + "/" + programName + "_d.exe";
+	}	else {
+		SIBR_ERR << "The unwrapMesh program does not exist in: " << binariesPath
+			<< " ..." << std::endl << "Did you build and install it ?" << std::endl
+			<< "If you do not find the binaries directory, usually it's sibr_basic2\\install\\bin"
+			<< std::endl;
+	}
+	return programPath;
 }
 
-void runTextureMesh(const std::string& datasetPath) {
-
+void runUnwrapMesh(const std::string& program,const std::string& datasetPath) {
+	
+	const std::string command = program + " --path "
+		+ datasetPath + "\\colmap\\stereo\\unix-meshed-delaunay.ply --output "
+		+ datasetPath + "\\capreal\\mesh.ply";
+	SIBR_LOG << "Running: " << command << std::endl;
+	const int result = boost::process::system(command);
+	SIBR_LOG << "Program " << command << " is finished ..." << std::endl << std::endl ;
 }
 
+void runColmapToSibr(const std::string& program, const std::string& datasetPath) {
+	const std::string command = program + " --path " + datasetPath;
+	SIBR_LOG << "Running: " << command << std::endl;
+	const int result = boost::process::system(command);
+	SIBR_LOG << "Program " << command << " is finished ..." << std::endl << std::endl ;
+}
+
+void runTextureMesh(const std::string& program, const std::string& datasetPath) {
+	const std::string command = program + " --path " + datasetPath
+		+ " --output " + datasetPath + "\\meshes\\texture.png --size 8192 --flood";
+	SIBR_LOG << "Running: " << command << std::endl;
+	const int result = boost::process::system(command);
+	SIBR_LOG << "Program " << command << " is finished ..." << std::endl << std::endl ;
+}
 
 int main(const int argc, const char** argv)
 {
@@ -345,7 +396,28 @@ int main(const int argc, const char** argv)
 
 		return EXIT_FAILURE;
 	}
-	//-------------------------------------------------//
+
+
+	//-----------------BINARIES ARGUMENT-------------------//
+	const std::string unwrapMeshProgram = checkProgram(myArgs.sibrBinariesPath, "unwrapMesh");
+	if (unwrapMeshProgram.empty()) {
+		return EXIT_FAILURE;
+	}
+
+	const std::string textureMeshProgram = checkProgram(myArgs.sibrBinariesPath, "textureMesh");
+	if (textureMeshProgram.empty()) {
+		return EXIT_FAILURE;
+	}
+
+	const std::string colmapToSIBRProgram = checkProgram(myArgs.sibrBinariesPath, "colmapToSIBR");
+	if (colmapToSIBRProgram.empty()) {
+		return EXIT_FAILURE;
+	}
+
+	const std::string colmapTextureMesh = checkProgram(myArgs.sibrBinariesPath, "textureMesh");
+	if (colmapToSIBRProgram.empty()) {
+		return EXIT_FAILURE;
+	}
 
 	//----------------COLMAP PARAMETERS----------------//
 	const std::shared_ptr < ColmapParameters::Quality > qualityRecon =
@@ -365,6 +437,8 @@ int main(const int argc, const char** argv)
 			makeDirectory(pathScene + "/" + dir.c_str());
 		}
 	}
+	//-------------------------------------------------//
+
 
 	runColmap(myArgs.colmapPath, myArgs.dataset_path, colmapParams);
 
@@ -372,9 +446,15 @@ int main(const int argc, const char** argv)
 		return EXIT_FAILURE;
 	}
 
-	runUnwrapMesh(myArgs.dataset_path);
-	runTextureMesh(myArgs.dataset_path);
+	runUnwrapMesh(unwrapMeshProgram, myArgs.dataset_path);
+		
+	const std::string meshPath = myArgs.dataset_path.get() + "\\capreal\\mesh.ply";
+	Mesh mesh;
+	mesh.load(meshPath);
+	mesh.saveToASCIIPLY(meshPath, true, "texture.png");
 
+	runColmapToSibr (colmapToSIBRProgram, myArgs.dataset_path);
+	runTextureMesh (textureMeshProgram, myArgs.dataset_path);
 	std::vector<std::string> dirs = { "cameras", "images", "meshes"};
 
 	return EXIT_SUCCESS;

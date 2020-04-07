@@ -24,7 +24,8 @@ _patchMatchStereo_PatchMatchStereoDotNumIterations   (initMatchMatchStereo_Patch
 _patchMatchStereo_PatchMatchStereoDotGeomConsistency (initMatchMatchStereo_PatchMatchStereoDotGeomConsistency(q)),
 
 _stereoFusion_CheckNumImages                         (initStereoFusion_CheckNumImages(q)),
-_stereoFusion_MaxImageSize                           (initStereoFusion_MaxImageSize(q))
+_stereoFusion_MaxImageSize                           (initStereoFusion_MaxImageSize(q)),
+_numGPUs											 (1)
 {
 }
 
@@ -284,6 +285,10 @@ int		ColmapParameters::stereoFusionMaxImageSize() const {
 	return _stereoFusion_MaxImageSize;
 }
 
+uint		ColmapParameters::numGPUs() const {
+	return _numGPUs;
+}
+
 void	ColmapParameters::siftExtractionImageSize(uint value) {
 	_siftExtraction_ImageSize = value;
 }
@@ -336,10 +341,13 @@ void	ColmapParameters::patchMatchStereoPatchMatchStereoDotGeomConsistency(bool v
 	_patchMatchStereo_PatchMatchStereoDotGeomConsistency = value;
 }
 void	ColmapParameters::stereoFusionCheckNumImages(uint value) {
-	_stereoFusion_CheckNumImages;
+	_stereoFusion_CheckNumImages = value;
 }
 void	ColmapParameters::stereoFusionMaxImageSize(int value) {
-	_stereoFusion_MaxImageSize;
+	_stereoFusion_MaxImageSize = value;
+}
+void	ColmapParameters::numGPUs(uint value) {
+	_numGPUs = value;
 }
 
 std::shared_ptr<ColmapParameters::Quality> ColmapParameters::stringToQuality(
@@ -364,8 +372,9 @@ std::shared_ptr<ColmapParameters::Quality> ColmapParameters::stringToQuality(
 			ColmapParameters::Quality::EXTREME);
 	}
 	else {
-		SIBR_WRG << "The quality: " << sQuality << " is unknown..." << std::endl
-			<< " Possible values : low medium high extreme" << std::endl;
+		SIBR_ERR << "The quality: \"" << sQuality << "\" is unknown..." << std::endl
+			<< "Possible values : low medium high extreme" << std::endl
+			<< "If you want the default values, just remove the option" << std::endl;
 		quality = nullptr;
 	}
 	return quality;

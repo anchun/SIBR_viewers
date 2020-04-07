@@ -42,6 +42,7 @@ public:
 	uint	stereoFusionCheckNumImages() const;
 	int		stereoFusionMaxImageSize() const;
 
+	uint	numGPUs() const;
 
 	//--------METHODS---------//
 	//Feature extractor 
@@ -73,6 +74,8 @@ public:
 	void	stereoFusionCheckNumImages(uint value);
 	void	stereoFusionMaxImageSize(int value);
 
+	//GPUs
+	void	numGPUs(uint value);
 
 	//-------STATIC METHODS------//
 	static std::shared_ptr<Quality> stringToQuality(const std::string& sQuality);
@@ -110,6 +113,9 @@ private :
 	//Stereo fusion
 	uint	_stereoFusion_CheckNumImages;
 	int		_stereoFusion_MaxImageSize;
+
+	//Num GPUs
+	uint	_numGPUs;
 
 	//Feature extractor 
 	uint	initSiftExtraction_ImageSize(Quality q);
