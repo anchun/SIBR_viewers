@@ -6,7 +6,6 @@
 #include <core/assets/ImageListFile.hpp>
 #include <core/system/Utils.hpp>
 #include <boost/process.hpp> 
-#include <boost/assign/list_of.hpp> 
 
 
 #include "ColmapParameters.h"
@@ -29,51 +28,51 @@ struct FullProcessColmapPreprocessArgs :
 
 	//Feature extractor 
 	Arg<uint>	siftExtraction_ImageSize = 
-				{"SiftExtraction.max_image_size",0,"( default value : 3200)"};
+				{"SiftExtraction.max_image_size",3200,"( default value : 3200)"};
 	Arg<uint>	siftExtraction_EstimateAffineShape = 
 				{"SiftExtraction.estimate_affine_shape",0,"( default value : 0)"}; 
 	Arg<uint>	siftExtraction_DomainSizePooling = 
 				{"SiftExtraction.domain_size_pooling",0,"( default value :0)"};
 	Arg<uint>	siftExtraction_MaxNumFeatures = 
-				{"SiftExtraction.max_num_features",0,"( default value : 8192)"};
+				{"SiftExtraction.max_num_features",8192,"( default value : 8192)"};
 
 	//Exhaustive matcher
 	Arg<uint>	exhaustiveMatcher_ExhaustiveMatchingBlockSize = 
-				{"ExhaustiveMatching.block_size",0,"( default value : 50)"};
+				{"ExhaustiveMatching.block_size",50,"( default value : 50)"};
 
 	//Mapper
 	Arg<uint>	mapper_MapperDotbaLocalMaxNumIterations = 
-				{"Mapper.ba_local_max_num_iterations",0,"( default value : 25 )"};
+				{"Mapper.ba_local_max_num_iterations",25,"( default value : 25 )"};
 	Arg<uint>	mapper_MapperDotbaGlobalMaxNumIterations = 
-				{"Mapper.ba_global_max_num_iterations",0,"( default value : 50)"};
+				{"Mapper.ba_global_max_num_iterations",50,"( default value : 50)"};
 	Arg<float>	mapper_MapperDotbaGlobalImagesRatio = 
-				{"Mapper.ba_global_images_ratio",0,"( default value : 1.100001)"};
+				{"Mapper.ba_global_images_ratio",1.10001f,"( default value : 1.100001)"};
 	Arg<float>	mapper_MapperDotbaGlobalPointsRatio = 
-				{"Mapper.ba_global_points_ratio",0,"( default value : 1.100001)"};
+				{"Mapper.ba_global_points_ratio",1.10001f,"( default value : 1.100001)"};
 	Arg<uint>	mapper_MapperDotbaGlobalMaxRefinements = 
-				{"Mapper.ba_global_max_refinements",0,"( default value : 5)"};
+				{"Mapper.ba_global_max_refinements",5,"( default value : 5)"};
 	Arg<uint>	mapper_MapperDotbaLocalMaxRefinements = 
-				{"Mapper.ba_local_max_refinements",0,"( default value : 2)"};
+				{"Mapper.ba_local_max_refinements",2,"( default value : 2)"};
 
 	//Patch match stereo
 	Arg<int>	patchMatchStereo_PatchMatchStereoDotMaxImageSize = 
-				{"PatchMatchStereo.max_image_size",0,"( default value : -1)"};
+				{"PatchMatchStereo.max_image_size",-1,"( default value : -1)"};
 	Arg<uint>	patchMatchStereo_PatchMatchStereoDotWindowRadius = 
-				{"PatchMatchStereo.window_radius",0,"( default value : 5)"};
+				{"PatchMatchStereo.window_radius",5,"( default value : 5)"};
 	Arg<uint>	patchMatchStereo_PatchMatchStereoDotWindowStep = 
-				{"PatchMatchStereo.window_step",0,"( default value : 1)"};
+				{"PatchMatchStereo.window_step",1,"( default value : 1)"};
 	Arg<uint>	patchMatchStereo_PatchMatchStereoDotNumSamples = 
-				{"PatchMatchStereo.num_samples",0,"( default value : 15)"};
+				{"PatchMatchStereo.num_samples",15,"( default value : 15)"};
 	Arg<uint>	patchMatchStereo_PatchMatchStereoDotNumIterations = 
-				{"PatchMatchStereo.num_iterations",0,"( default value : 5)"};
+				{"PatchMatchStereo.num_iterations",5,"( default value : 5)"};
 	Arg<uint>	patchMatchStereo_PatchMatchStereoDotGeomConsistency = 
-				{"PatchMatchStereo.geom_consistency",0,"( default value : 5)"};
+				{"PatchMatchStereo.geom_consistency",5,"( default value : 5)"};
 
 	//Stereo fusion
 	Arg<uint>	stereoFusion_CheckNumImages = 
-				{"StereoFusion.check_num_images",0,"( default value : 50)"};
+				{"StereoFusion.check_num_images",50,"( default value : 50)"};
 	Arg<uint>	stereoFusion_MaxImageSize = 
-				{"StereoFusion.max_image_size",0,"( default value : -1)"};
+				{"StereoFusion.max_image_size",-1,"( default value : -1)"};
 
 };
 
@@ -269,18 +268,65 @@ void runColmap(	const std::string& colmapPath,
 	};
 
 	for (size_t i = 0; i < colmapCalls; ++i) {
-		std::error_code ec;
 		const std::string command = colmapPath + "\\COLMAP.bat " +
 			calls.at(i) + " " + params.at(i);
 		const std::string program = calls.at(i) ;
 		SIBR_LOG << "Running: " << command << std::endl;
-		const int result = boost::process::system(command,ec);
-		std::cout << ec.message() << std::endl;
+		const int result = boost::process::system(command);
 		SIBR_LOG << "Program " << program << " is finished ..." << std::endl << std::endl ;
 	}
 
 
 }
+
+int fixEndLinesMesh(const std::string& datasetPath) {
+	const std::string inputMeshPath = datasetPath + "\\colmap\\stereo\\meshed-delaunay.ply";
+	
+	std::ifstream inputMesh(inputMeshPath , std::ios::binary);
+	if (!inputMesh) {
+		SIBR_ERR << "Impossible to open " + inputMeshPath;
+		return EXIT_FAILURE;
+	}
+	
+	const std::string outputMeshPath  = datasetPath + "\\colmap\\stereo\\unix-meshed-delaunay.ply";
+	std::ofstream outputMesh(outputMeshPath, std::ios::binary );
+	if (!outputMesh) {
+		SIBR_ERR << "Impossible to open " + outputMeshPath;
+		return EXIT_FAILURE;
+	}
+
+	//-------------HEADER PART--------------//
+	std::string line;
+	bool endHeaderFound = false;
+	while ((!endHeaderFound) && std::getline(inputMesh, line)) {
+		const std::string lineWithoutWindowsEndline(line.begin(), line.end() - 1);
+		outputMesh<< lineWithoutWindowsEndline << "\n";
+		std::cout << line << std::endl;
+		if (lineWithoutWindowsEndline .compare("end_header") == 0) {
+			endHeaderFound = true;
+		}
+	}
+	//-------------BODY PART--------------//
+	char charToWrite;
+	while (inputMesh) {
+		inputMesh.get(charToWrite);
+		outputMesh << charToWrite;
+	}
+	inputMesh.close();
+	outputMesh.close();
+	//--------------------------------------//
+
+	return EXIT_SUCCESS;
+}
+
+void runUnwrapMesh(const std::string& datasetPath) {
+
+}
+
+void runTextureMesh(const std::string& datasetPath) {
+
+}
+
 
 int main(const int argc, const char** argv)
 {
@@ -289,8 +335,6 @@ int main(const int argc, const char** argv)
 	CommandLineArgs globalArgs = CommandLineArgs::getGlobal();
 	FullProcessColmapPreprocessArgs myArgs;
 
-	//------------------Quality Argument---------------//
-	//-------------------------------------------------//
 
 	//-----------------PATH ARGUMENT-------------------//
 	const std::string pathScene = myArgs.dataset_path;
@@ -323,6 +367,13 @@ int main(const int argc, const char** argv)
 	}
 
 	runColmap(myArgs.colmapPath, myArgs.dataset_path, colmapParams);
+
+	if (fixEndLinesMesh(pathScene) == EXIT_FAILURE) {
+		return EXIT_FAILURE;
+	}
+
+	runUnwrapMesh(myArgs.dataset_path);
+	runTextureMesh(myArgs.dataset_path);
 
 	std::vector<std::string> dirs = { "cameras", "images", "meshes"};
 
