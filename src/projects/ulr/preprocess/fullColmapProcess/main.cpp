@@ -346,7 +346,7 @@ std::string checkProgram(const std::string& binariesPath, const std::string& pro
 	} else if (fileExists(binariesPath + "/" + programName + "_d.exe")) {
 		programPath = binariesPath + "/" + programName + "_d.exe";
 	}	else {
-		SIBR_ERR << "The unwrapMesh program does not exist in: " << binariesPath
+		SIBR_ERR << "The " << programName << " program does not exist in: " << binariesPath
 			<< " ..." << std::endl << "Did you build and install it ?" << std::endl
 			<< "If you do not find the binaries directory, usually it's sibr_basic2\\install\\bin"
 			<< std::endl;
