@@ -341,8 +341,8 @@ std::string checkProgram(const std::string& binariesPath, const std::string& pro
 	if (fileExists(binariesPath + "/" + programName + ".exe")) {
 		programPath = binariesPath + "/" + programName + ".exe";
 	} 
-	else if (fileExists(binariesPath + "/" + programName + "_rdwi.exe")) {
-		programPath = binariesPath + "/" + programName + "_rdwi.exe";
+	else if (fileExists(binariesPath + "/" + programName + "_rwdi.exe")) {
+		programPath = binariesPath + "/" + programName + "_rwdi.exe";
 	} else if (fileExists(binariesPath + "/" + programName + "_d.exe")) {
 		programPath = binariesPath + "/" + programName + "_d.exe";
 	}	else {
