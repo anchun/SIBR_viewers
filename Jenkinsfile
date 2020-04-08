@@ -77,7 +77,9 @@ pipeline {
             parallel {
                 stage('deploy_docs') {
                     when {
-                        branch "master"
+                        expression {
+                            return gitlabBranch == "master"
+                        }
                     }
                     steps {
                         updateGitlabCommitStatus name: '4-deploy', state: 'running'
@@ -90,7 +92,7 @@ pipeline {
                                 url: 'https://gitlab.inria.fr/sibr/docs.git'
                             bat 'del /Q public'
                             bat 'copy /Y ..\\docs\\doxygen\\CompiledDocs\\html\\* public'
-                            bat 'git add -A && git commit -m "Update master"'
+                            bat 'git add -A && git commit -m "Update master" --allow-empty'
                             bat 'git push origin master'
                         }
                     }
@@ -105,8 +107,8 @@ pipeline {
                 }
                 stage('skip_deploy') {
                     when {
-                        not {
-                            branch "master"
+                        expression {
+                            return gitlabBranch != "master"
                         }
                     }
                     steps {
