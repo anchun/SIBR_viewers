@@ -20,6 +20,7 @@ namespace sibr
 	\param viewport will contain the window extent on screen
 	\param invalidTexture ignore the RT
 	\param updateLayout force update the camera location on screen
+	\param handle the texture index to display from the input RT
 	\return true if window is focused (useful for managing interactions).
 	\ingroup sibr_graphics
 	*/

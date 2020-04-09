@@ -190,15 +190,15 @@ namespace sibr
 		*/
 		virtual void			fromOpenCVBGR(const cv::Mat& img) = 0;
 
-		/** Get the size of jpeg image file by reading it's header.
-		\param file the input filestream
-		\return Returns sibr::Vector2i of widthXheight else (-1, -1) if the header cannot be read 
+		/** Get the size of jpeg image file by reading its header.
+		\param file the input filestream, already opened.
+		\return The size (width,heighgt) else (-1, -1) if the header cannot be read .
 		*/
 		static sibr::Vector2i			get_jpeg_size(std::ifstream& file);
 
-		/** Get the size of an image file from it's header. Supported file type: {png, jpg, jpeg, bmp, tga}.
-		\param file the input file path
-		\return sibr::Vector2i of widthXheight else (-1, -1) if the header cannot be read 
+		/** Get the size of an image file from its header. Supported file type: {png, jpg, jpeg, bmp, tga}.
+		\param file_path the input file path
+		\return The size (width,heighgt) else (-1, -1) if the header cannot be read .
 		*/
 		static sibr::Vector2i			imageResolution(const std::string& file_path);
 

@@ -40,13 +40,13 @@ namespace sibr {
 		/** Set an attachment of a rendertarget as the texture to display.
 		 *\param rt the rendertarget to display
 		 *\param handle the index of the attachment to display
-		 *\warn Will only be valid until the RT is deleted.
+		 *\warning Will only be valid until the RT is deleted.
 		 */
 		void setRenderTarget(const IRenderTarget & rt, uint handle = 0);
 		
 		/** Set the texture to display.
 		 *\param tex the texture to display
-		 *\warn Will only be valid until the texture is deleted.
+		 *\warning Will only be valid until the texture is deleted.
 		 */
 		void setTexture(const ITexture2D& tex);
 

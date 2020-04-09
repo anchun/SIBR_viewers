@@ -319,7 +319,7 @@ namespace sibr
 		inline const AmbientOcclusion& ambientOcclusion(void);
 
 		/** Set the function used to compute ambient occlusion at each vertex. 
-		\pram aoFunction the new function to use 
+		\param aoFunction the new function to use 
 		*/
 		inline void aoFunction(std::function<sibr::Mesh::Colors(
 			sibr::MaterialMesh&,
@@ -333,12 +333,17 @@ namespace sibr
 		bool	load(const std::string& filename);
 
 		/** Load a scene from a set of mitsuba XML scene files (referencing multiple OBJs/PLYs). 
-		It handles instances (duplicating the geoemtry and applying the per-instance transformation).
-		\param filename the file path
+		It handles instances (duplicating the geometry and applying the per-instance transformation).
+		\param xmlFile the file path
+		\param loadTextures should the material textures be loaded
 		\return a success flag
 		*/
 		bool	loadMtsXML(const std::string& xmlFile, bool loadTextures = true);
 
+		/*
+		Load tags image files from a list of file paths.
+		\param listFilesTags a list of image paths
+		*/
 		void	loadCoveringTagsTexture(const std::vector<std::string>& listFilesTags);
 
 		/** Attribute a random color at each vertex based on the material IDs of the faces it belongs to. */
