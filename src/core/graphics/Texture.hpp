@@ -226,6 +226,23 @@ namespace sibr
 		template<typename ImageType>
 		Texture2DArray(const std::vector<ImageType> & images, uint w, uint h, uint flags = 0);
 
+		/** Constructor from a set of CPU images, with custom mipmaps.
+		\param images list of lists of images, one for each mip level, each containing an image for each layer
+		\param flags options
+		\note All images will be resized to the dimensions of the largest one.
+		*/
+		template<typename ImageType>
+		Texture2DArray(const std::vector<std::vector<ImageType>>& images, uint flags = 0);
+
+		/** Constructor from a set of CPU images, with custom mipmaps.
+		\param images list of lists of images, one for each mip level, each containing an image for each layer
+		\param w the target width
+		\param h the target height
+		\param flags options
+		*/
+		template<typename ImageType>
+		Texture2DArray(const std::vector<std::vector<ImageType>>& images, uint w, uint h, uint flags = 0);
+
 		/** Create the texture from a set of images and send it to GPU.
 		\param images list of images, one for each layer
 		\param flags options
@@ -242,6 +259,23 @@ namespace sibr
 		*/
 		template<typename ImageType>
 		void createFromImages(const std::vector<ImageType> & images, uint w, uint h, uint flags = 0);
+
+		/** Create the texture from a set of images with custom mipmaps and send it to GPU.
+		\param images list of lists of images, one for each mip level, each containing an image for each layer
+		\param flags options
+		\note All images will be resized to the dimensions of the largest one.
+		*/
+		template<typename ImageType>
+		void createFromImages(const std::vector<std::vector<ImageType>>& images, uint flags = 0);
+
+		/** Create the texture from a set of images with custom mipmaps and send it to GPU.
+		\param images list of lists of images, one for each mip level, each containing an image for each layer
+		\param w the target width
+		\param h the target height
+		\param flags options
+		*/
+		template<typename ImageType>
+		void createFromImages(const std::vector<std::vector<ImageType>>& images, uint w, uint h, uint flags = 0);
 
 		/** Update the content of all layers of the texture.
 		\param images the new content to use
@@ -309,28 +343,38 @@ namespace sibr
 		*/
 		void sendRTarray(const std::vector<typename PixelRT::Ptr> & RTs);
 
+		/** Upload the images data to the GPU.
+		\param images the data to upload
+		*/
+		template<typename ImageType>
+		void sendMipArray(const std::vector<std::vector<ImageType>>& images);
+
 		/** Flip and rescale a subset of images from a list.
 		\param images the images to resize
 		\param tmp a temporary buffer
+		\param tw the target width
+		\param th the target height
 		\param slices the indices of the images to process in the list
 		\return a list of pointers to the transformed images
 		*/
 		template<typename ImageType>
 		std::vector<const ImageType*> applyFlipAndResize(
 			const std::vector<ImageType> & images,
-			std::vector<ImageType> & tmp,
+			std::vector<ImageType> & tmp, uint tw, uint th,
 			const std::vector<int> & slices
 		);
 
 		/** Flip and rescale a set of images.
 		\param images the images to resize
 		\param tmp a temporary buffer
+		\param tw the target width
+		\param th the target height
 		\return a list of pointers to the transformed images
 		*/
 		template<typename ImageType>
 		std::vector<const ImageType*> applyFlipAndResize(
 			const std::vector<ImageType> & images,
-			std::vector<ImageType> & tmp
+			std::vector<ImageType> & tmp, uint tw, uint th
 		);
 
 		GLuint  m_Handle = 0; ///< Texture handle.
@@ -653,6 +697,7 @@ namespace sibr
 		}
 		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR_MIPMAP_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, int(miparray.size())-1);
 		send2Dmipmap(id,miparray,flags);
 		CHECK_GL_ERROR;
 		return id;
@@ -874,6 +919,18 @@ namespace sibr
 		createFromImages(images, w, h, flags);
 	}
 
+	template<typename T_Type, unsigned int T_NumComp> template<typename ImageType>
+	Texture2DArray<T_Type, T_NumComp>::Texture2DArray(const std::vector<std::vector<ImageType>>& images, uint flags) {
+		m_Flags = flags;
+		createFromImages(images, flags);
+	}
+
+	template<typename T_Type, unsigned int T_NumComp> template<typename ImageType>
+	Texture2DArray<T_Type, T_NumComp>::Texture2DArray(const std::vector<std::vector<ImageType>>& images, uint w, uint h, uint flags) {
+		m_Flags = flags;
+		createFromImages(images, w, h, flags);
+	}
+
 	template<typename T_Type, unsigned int T_NumComp>
 	Texture2DArray<T_Type, T_NumComp>::Texture2DArray(const std::vector<typename PixelRT::Ptr> & RTs, uint flags) {
 		m_Flags = flags;
@@ -887,7 +944,7 @@ namespace sibr
 		glBindTexture(GL_TEXTURE_2D_ARRAY, m_Handle);
 
 		const bool autoMIPMAP = ((m_Flags & SIBR_GPU_AUTOGEN_MIPMAP) != 0);
-		const int numMipMap = autoMIPMAP ? (int)std::floor(std::log2(std::max(m_W, m_H))) : 1;
+		const int numMipMap = autoMIPMAP ? (int)std::floor(std::log2(std::max(m_W, m_H))) : m_numLODs;
 
 		m_numLODs = numMipMap;
 
@@ -933,7 +990,7 @@ namespace sibr
 
 		// Make sure all images have the same size.
 		std::vector<ImageType> tmp;
-		std::vector<const ImageType*> imagesPtrToSend = applyFlipAndResize(images,tmp);
+		std::vector<const ImageType*> imagesPtrToSend = applyFlipAndResize(images,tmp, m_W, m_H);
 
 		for (int im = 0; im < (int)m_Depth; ++im) {
 			glTexSubImage3D(GL_TEXTURE_2D_ARRAY,
@@ -956,9 +1013,46 @@ namespace sibr
 	}
 
 	template<typename T_Type, unsigned int T_NumComp> template<typename ImageType>
+	void Texture2DArray<T_Type, T_NumComp>::sendMipArray(const std::vector<std::vector<ImageType>>& images) {
+		using ImgTypeInfo = GLTexFormat<ImageType, T_Type, T_NumComp>;
+		glBindTexture(GL_TEXTURE_2D_ARRAY, m_Handle);
+
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+		glPixelStorei(GL_PACK_ALIGNMENT, 1);
+
+		assert(m_numLODs == images.size());
+		for (int lid = 0; lid < int(images.size()); ++lid) {
+
+			assert(m_Depth == images[lid].size());
+
+			// Make sure all images have the same size.
+			const uint dW = m_W / (1 << lid);
+			const uint dH = m_H / (1 << lid);
+			std::vector<ImageType> tmp;
+			std::vector<const ImageType*> imagesPtrToSend = applyFlipAndResize(images[lid], tmp, dW, dH);
+			
+			for (int im = 0; im < (int)m_Depth; ++im) {
+				glTexSubImage3D(GL_TEXTURE_2D_ARRAY,
+					lid,
+					0, 0, im,
+					dW,
+					dH,
+					1, // one slice at a time
+					ImgTypeInfo::format,
+					ImgTypeInfo::type,
+					ImgTypeInfo::data(*imagesPtrToSend[im])
+				);
+			}
+		}
+		// No auto mipmap when specifying the mips.
+		m_Flags &= ~SIBR_GPU_AUTOGEN_MIPMAP;
+		CHECK_GL_ERROR;
+	}
+
+	template<typename T_Type, unsigned int T_NumComp> template<typename ImageType>
 	std::vector<const ImageType*> Texture2DArray<T_Type, T_NumComp>::applyFlipAndResize(
 		const std::vector<ImageType>& images,
-		std::vector<ImageType>& tmp,
+		std::vector<ImageType>& tmp, uint tw, uint th,
 		const std::vector<int>& slices ) 
 	{
 		using ImgTypeInfo = GLTexFormat<ImageType, T_Type, T_NumComp>;
@@ -971,12 +1065,12 @@ namespace sibr
 		for (int slice_id = 0; slice_id < (int)slices.size(); ++slice_id) {
 			int im = slices[slice_id];
 			
-			bool resize = !(m_W == ImgTypeInfo::width(images[im]) && m_H == ImgTypeInfo::height(images[im]));
+			bool resize = !(tw == ImgTypeInfo::width(images[im]) && th == ImgTypeInfo::height(images[im]));
 			if (!flip && !resize) {
 				imagesPtrToSend[im] = &images[im];
 			} else {
 				if (resize) {
-					tmp[im] = ImgTypeInfo::resize(images[im], m_W, m_H);
+					tmp[im] = ImgTypeInfo::resize(images[im], tw, th);
 				}
 				if (flip) {
 					tmp[im] = ImgTypeInfo::flip(resize ? tmp[im] : images[im]);
@@ -992,13 +1086,13 @@ namespace sibr
 	template<typename ImageType>
 	std::vector<const ImageType*> Texture2DArray<T_Type, T_NumComp>::applyFlipAndResize(
 		const std::vector<ImageType>& images,
-		std::vector<ImageType>& tmp
+		std::vector<ImageType>& tmp, uint tw, uint th
 	) {
 		std::vector<int> slices(m_Depth);
 		for (int i = 0; i < (int)m_Depth; ++i) {
 			slices[i] = i;
 		}
-		return applyFlipAndResize(images, tmp, slices);
+		return applyFlipAndResize(images, tmp, tw, th, slices);
 	}
 
 	template<typename T_Type, unsigned int T_NumComp>
@@ -1045,6 +1139,30 @@ namespace sibr
 	}
 
 	template<typename T_Type, unsigned int T_NumComp> template<typename ImageType>
+	void Texture2DArray<T_Type, T_NumComp>::createFromImages(const std::vector<std::vector<ImageType>>& images, uint flags) {
+		using ImgTypeInfo = GLTexFormat<ImageType, T_Type, T_NumComp>;
+
+		sibr::Vector2u maxSize(0, 0);
+		for (const auto& img : images[0]) {
+			maxSize = maxSize.cwiseMax(sibr::Vector2u(ImgTypeInfo::width(img), ImgTypeInfo::height(img)));
+		}
+		createFromImages(images, maxSize[0], maxSize[1], flags);
+	}
+
+	template<typename T_Type, unsigned int T_NumComp> template<typename ImageType>
+	void Texture2DArray<T_Type, T_NumComp>::createFromImages(const std::vector<std::vector<ImageType>>& images, uint w, uint h, uint flags) {
+		m_W = w;
+		m_H = h;
+		m_Depth = uint(images[0].size());
+		m_Flags = flags & ~SIBR_GPU_AUTOGEN_MIPMAP;
+		m_numLODs = uint(images.size());
+		createArray();
+
+		sendMipArray(images);
+	}
+
+
+	template<typename T_Type, unsigned int T_NumComp> template<typename ImageType>
 	void Texture2DArray<T_Type, T_NumComp>::updateFromImages(const std::vector<ImageType> & images) {
 		using ImgTypeInfo = GLTexFormat<ImageType, T_Type, T_NumComp>;
 
@@ -1083,7 +1201,7 @@ namespace sibr
 		glPixelStorei(GL_PACK_ALIGNMENT, 1);
 
 		std::vector<ImageType> tmp;
-		std::vector<const ImageType*> imagesPtrToSend = applyFlipAndResize(images, tmp, slices);
+		std::vector<const ImageType*> imagesPtrToSend = applyFlipAndResize(images, tmp, m_W, m_H, slices);
 
 		for (int i = 0; i < numSlices; ++i) {
 			glTexSubImage3D(GL_TEXTURE_2D_ARRAY,
