@@ -230,7 +230,7 @@ def main(argv, path_dest):
     path_data = ""
     for opt, arg in opts:
         if opt == '-h':
-            print("-i path_to_rc_data_dir -d path_to_destination_dir [-r (use release w/ debug symbols executables)]")
+            print("-i path_to_rc_data_dir -o path_to_destination_dir [-r (use release w/ debug symbols executables)]")
             sys.exit()
         elif opt == '-i':
             path_data = arg
