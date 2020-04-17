@@ -27,9 +27,9 @@ choco install visualstudio2019community
   
   ```sh
   # through HTTPS
-  git clone https://gitlab.inria.fr/sprakash/sibr_basic2.git -b master
+  git clone https://gitlab.inria.fr/sibr/sibr_core.git -b master
   # through SSH
-  git clone git@gitlab.inria.fr:sprakash/sibr_basic2.git -b master
+  git clone git@gitlab.inria.fr:sibr/sibr_core.git -b master
   ```
 - Run Cmake-gui once, select the repo root as a source directory, `build/` as the build directory. Configure, select the Visual Studio C++ Win64 compiler
 - Select the projects you want to generate among the BUILD elements in the list (you can group Cmake flags by categories to access those faster)

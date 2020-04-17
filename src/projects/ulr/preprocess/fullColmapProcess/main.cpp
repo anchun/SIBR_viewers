@@ -348,7 +348,7 @@ std::string checkProgram(const std::string& binariesPath, const std::string& pro
 	}	else {
 		SIBR_ERR << "The " << programName << " program does not exist in: " << binariesPath
 			<< " ..." << std::endl << "Did you build and install it ?" << std::endl
-			<< "If you do not find the binaries directory, usually it's sibr_basic2\\install\\bin"
+			<< "If you do not find the binaries directory, usually it's sibr_core\\install\\bin"
 			<< std::endl;
 	}
 	return programPath;
