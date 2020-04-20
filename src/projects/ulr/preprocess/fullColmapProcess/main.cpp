@@ -206,7 +206,9 @@ void getProject(
 	const std::string& colmapWorkingDir,
 	const std::string& sshAccount) {
 	
-	boost::process::system("scp -r " +sshAccount + ":" + colmapWorkingDir + " " + 
+	boost::process::system("scp -r " +sshAccount + ":" + colmapWorkingDir + "/colmap " + 
+		datasetPath );
+	boost::process::system("scp -r " +sshAccount + ":" + colmapWorkingDir + "/capreal " + 
 		datasetPath );
 }
 
@@ -265,13 +267,13 @@ void runColmap(const std::string& colmapProgramPath,
 			std::to_string(parameters.siftExtractionDomainSizePooling()) +
 		" --SiftExtraction.max_num_features " +
 			std::to_string(parameters.siftExtractionMaxNumFeatures()) +
-		" --SiftExtraction.gpu_index=" + gpusIndices,
+		" --SiftExtraction.gpu_index "+ gpusIndices,
 
 		"--database_path " + colmapWorkingDir + dirStr + "colmap" + dirStr + "dataset.db " +
 		" --SiftMatching.guided_matching 1"
 		" --ExhaustiveMatching.block_size " +
 			std::to_string(parameters.exhaustiveMatcherExhaustiveMatchingBlockSize()) +
-		" --SiftMatching.gpu_index =" + gpusIndices,
+		" --SiftMatching.gpu_index " + gpusIndices,
 
 		"--database_path " + colmapWorkingDir + dirStr+ "colmap"+ dirStr+ "dataset.db " +
 		"--image_path " + colmapWorkingDir + dirStr + "images"+ dirStr + " --output_path " +
@@ -310,7 +312,7 @@ void runColmap(const std::string& colmapProgramPath,
 			std::to_string(parameters.patchMatchStereoPatchMatchStereoDotNumIterations()) +
 		" --PatchMatchStereo.geom_consistency " +
 			std::to_string(parameters.patchMatchStereoPatchMatchStereoDotGeomConsistency()) +
-		" --PatchMatchStereo.gpu_index =" + gpusIndices,
+		" --PatchMatchStereo.gpu_index " + gpusIndices,
 
 		"--workspace_path " + colmapWorkingDir + dirStr + "colmap" + dirStr + "stereo" + dirStr + " --workspace_format COLMAP " +
 		"--input_type geometric --output_path " + colmapWorkingDir + dirStr + "colmap" + dirStr + "stereo" + dirStr + "fused.ply " +
@@ -362,7 +364,8 @@ void runColmap(const std::string& colmapProgramPath,
 		SIBR_LOG << "The request is done  ... Waiting the answers..." << std::endl << std::endl;
 		const std::string runScript = "ssh -t " + sshAccount + " \"cd " +
 			colmapWorkingDir + ";chmod 777 " + colmapWorkingDir +
-			"/colmapScript.sh;oarsub -p \\\"host='nefgpu" + gpuNodeNum +".inria.fr' and gpu='YES' and gpucapability>='5.0'\\\" -l /nodes=1/gpunum=2,walltime=01:00:00 " +
+			"/colmapScript.sh;oarsub -p \\\"host='nefgpu" + gpuNodeNum +".inria.fr' and gpu='YES' and gpucapability>='5.0'\\\" -l /nodes=1/gpunum="
+			+ std::to_string(parameters.numGPUs()) + ",walltime=01:00:00 " +
 				colmapWorkingDir +"/colmapScript.sh\"";
 		boost::process::system(runScript);
 		SIBR_LOG << "Running: " << runScript << std::endl;
@@ -376,7 +379,7 @@ void waitSteps(const std::string& colmapWorkingDir, const std::string& sshAccoun
 	
 	constexpr size_t nbSteps = 10;
 	const std::array<std::string, nbSteps> steps{
-		"starting",
+		"started",
 		"feature_extractor",
 		"exhaustive_matcher",
 		"mapper",
@@ -390,7 +393,7 @@ void waitSteps(const std::string& colmapWorkingDir, const std::string& sshAccoun
 	for (const std::string& step : steps) {
 		bool stepFinished = false;
 		while (!stepFinished) {
-			const std::string command = "ssh " + sshAccount + " test -f " + colmapWorkingDir + "/" + step + ".txt";
+			const std::string command = "ssh -t " + sshAccount + " \" ls " + colmapWorkingDir + "/" + step + ".txt\"";
 			//SIBR_LOG << "Running: " << command << std::endl;
 			const int result = boost::process::system(command);
 			//SIBR_LOG << "ssh checking file is finished ..." << std::endl;
@@ -399,12 +402,11 @@ void waitSteps(const std::string& colmapWorkingDir, const std::string& sshAccoun
 				stepFinished = true;
 			}
 			else {
-				//std::cout << "Waiting for " + step + " step... ";
+				std::cout << "Waiting for " + step + " step... " << std::endl;
 				Sleep(5000);
-				std::cout << ".\n";
 			}
 		}
-		std::cout << "Step " + step + " is DONE !";
+		std::cout << "Step " + step + " is DONE !" << std::endl;
 	}
 	std::cout << "Every steps are completed !" << std::endl;
 }
@@ -668,7 +670,7 @@ int main(const int argc, const char** argv)
 		}
 	}
 
-	runUnwrapMesh(unwrapMeshProgram, myArgs.dataset_path);
+	runUnwrapMesh(unwrapMeshProgram, myArgs.dataset_path, !runLocally);
 
 	const std::string meshPath = myArgs.dataset_path.get() + "\\capreal\\mesh.ply";
 	Mesh mesh;
