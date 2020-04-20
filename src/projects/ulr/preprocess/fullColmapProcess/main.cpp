@@ -184,13 +184,22 @@ void setPersonalParameters(const CommandLineArgs& globalArgs,
 	}
 }
 
-void copyImages(
+void sendImages(
 	const std::string& datasetPath,
 	const std::string& colmapWorkingDir,
 	const std::string& sshAccount) {
 	
 	boost::process::system("scp -r " + datasetPath + "\\images "
 		+ sshAccount + ":" + colmapWorkingDir );
+}
+
+void getProject(
+	const std::string& datasetPath,
+	const std::string& colmapWorkingDir,
+	const std::string& sshAccount) {
+	
+	boost::process::system("scp -r " +sshAccount + ":" + colmapWorkingDir + " " + 
+		datasetPath );
 }
 
 void runColmap(const std::string& colmapProgramPath,
@@ -319,7 +328,7 @@ void runColmap(const std::string& colmapProgramPath,
 		//We create the script that the node will execute
 		const std::string scriptCommands = "ssh -t " + sshAccount + " \"cd " + 
 			colmapWorkingDir + "; cat " + unixListAllCommands + " > colmapScript.sh; chmod 755 colmapScript.sh;"
-			+ "oarsub - p \"host='nefgpu'" + std::to_string(gpuNodeNum)+".inria.fr'\" -l /nodes=1,walltime=00:01:00 " +
+			+ "oarsub - p \"host='nefgpu'" + std::to_string(gpuNodeNum)+".inria.fr'\" -l /nodes=1,walltime=01:00:00 " +
 				colmapWorkingDir +"/colmapScript.sh";
 
 
@@ -557,9 +566,12 @@ int main(const int argc, const char** argv)
 	runColmap(colmapProgram, myArgs.dataset_path, colmapParams);
 	} 
 	else {
-	//UNIX
+	//REMOTE UNIX
 	runColmap(colmapProgram, myArgs.colmapWorkingDir , colmapParams, true, myArgs.remoteUnix.get());
+	waitSteps(myArgs.colmapWorkingDir, myArgs.remoteUnix.get());
+	getProject(myArgs.dataset_path.get(), myArgs.colmapWorkingDir.get(), myArgs.remoteUnix.get());
 	}
+
 
 	if (runLocally) {
 		//We fix the end of line only on Windows
@@ -569,6 +581,8 @@ int main(const int argc, const char** argv)
 	}
 
 	runUnwrapMesh(unwrapMeshProgram, myArgs.dataset_path);
+
+
 		
 	const std::string meshPath = myArgs.dataset_path.get() + "\\capreal\\mesh.ply";
 	Mesh mesh;
