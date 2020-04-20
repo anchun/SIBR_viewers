@@ -184,13 +184,18 @@ void setPersonalParameters(const CommandLineArgs& globalArgs,
 	}
 }
 
-void sendImages(
+int sendImages(
 	const std::string& datasetPath,
 	const std::string& colmapWorkingDir,
 	const std::string& sshAccount) {
 	
-	boost::process::system("scp -r " + datasetPath + "\\images "
+	const int result = boost::process::system("scp -r " + datasetPath + "\\images "
 		+ sshAccount + ":" + colmapWorkingDir );
+	if (result == EXIT_FAILURE) {
+		SIBR_ERR << "Impossible to send the images dir to your remote dir ... " << std::endl
+			<< "Are you sure that your remote working dir exists ?" << std::endl;
+	}
+	return result;
 }
 
 void getProject(
@@ -205,10 +210,10 @@ void getProject(
 void runColmap(const std::string& colmapProgramPath,
 	const std::string& colmapWorkingDir,
 	const ColmapParameters& parameters,
-	bool remotly = false,
 	const std::string& sshAccount = "",
 	size_t gpuNodeNum = 9
 	){
+	const bool remotely = (!sshAccount.empty());
 		
 	auto gpusToString = [](uint nbGPUs) {
 	
@@ -311,7 +316,7 @@ void runColmap(const std::string& colmapProgramPath,
 	for (size_t i = 0; i < colmapCalls; ++i) {
 		const std::string program = calls.at(i) ;
 		std::string command;
-		if (!remotly) {
+		if (!remotely) {
 			//Windows
 			command = colmapProgramPath + " " + program + " " + params.at(i);
 			SIBR_LOG << "Running: " << command << std::endl;
@@ -324,7 +329,7 @@ void runColmap(const std::string& colmapProgramPath,
 			unixListAllCommands += "touch " + colmapWorkingDir + "/" + program + ".txt\n";
 		}
 	}
-	if (remotly) {
+	if (remotely) {
 		//We create the script that the node will execute
 		const std::string scriptCommands = "ssh -t " + sshAccount + " \"cd " + 
 			colmapWorkingDir + "; cat " + unixListAllCommands + " > colmapScript.sh; chmod 755 colmapScript.sh;"
@@ -357,7 +362,15 @@ void waitSteps(const std::string& colmapWorkingDir, const std::string& sshAccoun
 	for (const std::string& step : steps) {
 		bool stepFinished = false;
 		while (!stepFinished) {
-			if (!fileExists(sshAccount + ":" + colmapWorkingDir + "/" + step + ".txt")) {
+			const std::string command = "ssh " + sshAccount + " test -f " + colmapWorkingDir + "/" + step + ".txt";
+			SIBR_LOG << "Running: " << command << std::endl;
+			const int result = boost::process::system(command);
+			SIBR_LOG << "ssh checking file is finished ..." << std::endl;
+
+			if (result == EXIT_SUCCESS) {
+				stepFinished = true;
+			}
+			else {
 				std::cout << "Waiting for " + step + " step... ";
 				Sleep(5000);
 			}
@@ -404,6 +417,59 @@ int fixEndLinesMesh(const std::string& datasetPath) {
 	//--------------------------------------//
 
 	return EXIT_SUCCESS;
+}
+
+
+void makeDirectories(const std::string& workingPath, const std::string& sshAccount = "") {
+	const bool remotely = (!sshAccount.empty());
+	const std::vector<std::string> colmapDirs = { 
+		"colmap", "capreal", "capreal/undistorted", "colmap/stereo", "colmap/sparse"};
+	if (remotely) {
+		for (const std::string& dir : colmapDirs) {
+
+		const std::string makeDirCommand = "ssh -t " + sshAccount + " \"cd " + 
+			workingPath + "; mkdir " + dir;
+
+		SIBR_LOG << "Creating " << dir << " remotely : " << std::endl 
+			<< makeDirCommand << std::endl;
+		const int result = boost::process::system(makeDirCommand);
+		}
+	}
+	else {
+		for (const std::string& dir : colmapDirs) {
+			std::cout << dir << std::endl;
+			if (!directoryExists(workingPath + "/" + dir.c_str())) {
+				makeDirectory(workingPath + "/" + dir.c_str());
+			}
+		}
+	}
+}
+
+std::string checkColmap(const std::string& colmapPath, bool runLocally,
+				const std::string& sshAccount) {
+
+	std::string colmapProgram;
+	if (runLocally) { //Windows version
+		colmapProgram = colmapPath + "\\COLMAP.bat";
+		if (!fileExists(colmapProgram)) {
+			SIBR_ERR << "Your path does not contain a COLMAP.bat program..." << std::endl;
+			return "";
+		}
+
+	} else { //Unix version
+		colmapProgram = colmapPath + "/colmap";
+		const std::string command = "ssh " + sshAccount  + " test -f " + colmapProgram;
+		SIBR_LOG << "Running: " << command << std::endl;
+		const int result = boost::process::system(command);
+		SIBR_LOG << "ssh checking file is finished ..." << std::endl;
+		
+		if (result == EXIT_FAILURE) {
+			SIBR_ERR << "Your remote path does not contain a colmap program..." << std::endl;
+			return "";
+		}
+	}
+
+	return colmapProgram;
 }
 
 std::string checkProgram(const std::string& binariesPath, const std::string& programName) {
@@ -498,8 +564,9 @@ int main(const int argc, const char** argv)
 	if (runLocally) {
 		workingPath = myArgs.dataset_path.get();
 	} else {
-		workingPath = myArgs.remoteUnix.get() + ":" + myArgs.colmapWorkingDir.get();
+		workingPath = myArgs.colmapWorkingDir.get();
 	}
+
 
 
 	//-----------------BINARIES ARGUMENT-------------------//
@@ -524,26 +591,10 @@ int main(const int argc, const char** argv)
 	}
 
 	//----------------COLMAP PARAMETERS----------------//
-	std::string colmapProgram;
-	if (runLocally) { //Windows version
-		colmapProgram = myArgs.colmapPath.get() + "\\COLMAP.bat";
-		if (!fileExists(colmapProgram)) {
-			SIBR_ERR << "Your path does not contain a COLMAP.bat program..." << std::endl;
-			return EXIT_FAILURE;
-		}
-
-	} else { //Unix version
-		colmapProgram = myArgs.colmapPath.get() + "/colmap";
-		const std::string command = "ssh " + myArgs.remoteUnix.get() + " test -f " + colmapProgram;
-		SIBR_LOG << "Running: " << command << std::endl;
-		const int result = boost::process::system(command);
-		SIBR_LOG << "ssh checking file is finished ..." << std::endl;
-		
-		if (result == EXIT_FAILURE) {
-			SIBR_ERR << "Your remote path does not contain a colmap program..." << std::endl;
-			return EXIT_FAILURE;
-		}
-		
+	const std::string colmapProgram = 
+		checkColmap(myArgs.colmapPath.get(),runLocally,myArgs.remoteUnix.get());
+	if (colmapProgram.empty()) {
+		return EXIT_FAILURE;
 	}
 
 	const std::shared_ptr < ColmapParameters::Quality > qualityRecon =
@@ -551,20 +602,21 @@ int main(const int argc, const char** argv)
 	if (!qualityRecon) { 
 		return EXIT_FAILURE; 
 	}
+	//-------------------------------------------------//
+
+	if (!runLocally) {
+		if (sendImages(myArgs.dataset_path.get(), myArgs.colmapWorkingDir.get(),
+			myArgs.remoteUnix.get()) == EXIT_FAILURE) {
+			return EXIT_FAILURE;
+		}
+	}
+
+	//----------------------------CHECKING FINISHED------------------------------//
+
+	makeDirectories(workingPath, myArgs.remoteUnix.get());
 
 	ColmapParameters colmapParams(*qualityRecon);
 	setPersonalParameters(globalArgs, myArgs, colmapParams);
-
-	const std::vector<std::string> colmapDirs = { 
-		"colmap", "capreal", "capreal/undistorted", "colmap/stereo", "colmap/sparse"};
-	for (auto dir : colmapDirs) {
-		std::cout << dir << std::endl;
-		if (!directoryExists(workingPath + "/" + dir.c_str())) {
-			makeDirectory(workingPath + "/" + dir.c_str());
-		}
-	}
-	//----------------------------CHECKING FINISHED------------------------------//
-
 	
 	if (runLocally) {
 	//Windows
@@ -572,7 +624,7 @@ int main(const int argc, const char** argv)
 	} 
 	else {
 	//REMOTE UNIX
-	runColmap(colmapProgram, myArgs.colmapWorkingDir , colmapParams, true, myArgs.remoteUnix.get());
+	runColmap(colmapProgram, myArgs.colmapWorkingDir , colmapParams, myArgs.remoteUnix.get());
 	waitSteps(myArgs.colmapWorkingDir, myArgs.remoteUnix.get());
 	getProject(myArgs.dataset_path.get(), myArgs.colmapWorkingDir.get(), myArgs.remoteUnix.get());
 	}
@@ -587,8 +639,6 @@ int main(const int argc, const char** argv)
 
 	runUnwrapMesh(unwrapMeshProgram, myArgs.dataset_path);
 
-
-		
 	const std::string meshPath = myArgs.dataset_path.get() + "\\capreal\\mesh.ply";
 	Mesh mesh;
 	mesh.load(meshPath);
