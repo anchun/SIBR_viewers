@@ -534,11 +534,16 @@ int main(const int argc, const char** argv)
 
 	} else { //Unix version
 		colmapProgram = myArgs.colmapPath.get() + "/colmap";
-		const std::string colmapProgramRemotly = myArgs.remoteUnix.get() + ":" + colmapProgram;
-		if (!fileExists(colmapProgramRemotly)) {
-			SIBR_ERR << "Your path does not contain a colmap program..." << std::endl;
+		const std::string command = "ssh " + myArgs.remoteUnix.get() + " test -f " + colmapProgram;
+		SIBR_LOG << "Running: " << command << std::endl;
+		const int result = boost::process::system(command);
+		SIBR_LOG << "ssh checking file is finished ..." << std::endl;
+		
+		if (result == EXIT_FAILURE) {
+			SIBR_ERR << "Your remote path does not contain a colmap program..." << std::endl;
 			return EXIT_FAILURE;
 		}
+		
 	}
 
 	const std::shared_ptr < ColmapParameters::Quality > qualityRecon =
