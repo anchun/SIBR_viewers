@@ -939,8 +939,14 @@ namespace sibr
 		if (verbose)
 			SIBR_LOG << "Saving image file '" << filename << "'." << std::endl;
 
-		cv::Mat img = toOpenCVBGR();
-		
+		cv::Mat img;
+		if (T_NumComp == 1) {
+			cv::cvtColor(toOpenCVBGR(), img, cv::COLOR_GRAY2BGR);
+		} /// \todo TODO: support for 2 channels images.
+		else {
+			// For 3 and 4 channels, leave the image untouched.
+			img = toOpenCVBGR();
+		}
 
 		cv::Mat finalImage;
 		if (T_NumComp == 4) {
