@@ -524,7 +524,7 @@ namespace sibr{
 
 		/** \return the matrix OpenCV type. */
 		static uint cv_type() {
-			return CV_MAKE_TYPE(cv::DataType<ScalarType>::depth, N);
+			return CV_MAKE_TYPE(cv::traits<ScalarType>::depth, N);
 		}
 
 		static const uint internal_format = GLFormatCVmat<ScalarType, N>::internal_format; ///< Internal GL format.

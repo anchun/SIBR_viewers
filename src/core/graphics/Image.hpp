@@ -622,6 +622,7 @@ namespace sibr
 	typedef Image<int, 1>        ImageInt1;
 	typedef Image<int, 2>        ImageInt2;
 	typedef Image<int, 3>        ImageInt3;
+	typedef Image<int, 4>        ImageInt4;
 
 
 	/** Convert an integer ID map to a colored image using a different random color for each ID. Note that 255 is black.

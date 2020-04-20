@@ -23,8 +23,8 @@
  *
  * \subsection sibr_generate_and_compile Generating the solution and compiling
  *
- * - Clone sibr_basic repository (https://gitlab.inria.fr/sprakash/sibr_basic2).
- *  \code git clone https://gitlab.inria.fr/sprakash/sibr_basic2 \endcode
+ * - Clone sibr_core repository (https://gitlab.inria.fr/sibr/sibr_core).
+ *  \code git clone https://gitlab.inria.fr/sibr/sibr_core \endcode
  * - Run Cmake-gui once, select the sibr_root/ as a source directory, sibr_root/build/ as the build directory. Configure, select the Visual Studio C++ Win64 compiler.
  * - Select the projects you want to generate among the BUILD elements in the list.
  * - Generate.
@@ -45,7 +45,7 @@
  * Users need access to the project's gitlab repository to clone it and use it.
  * You can follow the given steps to add a project once access is given.
  *
- * - Go to the sibr_basic2 repository and pull.
+ * - Go to the sibr_core repository and pull.
  * - Go to src/projects
  * - Clone the project repository with the default directory name.
  * - Run Cmake-gui again, (with sibr_root/ as a source directory, sibr_root/build/ as the build directory). Configure, select the Visual Studio C++ Win64 compiler.
