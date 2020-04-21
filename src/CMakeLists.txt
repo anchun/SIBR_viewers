@@ -101,6 +101,26 @@ FOREACH(subdir ${SUBDIRS})
       add_subdirectory("${SIBR_PROJECTS_FOLDER}/${subdir}/preprocess/")
     endif()
     if(EXISTS "${SIBR_PROJECTS_FOLDER}/${subdir}/documentation/" AND BUILD_DOCUMENTATION)
+      unset(PROJECT_PAGE)
+      unset(PROJECT_LINK)
+      unset(PROJECT_DESCRIPTION)
+      include("${SIBR_PROJECTS_FOLDER}/${subdir}/documentation/${subdir}_doc.cmake" OPTIONAL)
+
+      if(NOT DEFINED PROJECT_PAGE)
+        set(PROJECT_PAGE "${subdir}Page")
+      endif()
+
+      set(PROJECT_SUBPAGE_REF "  - \\subpage ${PROJECT_PAGE}")
+
+      if(DEFINED PROJECT_LINK)
+        set(PROJECT_SUBPAGE_REF "${PROJECT_SUBPAGE_REF} (${PROJECT_LINK})")
+      endif()
+
+      if(DEFINED PROJECT_DESCRIPTION)
+        set(PROJECT_SUBPAGE_REF "${PROJECT_SUBPAGE_REF}: ${PROJECT_DESCRIPTION}")
+      endif()
+
+      set(SIBR_PROJECTS_SUBPAGE_REF_LOCAL "${SIBR_PROJECTS_SUBPAGE_REF_LOCAL}${PROJECT_SUBPAGE_REF}\n")
       set(DOXY_APP_SPECIFIC_IMG_PATH_LOCAL "${DOXY_APP_SPECIFIC_IMG_PATH_LOCAL} ${SIBR_PROJECTS_FOLDER}/${subdir}/documentation/")
     endif()
   else()
@@ -111,6 +131,7 @@ FOREACH(subdir ${SUBDIRS})
   endif()
 ENDFOREACH()
   
+set(SIBR_PROJECTS_SUBPAGE_REF "${SIBR_PROJECTS_SUBPAGE_REF_LOCAL}" PARENT_SCOPE)
 set(DOXY_APP_SPECIFIC_IMG_PATH "${DOXY_APP_SPECIFIC_IMG_PATH_LOCAL}" PARENT_SCOPE)
 
 if (BUILD_IBR_TFGL_INTEROP)

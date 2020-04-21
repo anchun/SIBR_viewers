@@ -1,7 +1,6 @@
 /** @page projects_main_page Projects
 
 For projects that led to publications, the link to the paper is available.
-  - \subpage ulrPage 
   - \subpage spixelWarpPage (http://www-sop.inria.fr/reves/Basilic/2013/CDSD13/)
   - \subpage md_src_projects_deep_blending_README (http://www-sop.inria.fr/reves/Basilic/2018/HPPFDB18/)
   - \subpage facadeRepetitionsPage (http://www-sop.inria.fr/reves/Basilic/2018/RBDD18/)
@@ -10,7 +9,6 @@ For projects that led to publications, the link to the paper is available.
 Other projects are helper libraries that can be used to augment SIBR with new functionalities.
   - \subpage md_src_projects_optix_documentation_README
 
-You can find an example of a simple SIBR project here
-  - \subpage sibrSimplePage (https://gitlab.inria.fr/mbenadel/sibr_simple)
-
+Here is the list of integrated projects
+@SIBR_PROJECTS_SUBPAGE_REF@
  **/
