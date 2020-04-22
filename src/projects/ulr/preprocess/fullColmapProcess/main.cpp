@@ -191,6 +191,7 @@ int sendImages(
 	const std::string command = "scp -r " + datasetPath + "\\images "
 		+ sshAccount + ":" + colmapWorkingDir;
 
+	SIBR_LOG << "Sending images ... " << std::endl;
 	const int result = boost::process::system(command);
 	SIBR_LOG << "Running: " << command << std::endl;
 
@@ -402,7 +403,7 @@ void waitSteps(const std::string& colmapWorkingDir, const std::string& sshAccoun
 				stepFinished = true;
 			}
 			else {
-				std::cout << "Waiting for " + step + " step... " << std::endl;
+				std::cout << "Waiting for \"" + step + "\" step... " << std::endl;
 				Sleep(5000);
 			}
 		}
@@ -557,9 +558,29 @@ void runTextureMesh(const std::string& program, const std::string& datasetPath) 
 	SIBR_LOG << "Program " << command << " is finished ..." << std::endl << std::endl ;
 }
 
+void printExample() {
+	SIBR_LOG << "OPTIONS EXEMMPLE TO HELP YOU :" << std::endl
+		<< "LOCAL VERSION" << std::endl
+		<< "--path E:\smorgent\testData\colmap\testcluster "
+		<< "--sibrBinariesPath E:\smorgent\dev\sibr_basic2\install\bin "
+		<< "--colmapPath D:\colmap "
+		<< "--quality medium"
+		<< std::endl
+		<< "REMOTE VERSION" << std::endl
+		<< "--path E:\smorgent\testData\colmap\testcluster "
+		<< "--sibrBinariesPath E:\smorgent\dev\sibr_basic2\install\bin "
+		<< "--remoteUnix smorgent@nef-devel.inria.fr "
+		<< "--colmapPath /data/graphdeco/share/colmap/bin/ "
+		<< "--colmapWorkingDir /data/graphdeco/user/smorgent/colmapTests/test "
+		<< "--clusterGPU 34 "
+		<< "--numGPUs 4 "
+		<< "--quality medium"
+		<< std::endl;
+}
+
 int main(const int argc, const char** argv)
 {
-
+	printExample();
 	CommandLineArgs::parseMainArgs(argc, argv);
 	CommandLineArgs globalArgs = CommandLineArgs::getGlobal();
 	FullProcessColmapPreprocessArgs myArgs;
@@ -571,11 +592,13 @@ int main(const int argc, const char** argv)
 		if (!globalArgs.contains("clusterGPU")) {
 			SIBR_ERR << "Your specified the remoteUnix option but you did not specify the clusterGPU option.." << std::endl
 				<< "Please specify it with a free GPU node on the cluster (example --clusterGPU 12)" << std::endl;
+			printExample();
 			return EXIT_FAILURE;
 		}
 		if (!globalArgs.contains("colmapWorkingDir")) {
 			SIBR_ERR << "Your specified the remoteUnix option but you did not specify the colmapWorkingDir path option.." << std::endl
 				<< "Please specify this path on your remote system" << std::endl;
+			printExample();
 			return EXIT_FAILURE;
 		}
 	}
@@ -589,6 +612,7 @@ int main(const int argc, const char** argv)
 		SIBR_ERR << "Your path does not contain an \"images\" directory..." << std::endl
 			<< "Please create one and put your images into this" << std::endl;
 
+		printExample();
 		return EXIT_FAILURE;
 	}
 
@@ -626,12 +650,14 @@ int main(const int argc, const char** argv)
 	const std::string colmapProgram = 
 		checkColmap(myArgs.colmapPath.get(),runLocally,myArgs.remoteUnix.get());
 	if (colmapProgram.empty()) {
+		printExample();
 		return EXIT_FAILURE;
 	}
 
 	const std::shared_ptr < ColmapParameters::Quality > qualityRecon =
 		getUserQuality(globalArgs, myArgs);
 	if (!qualityRecon) { 
+		printExample();
 		return EXIT_FAILURE; 
 	}
 	//-------------------------------------------------//
@@ -639,6 +665,7 @@ int main(const int argc, const char** argv)
 	if (!runLocally) {
 		if (sendImages(myArgs.dataset_path.get(), myArgs.colmapWorkingDir.get(),
 			myArgs.remoteUnix.get()) == EXIT_FAILURE) {
+			printExample();
 			return EXIT_FAILURE;
 		}
 	}
@@ -680,6 +707,6 @@ int main(const int argc, const char** argv)
 	runColmapToSibr (colmapToSIBRProgram, myArgs.dataset_path);
 	runTextureMesh (textureMeshProgram, myArgs.dataset_path);
 		
-	std::cout << "END OF FULL COLMAP PREPROCESS PROGRAMM" << std::endl;
+	std::cout << "END OF FULL COLMAP PREPROCESS PROGRAM" << std::endl;
 	return EXIT_SUCCESS;
 }
