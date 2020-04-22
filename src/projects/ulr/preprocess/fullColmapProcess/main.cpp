@@ -489,19 +489,7 @@ std::string checkColmap(const std::string& colmapPath, bool runLocally,
 			return "";
 		}
 
-	} else { //Unix version
-		colmapProgram = colmapPath + "/colmap";
-		const std::string command = "ssh " + sshAccount  + " test -f " + colmapProgram;
-		SIBR_LOG << "Running: " << command << std::endl;
-		//const int result = boost::process::system(command);
-		SIBR_LOG << "ssh checking file is finished ..." << std::endl;
-		
-		if (EXIT_SUCCESS == EXIT_FAILURE) {
-			SIBR_ERR << "Your remote path does not contain a colmap program..." << std::endl;
-			return "";
-		}
-	}
-
+	} 
 	return colmapProgram;
 }
 
@@ -560,7 +548,7 @@ void runTextureMesh(const std::string& program, const std::string& datasetPath) 
 }
 
 void printExample() {
-	SIBR_LOG << "OPTIONS EXEMPLE TO HELP YOU :" << std::endl
+	SIBR_LOG << "OPTIONS EXAMPLE TO HELP YOU :" << std::endl
 		<< "LOCAL VERSION" << std::endl
 		<< "--path E:\\smorgent\\testData\\colmap\\testcluster "
 		<< "--sibrBinariesPath E:\\smorgent\\dev\\sibr_basic2\\install\\bin "
