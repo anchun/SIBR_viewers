@@ -489,7 +489,10 @@ std::string checkColmap(const std::string& colmapPath, bool runLocally,
 			return "";
 		}
 
-	} 
+	} else { //Unix version
+		colmapProgram = colmapPath + "/colmap";
+	}
+
 	return colmapProgram;
 }
 
