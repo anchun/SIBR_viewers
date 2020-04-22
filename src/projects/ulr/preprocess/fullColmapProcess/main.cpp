@@ -20,11 +20,14 @@ const char* usage = ""
 
 struct FullProcessColmapPreprocessArgs :
 	virtual BasicIBRAppArgs {
-	RequiredArg<std::string>	colmapPath = { "colmapPath","colmap path directory which contains COLMAP.bat" };
+	RequiredArg<std::string>	colmapPath = { "colmapPath","colmap path directory which contains COLMAP.bat (or colmap.bin if you use remoteUnix option" };
 	RequiredArg<std::string>	sibrBinariesPath = { "sibrBinariesPath","binaries directory of SIBR" };
 	Arg<std::string>			quality = 
 								{ "quality","","quality of the reconstruction" };
 	Arg<uint>					numGPUs = { "numGPUs",1,"Number of GPUs" };
+	Arg<std::string>			remoteUnix = { "remoteUnix","","ssh account, example: user@nef-devel.inria.fr" };
+	Arg<std::string>			colmapWorkingDir = { "colmapWorkingDir","","colmap working directory in your Unix system" };
+	Arg<std::string>			clusterGPU = { "clusterGPU","","GPU number : exemple 12" };
 
 	//Feature extractor 
 	Arg<uint>	siftExtraction_ImageSize = 
@@ -167,7 +170,6 @@ void setPersonalParameters(const CommandLineArgs& globalArgs,
 		parameters.patchMatchStereoPatchMatchStereoDotGeomConsistency (
 			userArgs.patchMatchStereo_PatchMatchStereoDotGeomConsistency.get());
 	}
-
 	if (globalArgs.contains("StereoFusion.check_num_images")) {
 		parameters.stereoFusionCheckNumImages (
 			userArgs.stereoFusion_CheckNumImages.get());
@@ -182,10 +184,47 @@ void setPersonalParameters(const CommandLineArgs& globalArgs,
 	}
 }
 
-void runColmap(	const std::string& colmapPath,
-				const std::string& datasetPath,
-				const ColmapParameters& parameters
+int sendImages(
+	const std::string& datasetPath,
+	const std::string& colmapWorkingDir,
+	const std::string& sshAccount) {
+	const std::string command = "scp -r " + datasetPath + "\\images "
+		+ sshAccount + ":" + colmapWorkingDir;
+
+	SIBR_LOG << "Sending images ... " << std::endl;
+	const int result = boost::process::system(command);
+	SIBR_LOG << "Running: " << command << std::endl;
+
+	if (result == EXIT_FAILURE) {
+		SIBR_ERR << "Impossible to send the images dir to your remote dir ... " << std::endl
+			<< "Are you sure that your remote working dir exists ?" << std::endl;
+	}
+	return result;
+}
+
+void getProject(
+	const std::string& datasetPath,
+	const std::string& colmapWorkingDir,
+	const std::string& sshAccount) {
+	
+	boost::process::system("scp -r " +sshAccount + ":" + colmapWorkingDir + "/colmap " + 
+		datasetPath );
+	boost::process::system("scp -r " +sshAccount + ":" + colmapWorkingDir + "/capreal " + 
+		datasetPath );
+}
+
+void runColmap(const std::string& colmapProgramPath,
+	const std::string& datasetPath,
+	const std::string& colmapWorkingDir,
+	const ColmapParameters& parameters,
+	const std::string& sshAccount = "",
+	std::string gpuNodeNum = "09"
 	){
+	if (gpuNodeNum.size() == 1) {
+	//We add a '0' if the number has only one char
+		gpuNodeNum = "0" + gpuNodeNum;
+	}
+	const bool remotely = (!sshAccount.empty());
 		
 	auto gpusToString = [](uint nbGPUs) {
 	
@@ -210,9 +249,16 @@ void runColmap(	const std::string& colmapPath,
 		"model_converter"
 	};
 
+	std::string dirStr;
+	if (remotely) { //UNIX
+		dirStr = "/";
+	}
+	else { //WINDOW
+		dirStr = "\\";
+	}
 	const std::array<std::string, colmapCalls> params{
-		"--database_path " + datasetPath + "\\colmap\\dataset.db " +
-		"--image_path " + datasetPath + "\\images\\ " + "--ImageReader.single_camera 0 " +
+		"--database_path " + colmapWorkingDir + dirStr + "colmap" + dirStr + "dataset.db " +
+		"--image_path " + colmapWorkingDir + dirStr + "images" + dirStr + " --ImageReader.single_camera 0 " +
 		"--ImageReader.camera_model OPENCV " +
 		" --SiftExtraction.max_image_size " +
 			std::to_string(parameters.siftExtractionImageSize()) +
@@ -222,17 +268,17 @@ void runColmap(	const std::string& colmapPath,
 			std::to_string(parameters.siftExtractionDomainSizePooling()) +
 		" --SiftExtraction.max_num_features " +
 			std::to_string(parameters.siftExtractionMaxNumFeatures()) +
-		" --SiftExtraction.gpu_index=" + gpusIndices,
+		" --SiftExtraction.gpu_index "+ gpusIndices,
 
-		"--database_path " + datasetPath + "\\colmap\\dataset.db " +
+		"--database_path " + colmapWorkingDir + dirStr + "colmap" + dirStr + "dataset.db " +
 		" --SiftMatching.guided_matching 1"
 		" --ExhaustiveMatching.block_size " +
 			std::to_string(parameters.exhaustiveMatcherExhaustiveMatchingBlockSize()) +
-		" --SiftMatching.gpu_index =" + gpusIndices,
+		" --SiftMatching.gpu_index " + gpusIndices,
 
-		"--database_path " + datasetPath + "\\colmap\\dataset.db " +
-		"--image_path " + datasetPath + "\\images\\ " + "--output_path " +
-		datasetPath + "\\colmap\\sparse\\ "
+		"--database_path " + colmapWorkingDir + dirStr+ "colmap"+ dirStr+ "dataset.db " +
+		"--image_path " + colmapWorkingDir + dirStr + "images"+ dirStr + " --output_path " +
+		colmapWorkingDir + dirStr + "colmap" + dirStr +  "sparse" + dirStr +
 		" --Mapper.ba_local_max_num_iterations " +
 			std::to_string(parameters.mapperMapperDotbaLocalMaxNumIterations()) +
 		" --Mapper.ba_global_max_num_iterations " +
@@ -246,15 +292,15 @@ void runColmap(	const std::string& colmapPath,
 		" --Mapper.ba_local_max_refinements " +
 			std::to_string(parameters.mapperMapperDotbaLocalMaxRefinements()),
 
-		"--image_path " + datasetPath + "\\images\\ " + "--input_path " +
-		datasetPath + "\\colmap\\sparse\\0\\ " + "--output_path " +
-		datasetPath + "\\colmap\\stereo\\ " + "--output_type COLMAP",
+		"--image_path " + colmapWorkingDir + dirStr + "images" + dirStr + " --input_path " +
+		colmapWorkingDir + dirStr + "colmap" + dirStr + "sparse"+dirStr+"0"+ dirStr  + " --output_path " +
+		colmapWorkingDir + dirStr + "colmap" + dirStr + "stereo" + dirStr  + " --output_type COLMAP",
 
-		"--image_path " + datasetPath + "\\images\\ " + "--input_path " +
-		datasetPath + "\\colmap\\sparse\\0\\ " + "--output_path " +
-		datasetPath + "\\capreal\\undistorted\\ " + "--output_type CMP-MVS",
+		"--image_path " + colmapWorkingDir + dirStr + "images" + dirStr  + " --input_path " +
+		colmapWorkingDir + dirStr + "colmap" + dirStr + "sparse"+dirStr+"0"+ dirStr + " --output_path " +
+		colmapWorkingDir + dirStr + "capreal" +  dirStr +"undistorted" + dirStr + " --output_type CMP-MVS",
 
-		"--workspace_path " + datasetPath + "\\colmap\\stereo\\ " + "--workspace_format COLMAP " +
+		"--workspace_path " + colmapWorkingDir + dirStr + "colmap" + dirStr + "stereo" + " --workspace_format COLMAP " +
 		" --PatchMatchStereo.max_image_size " +
 			std::to_string(parameters.patchMatchStereoPatchMatchStereoDotMaxImageSize()) +
 		" --PatchMatchStereo.window_radius " +
@@ -267,34 +313,105 @@ void runColmap(	const std::string& colmapPath,
 			std::to_string(parameters.patchMatchStereoPatchMatchStereoDotNumIterations()) +
 		" --PatchMatchStereo.geom_consistency " +
 			std::to_string(parameters.patchMatchStereoPatchMatchStereoDotGeomConsistency()) +
-		" --PatchMatchStereo.gpu_index =" + gpusIndices,
+		" --PatchMatchStereo.gpu_index " + gpusIndices,
 
-		"--workspace_path " + datasetPath + "\\colmap\\stereo\\ " + "--workspace_format COLMAP " +
-		"--input_type geometric --output_path " + datasetPath + "\\colmap\\stereo\\fused.ply " +
+		"--workspace_path " + colmapWorkingDir + dirStr + "colmap" + dirStr + "stereo" + dirStr + " --workspace_format COLMAP " +
+		"--input_type geometric --output_path " + colmapWorkingDir + dirStr + "colmap" + dirStr + "stereo" + dirStr + "fused.ply " +
 		" --StereoFusion.max_image_size " +
 			std::to_string(parameters.stereoFusionMaxImageSize()) +
 		" --StereoFusion.check_num_images " +
 			std::to_string(parameters.stereoFusionCheckNumImages()),
 
-		"--input_path " + datasetPath + "\\colmap\\stereo\\ " "--output_path " +
-		datasetPath + "\\colmap\\stereo\\meshed-delaunay.ply --input_type dense",
+		"--input_path " + colmapWorkingDir + dirStr + "colmap" + dirStr + "stereo" + dirStr + " --output_path " +
+		colmapWorkingDir + dirStr + "colmap" + dirStr + "stereo" + dirStr + "meshed-delaunay.ply --input_type dense",
 
-		"--input_path " + datasetPath + "\\colmap\\stereo\\sparse " "--output_path " +
-		datasetPath + "\\colmap\\stereo\\sparse --output_type TXT"
+		"--input_path " + colmapWorkingDir + dirStr + "colmap" + dirStr + "stereo" + dirStr + "sparse " + dirStr + " --output_path " +
+		colmapWorkingDir + dirStr + "colmap" + dirStr + "stereo" + dirStr + "sparse" + dirStr + " --output_type TXT"
 
 	};
 
+	std::string unixListAllCommands;
+	unixListAllCommands.append("module load cuda/10.0 gcc/7.3.0\nCOLMAP_PATH=/data/graphdeco/share/colmap\n");
+	unixListAllCommands.append("export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$COLMAP_PATH/lib/colmap:$COLMAP_PATH/deps/ceres/lib64:$COLMAP_PATH/deps/cgal/lib64:$COLMAP_PATH/deps/freeimage/lib\n");	
+	unixListAllCommands.append("cd "+ colmapWorkingDir + "\ntouch started.txt\n");
 	for (size_t i = 0; i < colmapCalls; ++i) {
-		const std::string command = colmapPath + "\\COLMAP.bat " +
-			calls.at(i) + " " + params.at(i);
 		const std::string program = calls.at(i) ;
-		SIBR_LOG << "Running: " << command << std::endl;
+		std::string command;
+		if (!remotely) {
+			//Windows
+			command = colmapProgramPath + " " + program + " " + params.at(i);
+			SIBR_LOG << "Running: " << command << std::endl;
+			const int result = boost::process::system(command);
+			SIBR_LOG << "Program " << program << " is finished ..." << std::endl << std::endl;
+		}
+		else {
+			//Unix remote, we prepare the steps
+			unixListAllCommands += colmapProgramPath + " " + program + " " + params.at(i) + "\n";
+			unixListAllCommands += "touch " + colmapWorkingDir + "/" + program + ".txt\n";
+		}
+	}
+	if (remotely) {
+		//We create the script that the node will execute
+		const std::string scriptToSend = datasetPath + "\\colmapScript.sh";
+		std::ofstream scriptFile (scriptToSend, std::ios::binary);
+		scriptFile << unixListAllCommands;
+		scriptFile.close();
+		
+		SIBR_LOG << "Sending script file..." << std::endl << std::endl;
+		const std::string command = "scp " +scriptToSend + " " + sshAccount + ":" + colmapWorkingDir;
 		const int result = boost::process::system(command);
-		SIBR_LOG << "Program " << program << " is finished ..." << std::endl << std::endl ;
+		SIBR_LOG << "Running: " << command << std::endl;
+
+		SIBR_LOG << "The request is done  ... Waiting the answers..." << std::endl << std::endl;
+		const std::string runScript = "ssh -t " + sshAccount + " \"cd " +
+			colmapWorkingDir + ";chmod 777 " + colmapWorkingDir +
+			"/colmapScript.sh;oarsub -p \\\"host='nefgpu" + gpuNodeNum +".inria.fr' and gpu='YES' and gpucapability>='5.0'\\\" -l /nodes=1/gpunum="
+			+ std::to_string(parameters.numGPUs()) + ",walltime=01:00:00 " +
+				colmapWorkingDir +"/colmapScript.sh\"";
+		boost::process::system(runScript);
+		SIBR_LOG << "Running: " << runScript << std::endl;
+
+
 	}
 
-
 }
+
+void waitSteps(const std::string& colmapWorkingDir, const std::string& sshAccount) {
+	
+	constexpr size_t nbSteps = 10;
+	const std::array<std::string, nbSteps> steps{
+		"started",
+		"feature_extractor",
+		"exhaustive_matcher",
+		"mapper",
+		"image_undistorter",
+		"image_undistorter",
+		"patch_match_stereo",
+		"stereo_fusion",
+		"delaunay_mesher",
+		"model_converter"
+	};
+	for (const std::string& step : steps) {
+		bool stepFinished = false;
+		while (!stepFinished) {
+			const std::string command = "ssh -t " + sshAccount + " \" ls " + colmapWorkingDir + "/" + step + ".txt\"";
+			//SIBR_LOG << "Running: " << command << std::endl;
+			const int result = boost::process::system(command);
+			//SIBR_LOG << "ssh checking file is finished ..." << std::endl;
+
+			if (result == EXIT_SUCCESS) {
+				stepFinished = true;
+			}
+			else {
+				std::cout << "Waiting for \"" + step + "\" step... " << std::endl;
+				Sleep(5000);
+			}
+		}
+		std::cout << "Step " + step + " is DONE !" << std::endl;
+	}
+	std::cout << "Every steps are completed !" << std::endl;
+}
+
 
 int fixEndLinesMesh(const std::string& datasetPath) {
 	const std::string inputMeshPath = datasetPath + "\\colmap\\stereo\\meshed-delaunay.ply";
@@ -335,6 +452,59 @@ int fixEndLinesMesh(const std::string& datasetPath) {
 	return EXIT_SUCCESS;
 }
 
+
+void makeDirectories(const std::string& workingPath, const std::string& sshAccount = "") {
+	const bool remotely = (!sshAccount.empty());
+	const std::vector<std::string> colmapDirs = { 
+		"colmap", "capreal", "capreal/undistorted", "colmap/stereo", "colmap/sparse"};
+	if (remotely) {
+		for (const std::string& dir : colmapDirs) {
+
+		const std::string makeDirCommand = "ssh -t " + sshAccount + " \"cd " + 
+			workingPath + "; mkdir " + dir +"\"";
+
+		SIBR_LOG << "Creating " << dir << " remotely : " << std::endl 
+			<< makeDirCommand << std::endl;
+		const int result = boost::process::system(makeDirCommand);
+		}
+	}
+	else {
+		for (const std::string& dir : colmapDirs) {
+			std::cout << dir << std::endl;
+			if (!directoryExists(workingPath + "/" + dir.c_str())) {
+				makeDirectory(workingPath + "/" + dir.c_str());
+			}
+		}
+	}
+}
+
+std::string checkColmap(const std::string& colmapPath, bool runLocally,
+				const std::string& sshAccount) {
+
+	std::string colmapProgram;
+	if (runLocally) { //Windows version
+		colmapProgram = colmapPath + "\\COLMAP.bat";
+		if (!fileExists(colmapProgram)) {
+			SIBR_ERR << "Your path does not contain a COLMAP.bat program..." << std::endl;
+			return "";
+		}
+
+	} else { //Unix version
+		colmapProgram = colmapPath + "/colmap";
+		const std::string command = "ssh " + sshAccount  + " test -f " + colmapProgram;
+		SIBR_LOG << "Running: " << command << std::endl;
+		//const int result = boost::process::system(command);
+		SIBR_LOG << "ssh checking file is finished ..." << std::endl;
+		
+		if (EXIT_SUCCESS == EXIT_FAILURE) {
+			SIBR_ERR << "Your remote path does not contain a colmap program..." << std::endl;
+			return "";
+		}
+	}
+
+	return colmapProgram;
+}
+
 std::string checkProgram(const std::string& binariesPath, const std::string& programName) {
 
 	std::string programPath;
@@ -354,10 +524,19 @@ std::string checkProgram(const std::string& binariesPath, const std::string& pro
 	return programPath;
 }
 
-void runUnwrapMesh(const std::string& program,const std::string& datasetPath) {
+void runUnwrapMesh(const std::string& program,const std::string& datasetPath, bool remotly = false) {
 	
+	std::string meshToUnwrap;
+	if (remotly) {
+		//Meshed-delaunay.ply was created by colmap on Unix, we can directly use it
+		meshToUnwrap = "meshed-delaunay.ply";
+	}
+	else {
+		//On Windows, we need to use the converted mesh
+		meshToUnwrap = "unix-meshed-delaunay.ply";
+	}
 	const std::string command = program + " --path "
-		+ datasetPath + "\\colmap\\stereo\\unix-meshed-delaunay.ply --output "
+		+ datasetPath + "\\colmap\\stereo\\"+ meshToUnwrap + " --output "
 		+ datasetPath + "\\capreal\\mesh.ply";
 	SIBR_LOG << "Running: " << command << std::endl;
 	const int result = boost::process::system(command);
@@ -379,23 +558,71 @@ void runTextureMesh(const std::string& program, const std::string& datasetPath) 
 	SIBR_LOG << "Program " << command << " is finished ..." << std::endl << std::endl ;
 }
 
+void printExample() {
+	SIBR_LOG << "OPTIONS EXEMMPLE TO HELP YOU :" << std::endl
+		<< "LOCAL VERSION" << std::endl
+		<< "--path E:\smorgent\testData\colmap\testcluster "
+		<< "--sibrBinariesPath E:\smorgent\dev\sibr_basic2\install\bin "
+		<< "--colmapPath D:\colmap "
+		<< "--quality medium"
+		<< std::endl
+		<< "REMOTE VERSION" << std::endl
+		<< "--path E:\smorgent\testData\colmap\testcluster "
+		<< "--sibrBinariesPath E:\smorgent\dev\sibr_basic2\install\bin "
+		<< "--remoteUnix smorgent@nef-devel.inria.fr "
+		<< "--colmapPath /data/graphdeco/share/colmap/bin/ "
+		<< "--colmapWorkingDir /data/graphdeco/user/smorgent/colmapTests/test "
+		<< "--clusterGPU 34 "
+		<< "--numGPUs 4 "
+		<< "--quality medium"
+		<< std::endl;
+}
+
 int main(const int argc, const char** argv)
 {
-
+	printExample();
 	CommandLineArgs::parseMainArgs(argc, argv);
 	CommandLineArgs globalArgs = CommandLineArgs::getGlobal();
 	FullProcessColmapPreprocessArgs myArgs;
 
+	//------------------------CHECKING USER'S PARAMETERS-------------------------//
+
+	//-----------------REMOTE UNIX ARGUMENT-------------------//
+	if (globalArgs.contains("remoteUnix")) {
+		if (!globalArgs.contains("clusterGPU")) {
+			SIBR_ERR << "Your specified the remoteUnix option but you did not specify the clusterGPU option.." << std::endl
+				<< "Please specify it with a free GPU node on the cluster (example --clusterGPU 12)" << std::endl;
+			printExample();
+			return EXIT_FAILURE;
+		}
+		if (!globalArgs.contains("colmapWorkingDir")) {
+			SIBR_ERR << "Your specified the remoteUnix option but you did not specify the colmapWorkingDir path option.." << std::endl
+				<< "Please specify this path on your remote system" << std::endl;
+			printExample();
+			return EXIT_FAILURE;
+		}
+	}
 
 	//-----------------PATH ARGUMENT-------------------//
-	const std::string pathScene = myArgs.dataset_path;
-	if (!directoryExists(pathScene + "/images")) {
+	const bool runLocally = myArgs.remoteUnix.get().empty();
+	const std::string scenePath = myArgs.dataset_path.get();
+
+	if (!directoryExists(scenePath + "/images")) {
 
 		SIBR_ERR << "Your path does not contain an \"images\" directory..." << std::endl
 			<< "Please create one and put your images into this" << std::endl;
 
+		printExample();
 		return EXIT_FAILURE;
 	}
+
+	std::string workingPath;
+	if (runLocally) {
+		workingPath = myArgs.dataset_path.get();
+	} else {
+		workingPath = myArgs.colmapWorkingDir.get();
+	}
+
 
 
 	//-----------------BINARIES ARGUMENT-------------------//
@@ -420,34 +647,58 @@ int main(const int argc, const char** argv)
 	}
 
 	//----------------COLMAP PARAMETERS----------------//
-	const std::shared_ptr < ColmapParameters::Quality > qualityRecon =
-		getUserQuality(globalArgs, myArgs);
-	if (!qualityRecon) { 
-		return EXIT_FAILURE; 
-	}
-
-	ColmapParameters colmapParams(*qualityRecon);
-	setPersonalParameters(globalArgs, myArgs, colmapParams);
-
-	const std::vector<std::string> colmapDirs = { 
-		"colmap", "capreal", "capreal/undistorted", "colmap/stereo", "colmap/sparse"};
-	for (auto dir : colmapDirs) {
-		std::cout << dir << std::endl;
-		if (!directoryExists(pathScene + "/" + dir.c_str())) {
-			makeDirectory(pathScene + "/" + dir.c_str());
-		}
-	}
-	//-------------------------------------------------//
-
-
-	runColmap(myArgs.colmapPath, myArgs.dataset_path, colmapParams);
-
-	if (fixEndLinesMesh(pathScene) == EXIT_FAILURE) {
+	const std::string colmapProgram = 
+		checkColmap(myArgs.colmapPath.get(),runLocally,myArgs.remoteUnix.get());
+	if (colmapProgram.empty()) {
+		printExample();
 		return EXIT_FAILURE;
 	}
 
-	runUnwrapMesh(unwrapMeshProgram, myArgs.dataset_path);
-		
+	const std::shared_ptr < ColmapParameters::Quality > qualityRecon =
+		getUserQuality(globalArgs, myArgs);
+	if (!qualityRecon) { 
+		printExample();
+		return EXIT_FAILURE; 
+	}
+	//-------------------------------------------------//
+
+	if (!runLocally) {
+		if (sendImages(myArgs.dataset_path.get(), myArgs.colmapWorkingDir.get(),
+			myArgs.remoteUnix.get()) == EXIT_FAILURE) {
+			printExample();
+			return EXIT_FAILURE;
+		}
+	}
+
+	//----------------------------CHECKING FINISHED------------------------------//
+
+	makeDirectories(workingPath, myArgs.remoteUnix.get());
+
+	ColmapParameters colmapParams(*qualityRecon);
+	setPersonalParameters(globalArgs, myArgs, colmapParams);
+	
+	if (runLocally) {
+	//Windows
+	runColmap(colmapProgram,myArgs.dataset_path, myArgs.dataset_path, colmapParams);
+	} 
+	else {
+	//REMOTE UNIX
+	runColmap(colmapProgram, myArgs.dataset_path,myArgs.colmapWorkingDir , 
+		colmapParams, myArgs.remoteUnix.get(), myArgs.clusterGPU.get());
+	waitSteps(myArgs.colmapWorkingDir, myArgs.remoteUnix.get());
+	getProject(myArgs.dataset_path.get(), myArgs.colmapWorkingDir.get(), myArgs.remoteUnix.get());
+	}
+
+
+	if (runLocally) {
+		//We fix the end of line only on Windows
+		if (fixEndLinesMesh(scenePath) == EXIT_FAILURE) {
+			return EXIT_FAILURE;
+		}
+	}
+
+	runUnwrapMesh(unwrapMeshProgram, myArgs.dataset_path, !runLocally);
+
 	const std::string meshPath = myArgs.dataset_path.get() + "\\capreal\\mesh.ply";
 	Mesh mesh;
 	mesh.load(meshPath);
@@ -455,7 +706,7 @@ int main(const int argc, const char** argv)
 
 	runColmapToSibr (colmapToSIBRProgram, myArgs.dataset_path);
 	runTextureMesh (textureMeshProgram, myArgs.dataset_path);
-	std::vector<std::string> dirs = { "cameras", "images", "meshes"};
-
+		
+	std::cout << "END OF FULL COLMAP PREPROCESS PROGRAM" << std::endl;
 	return EXIT_SUCCESS;
 }
