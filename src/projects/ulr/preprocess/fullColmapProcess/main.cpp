@@ -407,7 +407,7 @@ void waitSteps(const std::string& colmapWorkingDir, const std::string& sshAccoun
 				Sleep(5000);
 			}
 		}
-		std::cout << "Step " + step + " is DONE !" << std::endl;
+		std::cout << std::endl << "Step " + step + " is DONE !" << std::endl << std::endl;
 	}
 	std::cout << "Every steps are completed !" << std::endl;
 }
@@ -538,6 +538,7 @@ void runUnwrapMesh(const std::string& program,const std::string& datasetPath, bo
 	const std::string command = program + " --path "
 		+ datasetPath + "\\colmap\\stereo\\"+ meshToUnwrap + " --output "
 		+ datasetPath + "\\capreal\\mesh.ply";
+	SIBR_LOG << "If the Generating atlas seems blocked at 98% or 99% that is OK do not worry" << std::endl;
 	SIBR_LOG << "Running: " << command << std::endl;
 	const int result = boost::process::system(command);
 	SIBR_LOG << "Program " << command << " is finished ..." << std::endl << std::endl ;
@@ -561,14 +562,14 @@ void runTextureMesh(const std::string& program, const std::string& datasetPath) 
 void printExample() {
 	SIBR_LOG << "OPTIONS EXEMMPLE TO HELP YOU :" << std::endl
 		<< "LOCAL VERSION" << std::endl
-		<< "--path E:\smorgent\testData\colmap\testcluster "
-		<< "--sibrBinariesPath E:\smorgent\dev\sibr_basic2\install\bin "
-		<< "--colmapPath D:\colmap "
+		<< "--path E:\\smorgent\\testData\\colmap\\testcluster "
+		<< "--sibrBinariesPath E:\\smorgent\\dev\\sibr_basic2\\install\\bin "
+		<< "--colmapPath D:\\colmap "
 		<< "--quality medium"
 		<< std::endl
 		<< "REMOTE VERSION" << std::endl
-		<< "--path E:\smorgent\testData\colmap\testcluster "
-		<< "--sibrBinariesPath E:\smorgent\dev\sibr_basic2\install\bin "
+		<< "--path E:\\smorgent\\testData\\colmap\\testcluster "
+		<< "--sibrBinariesPath E:\\smorgent\\dev\\sibr_basic2\\install\\bin "
 		<< "--remoteUnix smorgent@nef-devel.inria.fr "
 		<< "--colmapPath /data/graphdeco/share/colmap/bin/ "
 		<< "--colmapWorkingDir /data/graphdeco/user/smorgent/colmapTests/test "
