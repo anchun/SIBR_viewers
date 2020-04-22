@@ -560,7 +560,7 @@ void runTextureMesh(const std::string& program, const std::string& datasetPath) 
 }
 
 void printExample() {
-	SIBR_LOG << "OPTIONS EXEMMPLE TO HELP YOU :" << std::endl
+	SIBR_LOG << "OPTIONS EXEMPLE TO HELP YOU :" << std::endl
 		<< "LOCAL VERSION" << std::endl
 		<< "--path E:\\smorgent\\testData\\colmap\\testcluster "
 		<< "--sibrBinariesPath E:\\smorgent\\dev\\sibr_basic2\\install\\bin "
