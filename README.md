@@ -78,3 +78,7 @@ make sure Python is installed and in the path.
 - **`BUILD_ALL` or `INSTALL` fail because of a project you don't really need**
 
 build and install each project separately by selecting the proper targets.
+
+- **Error in CUDA headers under Visual Studio 2019**
+
+make sure CUDA >= 10.1 (first version to support VS2019) is installed.

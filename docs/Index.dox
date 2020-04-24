@@ -116,5 +116,5 @@
  * - 'Cmd.exe failed wither error 009' or similar: make sure Python is installed and in the PATH.
  * - BUILD_ALL or INSTALL fail because of a project you don't really need: build and install each project separately by selecting the proper targets.
  * - Some projects may depend on other projects. Make sure you have checked all the required projects before generating the solution.
- *
+ * - Error in CUDA headers under Visual Studio 2019: make sure CUDA >= 10.1 is installed.
  */
