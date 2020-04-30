@@ -47,8 +47,8 @@ namespace sibr {
 		InteractiveCameraHandler(const bool supportRecording = true);
 
 		/** \deprecated Resolution is deprecated and will be removed in the near future.
-		 *	See setup(const std::vector<sibr::InputCamera>&, const sibr::Viewport&, std::shared_ptr<sibr::Raycaster>,...) instead. */
-		void setup(const std::vector<sibr::InputCamera> & cams, const sibr::Vector2u & resolution, const sibr::Viewport & viewport, const std::shared_ptr<sibr::Raycaster> raycaster);
+		 *	See setup(const std::vector<InputCamera::Ptr>&, const sibr::Viewport&, std::shared_ptr<sibr::Raycaster>,...) instead. */
+		void setup(const std::vector<InputCamera::Ptr> & cams, const sibr::Vector2u & resolution, const sibr::Viewport & viewport, const std::shared_ptr<sibr::Raycaster> raycaster);
 
 		/** Setup an interactive camera handler from an existing camera.
 		The interactive camera will be initialized at the position of the argument camera.
@@ -73,7 +73,7 @@ namespace sibr {
 		\param raycaster raycaster containing the mesh displayed (used for the trackball centering), can be nullptr
 		\param clippingPlanes optional clipping planes to enforce
 		*/
-		void setup(const std::vector<sibr::InputCamera>& cams, const sibr::Viewport& viewport, std::shared_ptr<sibr::Raycaster> raycaster, const sibr::Vector2f & clippingPlanes = {-1.0f,-1.0f});
+		void setup(const std::vector<InputCamera::Ptr>& cams, const sibr::Viewport& viewport, std::shared_ptr<sibr::Raycaster> raycaster, const sibr::Vector2f & clippingPlanes = {-1.0f,-1.0f});
 
 		/** Setup an interactive camera handler from a mesh.
 		The interactive camera will be initialized so that the mesh is completely visible.
@@ -86,7 +86,7 @@ namespace sibr {
 		/** Setup a camera path for the interpolation mode. 
 		 * \param cameras to interpolate along
 		 */
-		void setupInterpolationPath(const std::vector<sibr::InputCamera> & cameras);
+		void setupInterpolationPath(const std::vector<InputCamera::Ptr> & cameras);
 
 		/** Move the interactive camera to a new position and change its internal parameters.
 		\param cam the cameras the parameters and pose should be copied from
@@ -113,7 +113,7 @@ namespace sibr {
 		\return the index of the closest camera in the list, or -1
 		\note This function ignores cameras that are not 'active' in the list.
 		*/
-		int	findNearestCamera(const std::vector<sibr::InputCamera>& inputCameras) const;
+		int	findNearestCamera(const std::vector<InputCamera::Ptr>& inputCameras) const;
 
 		/** Toggle camera motion smoothing. */
 		void switchSmoothing() { _shouldSmooth = !_shouldSmooth; SIBR_LOG << "Smoothing " << (_shouldSmooth ? "enabled" : "disabled") << std::endl; }
@@ -217,7 +217,7 @@ namespace sibr {
 		/// Parameters for path interpolation.
 		uint _startCam; ///< Start camera index in the list.
 		uint _interpFactor; ///< Current interpolation factor between cam _startCam and _startCam+1.
-		std::vector<sibr::InputCamera> _interpPath; ///< Cameras along the path.
+		std::vector<InputCamera::Ptr> _interpPath; ///< Cameras along the path.
 
 		sibr::CameraRecorder _cameraRecorder; ///< Camera recorder.
 		bool _supportRecording; ///< Does the camera support recording (uneeded).

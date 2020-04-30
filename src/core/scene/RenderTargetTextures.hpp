@@ -1,9 +1,9 @@
 #pragma once
 
 #include "core/graphics/Texture.hpp"
-#include "core/scene/CalibratedCameras.hpp"
-#include "core/scene/InputImages.hpp"
-#include "core/scene/ProxyMesh.hpp"
+#include "core/scene/ICalibratedCameras.hpp"
+#include "core/scene/IInputImages.hpp"
+#include "core/scene/IProxyMesh.hpp"
 #include "core/assets/Resources.hpp"
 # include "core/graphics/Shader.hpp"
 #include "core/graphics/Utils.hpp"
@@ -43,8 +43,8 @@ namespace sibr{
 	public:
 		const std::vector<RenderTargetRGBA32F::Ptr> & inputImagesRT() const;
 
-		void initializeImageRenderTargets(CalibratedCameras::Ptr cams, InputImages::Ptr imgs);
-		void initializeDepthRenderTargets(CalibratedCameras::Ptr cams, ProxyMesh::Ptr proxies, bool facecull);
+		virtual void initializeImageRenderTargets(ICalibratedCameras::Ptr cams, IInputImages::Ptr imgs);
+		virtual void initializeDepthRenderTargets(ICalibratedCameras::Ptr cams, IProxyMesh::Ptr proxies, bool facecull);
 
 	protected:
 		std::vector<RenderTargetRGBA32F::Ptr> _inputRGBARenderTextures;
@@ -57,7 +57,7 @@ namespace sibr{
 	class SIBR_SCENE_EXPORT DepthInputTextureArray : public virtual RTTextureSize {
 		SIBR_CLASS_PTR(DepthInputTextureArray)
 	public:
-		void initDepthTextureArrays(CalibratedCameras::Ptr cams, ProxyMesh::Ptr proxies, bool facecull, int flags = SIBR_GPU_LINEAR_SAMPLING);
+		virtual void initDepthTextureArrays(ICalibratedCameras::Ptr cams, IProxyMesh::Ptr proxies, bool facecull, int flags = SIBR_GPU_LINEAR_SAMPLING);
 		const Texture2DArrayLum32F::Ptr &  getInputDepthMapArrayPtr() const;
 
 	protected:
@@ -72,7 +72,7 @@ namespace sibr{
 		SIBR_CLASS_PTR(RGBInputTextureArray)
 
 	public:
-		void initRGBTextureArrays(InputImages::Ptr imgs, int flags = 0);
+		virtual void initRGBTextureArrays(IInputImages::Ptr imgs, int flags = 0);
 		const Texture2DArrayRGB::Ptr & getInputRGBTextureArrayPtr() const;
 
 	protected:
@@ -94,12 +94,12 @@ namespace sibr{
 		
 		RenderTargetTextures(uint w = 0) : RTTextureSize(w) {}
 
-		void initRGBandDepthTextureArrays(CalibratedCameras::Ptr cams, InputImages::Ptr imgs, ProxyMesh::Ptr proxies, int textureFlags, int texture_width, bool faceCull = true);
-		void initRGBandDepthTextureArrays(CalibratedCameras::Ptr cams, InputImages::Ptr imgs, ProxyMesh::Ptr proxies, int textureFlags, bool faceCull = true);
-		void initializeDefaultRenderTargets(CalibratedCameras::Ptr cams, InputImages::Ptr imgs, ProxyMesh::Ptr proxies);
+		virtual void initRGBandDepthTextureArrays(ICalibratedCameras::Ptr cams, IInputImages::Ptr imgs, IProxyMesh::Ptr proxies, int textureFlags, int texture_width, bool faceCull = true);
+		virtual void initRGBandDepthTextureArrays(ICalibratedCameras::Ptr cams, IInputImages::Ptr imgs, IProxyMesh::Ptr proxies, int textureFlags, bool faceCull = true);
+		virtual void initializeDefaultRenderTargets(ICalibratedCameras::Ptr cams, IInputImages::Ptr imgs, IProxyMesh::Ptr proxies);
 
 	protected:
-		void initRenderTargetRes(CalibratedCameras::Ptr cams);
+		void initRenderTargetRes(ICalibratedCameras::Ptr cams);
 
 	};
 

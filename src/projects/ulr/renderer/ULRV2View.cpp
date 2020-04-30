@@ -174,7 +174,7 @@ std::vector<uint> ULRV2View::chosen_cameras(const sibr::Camera& eye) {
     std::multimap<float,uint> distMap;									// distance wise closest input cameras
 	std::multimap<float,uint> dang;									// angular distance from inputs to novel camera
     for (uint i=0; i< _scene->cameras()->inputCameras().size(); i++ ) {
-        const sibr::InputCamera& inputCam = _scene->cameras()->inputCameras()[i];
+        const sibr::InputCamera& inputCam = *_scene->cameras()->inputCameras()[i];
         if (inputCam.isActive()) {
 			// Convert following to Eigen versions
             float dist = sibr::distance(inputCam.position(), eye.position());
@@ -184,7 +184,7 @@ std::vector<uint> ULRV2View::chosen_cameras(const sibr::Camera& eye) {
         }
     }
 	for (uint i=0; i< _scene->cameras()->inputCameras().size(); i++) {
-        const sibr::InputCamera& inputCam = _scene->cameras()->inputCameras()[i];
+        const sibr::InputCamera& inputCam = *_scene->cameras()->inputCameras()[i];
         if (inputCam.isActive() && distMap.size() <= (_numDistUlr+_numAnglUlr)/2 ) {
             float dist = sibr::distance(inputCam.position(),eye.position());
             distMap.insert(std::make_pair(dist,i));					// sort distances in increasing order
@@ -227,7 +227,7 @@ std::vector<uint> ULRV2View::chosen_cameras_angdist(const sibr::Camera & eye)
 
 	std::vector<camAng> allAng;
 	for (int id = 0; id < (int)cams.size(); ++id) {
-		const auto & cam = cams[id];
+		const auto & cam = *cams[id];
         float angle = sibr::dot(cam.dir(),eye.dir());
 		// reject back facing 
 		if( angle > 0.001 && cam.isActive()) {
@@ -245,7 +245,7 @@ std::vector<uint> ULRV2View::chosen_cameras_angdist(const sibr::Camera & eye)
 	}
 
 	for (int id = 0; id < (int)cams.size(); ++id) {
-		if (!wasChosen[id] && out.size() < total_size && cams[id].isActive()) {
+		if (!wasChosen[id] && out.size() < total_size && cams[id]->isActive()) {
 			out.push_back(id);
 		}
 	}
@@ -268,7 +268,7 @@ std::vector<uint> ULRV2View::chosen_camerasNew(const sibr::Camera & eye)
 
 	std::vector<camDist> allDist;
 	for (int id = 0; id < (int)cams.size(); ++id) {
-		const auto & cam = cams[id];
+		const auto & cam = *cams[id];
 		allDist.push_back(camDist((cam.position() - eye.position()).norm(), id));
 	}
 	std::sort(allDist.begin(), allDist.end(), camDist::compare);
@@ -286,7 +286,7 @@ void ULRV2View::setNumBlend(short int dist, short int angle)
 
 	_numDistUlr = dist, _numAnglUlr = angle;
 	std::cerr << "[ULR] setting number of images to blend " << _numDistUlr << " " << _numAnglUlr << std::endl;
-	_ulr.reset(new ULRV2Renderer(_scene->cameras()->inputCameras(), _scene->cameras()->inputCameras()[0].w(), _scene->cameras()->inputCameras()[0].h(), _numDistUlr + _numAnglUlr));
+	_ulr.reset(new ULRV2Renderer(_scene->cameras()->inputCameras(), _scene->cameras()->inputCameras()[0]->w(), _scene->cameras()->inputCameras()[0]->h(), _numDistUlr + _numAnglUlr));
 	_ulr->setMasks(copyMasks);
 	
 }

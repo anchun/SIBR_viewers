@@ -45,7 +45,7 @@ namespace sibr {
 		/** Move to a camera position/orientation that is a distance-wieghted combination of the given cameras.
 		\param cams the cameras list.
 		*/
-		void snap(const std::vector<sibr::InputCamera> & cams);
+		void snap(const std::vector<InputCamera::Ptr> & cams);
 
 		// ICameraHandler interface
 

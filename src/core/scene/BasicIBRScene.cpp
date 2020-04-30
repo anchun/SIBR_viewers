@@ -2,6 +2,11 @@
 #include <iostream>
 #include <string>
 
+#include "core/scene/CalibratedCameras.hpp"
+#include "core/scene/ParseData.hpp"
+#include "core/scene/ProxyMesh.hpp"
+#include "core/scene/InputImages.hpp"
+
 namespace sibr
 {
 	
@@ -22,13 +27,13 @@ namespace sibr
 		_currentOpts.renderTargets = !noRTs;
 		_currentOpts.mesh = !noMesh;
 
-		_data->ParseData::getParsedData(myArgs);
+		_data->getParsedData(myArgs);
 		std::cout << "Number of input Images to read: " << _data->imgInfos().size() << std::endl;
 
 		if (_data->imgInfos().size() != _data->numCameras())
 			SIBR_ERR << "List Image file size do not match number of input cameras in Bundle file!" << std::endl;
 
-		if (_data->datasetType() != ParseData::Type::EMPTY) {
+		if (_data->datasetType() != IParseData::Type::EMPTY) {
 			createFromData(myArgs.texture_width);
 		}
 	}
@@ -42,18 +47,18 @@ namespace sibr
 		_data.reset(new ParseData());
 
 
-		_data->ParseData::getParsedData(myArgs);
+		_data->getParsedData(myArgs);
 		std::cout << "Number of input Images to read: " << _data->imgInfos().size() << std::endl;
 
 		if (_data->imgInfos().size() != _data->numCameras())
 			SIBR_ERR << "List Image file size do not match number of input cameras in Bundle file!" << std::endl;
 
-		if (_data->datasetType() != ParseData::Type::EMPTY) {
+		if (_data->datasetType() != IParseData::Type::EMPTY) {
 			createFromData(myArgs.texture_width);
 		}
 	}
 
-	void BasicIBRScene::createFromCustomData(const ParseData::Ptr & data, const uint width, BasicIBRScene::SceneOptions myOpts)
+	void BasicIBRScene::createFromCustomData(const IParseData::Ptr & data, const uint width, BasicIBRScene::SceneOptions myOpts)
 	{
 		_data = data;
 		_currentOpts = myOpts;
@@ -85,7 +90,7 @@ namespace sibr
 		// setup calibrated cameras
 		if (_currentOpts.cameras) {
 			
-			_cams->sibr::CalibratedCameras::setupFromData(_data);
+			_cams->setupFromData(_data);
 
 			std::cout << "Number of Cameras set up: " << _cams->inputCameras().size() << std::endl;
 		}
@@ -93,18 +98,18 @@ namespace sibr
 		// load input images
 
 		if (_currentOpts.images) {
-			_imgs->InputImages::loadFromData(_data);
+			_imgs->loadFromData(_data);
 			std::cout << "Number of Images loaded: " << _imgs->inputImages().size() << std::endl;
 		}
 
 		if (_currentOpts.mesh) {
 			// load proxy
-			_proxies->ProxyMesh::loadFromData(_data);
+			_proxies->loadFromData(_data);
 
 
-			std::vector<InputCamera> inCams = _cams->inputCameras();
+			std::vector<InputCamera::Ptr> inCams = _cams->inputCameras();
 			float eps = 0.1f;
-			if (inCams.size() > 0 && (abs(inCams[0].znear() - 0.1) < eps || abs(inCams[0].zfar() - 1000.0) < eps || abs(inCams[0].zfar() - 100.0) < eps)) {
+			if (inCams.size() > 0 && (abs(inCams[0]->znear() - 0.1) < eps || abs(inCams[0]->zfar() - 1000.0) < eps || abs(inCams[0]->zfar() - 100.0) < eps)) {
 				std::vector<sibr::Vector2f>    nearsFars;
 				CameraRaycaster::computeClippingPlanes(_proxies->proxy(), inCams, nearsFars);
 				_cams->updateNearsFars(nearsFars);

@@ -38,8 +38,8 @@ int main( int ac, char** av )
 		BasicIBRScene::Ptr		scene(new BasicIBRScene(myArgs));
 
 		// check rendering size
-		rendering_width = (rendering_width <= 0) ? scene->cameras()->inputCameras()[0].w() : rendering_width;
-		rendering_height = (rendering_height <= 0) ? scene->cameras()->inputCameras()[0].h() : rendering_height;
+		rendering_width = (rendering_width <= 0) ? scene->cameras()->inputCameras()[0]->w() : rendering_width;
+		rendering_height = (rendering_height <= 0) ? scene->cameras()->inputCameras()[0]->h() : rendering_height;
 		Vector2u usedResolution(rendering_width, rendering_height);
 
 		const unsigned int sceneResWidth = usedResolution.x();

@@ -50,7 +50,7 @@ std::vector<uint> ULRView::chosen_cameras(const sibr::Camera& eye) {
     std::multimap<float,uint> distMap;									// distance wise closest input cameras
 	std::multimap<float,uint> dang;									// angular distance from inputs to novel camera
     for (uint i=0; i<_scene->cameras()->inputCameras().size(); i++ ) {
-        const sibr::InputCamera& inputCam = _scene->cameras()->inputCameras()[i];
+        const sibr::InputCamera& inputCam = *_scene->cameras()->inputCameras()[i];
         if (inputCam.isActive()) {
 			// Convert following to Eigen versions
             float dist = sibr::distance(inputCam.position(), eye.position());
@@ -68,7 +68,7 @@ std::vector<uint> ULRView::chosen_cameras(const sibr::Camera& eye) {
 ////   if( dang.size() + distMap.size() < 2 )
 ////		not_enough = true;
 	for (uint i=0; i< _scene->cameras()->inputCameras().size(); i++) {
-        const sibr::InputCamera& inputCam = _scene->cameras()->inputCameras()[i];
+        const sibr::InputCamera& inputCam = *_scene->cameras()->inputCameras()[i];
         if (inputCam.isActive() && distMap.size() <= (_numDistUlr+_numAnglUlr)/2 ) {
             float dist = sibr::distance(inputCam.position(),eye.position());
             distMap.insert(std::make_pair(dist,i));					// sort distances in increasing order

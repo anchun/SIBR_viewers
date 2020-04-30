@@ -2,7 +2,7 @@
 
 
 
-sibr::ULRV3Renderer::ULRV3Renderer(const std::vector<sibr::InputCamera> & cameras, const uint w, const uint h, const std::string & fShader, const std::string & vShader, const bool facecull)
+sibr::ULRV3Renderer::ULRV3Renderer(const std::vector<InputCamera::Ptr> & cameras, const uint w, const uint h, const std::string & fShader, const std::string & vShader, const bool facecull)
 {
 	_backFaceCulling = facecull;
 	fragString = fShader;
@@ -14,7 +14,7 @@ sibr::ULRV3Renderer::ULRV3Renderer(const std::vector<sibr::InputCamera> & camera
 	_cameraInfos.clear();
 	_cameraInfos.resize(_maxNumCams);
 	for (size_t i = 0; i < _maxNumCams; ++i) {
-		const auto & cam = cameras[i];
+		const auto & cam = *cameras[i];
 		_cameraInfos[i].vp = cam.viewproj();
 		_cameraInfos[i].pos = cam.position();
 		_cameraInfos[i].dir = cam.dir();

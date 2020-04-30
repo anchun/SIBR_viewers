@@ -70,7 +70,7 @@ namespace sibr
 		/** Generate labels data based on input camera informations.
 		 *\param cams the cameras 
 		 */
-		void setupLabelsManagerMeshes(const std::vector<InputCamera> & cams);
+		void setupLabelsManagerMeshes(const std::vector<InputCamera::Ptr> & cams);
 
 		/** Render the camera labels.
 		 *\param eye the current viewpoint

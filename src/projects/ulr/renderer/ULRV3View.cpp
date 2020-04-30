@@ -21,7 +21,7 @@ sibr::ULRV3View::ULRV3View(const sibr::BasicIBRScene::Ptr & ibrScene, uint rende
 	std::vector<uint> imgs_ulr;
 	const auto & cams = ibrScene->cameras()->inputCameras();
 	for(size_t cid = 0; cid < cams.size(); ++cid) {
-		if(cams[cid].isActive()) {
+		if(cams[cid]->isActive()) {
 			imgs_ulr.push_back(uint(cid));
 		}
 	}
@@ -47,7 +47,7 @@ void sibr::ULRV3View::setScene(const sibr::BasicIBRScene::Ptr & newScene) {
 	std::vector<uint> imgs_ulr;
 	const auto & cams = newScene->cameras()->inputCameras();
 	for (size_t cid = 0; cid < cams.size(); ++cid) {
-		if (cams[cid].isActive()) {
+		if (cams[cid]->isActive()) {
 			imgs_ulr.push_back(uint(cid));
 		}
 	}
@@ -148,7 +148,7 @@ void sibr::ULRV3View::updateCameras(bool allowResetToDefault) {
 	// Compute the cameras indices based on the new mode.
 	if (_renderMode == RenderMode::ONE_CAM) {
 		// We only use the given camera (if it is active).
-		if (cams[_singleCamId].isActive()) {
+		if (cams[_singleCamId]->isActive()) {
 			imgs_ulr = { (uint)_singleCamId };
 		} else {
 			std::cerr << "The camera is not active, using all cameras." << std::endl;
@@ -156,7 +156,7 @@ void sibr::ULRV3View::updateCameras(bool allowResetToDefault) {
 	} else if (_renderMode == RenderMode::LEAVE_ONE_OUT) {
 		// We use all active cameras apart from the one given.
 		for (size_t cid = 0; cid < cams.size(); ++cid) {
-			if (cid != (size_t)_singleCamId && cams[cid].isActive()) {
+			if (cid != (size_t)_singleCamId && cams[cid]->isActive()) {
 				imgs_ulr.push_back(uint(cid));
 			}
 		}
@@ -164,14 +164,14 @@ void sibr::ULRV3View::updateCameras(bool allowResetToDefault) {
 	else if (_renderMode == RenderMode::EVERY_N_CAM) {
 		// We pick one camera every N
 		for (size_t cid = 0; cid < cams.size(); ++cid) {
-			if ((cid % _everyNCamStep == 0) && cams[cid].isActive()) {
+			if ((cid % _everyNCamStep == 0) && cams[cid]->isActive()) {
 				imgs_ulr.push_back(uint(cid));
 			}
 		}
 	} else if(allowResetToDefault){
 		// We use all active cameras.
 		for (size_t cid = 0; cid < cams.size(); ++cid) {
-			if (cams[cid].isActive()) {
+			if (cams[cid]->isActive()) {
 				imgs_ulr.push_back(uint(cid));
 			}
 		}

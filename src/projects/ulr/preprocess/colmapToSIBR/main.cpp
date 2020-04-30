@@ -32,7 +32,7 @@ int main(const int argc, const char** argv)
 	BasicIBRScene scene(myArgs, true, true);
 
 	// load the cams
-	std::vector<InputCamera>	cams = scene.cameras()->inputCameras();
+	std::vector<InputCamera::Ptr>	cams = scene.cameras()->inputCameras();
 	const int maxCam = int(cams.size());
 	const int minCam = 0;
 
@@ -55,12 +55,12 @@ int main(const int argc, const char** argv)
 	outputSceneMetadata << "Scene Metadata File\n" << std::endl;
 	outputSceneMetadata << "[list_images]\n<filename> <image_width> <image_height> <near_clipping_plane> <far_clipping_plane>" << std::endl;
 
-	std::sort(cams.begin(), cams.end(), [](const InputCamera & a, const InputCamera & b) {
-		return a.id() < b.id();
+	std::sort(cams.begin(), cams.end(), [](const InputCamera::Ptr & a, const InputCamera::Ptr & b) {
+		return a->id() < b->id();
 	});
 
 	for (int c = minCam; c < maxCam; c++) {
-		auto & camIm = cams[c];
+		InputCamera & camIm = *cams[c];
 
 		std::string extensionFile = boost::filesystem::extension(camIm.name());
 		std::ostringstream ssZeroPad;

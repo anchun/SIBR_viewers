@@ -5,13 +5,13 @@
 #include "core/system/String.hpp"
 
 namespace sibr {
-		ULRV2Renderer::ULRV2Renderer(const std::vector<sibr::InputCamera> & cameras, const uint w, const uint h, const unsigned int maxCams, const std::string & fShader, const std::string & vShader, const bool facecull)
+		ULRV2Renderer::ULRV2Renderer(const std::vector<InputCamera::Ptr> & cameras, const uint w, const uint h, const unsigned int maxCams, const std::string & fShader, const std::string & vShader, const bool facecull)
 		{
 					
 			// Count how many cameras are active in the scene.
 			unsigned int numActiveCams = 0;
 			for (auto & cam : cameras) {
-				if (cam.isActive()) {
+				if (cam->isActive()) {
 					++numActiveCams;
 				}
 			}
@@ -154,11 +154,11 @@ namespace sibr {
 			
 			for (int i = 0; i < std::min(imgs_ulr.size(), _numCams); ++i) {
 				
-				if (!scene->cameras()->inputCameras()[imgs_ulr[i]].isActive()) {
+				if (!scene->cameras()->inputCameras()[imgs_ulr[i]]->isActive()) {
 					continue;
 				}
 				
-				auto cam = scene->cameras()->inputCameras()[imgs_ulr[i]];
+				auto& cam = *scene->cameras()->inputCameras()[imgs_ulr[i]];
 				_icamPos[usedCamerasCount].set(cam.position());
 				_icamDir[usedCamerasCount].set(cam.dir());
 				_icamProj[usedCamerasCount].set(cam.viewproj());

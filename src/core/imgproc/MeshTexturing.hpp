@@ -43,7 +43,7 @@ namespace sibr {
 		* \param cameras the cameras poses
 		* \param images the images to reproject
 		*/
-		void reproject(const std::vector<InputCamera> & cameras, const std::vector<sibr::ImageRGB::Ptr> & images);
+		void reproject(const std::vector<InputCamera::Ptr> & cameras, const std::vector<sibr::ImageRGB::Ptr> & images);
 
 		/** Get the final result. 
 		* \param options the options to apply to the generated texture map.

@@ -69,8 +69,8 @@ ULRRenderer::process(std::vector<uint>& imgs_ulr, const sibr::Camera& eye,
     _ulr0_RT->clear(sibr::Vector4f(0,0,0,1e5));
     _ulr1_RT->clear(sibr::Vector4f(0,0,0,1e5));
     for (uint i=0; i<imgs_ulr.size(); i++) {
-        if (scene->cameras()->inputCameras()[imgs_ulr[i]].isActive()) {
-			const sibr::InputCamera& cam = scene->cameras()->inputCameras()[imgs_ulr[i]];
+        if (scene->cameras()->inputCameras()[imgs_ulr[i]]->isActive()) {
+			const sibr::InputCamera& cam = *scene->cameras()->inputCameras()[imgs_ulr[i]];
             std::swap(_ulr0_RT, _ulr1_RT);
             _ulrShaderPass1.begin();
             _ulr0_RT->bind();

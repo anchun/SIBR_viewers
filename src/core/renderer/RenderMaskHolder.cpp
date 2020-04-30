@@ -71,7 +71,7 @@ namespace sibr {
 					uploadMaskGPU(maskOneChan, i, _masks, false);
 				}
 				else {
-					if( ibrScene->cameras()->inputCameras()[i].isActive() ) 
+					if( ibrScene->cameras()->inputCameras()[i]->isActive() ) 
 						SIBR_ERR << "[RenderMaskHolder] couldnt find " << filename << std::endl;
 					else { /// push back empty mask so array is consistent
 						/// \todo TODO GD -- this is wasteful, should fine better way

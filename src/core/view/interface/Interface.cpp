@@ -73,7 +73,7 @@ namespace sibr {
 		}
 	}
 
-	void MultiViewInterface::addCameras(const std::vector<sibr::InputCamera>& input_cams)
+	void MultiViewInterface::addCameras(const std::vector<InputCamera::Ptr>& input_cams)
 	{
 		cams = input_cams;
 	}
@@ -382,14 +382,14 @@ namespace sibr {
 
 			//std::cout << " winbox " << (winBox.center()-0.5*winBox.diagonal()).transpose() << " " << (winBox.center() + 0.5*winBox.diagonal()).transpose() << std::endl;
 			for (int i = 0; i <(int)cams.size(); ++i) {
-				utils.mvp.set(cams[i].viewproj());
+				utils.mvp.set(cams[i]->viewproj());
 
 				//std::cout << i << std::endl;
 				glClearDepth(1.0);
 				glClear(GL_DEPTH_BUFFER_BIT);
 
-				sibr::Vector2i tlImgPix = screenPosPixels(PixPos(i, sibr::Vector2i(0, cams[i].h() - 1)), viewPortSize.cast<float>());
-				sibr::Vector2i brImgPix = screenPosPixels(PixPos(i, sibr::Vector2i(cams[i].w() - 1, 0)), viewPortSize.cast<float>());
+				sibr::Vector2i tlImgPix = screenPosPixels(PixPos(i, sibr::Vector2i(0, cams[i]->h() - 1)), viewPortSize.cast<float>());
+				sibr::Vector2i brImgPix = screenPosPixels(PixPos(i, sibr::Vector2i(cams[i]->w() - 1, 0)), viewPortSize.cast<float>());
 
 				Eigen::AlignedBox2d box;
 				box.extend(tlImgPix.cast<double>());

@@ -25,7 +25,7 @@ namespace sibr {
 		 *\param vShader name of the vertex shader
 		 *\param facecull should backface culling be performed during the prepass.
 		 **/
-		ULRV2Renderer(const std::vector<sibr::InputCamera> & cameras, const uint w, const uint h, const unsigned int maxCams = 0, const std::string & fShader = "ulr_v2", const std::string & vShader = "ulr_v2", const bool facecull = true);
+		ULRV2Renderer(const std::vector<InputCamera::Ptr> & cameras, const uint w, const uint h, const unsigned int maxCams = 0, const std::string & fShader = "ulr_v2", const std::string & vShader = "ulr_v2", const bool facecull = true);
 
 		/** Setup the ULR shaders.
 		 *\param fShader name of the fragment shader

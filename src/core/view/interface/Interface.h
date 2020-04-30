@@ -95,7 +95,7 @@ namespace sibr {
 		 \param f an optional callback called at the end of each frame.
 		*/
 		void displayLoop(sibr::Window & window, std::function<void(MultiViewInterface*)> = [](MultiViewInterface*){});
-		void addCameras(const std::vector<sibr::InputCamera> & input_cams);
+		void addCameras(const std::vector<InputCamera::Ptr> & input_cams);
 		void addMesh(const sibr::Mesh::Ptr & mesh);
 		void addMesh(const sibr::Mesh & mesh);
 
@@ -149,7 +149,7 @@ namespace sibr {
 		SelectionData zoomSelection;
 		sibr::MeshViewer meshViewer;
 
-		std::vector<sibr::InputCamera> cams;
+		std::vector<InputCamera::Ptr> cams;
 
 		sibr::PixPos currentActivePos;
 

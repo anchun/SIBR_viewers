@@ -3,7 +3,7 @@
 
 namespace sibr {
 
-	void ProxyMesh::loadFromData(const ParseData::Ptr & data)
+	void ProxyMesh::loadFromData(const IParseData::Ptr & data)
 	{
 		_proxy.reset(new Mesh());
 		if (!_proxy->load(data->meshPath()) && !_proxy->load(removeExtension(data->meshPath()) + ".ply") && !_proxy->load(removeExtension(data->meshPath()) + ".obj")) {

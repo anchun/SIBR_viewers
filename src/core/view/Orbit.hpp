@@ -136,7 +136,7 @@ namespace sibr {
 		*	\param clickedPoint point clicked by the user
 		*	\param cams reference cameras
 		*/
-		static sibr::Vector4f computeFittingPlaneCameras(sibr::Vector3f& clickedPoint, const std::vector<sibr::InputCamera>& cams);
+		static sibr::Vector4f computeFittingPlaneCameras(sibr::Vector3f& clickedPoint, const std::vector<InputCamera::Ptr>& cams);
 
 		bool _hasBeenInitialized; ///< Has the orbit been initialized.
 		bool _orbitPointClicked; ///< Has the user clicked on a point in the scene.

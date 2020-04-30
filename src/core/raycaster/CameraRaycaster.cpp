@@ -33,7 +33,7 @@ namespace sibr
 		upLeftOffset += cam.position();
 	}
 
-	void CameraRaycaster::computeClippingPlanes(const sibr::Mesh & mesh, std::vector<sibr::InputCamera>& cams, std::vector<sibr::Vector2f> & nearsFars)
+	void CameraRaycaster::computeClippingPlanes(const sibr::Mesh & mesh, std::vector<InputCamera::Ptr>& cams, std::vector<sibr::Vector2f> & nearsFars)
 	{
 		
 		nearsFars.clear();
@@ -49,7 +49,7 @@ namespace sibr
 
 		#pragma omp parallel for
 		for (int cam_id = 0; cam_id < (int)cams.size(); ++cam_id) {
-			sibr::InputCamera & cam = cams[cam_id];
+			sibr::InputCamera & cam = *cams[cam_id];
 
 			sibr::Vector3f dx, dy, upLeftOffset;
 			sibr::CameraRaycaster::computePixelDerivatives(cam, dx, dy, upLeftOffset);

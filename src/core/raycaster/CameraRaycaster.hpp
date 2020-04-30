@@ -84,7 +84,7 @@ namespace sibr
 		\param cams the list of cameras
 		\param nearsFars will contain the near and far plane of each camera
 		*/
-		static void computeClippingPlanes(const sibr::Mesh & mesh, std::vector<sibr::InputCamera>& cams, std::vector<sibr::Vector2f> & nearsFars);
+		static void computeClippingPlanes(const sibr::Mesh & mesh, std::vector<InputCamera::Ptr>& cams, std::vector<sibr::Vector2f> & nearsFars);
 
 		/// \return the internal raycaster
 		Raycaster&			raycaster( void )			{ return _raycaster; }

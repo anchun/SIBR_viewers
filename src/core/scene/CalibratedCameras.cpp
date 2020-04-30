@@ -1,18 +1,13 @@
 #include "CalibratedCameras.hpp"
 
 namespace sibr {
-	void CalibratedCameras::setupFromData(const sibr::ParseData::Ptr& data)
+	void CalibratedCameras::setupFromData(const sibr::IParseData::Ptr& data)
 	{
 
 
 		_inputCameras.resize(data->numCameras());
 		_inputCameras = data->cameras();
 		return;
-	}
-
-	void CalibratedCameras::setupCamerasFromExisting(const std::vector<InputCamera>& cams)
-	{
-		_inputCameras = cams;
 	}
 
 	void CalibratedCameras::debugFlagCameraAsUsed(const std::vector<uint>& selectedCameras)
@@ -31,8 +26,8 @@ namespace sibr {
 			SIBR_ERR << "InputCamera size does not match Clipping Planes size!" << std::endl;
 
 		for (int c = 0; c < _inputCameras.size(); c++){
-			_inputCameras[c].znear(nearsFars[c].x());
-			_inputCameras[c].zfar(nearsFars[c].y());
+			_inputCameras[c]->znear(nearsFars[c].x());
+			_inputCameras[c]->zfar(nearsFars[c].y());
 		}
 	}
 

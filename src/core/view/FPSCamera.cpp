@@ -48,14 +48,14 @@ namespace sibr {
 		moveUsingMousePan(input, deltaTime);
 	}
 
-	void FPSCamera::snap(const std::vector<sibr::InputCamera> & cams){
+	void FPSCamera::snap(const std::vector<InputCamera::Ptr> & cams){
 		sibr::Vector3f sumDir(0.f, 0.f, 0.f);
 		sibr::Vector3f sumUp(0.f, 0.f, 0.f);
 		for (const auto& cam: cams)
 		{
-			float dist = 1.0f/std::max(1e-6f,distance(_currentCamera.position(), cam.position()));
-			sumDir += dist * cam.dir();
-			sumUp  += dist * cam.up();
+			float dist = 1.0f/std::max(1e-6f,distance(_currentCamera.position(), cam->position()));
+			sumDir += dist * cam->dir();
+			sumUp  += dist * cam->up();
 		}
 		Matrix4f m = lookAt(Vector3f(0, 0, 0), sumDir, sumUp);
 		_currentCamera.rotation(quatFromMatrix(m));

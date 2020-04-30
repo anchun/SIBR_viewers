@@ -21,7 +21,7 @@ struct CameraConverterArgs : virtual AppArgs {
  * \param res the image resolution (for aspect ratio)
  * \return the loading status
  */
-bool load(const std::string& filename, std::vector<InputCamera> & cams, const sibr::Vector2u & res){
+bool load(const std::string& filename, std::vector<InputCamera::Ptr> & cams, const sibr::Vector2u & res){
 	sibr::ByteStream stream;
 	if(!stream.load(filename)) {
 		return false;
@@ -31,7 +31,7 @@ bool load(const std::string& filename, std::vector<InputCamera> & cams, const si
 	while (num > 0) {
 		Camera cam;
 		stream >> cam;
-		cams.emplace_back(cam, res[0], res[1]);
+		cams.push_back(std::make_shared<InputCamera>(cam, res[0], res[1]));
 		--num;
 	}
 	return stream;
@@ -41,12 +41,12 @@ bool load(const std::string& filename, std::vector<InputCamera> & cams, const si
  * \param filename the .path output file
  * \param cams the cameras to save
  */
-void save(const std::string& filename, const std::vector<InputCamera> & cams){
+void save(const std::string& filename, const std::vector<InputCamera::Ptr> & cams){
 	sibr::ByteStream stream;
 	const int32 num = int32(cams.size());
 	stream << num;
-	for (const InputCamera& cam : cams) {
-		Camera subcam(cam);
+	for (const InputCamera::Ptr& cam : cams) {
+		Camera subcam(*cam);
 		stream << subcam;
 	}
 	stream.saveToFile(filename);
@@ -66,7 +66,7 @@ int main(int ac, char** av) {
 	const CameraConverterArgs args;
 
 	// Load cameras.
-	std::vector<InputCamera> cams;
+	std::vector<InputCamera::Ptr> cams;
 	const std::string ext = sibr::getExtension(args.input);
 	if(ext == "path") {
 		load(args.input, cams, args.inputRes);
@@ -106,13 +106,13 @@ int main(int ac, char** av) {
 	if(!transf.isIdentity()) {
 		SIBR_LOG << "Applying transformation: " << std::endl << transf << std::endl;
 		for (auto & cam : cams) {
-			sibr::Vector3f pos = cam.position();
-			sibr::Vector3f center = cam.position() + cam.dir();
-			sibr::Vector3f up = cam.position() + cam.up();
+			sibr::Vector3f pos = cam->position();
+			sibr::Vector3f center = cam->position() + cam->dir();
+			sibr::Vector3f up = cam->position() + cam->up();
 			pos = (transf * pos.homogeneous()).xyz();
 			center = (transf * center.homogeneous()).xyz();
 			up = (transf * up.homogeneous()).xyz();
-			cam.setLookAt(pos, center, (up - pos).normalized());
+			cam->setLookAt(pos, center, (up - pos).normalized());
 		}
 	}
 
@@ -121,11 +121,11 @@ int main(int ac, char** av) {
 	if (outExt == "path") {
 		save(args.output, cams);
 	} else if (outExt == "out") {
-		std::vector<InputCamera> outCams;
+		std::vector<InputCamera::Ptr> outCams;
 		for(const auto & cam : cams) {
 			const int outH = int(args.outputRes.get()[1]);
-			const int outW = int(std::round(cam.aspect() * float(outH)));
-			outCams.emplace_back(cam, outW, outH);
+			const int outW = int(std::round(cam->aspect() * float(outH)));
+			outCams.push_back(std::make_shared<InputCamera>(*cam, outW, outH));
 		}
 		sibr::InputCamera::saveAsBundle(outCams, args.output, args.bundleImageList, args.bundleImageFiles);
 	} else {

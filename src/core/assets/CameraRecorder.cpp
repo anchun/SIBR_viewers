@@ -168,7 +168,7 @@ namespace sibr
 		bundle_file >> numImages;	// read first value (number of images)
 		getline(bundle_file, line);	// ignore the rest of the line
 
-		std::vector<InputCamera> cameras(numImages);
+		std::vector<InputCamera::Ptr> cameras(numImages);
 		//  Parse bundle.out file for camera calibration parameters
 		for (int i = 0; i < numImages; i++) {
 		
@@ -178,15 +178,15 @@ namespace sibr
 			bundle_file >> m(10) >> m(11) >> m(12) >> m(13) >> m(14);
 
 			//
-			cameras[i] = InputCamera(i, w, h, m, true);
+			cameras[i] = InputCamera::Ptr(new InputCamera(i, w, h, m, true));
 
-			cameras[i].znear(0.2f); cameras[i].zfar(250.f);
+			cameras[i]->znear(0.2f); cameras[i]->zfar(250.f);
 
 		}
 
-		for (const InputCamera & cam : cameras)
+		for (const InputCamera::Ptr cam : cameras)
 		{
-			_cameras.emplace_back(cam);
+			_cameras.push_back(*cam);
 		}
 
 	}
@@ -194,10 +194,10 @@ namespace sibr
 	void CameraRecorder::loadLookat(const std::string &filePath, int w, int h)
 	{
 		SIBR_LOG << "Loading lookat path." << std::endl;
-		std::vector<InputCamera> path = InputCamera::loadLookat(filePath, std::vector<Vector2u>{Vector2u(w, h)});
-		for (const InputCamera & cam : path)
+		std::vector<InputCamera::Ptr> path = InputCamera::loadLookat(filePath, std::vector<Vector2u>{Vector2u(w, h)});
+		for (const InputCamera::Ptr cam : path)
 		{
-			_cameras.emplace_back(cam);
+			_cameras.push_back(*cam);
 		}
 	}
 

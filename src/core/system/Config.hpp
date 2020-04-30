@@ -178,7 +178,7 @@ namespace sibr
 //// Log Macro ////
 # define SIBR_LOG	std::cout << "[SIBR] --  INFOS  --:\t"			// Must be replaced by a true log system
 # define SIBR_WRG	std::cout << "[SIBR] !! WARNING !!:\tFILE " << __FILE__  << "\n\t\t\tLINE " << __LINE__ << ", FUNC " << __FUNCTION_STR__ << "\n\t\t\t"
-# define SIBR_ERR sibr::LogExit() <<= \
+# define SIBR_ERR ::sibr::LogExit() <<= \
 					std::cerr << "[SIBR] ##  ERROR  ##:\tFILE " << __FILE__  << "\n\t\t\tLINE " << __LINE__ << ", FUNC " << __FUNCTION_STR__ << "\n\t\t\t"		// Could be augmented for exiting
 
 // One drawback of using the standard assert is that you MUST catch the exception
@@ -267,7 +267,7 @@ namespace sibr
 // I didn't use the Plugin system for Eigen's MatrixBase
 // because I wanted also custom ctor
 // EDIT:
-// Now that libslmini leaved out, we don´t need this ctor
+// Now that libslmini leaved out, we don't need this ctor
 // anymore.
 # define EIGEN_MATRIXBASE_PLUGIN "core/system/MatrixBasePlugin.hpp"
 # define EIGEN_MATRIX_PLUGIN "core/system/MatrixPlugin.hpp"

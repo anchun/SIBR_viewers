@@ -15,9 +15,9 @@ namespace sibr {
 		const std::string mmm_str = "mesh";
 		MultiMeshManager::Ptr mmm(new MultiMeshManager(mmm_str));
 		mmm->addMesh("proxy", scene.proxies()->proxyPtr());		
-		mmm->getCameraHandler().fromCamera(input_cams[0]);
+		mmm->getCameraHandler().fromCamera(*input_cams[0]);
 		for (int i = 0; i < (int)input_cams.size(); ++i) {
-			cams.push_back(input_cams[i]);
+			cams.push_back(*input_cams[i]);
 		}
 
 		const std::string grid_str = "grid";

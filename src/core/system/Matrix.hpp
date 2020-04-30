@@ -94,7 +94,7 @@ namespace sibr
 	 * \param zf far plane
 	 * \param p the principal point, expressed in [0,1]
 	 * \return the projection matrix */
-	Matrix4f SIBR_SYSTEM_EXPORT perspective( float fovRadian, float ratio, float zn, float zf, const sibr::Vector2f & p = {0.5f, 0.5f});
+	Matrix4f SIBR_SYSTEM_EXPORT perspective( float fovRadian, float ratio, float zn, float zf, const ::sibr::Vector2f & p = {0.5f, 0.5f});
 
 	/** Generate an off-center perspective matrix.
 	 * Defined by giving the top/left/right/bottom extent in world units.

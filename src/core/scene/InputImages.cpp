@@ -3,7 +3,7 @@
 
 namespace sibr
 {
-	void InputImages::loadFromData(const ParseData::Ptr & data)
+	void InputImages::loadFromData(const IParseData::Ptr & data)
 	{
 		//InputImages out;
 		_inputImages.resize(data->imgInfos().size());
@@ -30,11 +30,6 @@ namespace sibr
 		return;
 	}
 
-	void InputImages::loadFromExisting(const std::vector<sibr::ImageRGB::Ptr>& imgs)
-	{
-		_inputImages = imgs;
-	}
-
 	void InputImages::loadFromExisting(const std::vector<sibr::ImageRGB> & imgs)
 	{
 		_inputImages.resize(imgs.size());
@@ -44,7 +39,7 @@ namespace sibr
 	}
 
 	/// \todo UN-TESTED code!!!!
-	void InputImages::loadFromPath(const ParseData::Ptr & data, const std::string & prefix, const std::string & postfix)
+	void InputImages::loadFromPath(const IParseData::Ptr & data, const std::string & prefix, const std::string & postfix)
 	{
 		_inputImages.resize(data->imgInfos().size());
 

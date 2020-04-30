@@ -61,7 +61,7 @@ namespace sibr {
 		normal = (wCoord * normals[tri[0]] + uCoord * normals[tri[1]] + vCoord * normals[tri[2]]).normalized();
 	}
 
-	void MeshTexturing::reproject(const std::vector<InputCamera> & cameras, const std::vector<sibr::ImageRGB::Ptr> & images) {
+	void MeshTexturing::reproject(const std::vector<InputCamera::Ptr> & cameras, const std::vector<sibr::ImageRGB::Ptr> & images) {
 		// We need a mesh for reprojection.
 		if (!_mesh) {
 			SIBR_WRG << "[Texturing] No mesh available." << std::endl;
@@ -102,23 +102,23 @@ namespace sibr {
 
 				for (int cid = 0; cid < cameras.size(); ++cid) {
 					const auto & cam = cameras[cid];
-					if (!cam.frustumTest(vertex)) {
+					if (!cam->frustumTest(vertex)) {
 						continue;
 					}
 
 					// Check for occlusions.
-					sibr::Vector3f occDir = (vertex - cam.position());
+					sibr::Vector3f occDir = (vertex - cam->position());
 					const float dist = occDir.norm();
 					if (dist > 0.0f) {
 						occDir /= dist;
 					}
-					const RayHit hitOcc = _worldRaycaster.intersect(Ray(cam.position(), occDir));
+					const RayHit hitOcc = _worldRaycaster.intersect(Ray(cam->position(), occDir));
 					if (hitOcc.hitSomething() && (hitOcc.dist() + 0.0001f) < dist) {
 						continue;
 					}
 
 					// Reproject, read color.
-					const sibr::Vector2f pos = cam.projectImgSpaceInvertY(vertex).xy();
+					const sibr::Vector2f pos = cam->projectImgSpaceInvertY(vertex).xy();
 					const sibr::Vector3f col = images[cid]->bilinear(pos).cast<float>().xyz();
 					// Angle-based weight for now.
 					const float angleWeight = std::max(-occDir.dot(normal), 0.0f);

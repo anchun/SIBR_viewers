@@ -181,7 +181,7 @@ namespace sibr
 
 
 
-	std::vector<InputCamera> InputCamera::load(const std::string& datasetPath, float zNear, float zFar, const std::string& bundleName, const std::string& listName)
+	std::vector<InputCamera::Ptr> InputCamera::load(const std::string& datasetPath, float zNear, float zFar, const std::string& bundleName, const std::string& listName)
 	{
 		const std::string bundlerFile = datasetPath + "/cameras/" + bundleName;
 		const std::string listFile = datasetPath + "/images/" + listName;
@@ -239,8 +239,8 @@ namespace sibr
 		if (!nearsFars.empty()) {
 			for (int cid = 0; cid < cameras.size(); ++cid) {
 				const int zid = std::min(cid, int(nearsFars.size()) - 1);
-				cameras[cid].znear(nearsFars[zid].near);
-				cameras[cid].zfar(nearsFars[zid].far);
+				cameras[cid]->znear(nearsFars[zid].near);
+				cameras[cid]->zfar(nearsFars[zid].far);
 			}
 		}
 
@@ -251,7 +251,7 @@ namespace sibr
 		if (activeImageFile.load(datasetPath + "/active_images.txt", false)) {
 			for (int i = 0; i < (int)cameras.size(); i++) {
 				if (!activeImageFile.active()[i])
-					cameras[i].setActive(false);
+					cameras[i]->setActive(false);
 			}
 		}
 
@@ -266,17 +266,16 @@ namespace sibr
 				// to active, and these are the only ones we set to *inactive*
 				// should really create a separate class or have a flag "invert"
 				if (excludeImageFile.active()[i])
-					cameras[i].setActive(false);
+					cameras[i]->setActive(false);
 			}
 		}
 		return cameras;
 	}
 
-	std::vector<InputCamera> InputCamera::loadNVM(const std::string& nvmPath, float zNear, float zFar, std::vector<sibr::Vector2u> wh)
+	std::vector<InputCamera::Ptr> InputCamera::loadNVM(const std::string& nvmPath, float zNear, float zFar, std::vector<sibr::Vector2u> wh)
 	{
-
 		std::ifstream in(nvmPath);
-		std::vector<InputCamera> cameras;
+		std::vector<InputCamera::Ptr> cameras;
 
 		if (in.is_open())
 		{
@@ -295,7 +294,7 @@ namespace sibr
 
 			int ncam = 0, npoint = 0, nproj = 0;
 			// read # of cameras
-			in >> ncam;  if (ncam <= 1) return std::vector<InputCamera>();
+			in >> ncam;  if (ncam <= 1) return std::vector<InputCamera::Ptr>();
 
 			//read the camera parameters
 
@@ -343,7 +342,7 @@ namespace sibr
 				if (resolution.x() < 0 || resolution.y() < 0)
 				{
 					std::cerr << "Could not get resolution for input image: " << image_path << std::endl;
-					return std::vector<InputCamera>();
+					return std::vector<InputCamera::Ptr>();
 				}
 
 				int wIm = 1, hIm = 1;
@@ -357,12 +356,12 @@ namespace sibr
 				}
 
 				//camera_data[i].SetFocalLength(f);
-				cameras.push_back(InputCamera((float)f, (float)d[0], (float)d[1], wIm, hIm, i));
+				cameras.emplace_back(new InputCamera((float)f, (float)d[0], (float)d[1], wIm, hIm, i));
 
 				float fov = 2.0f * atan(0.5f * hIm / (float)f);
 				float aspect = float(wIm) / float(hIm);
-				cameras[i].aspect(aspect);
-				cameras[i].fovy(fov);
+				cameras[i]->aspect(aspect);
+				cameras[i]->fovy(fov);
 
 				//translation
 				Vector3f posCam((float)c[0], (float)c[1], (float)c[2]);
@@ -380,8 +379,8 @@ namespace sibr
 					matRotation.transposeInPlace();
 
 
-					cameras[i].position(posCam);
-					cameras[i].rotation(Quaternionf(matRotation));
+					cameras[i]->position(posCam);
+					cameras[i]->rotation(Quaternionf(matRotation));
 
 				}
 				else
@@ -397,12 +396,12 @@ namespace sibr
 					Eigen::Matrix3f	matRotation = converter.transpose() * quat.toRotationMatrix();
 					matRotation.transposeInPlace();
 
-					cameras[i].position(posCam);
-					cameras[i].rotation(Quaternionf(matRotation));
+					cameras[i]->position(posCam);
+					cameras[i]->rotation(Quaternionf(matRotation));
 
 				}
 				//camera_data[i].SetNormalizedMeasurementDistortion(d[0]);
-				cameras[i].name(token);
+				cameras[i]->name(token);
 			}
 			std::cout << ncam << " cameras; " << npoint << " 3D points; " << nproj << " projections\n";
 		}
@@ -413,11 +412,11 @@ namespace sibr
 		return cameras;
 	}
 
-	std::vector<InputCamera> InputCamera::loadLookat(const std::string& lookatPath, const std::vector<sibr::Vector2u>& wh)
+	std::vector<InputCamera::Ptr> InputCamera::loadLookat(const std::string& lookatPath, const std::vector<sibr::Vector2u>& wh)
 	{
 
 		std::ifstream in(lookatPath);
-		std::vector<InputCamera> cameras;
+		std::vector<InputCamera::Ptr> cameras;
 
 		if (in.is_open())
 		{
@@ -512,11 +511,11 @@ namespace sibr
 
 				bool isActive = true;
 
-				cameras.push_back(InputCamera((int)cameras.size(), w, h, m, isActive));
+				cameras.emplace_back(new InputCamera((int)cameras.size(), w, h, m, isActive));
 
-				cameras[i].znear(clip.x());
-				cameras[i].zfar(clip.y());
-				cameras[i].name(camName);
+				cameras[i]->znear(clip.x());
+				cameras[i]->zfar(clip.y());
+				cameras[i]->name(camName);
 			}
 
 		}
@@ -560,23 +559,23 @@ namespace sibr
 		return infos;
 	}
 
-	void InputCamera::saveAsLookat(const std::vector<sibr::InputCamera> & cams, const std::string & fileName) {
+	void InputCamera::saveAsLookat(const std::vector<InputCamera::Ptr> & cams, const std::string & fileName) {
 
 		std::ofstream fileRender(fileName, std::ios::out | std::ios::trunc);
 		for (const auto & cam : cams) {
 
-			fileRender << cam.name() << cam.lookatString();
+			fileRender << cam->name() << cam->lookatString();
 		}
 
 		fileRender.close();
 	}
 	
-	void InputCamera::saveImageSizes(const std::vector<sibr::InputCamera> & cams, const std::string & fileName) {
+	void InputCamera::saveImageSizes(const std::vector<InputCamera::Ptr> & cams, const std::string & fileName) {
 
 		std::ofstream fileRender(fileName, std::ios::out | std::ios::trunc);
 		for (const auto & cam : cams) {
 
-			fileRender << cam.w() << "x" << cam.h() << "\n";
+			fileRender << cam->w() << "x" << cam->h() << "\n";
 		}
 
 		fileRender.close();
@@ -585,7 +584,7 @@ namespace sibr
 
 
 
-	std::vector<InputCamera> InputCamera::loadColmap(const std::string& colmapSparsePath, const float zNear, const float zFar)
+	std::vector<InputCamera::Ptr> InputCamera::loadColmap(const std::string& colmapSparsePath, const float zNear, const float zFar)
 	{
 		const std::string camerasListing = colmapSparsePath + "/cameras.txt";
 		const std::string imagesListing = colmapSparsePath + "/images.txt";
@@ -600,7 +599,7 @@ namespace sibr
 			SIBR_WRG << "Unable to load images colmap file" << std::endl;
 		}
 
-		std::vector<sibr::InputCamera> cameras;
+		std::vector<InputCamera::Ptr> cameras;
 
 		std::string line;
 
@@ -686,12 +685,12 @@ namespace sibr
 
 			sibr::Vector3f position = -(orientation * converter * translation);
 
-			sibr::InputCamera camera(camParams.fy, 0.0f, 0.0f, int(camParams.width), int(camParams.height), int(cId));
-			camera.name(imageName);
-			camera.position(position);
-			camera.rotation(sibr::Quaternionf(orientation));
-			camera.znear(zNear);
-			camera.zfar(zFar);
+			sibr::InputCamera::Ptr camera = std::make_shared<InputCamera>(InputCamera(camParams.fy, 0.0f, 0.0f, int(camParams.width), int(camParams.height), int(cId)));
+			camera->name(imageName);
+			camera->position(position);
+			camera->rotation(sibr::Quaternionf(orientation));
+			camera->znear(zNear);
+			camera->zfar(zFar);
 			cameras.push_back(camera);
 
 			++camid;
@@ -703,7 +702,7 @@ namespace sibr
 		return cameras;
 	}
 
-	std::vector<InputCamera> InputCamera::loadBundle(const std::string& bundlerPath, float zNear, float zFar, const std::string& listImagePath)
+	std::vector<InputCamera::Ptr> InputCamera::loadBundle(const std::string& bundlerPath, float zNear, float zFar, const std::string& listImagePath)
 	{
 		SIBR_LOG << "Loading input cameras." << std::endl;
 
@@ -750,7 +749,7 @@ namespace sibr
 			}
 		}
 
-		std::vector<InputCamera> cameras(numImages);
+		std::vector<InputCamera::Ptr> cameras(numImages);
 		//  Parse bundle.out file for camera calibration parameters
 		for (int i = 0, infosId = 0; i < numImages && infosId < imgInfos.size(); i++) {
 			const ImgInfos& infos = imgInfos[infosId];
@@ -761,9 +760,9 @@ namespace sibr
 			bundle_file >> m(5) >> m(6) >> m(7) >> m(8) >> m(9);
 			bundle_file >> m(10) >> m(11) >> m(12) >> m(13) >> m(14);
 
-			cameras[infosId] = InputCamera(infosId, infos.w, infos.h, m, true);
-			cameras[infosId].name(infos.name);
-			cameras[infosId].znear(zNear); cameras[infosId].zfar(zFar);
+			cameras[infosId] = InputCamera::Ptr(new InputCamera(infosId, infos.w, infos.h, m, true));
+			cameras[infosId]->name(infos.name);
+			cameras[infosId]->znear(zNear); cameras[infosId]->zfar(zFar);
 
 			++infosId;
 		}
@@ -771,7 +770,7 @@ namespace sibr
 		return cameras;
 	}
 
-	std::vector<InputCamera> InputCamera::loadBundleFRIBR(const std::string& bundlerPath, float zNear, float zFar, const std::string& listImagePath)
+	std::vector<InputCamera::Ptr> InputCamera::loadBundleFRIBR(const std::string& bundlerPath, float zNear, float zFar, const std::string& listImagePath)
 	{
 		SIBR_LOG << "Loading input cameras." << std::endl;
 
@@ -790,7 +789,7 @@ namespace sibr
 		bundle_file >> numImages;	// read first value (number of images)
 		getline(bundle_file, line);	// ignore the rest of the line
 
-		std::vector<InputCamera> cameras(numImages);
+		std::vector<InputCamera::Ptr> cameras(numImages);
 
 		Eigen::Matrix3f to_cv, converter;
 		to_cv << 1.0f, 0.0f, 0.0f,
@@ -851,16 +850,16 @@ namespace sibr
 			orientation = /*converter.transpose() **/ orientation * converter;
 			position = /*converter.transpose() **/ position;
 
-			cameras[i] = InputCamera(i, resolution.x(), resolution.y(), position, orientation, f, k1, k2, true);
-			cameras[i].name(pad_stream.str());
-			cameras[i].znear(zNear); cameras[i].zfar(zFar);
+			cameras[i] = InputCamera::Ptr(new InputCamera(i, resolution.x(), resolution.y(), position, orientation, f, k1, k2, true));
+			cameras[i]->name(pad_stream.str());
+			cameras[i]->znear(zNear); cameras[i]->zfar(zFar);
 
 		}
 
 		return cameras;
 	}
 
-	std::vector<InputCamera> InputCamera::loadMeshroom(const std::string& meshroomSFMPath, const float zNear, const float zFar)
+	std::vector<InputCamera::Ptr> InputCamera::loadMeshroom(const std::string& meshroomSFMPath, const float zNear, const float zFar)
 	{
 		
 		std::string file_path = meshroomSFMPath + "/cameras.sfm";
@@ -870,10 +869,10 @@ namespace sibr
 		if (!json_file)
 		{
 			std::cerr << "file loading failed: " << file_path << std::endl;
-			return std::vector<InputCamera>();
+			return std::vector<InputCamera::Ptr>();
 		}
 
-		std::vector<sibr::InputCamera> cameras;
+		std::vector<InputCamera::Ptr> cameras;
 
 		picojson::value v;
 		picojson::set_last_error(std::string());
@@ -967,10 +966,10 @@ namespace sibr
 				m(12 + ii) = finTrans[ii];
 			}
 
-			sibr::InputCamera cam(sibr::InputCamera(camId, width, height, m, true));
-			cam.name(camName);
-			cam.znear(zNear);
-			cam.zfar(zFar);
+			sibr::InputCamera::Ptr cam = std::make_shared<InputCamera>(camId, width, height, m, true);
+			cam->name(camName);
+			cam->znear(zNear);
+			cam->zfar(zFar);
 			cameras.push_back(cam);
 
 		}
@@ -1136,7 +1135,7 @@ namespace sibr
 		return { {0,0}, {_w - 1, 0}, {_w - 1,_h - 1}, {0, _h - 1} };
 	}
 
-	void InputCamera::saveAsBundle(const std::vector<sibr::InputCamera>& cams, const std::string& fileName, bool negativeZ, const bool exportImages) {
+	void InputCamera::saveAsBundle(const std::vector<InputCamera::Ptr>& cams, const std::string& fileName, bool negativeZ, const bool exportImages) {
 
 		std::ofstream outputBundleCam;
 		outputBundleCam.open(fileName);
@@ -1145,7 +1144,7 @@ namespace sibr
 
 		for (int c = 0; c < cams.size(); c++) {
 			auto& camIm = cams[c];
-			outputBundleCam << camIm.toBundleString(negativeZ);
+			outputBundleCam << camIm->toBundleString(negativeZ);
 		}
 
 		outputBundleCam.close();
@@ -1160,10 +1159,10 @@ namespace sibr
 			outList.open(listpath);
 			if (outList.good()) {
 				for (int i = 0; i < cams.size(); ++i) {
-					const sibr::InputCamera& cam = cams[i];
-					const std::string imageName = cam.name().empty() ? sibr::intToString<8>(i) + ".jpg" : cam.name();
-					outList << "visualize/" << imageName << " " << cam.w() << " " << cam.h() << std::endl;
-					cv::Mat3b dummy(cam.h(), cam.w());
+					const sibr::InputCamera::Ptr cam = cams[i];
+					const std::string imageName = cam->name().empty() ? sibr::intToString<8>(i) + ".jpg" : cam->name();
+					outList << "visualize/" << imageName << " " << cam->w() << " " << cam->h() << std::endl;
+					cv::Mat3b dummy(cam->h(), cam->w());
 					cv::imwrite(imagesDir + imageName, dummy);
 				}
 				outList.close();

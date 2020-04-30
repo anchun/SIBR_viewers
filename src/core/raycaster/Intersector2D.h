@@ -125,7 +125,7 @@ namespace sibr {
 		\param cams an array of cameras against which frusta the intersections tests should be performed.
 		\return a double-array of booleans denoting, for each camera, for each quad, if the quad intersects the frustum volume.
 		*/
-		static std::vector<std::vector<bool>> frustrumQuadsIntersect(std::vector<quad> & quads, const std::vector<sibr::InputCamera> & cams);
+		static std::vector<std::vector<bool>> frustrumQuadsIntersect(std::vector<quad> & quads, const std::vector<InputCamera::Ptr> & cams);
 
 	};
 

@@ -31,7 +31,7 @@ int main(const int argc, const char** argv)
 	}
 
 	// load rest of the things
-	std::vector<InputCamera>	inCams = InputCamera::load(datasetPath);
+	std::vector<InputCamera::Ptr>	inCams = InputCamera::load(datasetPath);
 	ImageListFile				imageListFile;
 	Mesh						proxy(false);
 

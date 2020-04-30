@@ -57,8 +57,8 @@ int main(int ac, char** av) {
 	const uint flags = SIBR_GPU_LINEAR_SAMPLING | SIBR_FLIP_TEXTURE;
 
 	// Fix rendering aspect ratio if user provided rendering size
-	uint scene_width = scene->cameras()->inputCameras()[0].w();
-	uint scene_height = scene->cameras()->inputCameras()[0].h();
+	uint scene_width = scene->cameras()->inputCameras()[0]->w();
+	uint scene_height = scene->cameras()->inputCameras()[0]->h();
 	float scene_aspect_ratio = scene_width * 1.0f / scene_height;
 	float rendering_aspect_ratio = rendering_width * 1.0f / rendering_height;
 
@@ -75,8 +75,8 @@ int main(int ac, char** av) {
 
 	
 	// check rendering size
-	rendering_width = (rendering_width <= 0) ? scene->cameras()->inputCameras()[0].w() : rendering_width;
-	rendering_height = (rendering_height <= 0) ? scene->cameras()->inputCameras()[0].h() : rendering_height;
+	rendering_width = (rendering_width <= 0) ? scene->cameras()->inputCameras()[0]->w() : rendering_width;
+	rendering_height = (rendering_height <= 0) ? scene->cameras()->inputCameras()[0]->h() : rendering_height;
 	Vector2u usedResolution(rendering_width, rendering_height);
 
 	const unsigned int sceneResWidth = usedResolution.x();
@@ -162,8 +162,8 @@ int legacyV2main(ULRAppArgs & myArgs)
 		
 
 		// check rendering size
-		rendering_width = (rendering_width <= 0) ? scene->cameras()->inputCameras()[0].w() : rendering_width;
-		rendering_height = (rendering_height <= 0) ? scene->cameras()->inputCameras()[0].h() : rendering_height;
+		rendering_width = (rendering_width <= 0) ? scene->cameras()->inputCameras()[0]->w() : rendering_width;
+		rendering_height = (rendering_height <= 0) ? scene->cameras()->inputCameras()[0]->h() : rendering_height;
 		Vector2u usedResolution(rendering_width, rendering_height);
 
 		const unsigned int sceneResWidth = usedResolution.x();
@@ -199,7 +199,7 @@ int legacyV2main(ULRAppArgs & myArgs)
 
 			for (int imId = 0; imId < numImages; ++imId) {
 
-				sibr::InputCamera cam = scene->cameras()->inputCameras()[imId];
+				sibr::InputCamera cam = *scene->cameras()->inputCameras()[imId];
 				sibr::Vector3f camPos = cam.position();
 				int w = cam.w();
 				int h = cam.h();
@@ -324,8 +324,8 @@ int legacyV1main(ULRAppArgs & myArgs)
 		BasicIBRScene::Ptr		scene(new BasicIBRScene(myArgs));
 		
 		// check rendering size
-		rendering_width = (rendering_width <= 0) ? scene->cameras()->inputCameras()[0].w() : rendering_width;
-		rendering_height = (rendering_height <= 0) ? scene->cameras()->inputCameras()[0].h() : rendering_height;
+		rendering_width = (rendering_width <= 0) ? scene->cameras()->inputCameras()[0]->w() : rendering_width;
+		rendering_height = (rendering_height <= 0) ? scene->cameras()->inputCameras()[0]->h() : rendering_height;
 		Vector2u usedResolution(rendering_width, rendering_height);
 
 		const unsigned int sceneResWidth = usedResolution.x();

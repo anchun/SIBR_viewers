@@ -64,7 +64,7 @@ namespace sibr {
 		}
 	}
 
-	void InteractiveCameraHandler::setup(const std::vector<sibr::InputCamera>& cams, const sibr::Vector2u & resolution, const sibr::Viewport & viewport, const std::shared_ptr<sibr::Raycaster> raycaster)
+	void InteractiveCameraHandler::setup(const std::vector<InputCamera::Ptr>& cams, const sibr::Vector2u & resolution, const sibr::Viewport & viewport, const std::shared_ptr<sibr::Raycaster> raycaster)
 	{
 		setup(cams, viewport, raycaster);
 
@@ -85,19 +85,19 @@ namespace sibr {
 		fromCamera(_trackball.getCamera(), false);
 	}
 
-	void InteractiveCameraHandler::setup(const std::vector<sibr::InputCamera>& cams, const sibr::Viewport & viewport, const std::shared_ptr<sibr::Raycaster> raycaster, const sibr::Vector2f & clippingPlanes) {
+	void InteractiveCameraHandler::setup(const std::vector<InputCamera::Ptr>& cams, const sibr::Viewport & viewport, const std::shared_ptr<sibr::Raycaster> raycaster, const sibr::Vector2f & clippingPlanes) {
 
 		// setup interpolation path if not set
 		if (_interpPath.empty()) {
 			setupInterpolationPath(cams);
 		}
 		// Update the near and far planes.
-		sibr::InputCamera idealCam = cams[0];
+		sibr::InputCamera idealCam = *cams[0];
 		if(clippingPlanes[0] < 0.0f || clippingPlanes[1] < 0.0f) {
 			float zFar = -1.0f, zNear = -1.0f;
 			for (const auto & cam : cams) {
-				zFar = (zFar<0 || cam.zfar() > zFar ? cam.zfar() : zFar);
-				zNear = (zNear < 0 || cam.znear() < zNear ? cam.znear() : zNear);
+				zFar = (zFar<0 || cam->zfar() > zFar ? cam->zfar() : zFar);
+				zNear = (zNear < 0 || cam->znear() < zNear ? cam->znear() : zNear);
 			}
 			idealCam.zfar(zFar*1.1f);
 			idealCam.znear(zNear*0.9f);
@@ -215,7 +215,7 @@ namespace sibr {
 
 	}
 
-	int	InteractiveCameraHandler::findNearestCamera(const std::vector<sibr::InputCamera>& inputCameras) const
+	int	InteractiveCameraHandler::findNearestCamera(const std::vector<InputCamera::Ptr>& inputCameras) const
 	{
 		if (inputCameras.size() == 0)
 			return -1;
@@ -246,14 +246,14 @@ namespace sibr {
 		return selectedCam;
 	}
 
-	void InteractiveCameraHandler::setupInterpolationPath(const std::vector<sibr::InputCamera> & cameras) {
+	void InteractiveCameraHandler::setupInterpolationPath(const std::vector<InputCamera::Ptr> & cameras) {
 		_interpPath.resize(cameras.size());
 
 		bool defaultPath = false;
 		for (int i = 0; i < cameras.size(); i++) {
-			if (cameras[i].isActive()) {
-				if (cameras[i].id() < cameras.size()) {
-					_interpPath[cameras[i].id()] = cameras[i];
+			if (cameras[i]->isActive()) {
+				if (cameras[i]->id() < cameras.size()) {
+					_interpPath[cameras[i]->id()] = cameras[i];
 				}
 				else {
 					std::cout << "Cameras ID inconsistent. Setting default interpolation path." << std::endl;
@@ -266,12 +266,12 @@ namespace sibr {
 		if (defaultPath) {
 			_interpPath.clear();
 			for (int i = 0; i < cameras.size(); i++) {
-				if (cameras[i].isActive()) {
+				if (cameras[i]->isActive()) {
 					_interpPath.push_back(cameras[i]);
 				}
 			}
-			std::sort(_interpPath.begin(), _interpPath.end(), [](const InputCamera & a, const InputCamera & b) {
-				return a.id() < b.id();
+			std::sort(_interpPath.begin(), _interpPath.end(), [](const InputCamera::Ptr & a, const InputCamera::Ptr & b) {
+				return a->id() < b->id();
 			});
 		}
 	}
@@ -296,8 +296,8 @@ namespace sibr {
 
 		float k = std::min(std::max(((_interpFactor) / (float)SIBR_INTERPOLATE_FRAMES), 1e-6f), 1.0f - 1e-6f);
 
-		sibr::InputCamera & camStart = _interpPath[_startCam];
-		sibr::InputCamera & camNext = _interpPath[_startCam + 1];
+		sibr::InputCamera & camStart = *_interpPath[_startCam];
+		sibr::InputCamera & camNext = *_interpPath[_startCam + 1];
 		const sibr::Camera cam = sibr::Camera::interpolate(camStart, camNext, k);
 		_currentCamera = sibr::InputCamera(cam, camStart.w(), camStart.h());
 		_currentCamera.aspect(_viewport.finalWidth() / _viewport.finalHeight());
@@ -310,7 +310,7 @@ namespace sibr {
 		if (!_interpPath.empty()) {
 			unsigned int nearestCam = (i == -1 ? findNearestCamera(_interpPath) : i);
 			nearestCam = sibr::clamp(nearestCam, unsigned int(0), unsigned int(_interpPath.size() - 1));
-			fromCamera(_interpPath[nearestCam], true, false);
+			fromCamera(*_interpPath[nearestCam], true, false);
 		}
 	}
 
@@ -469,7 +469,7 @@ namespace sibr {
 		// Note this call has three modes: record (only read the arg camera) | playback (overwrite the arg camera) | do nothing (do nothing)
 		_cameraRecorder.use(_currentCamera);
 
-		_previousCamera = sibr::InputCamera(_currentCamera);
+		_previousCamera = _currentCamera;
 		_clippingPlanes[0] = _currentCamera.znear();
 		_clippingPlanes[1] = _currentCamera.zfar();
 	}

@@ -30,7 +30,7 @@ namespace sibr {
 		 * \param vShader An optional name of the vertex shader to use (default to ulr_v3).
 		 * \param facecull Should the mesh be renderer with backface culling.
 		 */
-		ULRV3Renderer(const std::vector<sibr::InputCamera> & cameras, 
+		ULRV3Renderer(const std::vector<InputCamera::Ptr> & cameras, 
 			const uint w, const uint h, 
 			const std::string & fShader = "ulr_v3", 
 			const std::string & vShader = "ulr_v3", 

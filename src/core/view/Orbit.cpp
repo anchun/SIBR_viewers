@@ -272,14 +272,14 @@ namespace sibr {
 		
 	}
 
-	sibr::Vector4f Orbit::computeFittingPlaneCameras(sibr::Vector3f & clickedPoint, const std::vector<sibr::InputCamera> & cams)
+	sibr::Vector4f Orbit::computeFittingPlaneCameras(sibr::Vector3f & clickedPoint, const std::vector<InputCamera::Ptr> & cams)
 	{
 		using namespace Eigen;
 
 		std::vector<sibr::Vector3f> positions(cams.size());
 
 		for (int i = 0; i<(int)cams.size(); ++i) {
-			positions.at(i) = cams.at(i).position();
+			positions.at(i) = cams.at(i)->position();
 		}
 		positions.push_back(clickedPoint);
 

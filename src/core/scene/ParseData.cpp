@@ -41,10 +41,10 @@ namespace sibr {
 			bundle_file >> m(5) >> m(6) >> m(7) >> m(8) >> m(9);
 			bundle_file >> m(10) >> m(11) >> m(12) >> m(13) >> m(14);
 
-			_camInfos[i] = InputCamera(infos.camId, infos.width, infos.height, m, _activeImages[i]);
-			_camInfos[i].name(infos.filename);
-			_camInfos[i].znear(0.001f);
-			_camInfos[i].zfar(1000.0f);
+			_camInfos[i] = InputCamera::Ptr(new InputCamera(infos.camId, infos.width, infos.height, m, _activeImages[i]));
+			_camInfos[i]->name(infos.filename);
+			_camInfos[i]->znear(0.001f);
+			_camInfos[i]->zfar(1000.0f);
 		}
 
 		return true;
@@ -56,12 +56,12 @@ namespace sibr {
 		_imgInfos.resize(_numCameras);
 		_activeImages.resize(_numCameras);
 		for (uint id = 0; id < _numCameras; id++) {
-			_imgInfos[id].camId = _camInfos[id].id();
-			_imgInfos[id].filename = _camInfos[id].name();
-			_imgInfos[id].height = _camInfos[id].h();
-			_imgInfos[id].width = _camInfos[id].w();
+			_imgInfos[id].camId = _camInfos[id]->id();
+			_imgInfos[id].filename = _camInfos[id]->name();
+			_imgInfos[id].height = _camInfos[id]->h();
+			_imgInfos[id].width = _camInfos[id]->w();
 
-			_activeImages[id] = _camInfos[id].isActive();
+			_activeImages[id] = _camInfos[id]->isActive();
 		}
 	}
 
@@ -247,8 +247,8 @@ namespace sibr {
 					//std::cout << splitS.size() << std::endl;
 					if (splitS.size() > 0) {
 						for (uint cam_id = 0; cam_id < _camInfos.size(); cam_id++) {
-							if (find_any(splitS, _camInfos[cam_id].name())) {
-								_camInfos[cam_id].setActive(false);
+							if (find_any(splitS, _camInfos[cam_id]->name())) {
+								_camInfos[cam_id]->setActive(false);
 							}
 						}
 						splitS.clear();

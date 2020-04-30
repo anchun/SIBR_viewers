@@ -145,13 +145,13 @@ namespace sibr
 		/** Check if a pixel (x,y) is inside the image boundaries.
 		\param xy the pixel coordinates
 		\return true if 0<=x<w and 0<=y=<h */
-		virtual bool			isInRange(const sibr::Vector2i & xy)  const = 0;
+		virtual bool			isInRange(const ::sibr::Vector2i & xy)  const = 0;
 
 		/** Get the value stored at a pixel and convert it to a string representation.
 		\param xy the pixel coordinates
 		\return a string representation of the pixel value.
 		*/
-		virtual std::string		pixelStr(const sibr::Vector2i & xy)  const = 0;
+		virtual std::string		pixelStr(const ::sibr::Vector2i & xy)  const = 0;
 
 		/** \return the number of components of the image. */
 		virtual uint			numComp(void) const = 0;
@@ -324,16 +324,16 @@ namespace sibr
 		\param xy pixel coordinates
 		\return a reference to the pixel value.
 		*/
-		const Pixel&	operator()(const sibr::Vector2f & xy) const;
+		const Pixel&	operator()(const ::sibr::Vector2f & xy) const;
 
 		/** Pixel accessor.
 		\param xy pixel coordinates
 		\return a reference to the pixel value.
 		*/
-		Pixel&			operator()(const sibr::Vector2f & xy);
+		Pixel&			operator()(const ::sibr::Vector2f & xy);
 
 		/** \copydoc IImage::pixelStr */
-		virtual std::string		pixelStr(const sibr::Vector2i & xy)  const;
+		virtual std::string		pixelStr(const ::sibr::Vector2i & xy)  const;
 
 		/** \return a pointer to the raw image data. */
 		const void*		data(void) const;
@@ -1113,7 +1113,7 @@ namespace sibr
 	}
 
 	template<typename T_Type, unsigned int T_NumComp>
-	std::string Image<T_Type, T_NumComp>::pixelStr(const sibr::Vector2i & xy)  const {
+	std::string Image<T_Type, T_NumComp>::pixelStr(const ::sibr::Vector2i & xy)  const {
 		if (isInRange(xy)) {
 			std::stringstream ss;
 			ss << "( " << operator()(xy).cast<std::conditional<std::is_same_v<T_Type, uchar>, int, T_Type>::type>().transpose() << " )";

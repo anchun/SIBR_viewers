@@ -100,7 +100,7 @@ namespace sibr {
 		return false;
 	}
 
-	std::vector<std::vector<bool>> Intersector2D::frustrumQuadsIntersect(std::vector<quad> & quads, const std::vector<sibr::InputCamera> & cams)
+	std::vector<std::vector<bool>> Intersector2D::frustrumQuadsIntersect(std::vector<quad> & quads, const std::vector<InputCamera::Ptr> & cams)
 	{
 		std::clock_t previous;
 		double duration;
@@ -134,7 +134,7 @@ namespace sibr {
 		std::shared_ptr<sibr::RenderTargetLum> rtLum;
 
 		for (int c = 0; c < cams.size(); c++) {
-			const sibr::InputCamera & cam = cams[c];
+			const sibr::InputCamera & cam = *cams[c];
 
 			float ratio = (float)cam.h() / (float)cam.w();
 			int w = std::min(400, (int)cam.w());

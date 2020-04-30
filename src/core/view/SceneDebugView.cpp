@@ -85,14 +85,14 @@ namespace sibr
 		_labelShaderViewport.init(_labelShader, "viewport");
 	}
 
-	void LabelsManager::setupLabelsManagerMeshes(const std::vector<InputCamera> & cams)
+	void LabelsManager::setupLabelsManagerMeshes(const std::vector<InputCamera::Ptr> & cams)
 	{
 		_labelMeshes.clear();
 		for (const auto & cam : cams) {
 			unsigned int sepIndex = 0;
-			_labelMeshes[cam.id()] = {};
-			_labelMeshes[cam.id()].mesh = generateMeshForText(std::to_string(cam.id()), sepIndex);
-			_labelMeshes[cam.id()].splitIndex = sepIndex;
+			_labelMeshes[cam->id()] = {};
+			_labelMeshes[cam->id()].mesh = generateMeshForText(std::to_string(cam->id()), sepIndex);
+			_labelMeshes[cam->id()].splitIndex = sepIndex;
 		}
 	}
 
@@ -187,7 +187,7 @@ namespace sibr
 		_userCurrentCam = camHandler;
 
 		if (!_scene->cameras()->inputCameras().empty()) {
-			camera_handler.fromTransform(_scene->cameras()->inputCameras()[0].transform(), true, false);
+			camera_handler.fromTransform(_scene->cameras()->inputCameras()[0]->transform(), true, false);
 			camera_handler.setupInterpolationPath(_scene->cameras()->inputCameras());
 		}
 
@@ -267,7 +267,7 @@ namespace sibr
 
 		if (_scene) {
 			for (int i = 0; i < (int)_scene->cameras()->inputCameras().size(); ++i) {
-				_cameras[i].highlight =  _scene->cameras()->isCameraUsedForRendering(_scene->cameras()->inputCameras()[i].id());
+				_cameras[i].highlight =  _scene->cameras()->isCameraUsedForRendering(_scene->cameras()->inputCameras()[i]->id());
 			}
 		}	
 
@@ -421,14 +421,14 @@ namespace sibr
 
 					auto size = camera_handler.getViewport().finalSize();
 					float ratio_dst = size[0] / size[1];
-					float ratio_src = input_cam.w() / (float)input_cam.h();
+					float ratio_src = input_cam->w() / (float)input_cam->h();
 					InputCamera cam = InputCamera(_cameras[_cameraIdInfoGUI].cam, (int)size[0], (int)size[1]);
 
 					if (ratio_src < ratio_dst) {
-						float fov_h = 2 * atan(tan(input_cam.fovy() / 2) * ratio_src / ratio_dst);
+						float fov_h = 2 * atan(tan(input_cam->fovy() / 2) * ratio_src / ratio_dst);
 						cam.fovy(fov_h);
 					} else {
-						cam.fovy(input_cam.fovy());
+						cam.fovy(input_cam->fovy());
 					}
 
 					cam.znear(0.0001f);
@@ -465,7 +465,7 @@ namespace sibr
 
 			_cameras.clear();
 			for (const auto & inputCam : _scene->cameras()->inputCameras()) {
-				_cameras.emplace_back(inputCam, inputCam.id(), _scene->cameras()->isCameraUsedForRendering(inputCam.id()));
+				_cameras.push_back(CameraInfos(*inputCam, inputCam->id(), _scene->cameras()->isCameraUsedForRendering(inputCam->id())));
 			}
 		}
 

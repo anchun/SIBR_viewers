@@ -45,7 +45,7 @@ namespace sibr {
 		*/
 		void process(const Mesh & mesh, const Camera & eye, const sibr::Matrix4f & model, uint textureID, IRenderTarget & dst, bool backfaceCull = true);
 
-	private:
+	protected:
 
 		GLShader			_shader; ///< The texture mesh shader.
 		GLParameter			_paramMVP; ///< MVP uniform.
