@@ -3,6 +3,10 @@
 #include "core/graphics/GUI.hpp"
 #include "core/graphics/Mesh.hpp"
 
+// We extend ImGui functionnality so we need the internal definitions.
+#define IMGUI_DEFINE_MATH_OPERATORS
+#include <core/graphics/imgui/imgui_internal.h>
+
 namespace sibr
 {
 	
@@ -320,6 +324,100 @@ namespace ImGui {
 			ImGui::PopStyleColor(2);
 		}
 		return b;
+	}
+
+	void PlotMultiLines(const char* label, std::vector<float*> values, int values_count, const std::vector<ImVec4>& colors, float scale_min, float scale_max, ImVec2 graph_size) {
+		// Note: code extracted from ImGui and udpated to display multiple lines on the same graph.
+		ImGuiWindow* window = GetCurrentWindow();
+		if (window->SkipItems)
+			return;
+
+		ImGuiContext& g = *GImGui;
+		const ImGuiStyle& style = g.Style;
+		// Force the plot type.
+		ImGuiPlotType plot_type = ImGuiPlotType_Lines;
+		const ImVec2 label_size = CalcTextSize(label, NULL, true);
+		if (graph_size.x == 0.0f)
+			graph_size.x = CalcItemWidth();
+		if (graph_size.y == 0.0f)
+			graph_size.y = label_size.y + (style.FramePadding.y * 2);
+
+		const ImRect frame_bb(window->DC.CursorPos, window->DC.CursorPos + ImVec2(graph_size.x, graph_size.y));
+		const ImRect inner_bb(frame_bb.Min + style.FramePadding, frame_bb.Max - style.FramePadding);
+		const ImRect total_bb(frame_bb.Min, frame_bb.Max + ImVec2(label_size.x > 0.0f ? style.ItemInnerSpacing.x + label_size.x : 0.0f, 0));
+		ItemSize(total_bb, style.FramePadding.y);
+		if (!ItemAdd(total_bb, 0, &frame_bb))
+			return;
+		const bool hovered = ItemHoverable(inner_bb, 0);
+
+		// Determine scale from values if not specified
+		if (scale_min == FLT_MAX || scale_max == FLT_MAX)
+		{
+			float v_min = FLT_MAX;
+			float v_max = -FLT_MAX;
+			for (int j = 0; j < values.size(); ++j) {
+				for (int i = 0; i < values_count; i++)
+				{
+					const float v = values[j][i];
+					v_min = ImMin(v_min, v);
+					v_max = ImMax(v_max, v);
+				}
+			}
+			if (scale_min == FLT_MAX)
+				scale_min = v_min;
+			if (scale_max == FLT_MAX)
+				scale_max = v_max;
+		}
+
+		RenderFrame(frame_bb.Min, frame_bb.Max, GetColorU32(ImGuiCol_FrameBg), true, style.FrameRounding);
+		int values_offset = 0;
+
+		if (values_count > 0)
+		{
+			int res_w = ImMin((int)graph_size.x, values_count) + ((plot_type == ImGuiPlotType_Lines) ? -1 : 0);
+			int item_count = values_count + ((plot_type == ImGuiPlotType_Lines) ? -1 : 0);
+
+			// No tooltip for now.
+
+			const float t_step = 1.0f / (float)res_w;
+			const float inv_scale = (scale_min == scale_max) ? 0.0f : (1.0f / (scale_max - scale_min));
+
+			for (int vid = 0; vid < values.size(); ++vid) {
+				float v0 = values[vid][(0 + values_offset) % values_count];
+				float t0 = 0.0f;
+				ImVec2 tp0 = ImVec2(t0, 1.0f - ImSaturate((v0 - scale_min) * inv_scale));                       // Point in the normalized space of our target rectangle
+				float histogram_zero_line_t = (scale_min * scale_max < 0.0f) ? (-scale_min * inv_scale) : (scale_min < 0.0f ? 0.0f : 1.0f);   // Where does the zero line stands
+
+				const ImU32 col_base = GetColorU32(colors[vid >= colors.size() ? 0 : vid]);
+				const ImU32 col_hovered = col_base;
+
+				for (int n = 0; n < res_w; n++)
+				{
+					const float t1 = t0 + t_step;
+					const int v1_idx = (int)(t0 * item_count + 0.5f);
+					IM_ASSERT(v1_idx >= 0 && v1_idx < values_count);
+					const float v1 = values[vid][(v1_idx + values_offset + 1) % values_count];
+					const ImVec2 tp1 = ImVec2(t1, 1.0f - ImSaturate((v1 - scale_min) * inv_scale));
+
+					// NB: Draw calls are merged together by the DrawList system. Still, we should render our batch are lower level to save a bit of CPU.
+					ImVec2 pos0 = ImLerp(inner_bb.Min, inner_bb.Max, tp0);
+					ImVec2 pos1 = ImLerp(inner_bb.Min, inner_bb.Max, (plot_type == ImGuiPlotType_Lines) ? tp1 : ImVec2(tp1.x, histogram_zero_line_t));
+					if (plot_type == ImGuiPlotType_Lines)
+					{
+						window->DrawList->AddLine(pos0, pos1, col_base);
+					}
+					else if (plot_type == ImGuiPlotType_Histogram)
+					{
+						if (pos1.x >= pos0.x + 2.0f)
+							pos1.x -= 1.0f;
+						window->DrawList->AddRectFilled(pos0, pos1, col_base);
+					}
+
+					t0 = t1;
+					tp0 = tp1;
+				}
+			}
+		}
 	}
 
 }
