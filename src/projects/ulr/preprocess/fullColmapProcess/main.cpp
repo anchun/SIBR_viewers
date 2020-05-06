@@ -556,23 +556,22 @@ void runTextureMesh(const std::string& program, const std::string& datasetPath) 
 }
 
 void printExample() {
-	SIBR_LOG << "OPTIONS EXAMPLE TO HELP YOU :" << std::endl
-		<< "LOCAL VERSION" << std::endl
-		<< "--path E:\\smorgent\\testData\\colmap\\testcluster "
-		<< "--sibrBinariesPath E:\\smorgent\\dev\\sibr_basic2\\install\\bin "
-		<< "--colmapPath D:\\colmap "
-		<< "--quality medium"
-		<< std::endl
-		<< "REMOTE VERSION" << std::endl
-		<< "--path E:\\smorgent\\testData\\colmap\\testcluster "
-		<< "--sibrBinariesPath E:\\smorgent\\dev\\sibr_basic2\\install\\bin "
-		<< "--remoteUnix smorgent@nef-devel.inria.fr "
-		<< "--colmapPath /data/graphdeco/share/colmap/bin/ "
-		<< "--colmapWorkingDir /data/graphdeco/user/smorgent/colmapTests/test "
-		<< "--clusterGPU 34 "
-		<< "--numGPUs 4 "
-		<< "--quality medium"
-		<< std::endl;
+    SIBR_LOG << "OPTIONS EXAMPLE TO HELP YOU :" << std::endl
+        << "LOCAL VERSION" << std::endl
+        << "--path E:\\USERNAME\\testData\\colmap\\testcluster                   The path which contain the dataset" << std::endl
+        << "--sibrBinariesPath E:\\USERNAME\\dev\\sibr_basic2\\install\\bin      The path where the program looks for the binaries" << std::endl
+        << "--colmapPath D:\\colmap                                         The path where the Colmap program is present (COLMAP.bat on Windows, colmap on UNIX)" << std::endl
+        << "--quality medium                                                Optional option. It's the pre-defined quality (low,medium,high,extreme)" << std::endl
+        << std::endl
+        << "REMOTE VERSION" << std::endl
+        << "--path E:\\YOU\\testData\\colmap\\testcluster                   The path which contain the dataset" << std::endl
+        << "--sibrBinariesPath E:\\YOU\\dev\\sibr_basic2\\install\\bin      The path where the program looks for the binaries"  << std::endl
+        << "--remoteUnix YOURACCOUNT@nef-devel.inria.fr                     Your SSH account" << std::endl
+        << "--colmapPath /data/graphdeco/share/colmap/bin/                  The path where the Colmap program is present (COLMAP.bat on Windows, colmap on UNIX)" << std::endl
+        << "--colmapWorkingDir /data/graphdeco/user/YOU/colmapTests/test    A directory on the Cluster where Colmap will write the results" << std::endl
+        << "--clusterGPU 34                                                 Optional option. It's the number of the node. If you do not specify it, the Cluster will decide" << std::endl
+        << "--quality medium                                                Optional option. It's the pre-defined quality (low,medium,high,extreme)" << std::endl
+        << std::endl;
 }
 
 int main(const int argc, const char** argv)
