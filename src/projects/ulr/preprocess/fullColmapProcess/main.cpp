@@ -180,11 +180,20 @@ void setPersonalParameters(const CommandLineArgs& globalArgs,
 	}
 }
 
+void goToDatasetPath(const std::string& datasetPath) {
+	
+	const std::string command = "cd " + datasetPath;
+
+	SIBR_LOG << "Go to the dataset directory... " << std::endl;
+	const int result = boost::process::system(command);
+	SIBR_LOG << "Running: " << command << std::endl;
+}
+
 int sendImages(
 	const std::string& datasetPath,
 	const std::string& colmapWorkingDir,
 	const std::string& sshAccount) {
-	const std::string command = "scp -r " + datasetPath + "\\images "
+	const std::string command = "scp -r images "
 		+ sshAccount + ":" + colmapWorkingDir;
 
 	SIBR_LOG << "Sending images ... " << std::endl;
@@ -199,14 +208,11 @@ int sendImages(
 }
 
 void getProject(
-	const std::string& datasetPath,
 	const std::string& colmapWorkingDir,
 	const std::string& sshAccount) {
 	
-	boost::process::system("scp -r " +sshAccount + ":" + colmapWorkingDir + "/colmap " + 
-		datasetPath );
-	boost::process::system("scp -r " +sshAccount + ":" + colmapWorkingDir + "/capreal " + 
-		datasetPath );
+	boost::process::system("scp -r " +sshAccount + ":" + colmapWorkingDir + "/colmap .");
+	boost::process::system("scp -r " +sshAccount + ":" + colmapWorkingDir + "/capreal .");
 }
 
 void runColmap(const std::string& colmapProgramPath,
@@ -349,13 +355,13 @@ void runColmap(const std::string& colmapProgramPath,
 	}
 	if (remotely) {
 		//We create the script that the node will execute
-		const std::string scriptToSend = datasetPath + "\\colmapScript.sh";
+		const std::string scriptToSend = "colmapScript.sh";
 		std::ofstream scriptFile (scriptToSend, std::ios::binary);
 		scriptFile << unixListAllCommands;
 		scriptFile.close();
 		
 		SIBR_LOG << "Sending script file..." << std::endl << std::endl;
-		const std::string command = "scp " +scriptToSend + " " + sshAccount + ":" + colmapWorkingDir;
+		const std::string command = "scp " + scriptToSend + " " + sshAccount + ":" + colmapWorkingDir;
 		const int result = boost::process::system(command);
 		SIBR_LOG << "Running: " << command << std::endl;
 
@@ -651,6 +657,7 @@ int main(const int argc, const char** argv)
 	//-------------------------------------------------//
 
 	if (!runLocally) {
+		goToDatasetPath(myArgs.dataset_path.get());
 		if (sendImages(myArgs.dataset_path.get(), myArgs.colmapWorkingDir.get(),
 			myArgs.remoteUnix.get()) == EXIT_FAILURE) {
 			printExample();
@@ -674,7 +681,7 @@ int main(const int argc, const char** argv)
 	runColmap(colmapProgram, myArgs.dataset_path,myArgs.colmapWorkingDir , 
 		colmapParams, myArgs.remoteUnix.get(), myArgs.clusterGPU.get(), myArgs.numGPUs.get());
 	waitSteps(myArgs.colmapWorkingDir, myArgs.remoteUnix.get());
-	getProject(myArgs.dataset_path.get(), myArgs.colmapWorkingDir.get(), myArgs.remoteUnix.get());
+	getProject(myArgs.colmapWorkingDir.get(), myArgs.remoteUnix.get());
 	}
 
 
