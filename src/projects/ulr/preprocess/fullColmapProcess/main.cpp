@@ -178,10 +178,6 @@ void setPersonalParameters(const CommandLineArgs& globalArgs,
 		parameters.stereoFusionMaxImageSize (
 			userArgs.stereoFusion_MaxImageSize.get());
 	}
-	if (globalArgs.contains("numGPUs")) {
-		parameters.numGPUs(
-			userArgs.numGPUs.get());
-	}
 }
 
 int sendImages(
@@ -218,7 +214,8 @@ void runColmap(const std::string& colmapProgramPath,
 	const std::string& colmapWorkingDir,
 	const ColmapParameters& parameters,
 	const std::string& sshAccount = "",
-	std::string gpuNodeNum = "any"
+	std::string gpuNodeNum = "any",
+	unsigned int numGPUs = 2
 	){
 	if (gpuNodeNum.size() == 1) {
 	//We add a '0' if the number has only one char
@@ -371,7 +368,7 @@ void runColmap(const std::string& colmapProgramPath,
 		}
 
 		runScript += "gpu='YES' and gpucapability>='5.0'\\\" -l /nodes=1/gpunum="
-			+ std::to_string(parameters.numGPUs()) + ",walltime=01:00:00 " +
+			+ std::to_string(numGPUs) + ",walltime=01:00:00 " +
 			colmapWorkingDir + "/colmapScript.sh\"";
 		boost::process::system(runScript);
 		SIBR_LOG << "Running: " << runScript << std::endl;
@@ -558,8 +555,8 @@ void runTextureMesh(const std::string& program, const std::string& datasetPath) 
 void printExample() {
     SIBR_LOG << "OPTIONS EXAMPLE TO HELP YOU :" << std::endl
         << "LOCAL VERSION" << std::endl
-        << "--path E:\\USERNAME\\testData\\colmap\\testcluster                   The path which contain the dataset" << std::endl
-        << "--sibrBinariesPath E:\\USERNAME\\dev\\sibr_basic2\\install\\bin      The path where the program looks for the binaries" << std::endl
+        << "--path E:\\USERNAME\\testData\\colmap\\testcluster              The path which contain the dataset" << std::endl
+        << "--sibrBinariesPath E:\\USERNAME\\dev\\sibr_basic2\\install\\bin The path where the program looks for the binaries" << std::endl
         << "--colmapPath D:\\colmap                                         The path where the Colmap program is present (COLMAP.bat on Windows, colmap on UNIX)" << std::endl
         << "--quality medium                                                Optional option. It's the pre-defined quality (low,medium,high,extreme)" << std::endl
         << std::endl
@@ -570,6 +567,7 @@ void printExample() {
         << "--colmapPath /data/graphdeco/share/colmap/bin/                  The path where the Colmap program is present (COLMAP.bat on Windows, colmap on UNIX)" << std::endl
         << "--colmapWorkingDir /data/graphdeco/user/YOU/colmapTests/test    A directory on the Cluster where Colmap will write the results" << std::endl
         << "--clusterGPU 34                                                 Optional option. It's the number of the node. If you do not specify it, the Cluster will decide" << std::endl
+        << "--numGPUs                                                       Optional option. It's the number of the GPUs present in the Node" << std::endl
         << "--quality medium                                                Optional option. It's the pre-defined quality (low,medium,high,extreme)" << std::endl
         << std::endl;
 }
@@ -674,7 +672,7 @@ int main(const int argc, const char** argv)
 	else {
 	//REMOTE UNIX
 	runColmap(colmapProgram, myArgs.dataset_path,myArgs.colmapWorkingDir , 
-		colmapParams, myArgs.remoteUnix.get(), myArgs.clusterGPU.get());
+		colmapParams, myArgs.remoteUnix.get(), myArgs.clusterGPU.get(), myArgs.numGPUs.get());
 	waitSteps(myArgs.colmapWorkingDir, myArgs.remoteUnix.get());
 	getProject(myArgs.dataset_path.get(), myArgs.colmapWorkingDir.get(), myArgs.remoteUnix.get());
 	}
