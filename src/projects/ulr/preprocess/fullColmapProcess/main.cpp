@@ -360,7 +360,7 @@ void runColmap(const std::string& colmapProgramPath,
 		SIBR_LOG << "Running: " << command << std::endl;
 
 		SIBR_LOG << "The request is done  ... Waiting the answers..." << std::endl << std::endl;
-		std::string runScript = "ssh -t " + sshAccount + " \"cd " +
+		std::string runScript = "ssh " + sshAccount + " \"cd " +
 			colmapWorkingDir + ";chmod 777 " + colmapWorkingDir +
 			"/colmapScript.sh;oarsub -p \\\"";
 		if (gpuNodeNum.compare("any") != 0) {
@@ -396,7 +396,7 @@ void waitSteps(const std::string& colmapWorkingDir, const std::string& sshAccoun
 	for (const std::string& step : steps) {
 		bool stepFinished = false;
 		while (!stepFinished) {
-			const std::string command = "ssh -t " + sshAccount + " \" ls " + colmapWorkingDir + "/" + step + ".txt\"";
+			const std::string command = "ssh " + sshAccount + " \" ls " + colmapWorkingDir + "/" + step + ".txt\"";
 			//SIBR_LOG << "Running: " << command << std::endl;
 			const int result = boost::process::system(command);
 			//SIBR_LOG << "ssh checking file is finished ..." << std::endl;
@@ -462,7 +462,7 @@ void makeDirectories(const std::string& workingPath, const std::string& sshAccou
 	if (remotely) {
 		for (const std::string& dir : colmapDirs) {
 
-		const std::string makeDirCommand = "ssh -t " + sshAccount + " \"cd " + 
+		const std::string makeDirCommand = "ssh " + sshAccount + " \"cd " + 
 			workingPath + "; mkdir " + dir +"\"";
 
 		SIBR_LOG << "Creating " << dir << " remotely : " << std::endl 
