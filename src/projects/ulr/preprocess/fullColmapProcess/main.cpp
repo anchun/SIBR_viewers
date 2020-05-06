@@ -180,12 +180,23 @@ void setPersonalParameters(const CommandLineArgs& globalArgs,
 	}
 }
 
+std::string convertWindowsToLinuxPath(const std::string& winPath) {
+	std::string linuxPath;
+	for (const char& c : winPath) {
+		if (c == '\\') {
+			linuxPath.push_back('/');
+		}
+		else linuxPath.push_back(c);
+	}
+	return linuxPath;
+}
+
 int sendImages(
 	const std::string& datasetPath,
 	const std::string& colmapWorkingDir,
 	const std::string& sshAccount) {
-	const std::string command = "scp -r " + datasetPath + "\\images "
-		+ sshAccount + ":" + colmapWorkingDir;
+	const std::string command = "scp -r " + convertWindowsToLinuxPath 
+		(datasetPath)+ "/images " + sshAccount + ":" + colmapWorkingDir;
 
 	SIBR_LOG << "Sending images ... " << std::endl;
 	const int result = boost::process::system(command);
@@ -214,6 +225,7 @@ void runColmap(const std::string& colmapProgramPath,
 	const std::string& colmapWorkingDir,
 	const ColmapParameters& parameters,
 	const std::string& sshAccount = "",
+	const std::string& displayOption = " ",
 	std::string gpuNodeNum = "any",
 	unsigned int numGPUs = 2
 	){
@@ -232,7 +244,7 @@ void runColmap(const std::string& colmapProgramPath,
 		return sGPUs;
 	};
 
-	const std::string gpusIndices = gpusToString(parameters.numGPUs());
+	const std::string gpusIndices = gpusToString(numGPUs);
 	constexpr size_t colmapCalls = 9;
 	const std::array<std::string, colmapCalls> calls{
 		"feature_extractor",
@@ -349,18 +361,19 @@ void runColmap(const std::string& colmapProgramPath,
 	}
 	if (remotely) {
 		//We create the script that the node will execute
-		const std::string scriptToSend = datasetPath + "\\colmapScript.sh";
+		const std::string scriptToSend = convertWindowsToLinuxPath (datasetPath) + 
+			"/colmapScript.sh";
 		std::ofstream scriptFile (scriptToSend, std::ios::binary);
 		scriptFile << unixListAllCommands;
 		scriptFile.close();
 		
 		SIBR_LOG << "Sending script file..." << std::endl << std::endl;
-		const std::string command = "scp " +scriptToSend + " " + sshAccount + ":" + colmapWorkingDir;
+		const std::string command = "scp " + scriptToSend + " " + sshAccount + ":" + colmapWorkingDir;
 		const int result = boost::process::system(command);
 		SIBR_LOG << "Running: " << command << std::endl;
 
 		SIBR_LOG << "The request is done  ... Waiting the answers..." << std::endl << std::endl;
-		std::string runScript = "ssh " + sshAccount + " \"cd " +
+		std::string runScript = "ssh" + displayOption + sshAccount + " \"cd " +
 			colmapWorkingDir + ";chmod 777 " + colmapWorkingDir +
 			"/colmapScript.sh;oarsub -p \\\"";
 		if (gpuNodeNum.compare("any") != 0) {
@@ -370,7 +383,12 @@ void runColmap(const std::string& colmapProgramPath,
 		runScript += "gpu='YES' and gpucapability>='5.0'\\\" -l /nodes=1/gpunum="
 			+ std::to_string(numGPUs) + ",walltime=01:00:00 " +
 			colmapWorkingDir + "/colmapScript.sh\"";
-		boost::process::system(runScript);
+		const int resultRunScript = boost::process::system(runScript);
+		if (resultRunScript == EXIT_FAILURE) {
+			SIBR_LOG << "ERROR" << std::endl;
+		}
+		else {
+		}
 		SIBR_LOG << "Running: " << runScript << std::endl;
 
 
@@ -378,7 +396,30 @@ void runColmap(const std::string& colmapProgramPath,
 
 }
 
-void waitSteps(const std::string& colmapWorkingDir, const std::string& sshAccount) {
+std::string getDisplayOption( 
+	const std::string& colmapWorkingDir,
+	const std::string& sshAccount) {
+
+	//On the Windows terminal, if we do not use the -t option for ssh, the Logs on the console have bugs 
+	//with the endline character, so if the option is available, we use it. If the option is not
+	//available, we don't use it
+
+	//We are sure that this directory exists, but we test if the -t option are available
+	const std::string command = "ssh -t " + sshAccount + " test -d " + colmapWorkingDir;
+
+	const int result = boost::process::system(command);
+
+	std::string displayOption;
+	if (result == EXIT_SUCCESS) {
+		displayOption = " -t "; //available
+	} else 
+		displayOption = " "; //not available
+
+	return displayOption;
+}
+
+void waitSteps(const std::string& colmapWorkingDir, const std::string& sshAccount,
+				const std::string& displayOption = " ") {
 	
 	constexpr size_t nbSteps = 10;
 	const std::array<std::string, nbSteps> steps{
@@ -396,7 +437,8 @@ void waitSteps(const std::string& colmapWorkingDir, const std::string& sshAccoun
 	for (const std::string& step : steps) {
 		bool stepFinished = false;
 		while (!stepFinished) {
-			const std::string command = "ssh " + sshAccount + " \" ls " + colmapWorkingDir + "/" + step + ".txt\"";
+			//const std::string command = "ssh -t " + sshAccount + " \" ls " + colmapWorkingDir + "/" + step + ".txt\"";
+			const std::string command = "ssh" + displayOption + sshAccount + " test -f " + colmapWorkingDir + "/" + step + ".txt\"";
 			//SIBR_LOG << "Running: " << command << std::endl;
 			const int result = boost::process::system(command);
 			//SIBR_LOG << "ssh checking file is finished ..." << std::endl;
@@ -455,19 +497,21 @@ int fixEndLinesMesh(const std::string& datasetPath) {
 }
 
 
-void makeDirectories(const std::string& workingPath, const std::string& sshAccount = "") {
+void makeDirectories(const std::string& workingPath, const std::string& sshAccount = "", 
+						const std::string& displayOption = " ") {
 	const bool remotely = (!sshAccount.empty());
 	const std::vector<std::string> colmapDirs = { 
 		"colmap", "capreal", "capreal/undistorted", "colmap/stereo", "colmap/sparse"};
 	if (remotely) {
 		for (const std::string& dir : colmapDirs) {
+			std::string strDisplayOption;
 
-		const std::string makeDirCommand = "ssh " + sshAccount + " \"cd " + 
-			workingPath + "; mkdir " + dir +"\"";
+			const std::string makeDirCommand = "ssh" + displayOption + sshAccount + " \"cd " +
+				workingPath + "; mkdir " + dir + "\"";
 
-		SIBR_LOG << "Creating " << dir << " remotely : " << std::endl 
-			<< makeDirCommand << std::endl;
-		const int result = boost::process::system(makeDirCommand);
+			SIBR_LOG << "Creating " << dir << " remotely : " << std::endl
+				<< makeDirCommand << std::endl;
+			const int result = boost::process::system(makeDirCommand);
 		}
 	}
 	else {
@@ -660,7 +704,9 @@ int main(const int argc, const char** argv)
 
 	//----------------------------CHECKING FINISHED------------------------------//
 
-	makeDirectories(workingPath, myArgs.remoteUnix.get());
+	const std::string displayOption = getDisplayOption(myArgs.colmapWorkingDir.get(),
+														myArgs.remoteUnix.get());
+	makeDirectories(workingPath, myArgs.remoteUnix.get(), displayOption);
 
 	ColmapParameters colmapParams(*qualityRecon);
 	setPersonalParameters(globalArgs, myArgs, colmapParams);
@@ -672,8 +718,8 @@ int main(const int argc, const char** argv)
 	else {
 	//REMOTE UNIX
 	runColmap(colmapProgram, myArgs.dataset_path,myArgs.colmapWorkingDir , 
-		colmapParams, myArgs.remoteUnix.get(), myArgs.clusterGPU.get(), myArgs.numGPUs.get());
-	waitSteps(myArgs.colmapWorkingDir, myArgs.remoteUnix.get());
+		colmapParams, myArgs.remoteUnix.get(), displayOption, myArgs.clusterGPU.get(), myArgs.numGPUs.get());
+	waitSteps(myArgs.colmapWorkingDir, myArgs.remoteUnix.get(), displayOption);
 	getProject(myArgs.dataset_path.get(), myArgs.colmapWorkingDir.get(), myArgs.remoteUnix.get());
 	}
 
