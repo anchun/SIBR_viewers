@@ -24,10 +24,10 @@ struct FullProcessColmapPreprocessArgs :
 	RequiredArg<std::string>	sibrBinariesPath = { "sibrBinariesPath","binaries directory of SIBR" };
 	Arg<std::string>			quality = 
 								{ "quality","","quality of the reconstruction" };
-	Arg<uint>					numGPUs = { "numGPUs",1,"Number of GPUs" };
+	Arg<uint>					numGPUs = { "numGPUs",2,"Number of GPUs" };
 	Arg<std::string>			remoteUnix = { "remoteUnix","","ssh account, example: user@nef-devel.inria.fr" };
 	Arg<std::string>			colmapWorkingDir = { "colmapWorkingDir","","colmap working directory in your Unix system" };
-	Arg<std::string>			clusterGPU = { "clusterGPU","","GPU number : exemple 12" };
+	Arg<std::string>			clusterGPU = { "clusterGPU","any","GPU number, example : \"clusterGPU 12\" , \"clusterGPU any\"" };
 
 	//Feature extractor 
 	Arg<uint>	siftExtraction_ImageSize = 
@@ -218,7 +218,7 @@ void runColmap(const std::string& colmapProgramPath,
 	const std::string& colmapWorkingDir,
 	const ColmapParameters& parameters,
 	const std::string& sshAccount = "",
-	std::string gpuNodeNum = "09"
+	std::string gpuNodeNum = "any"
 	){
 	if (gpuNodeNum.size() == 1) {
 	//We add a '0' if the number has only one char
@@ -363,11 +363,16 @@ void runColmap(const std::string& colmapProgramPath,
 		SIBR_LOG << "Running: " << command << std::endl;
 
 		SIBR_LOG << "The request is done  ... Waiting the answers..." << std::endl << std::endl;
-		const std::string runScript = "ssh -t " + sshAccount + " \"cd " +
+		std::string runScript = "ssh -t " + sshAccount + " \"cd " +
 			colmapWorkingDir + ";chmod 777 " + colmapWorkingDir +
-			"/colmapScript.sh;oarsub -p \\\"host='nefgpu" + gpuNodeNum +".inria.fr' and gpu='YES' and gpucapability>='5.0'\\\" -l /nodes=1/gpunum="
+			"/colmapScript.sh;oarsub -p \\\"";
+		if (gpuNodeNum.compare("any") != 0) {
+			runScript += "host='nefgpu" + gpuNodeNum + ".inria.fr' and ";
+		}
+
+		runScript += "gpu='YES' and gpucapability>='5.0'\\\" -l /nodes=1/gpunum="
 			+ std::to_string(parameters.numGPUs()) + ",walltime=01:00:00 " +
-				colmapWorkingDir +"/colmapScript.sh\"";
+			colmapWorkingDir + "/colmapScript.sh\"";
 		boost::process::system(runScript);
 		SIBR_LOG << "Running: " << runScript << std::endl;
 
@@ -581,12 +586,6 @@ int main(const int argc, const char** argv)
 
 	//-----------------REMOTE UNIX ARGUMENT-------------------//
 	if (globalArgs.contains("remoteUnix")) {
-		if (!globalArgs.contains("clusterGPU")) {
-			SIBR_ERR << "Your specified the remoteUnix option but you did not specify the clusterGPU option.." << std::endl
-				<< "Please specify it with a free GPU node on the cluster (example --clusterGPU 12)" << std::endl;
-			printExample();
-			return EXIT_FAILURE;
-		}
 		if (!globalArgs.contains("colmapWorkingDir")) {
 			SIBR_ERR << "Your specified the remoteUnix option but you did not specify the colmapWorkingDir path option.." << std::endl
 				<< "Please specify this path on your remote system" << std::endl;
