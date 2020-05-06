@@ -30,39 +30,62 @@ _stereoFusion_MaxImageSize                           (initStereoFusion_MaxImageS
 
 uint ColmapParameters::initSiftExtraction_ImageSize(ColmapParameters::Quality q) {
 	switch (q) {
-	case ColmapParameters::Quality::DEFAULT:	return 3200; break;
-	case ColmapParameters::Quality::LOW:		return 1000; break;
-	case ColmapParameters::Quality::MEDIUM:		return 1600; break;
-	case ColmapParameters::Quality::HIGH:		return 2400; break;
-	case ColmapParameters::Quality::EXTREME:	return 3200; break;
-	default:									return 3200; break;
+	case ColmapParameters::Quality::DEFAULT:		return 3200; break;
+	case ColmapParameters::Quality::LOW:			return 1000; break;
+	case ColmapParameters::Quality::MEDIUM:			return 1600; break;
+	case ColmapParameters::Quality::HIGH:			return 2400; break;
+	case ColmapParameters::Quality::EXTREME:		return 3200; break;
+	case ColmapParameters::Quality::DEEPBLENDING:	return 3200; break;
+	default:										return 3200; break;
 	}
 }
 
 bool ColmapParameters::initSiftExtraction_EstimateAffineShape(ColmapParameters::Quality q) {
 	switch (q) {
-	case ColmapParameters::Quality::DEFAULT:	return false; break;
-	case ColmapParameters::Quality::LOW:		return false; break;
-	case ColmapParameters::Quality::MEDIUM:		return false; break;
-	case ColmapParameters::Quality::HIGH:		return true; break;
-	case ColmapParameters::Quality::EXTREME:	return true; break;
-	default:									return false; break;
+	case ColmapParameters::Quality::DEFAULT:		return false; break;
+	case ColmapParameters::Quality::LOW:			return false; break;
+	case ColmapParameters::Quality::MEDIUM:			return false; break;
+	case ColmapParameters::Quality::HIGH:			return true; break;
+	case ColmapParameters::Quality::EXTREME:		return true; break;
+	case ColmapParameters::Quality::DEEPBLENDING:	return false; break;
+	default:										return false; break;
 	}
 
 }
 bool ColmapParameters::initSiftExtraction_DomainSizePooling(ColmapParameters::Quality q) {
 	switch (q) {
-	case ColmapParameters::Quality::DEFAULT:	return false; break;
-	case ColmapParameters::Quality::LOW:		return false; break;
-	case ColmapParameters::Quality::MEDIUM:		return false; break;
-	case ColmapParameters::Quality::HIGH:		return false; break;
-	case ColmapParameters::Quality::EXTREME:	return true; break;
-	default:									return false; break;
+	case ColmapParameters::Quality::DEFAULT:		return false; break;
+	case ColmapParameters::Quality::LOW:			return false; break;
+	case ColmapParameters::Quality::MEDIUM:			return false; break;
+	case ColmapParameters::Quality::HIGH:			return false; break;
+	case ColmapParameters::Quality::EXTREME:		return true; break;
+	case ColmapParameters::Quality::DEEPBLENDING:	return false; break;
+	default:										return false; break;
 	}
 }
 
 uint ColmapParameters::initSiftExtraction_MaxNumFeatures(ColmapParameters::Quality q) {
-	return 8192;
+	switch (q) {
+	case ColmapParameters::Quality::DEFAULT:		return 8192; break;
+	case ColmapParameters::Quality::LOW:			return 8192; break;
+	case ColmapParameters::Quality::MEDIUM:			return 8192; break;
+	case ColmapParameters::Quality::HIGH:			return 8192; break;
+	case ColmapParameters::Quality::EXTREME:		return 8192; break;
+	case ColmapParameters::Quality::DEEPBLENDING:	return 16000; break;
+	default:										return 8192; break;
+	}
+}
+
+bool ColmapParameters::initImageReader_SingleCamera(ColmapParameters::Quality q) {
+	switch (q) {
+	case ColmapParameters::Quality::DEFAULT:		return true; break;
+	case ColmapParameters::Quality::LOW:			return true; break;
+	case ColmapParameters::Quality::MEDIUM:			return true; break;
+	case ColmapParameters::Quality::HIGH:			return true; break;
+	case ColmapParameters::Quality::EXTREME:		return true; break;
+	case ColmapParameters::Quality::DEEPBLENDING:	return false; break;
+	default:										return true; break;
+	}
 }
 
 uint ColmapParameters::initExhaustiveMatcher_ExhaustiveMatchingBlockSize(ColmapParameters::Quality q) {
@@ -71,32 +94,35 @@ uint ColmapParameters::initExhaustiveMatcher_ExhaustiveMatchingBlockSize(ColmapP
 
 uint ColmapParameters::initMapper_MapperDotbaLocalMaxNumIterations(ColmapParameters::Quality q) {
 	switch (q) {
-	case ColmapParameters::Quality::DEFAULT:	return 25; break;
-	case ColmapParameters::Quality::LOW:		return 12; break;
-	case ColmapParameters::Quality::MEDIUM:		return 16; break;
-	case ColmapParameters::Quality::HIGH:		return 30; break;
-	case ColmapParameters::Quality::EXTREME:	return 40; break;
-	default:									return 25; break;
+	case ColmapParameters::Quality::DEFAULT:		return 25; break;
+	case ColmapParameters::Quality::LOW:			return 12; break;
+	case ColmapParameters::Quality::MEDIUM:			return 16; break;
+	case ColmapParameters::Quality::HIGH:			return 30; break;
+	case ColmapParameters::Quality::EXTREME:		return 40; break;
+	case ColmapParameters::Quality::DEEPBLENDING:	return 25; break;
+	default:										return 25; break;
 	}
 }
 uint ColmapParameters::initMapper_MapperDotbaGlobalMaxNumIterations(ColmapParameters::Quality q) {
 	switch (q) {
-	case ColmapParameters::Quality::DEFAULT:	return 50; break;
-	case ColmapParameters::Quality::LOW:		return 25; break;
-	case ColmapParameters::Quality::MEDIUM:		return 33; break;
-	case ColmapParameters::Quality::HIGH:		return 75; break;
-	case ColmapParameters::Quality::EXTREME:	return 100; break;
-	default:									return 50; break;
+	case ColmapParameters::Quality::DEFAULT:		return 50; break;
+	case ColmapParameters::Quality::LOW:			return 25; break;
+	case ColmapParameters::Quality::MEDIUM:			return 33; break;
+	case ColmapParameters::Quality::HIGH:			return 75; break;
+	case ColmapParameters::Quality::EXTREME:		return 100; break;
+	case ColmapParameters::Quality::DEEPBLENDING:	return 50; break;
+	default:										return 50; break;
 	}
 }
 float ColmapParameters::initMapper_MapperDotbaGlobalImagesRatio(ColmapParameters::Quality q) {
 	switch (q) {
-	case ColmapParameters::Quality::DEFAULT:	return 1.100001; break;
-	case ColmapParameters::Quality::LOW:		return 1.32; break;
-	case ColmapParameters::Quality::MEDIUM:		return 1.21; break;
-	case ColmapParameters::Quality::HIGH:		return 1.100001; break;
-	case ColmapParameters::Quality::EXTREME:	return 1.100001; break;
-	default:									return 1.100001; break;
+	case ColmapParameters::Quality::DEFAULT:		return 1.100001; break;
+	case ColmapParameters::Quality::LOW:			return 1.32; break;
+	case ColmapParameters::Quality::MEDIUM:			return 1.21; break;
+	case ColmapParameters::Quality::HIGH:			return 1.100001; break;
+	case ColmapParameters::Quality::EXTREME:		return 1.100001; break;
+	case ColmapParameters::Quality::DEEPBLENDING:	return 1.100001; break;
+	default:										return 1.100001; break;
 	}
 }
 float ColmapParameters::initMapper_MapperDotbaGlobalPointsRatio(ColmapParameters::Quality q) {
@@ -105,106 +131,116 @@ float ColmapParameters::initMapper_MapperDotbaGlobalPointsRatio(ColmapParameters
 
 uint ColmapParameters::initMapper_MapperDotbaGlobalMaxRefinements(ColmapParameters::Quality q) {
 	switch (q) {
-	case ColmapParameters::Quality::DEFAULT:	return 5; break;
-	case ColmapParameters::Quality::LOW:		return 2; break;
-	case ColmapParameters::Quality::MEDIUM:		return 2; break;
-	case ColmapParameters::Quality::HIGH:		return 5; break;
-	case ColmapParameters::Quality::EXTREME:	return 5; break;
-	default:									return 5; break;
+	case ColmapParameters::Quality::DEFAULT:		return 5; break;
+	case ColmapParameters::Quality::LOW:			return 2; break;
+	case ColmapParameters::Quality::MEDIUM:			return 2; break;
+	case ColmapParameters::Quality::HIGH:			return 5; break;
+	case ColmapParameters::Quality::EXTREME:		return 5; break;
+	case ColmapParameters::Quality::DEEPBLENDING:	return 5; break;
+	default:										return 5; break;
 	}
 }
 uint ColmapParameters::initMapper_MapperDotbaLocalMaxRefinements(ColmapParameters::Quality q) {
 	switch (q) {
-	case ColmapParameters::Quality::DEFAULT:	return 2; break;
-	case ColmapParameters::Quality::LOW:		return 2; break;
-	case ColmapParameters::Quality::MEDIUM:		return 2; break;
-	case ColmapParameters::Quality::HIGH:		return 3; break;
-	case ColmapParameters::Quality::EXTREME:	return 3; break;
-	default:									return 2; break;
+	case ColmapParameters::Quality::DEFAULT:		return 2; break;
+	case ColmapParameters::Quality::LOW:			return 2; break;
+	case ColmapParameters::Quality::MEDIUM:			return 2; break;
+	case ColmapParameters::Quality::HIGH:			return 3; break;
+	case ColmapParameters::Quality::EXTREME:		return 3; break;
+	case ColmapParameters::Quality::DEEPBLENDING:	return 2; break;
+	default:										return 2; break;
 	}
 }
 
 int ColmapParameters::initMatchMatchStereo_PatchMatchStereoDotMaxImageSize(ColmapParameters::Quality q) {
 	switch (q) {
-	case ColmapParameters::Quality::DEFAULT:	return -1; break;
-	case ColmapParameters::Quality::LOW:		return 1000; break;
-	case ColmapParameters::Quality::MEDIUM:		return 1600; break;
-	case ColmapParameters::Quality::HIGH:		return 2400; break;
-	case ColmapParameters::Quality::EXTREME:	return -1; break;
-	default:									return -1; break;
+	case ColmapParameters::Quality::DEFAULT:		return -1; break;
+	case ColmapParameters::Quality::LOW:			return 1000; break;
+	case ColmapParameters::Quality::MEDIUM:			return 1600; break;
+	case ColmapParameters::Quality::HIGH:			return 2400; break;
+	case ColmapParameters::Quality::EXTREME:		return -1; break;
+	case ColmapParameters::Quality::DEEPBLENDING:	return -1; break;
+	default:										return -1; break;
 	}
 }
 uint ColmapParameters::initMatchMatchStereo_PatchMatchStereoDotWindowRadius(ColmapParameters::Quality q) {
 	switch (q) {
-	case ColmapParameters::Quality::DEFAULT:	return 5; break;
-	case ColmapParameters::Quality::LOW:		return 4; break;
-	case ColmapParameters::Quality::MEDIUM:		return 4; break;
-	case ColmapParameters::Quality::HIGH:		return 5; break;
-	case ColmapParameters::Quality::EXTREME:	return 5; break;
-	default:									return 5; break;
+	case ColmapParameters::Quality::DEFAULT:		return 5; break;
+	case ColmapParameters::Quality::LOW:			return 4; break;
+	case ColmapParameters::Quality::MEDIUM:			return 4; break;
+	case ColmapParameters::Quality::HIGH:			return 5; break;
+	case ColmapParameters::Quality::EXTREME:		return 5; break;
+	case ColmapParameters::Quality::DEEPBLENDING:	return 5; break;
+	default:										return 5; break;
 	}
 }
 
 uint ColmapParameters::initMatchMatchStereo_PatchMatchStereoDotWindowStep(ColmapParameters::Quality q) {
 	switch (q) {
-	case ColmapParameters::Quality::DEFAULT:	return 1; break;
-	case ColmapParameters::Quality::LOW:		return 2; break;
-	case ColmapParameters::Quality::MEDIUM:		return 2; break;
-	case ColmapParameters::Quality::HIGH:		return 1; break;
-	case ColmapParameters::Quality::EXTREME:	return 1; break;
-	default:									return 1; break;
+	case ColmapParameters::Quality::DEFAULT:		return 1; break;
+	case ColmapParameters::Quality::LOW:			return 2; break;
+	case ColmapParameters::Quality::MEDIUM:			return 2; break;
+	case ColmapParameters::Quality::HIGH:			return 1; break;
+	case ColmapParameters::Quality::EXTREME:		return 1; break;
+	case ColmapParameters::Quality::DEEPBLENDING:	return 1; break;
+	default:										return 1; break;
 	}
 }
 uint ColmapParameters::initMatchMatchStereo_PatchMatchStereoDotNumSamples(ColmapParameters::Quality q) {
 	switch (q) {
-	case ColmapParameters::Quality::DEFAULT:	return 15; break;
-	case ColmapParameters::Quality::LOW:		return 7; break;
-	case ColmapParameters::Quality::MEDIUM:		return 10; break;
-	case ColmapParameters::Quality::HIGH:		return 15; break;
-	case ColmapParameters::Quality::EXTREME:	return 15; break;
-	default:									return 15; break;
+	case ColmapParameters::Quality::DEFAULT:		return 15; break;
+	case ColmapParameters::Quality::LOW:			return 7; break;
+	case ColmapParameters::Quality::MEDIUM:			return 10; break;
+	case ColmapParameters::Quality::HIGH:			return 15; break;
+	case ColmapParameters::Quality::EXTREME:		return 15; break;
+	case ColmapParameters::Quality::DEEPBLENDING:	return 15; break;
+	default:										return 15; break;
 	}
 }
 uint ColmapParameters::initMatchMatchStereo_PatchMatchStereoDotNumIterations(ColmapParameters::Quality q) {
 	switch (q) {
-	case ColmapParameters::Quality::DEFAULT:	return 5; break;
-	case ColmapParameters::Quality::LOW:		return 3; break;
-	case ColmapParameters::Quality::MEDIUM:		return 5; break;
-	case ColmapParameters::Quality::HIGH:		return 5; break;
-	case ColmapParameters::Quality::EXTREME:	return 5; break;
-	default:									return 5; break;
+	case ColmapParameters::Quality::DEFAULT:		return 5; break;
+	case ColmapParameters::Quality::LOW:			return 3; break;
+	case ColmapParameters::Quality::MEDIUM:			return 5; break;
+	case ColmapParameters::Quality::HIGH:			return 5; break;
+	case ColmapParameters::Quality::EXTREME:		return 5; break;
+	case ColmapParameters::Quality::DEEPBLENDING:	return 5; break;
+	default:										return 5; break;
 	}
 
 }
 bool ColmapParameters::initMatchMatchStereo_PatchMatchStereoDotGeomConsistency(ColmapParameters::Quality q) {
 	switch (q) {
-	case ColmapParameters::Quality::DEFAULT:	return 5; break;
-	case ColmapParameters::Quality::LOW:		return 3; break;
-	case ColmapParameters::Quality::MEDIUM:		return 5; break;
-	case ColmapParameters::Quality::HIGH:		return 5; break;
-	case ColmapParameters::Quality::EXTREME:	return 5; break;
-	default:									return 5; break;
+	case ColmapParameters::Quality::DEFAULT:		return 1; break;
+	case ColmapParameters::Quality::LOW:			return 0; break;
+	case ColmapParameters::Quality::MEDIUM:			return 0; break;
+	case ColmapParameters::Quality::HIGH:			return 1; break;
+	case ColmapParameters::Quality::EXTREME:		return 1; break;
+	case ColmapParameters::Quality::DEEPBLENDING:	return 1; break;
+	default:										return 1; break;
 	}
 }
 
 uint ColmapParameters::initStereoFusion_CheckNumImages(ColmapParameters::Quality q) {
 	switch (q) {
-	case ColmapParameters::Quality::DEFAULT:	return 50; break;
-	case ColmapParameters::Quality::LOW:		return 25; break;
-	case ColmapParameters::Quality::MEDIUM:		return 33; break;
-	case ColmapParameters::Quality::HIGH:		return 50; break;
-	case ColmapParameters::Quality::EXTREME:	return 50; break;
-	default:									return 50; break;
+	case ColmapParameters::Quality::DEFAULT:		return 50; break;
+	case ColmapParameters::Quality::LOW:			return 25; break;
+	case ColmapParameters::Quality::MEDIUM:			return 33; break;
+	case ColmapParameters::Quality::HIGH:			return 50; break;
+	case ColmapParameters::Quality::EXTREME:		return 50; break;
+	case ColmapParameters::Quality::DEEPBLENDING:	return 50; break;
+	default:										return 50; break;
 	}
 }
 int ColmapParameters::initStereoFusion_MaxImageSize(ColmapParameters::Quality q) {
 	switch (q) {
-	case ColmapParameters::Quality::DEFAULT:	return -1; break;
-	case ColmapParameters::Quality::LOW:		return 1000; break;
-	case ColmapParameters::Quality::MEDIUM:		return 1600; break;
-	case ColmapParameters::Quality::HIGH:		return 2400; break;
-	case ColmapParameters::Quality::EXTREME:	return -1; break;
-	default:									return -1; break;
+	case ColmapParameters::Quality::DEFAULT:		return -1; break;
+	case ColmapParameters::Quality::LOW:			return 1000; break;
+	case ColmapParameters::Quality::MEDIUM:			return 1600; break;
+	case ColmapParameters::Quality::HIGH:			return 2400; break;
+	case ColmapParameters::Quality::EXTREME:		return -1; break;
+	case ColmapParameters::Quality::DEEPBLENDING:	return -1; break;
+	default:										return -1; break;
 	}
 }
 
@@ -222,6 +258,10 @@ bool	ColmapParameters::siftExtractionDomainSizePooling() const {
 
 uint	ColmapParameters::siftExtractionMaxNumFeatures() const {
 	return _siftExtraction_MaxNumFeatures;
+}
+
+bool	ColmapParameters::imageReaderSingleCamera() const {
+	return _imageReader_SingleCamera;
 }
 
 uint	ColmapParameters::exhaustiveMatcherExhaustiveMatchingBlockSize() const {
@@ -296,6 +336,9 @@ void	ColmapParameters::siftExtractionDomainSizePooling(bool value) {
 void	ColmapParameters::siftExtractionMaxNumFeatures(uint value) {
 	_siftExtraction_MaxNumFeatures = value;
 }
+void ColmapParameters::imageReaderSingleCamera(bool value) {
+	_imageReader_SingleCamera = value;
+}
 void	ColmapParameters::exhaustiveMatcherExhaustiveMatchingBlockSize(uint value) {
 	_exhaustiveMatcher_ExhaustiveMatchingBlockSize = value;
 }
@@ -363,9 +406,13 @@ std::shared_ptr<ColmapParameters::Quality> ColmapParameters::stringToQuality(
 		quality = std::make_shared<ColmapParameters::Quality>(
 			ColmapParameters::Quality::EXTREME);
 	}
+	else if (sQuality.compare("deepBlending") == 0) {
+		quality = std::make_shared<ColmapParameters::Quality>(
+			ColmapParameters::Quality::DEEPBLENDING);
+	}
 	else {
 		SIBR_ERR << "The quality: \"" << sQuality << "\" is unknown..." << std::endl
-			<< "Possible values : low medium high extreme" << std::endl
+			<< "Possible values : low medium high extreme deepBlending" << std::endl
 			<< "If you want the default values, just remove the option" << std::endl;
 		quality = nullptr;
 	}

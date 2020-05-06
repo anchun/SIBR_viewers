@@ -38,6 +38,8 @@ struct FullProcessColmapPreprocessArgs :
 				{"SiftExtraction.domain_size_pooling",0,"colmap feature extractor param"};
 	Arg<uint>	siftExtraction_MaxNumFeatures = 
 				{"SiftExtraction.max_num_features",8192,"colmap feature extractor param"};
+	Arg<uint>	imageReader_SingleCamera = 
+				{"ImageReader.single_camera",1,"colmap feature extractor param"};
 
 	//Exhaustive matcher
 	Arg<uint>	exhaustiveMatcher_ExhaustiveMatchingBlockSize = 
@@ -114,6 +116,10 @@ void setPersonalParameters(const CommandLineArgs& globalArgs,
 	if (globalArgs.contains("SiftExtraction.max_num_features")) {
 		parameters.siftExtractionMaxNumFeatures (
 			userArgs.siftExtraction_MaxNumFeatures.get());
+	}
+	if (globalArgs.contains("ImageReader.single_camera")) {
+		parameters.imageReaderSingleCamera (
+			userArgs.imageReader_SingleCamera.get());
 	}
 
 	if (globalArgs.contains("ExhaustiveMatching.block_size")) {
@@ -267,8 +273,8 @@ void runColmap(const std::string& colmapProgramPath,
 	}
 	const std::array<std::string, colmapCalls> params{
 		"--database_path " + colmapWorkingDir + dirStr + "colmap" + dirStr + "dataset.db " +
-		"--image_path " + colmapWorkingDir + dirStr + "images" + dirStr + " --ImageReader.single_camera 0 " +
-		"--ImageReader.camera_model OPENCV " +
+		"--image_path " + colmapWorkingDir + dirStr + "images" + dirStr +
+		" --ImageReader.camera_model OPENCV " +
 		" --SiftExtraction.max_image_size " +
 			std::to_string(parameters.siftExtractionImageSize()) +
 		" --SiftExtraction.estimate_affine_shape " +
@@ -277,6 +283,8 @@ void runColmap(const std::string& colmapProgramPath,
 			std::to_string(parameters.siftExtractionDomainSizePooling()) +
 		" --SiftExtraction.max_num_features " +
 			std::to_string(parameters.siftExtractionMaxNumFeatures()) +
+		" --ImageReader.single_camera " +
+			std::to_string(parameters.imageReaderSingleCamera()) +
 		" --SiftExtraction.gpu_index "+ gpusIndices,
 
 		"--database_path " + colmapWorkingDir + dirStr + "colmap" + dirStr + "dataset.db " +
@@ -381,7 +389,7 @@ void runColmap(const std::string& colmapProgramPath,
 		}
 
 		runScript += "gpu='YES' and gpucapability>='5.0'\\\" -l /nodes=1/gpunum="
-			+ std::to_string(numGPUs) + ",walltime=01:00:00 " +
+			+ std::to_string(numGPUs) + ",walltime=04:00:00 " +
 			colmapWorkingDir + "/colmapScript.sh\"";
 		const int resultRunScript = boost::process::system(runScript);
 		if (resultRunScript == EXIT_FAILURE) {
@@ -602,7 +610,7 @@ void printExample() {
         << "--path E:\\USERNAME\\testData\\colmap\\testcluster              The path which contain the dataset" << std::endl
         << "--sibrBinariesPath E:\\USERNAME\\dev\\sibr_basic2\\install\\bin The path where the program looks for the binaries" << std::endl
         << "--colmapPath D:\\colmap                                         The path where the Colmap program is present (COLMAP.bat on Windows, colmap on UNIX)" << std::endl
-        << "--quality medium                                                Optional option. It's the pre-defined quality (low,medium,high,extreme)" << std::endl
+        << "--quality medium                                                Optional option. It's the pre-defined quality (low,medium,high,extreme,deepBlending)" << std::endl
         << std::endl
         << "REMOTE VERSION" << std::endl
         << "--path E:\\YOU\\testData\\colmap\\testcluster                   The path which contain the dataset" << std::endl
@@ -612,7 +620,7 @@ void printExample() {
         << "--colmapWorkingDir /data/graphdeco/user/YOU/colmapTests/test    A directory on the Cluster where Colmap will write the results" << std::endl
         << "--clusterGPU 34                                                 Optional option. It's the number of the node. If you do not specify it, the Cluster will decide" << std::endl
         << "--numGPUs                                                       Optional option. It's the number of the GPUs present in the Node" << std::endl
-        << "--quality medium                                                Optional option. It's the pre-defined quality (low,medium,high,extreme)" << std::endl
+        << "--quality medium                                                Optional option. It's the pre-defined quality (low,medium,high,extreme,deepBlending)" << std::endl
         << std::endl;
 }
 
