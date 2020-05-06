@@ -5,7 +5,7 @@ class ColmapParameters
 
 public:
 	//----------TYPES------------//
-	enum class Quality {DEFAULT,LOW,MEDIUM,HIGH,EXTREME};
+	enum class Quality {DEFAULT,LOW,MEDIUM,HIGH,EXTREME,DEEPBLENDING};
 
 
 	//-------CONSTRUCTORS--------//
@@ -18,6 +18,7 @@ public:
 	bool	siftExtractionEstimateAffineShape() const;
 	bool	siftExtractionDomainSizePooling() const;
 	uint	siftExtractionMaxNumFeatures() const;
+	bool	imageReaderSingleCamera() const;
 
 	//Exhaustive matcher
 	uint	exhaustiveMatcherExhaustiveMatchingBlockSize() const;
@@ -42,7 +43,6 @@ public:
 	uint	stereoFusionCheckNumImages() const;
 	int		stereoFusionMaxImageSize() const;
 
-	uint	numGPUs() const;
 
 	//--------METHODS---------//
 	//Feature extractor 
@@ -50,6 +50,7 @@ public:
 	void	siftExtractionEstimateAffineShape(bool value);
 	void	siftExtractionDomainSizePooling(bool value);
 	void	siftExtractionMaxNumFeatures(uint value);
+	void	imageReaderSingleCamera(bool value);
 
 	//Exhaustive matcher
 	void	exhaustiveMatcherExhaustiveMatchingBlockSize(uint value);
@@ -74,9 +75,6 @@ public:
 	void	stereoFusionCheckNumImages(uint value);
 	void	stereoFusionMaxImageSize(int value);
 
-	//GPUs
-	void	numGPUs(uint value);
-
 	//-------STATIC METHODS------//
 	static std::shared_ptr<Quality> stringToQuality(const std::string& sQuality);
 
@@ -89,6 +87,7 @@ private :
 	bool	_siftExtraction_EstimateAffineShape;
 	bool	_siftExtraction_DomainSizePooling;
 	uint	_siftExtraction_MaxNumFeatures;
+	bool	_imageReader_SingleCamera;
 
 	//Exhaustive matcher
 	uint	_exhaustiveMatcher_ExhaustiveMatchingBlockSize;
@@ -114,14 +113,13 @@ private :
 	uint	_stereoFusion_CheckNumImages;
 	int		_stereoFusion_MaxImageSize;
 
-	//Num GPUs
-	uint	_numGPUs;
 
 	//Feature extractor 
 	uint	initSiftExtraction_ImageSize(Quality q);
 	bool	initSiftExtraction_EstimateAffineShape(Quality q);
 	bool	initSiftExtraction_DomainSizePooling(Quality q);
 	uint	initSiftExtraction_MaxNumFeatures(Quality q);
+	bool	initImageReader_SingleCamera(Quality q);
 
 	//Exhaustive matcher
 	uint	initExhaustiveMatcher_ExhaustiveMatchingBlockSize(Quality q);
