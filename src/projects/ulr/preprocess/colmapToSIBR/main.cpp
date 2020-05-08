@@ -87,8 +87,11 @@ int main(const int argc, const char** argv)
 	outputListIm.close();
 	outputSceneMetadata.close();
 
-	const std::string meshPath = pathScene + "/capreal/mesh.obj";
+	std::string meshPath = pathScene + "/capreal/mesh.obj";
 	sibr::copyFile(meshPath, pathScene + "/meshes/recon.obj", true);
-
+	meshPath = pathScene + "/capreal/mesh.mtl";
+	sibr::copyFile(meshPath, pathScene + "/meshes/", true);
+	meshPath = pathScene + "/capreal/mesh_u1_v1.png";
+	sibr::copyFile(meshPath, pathScene + "/meshes/", true);
 	return EXIT_SUCCESS;
 }
