@@ -361,8 +361,9 @@ namespace sibr
 		\param outCenter will contain the sphere center
 		\param outRadius will contain the sphere radius
 		\param referencedOnly if true, only consider vertices that are part of at least one face
+		\param usePCcenter if true, only consider vertices for center computation. Intended to be true when using the function on point clouds.
 		*/
-		void getBoundingSphere(Vector3f& outCenter, float& outRadius, bool referencedOnly=false) const;
+		void getBoundingSphere(Vector3f& outCenter, float& outRadius, bool referencedOnly=false, bool usePCcenter=false) const;
 
 		/** Subdivide a mesh triangles until an edge size threshold is reached.
 		\param limitSize the maximum edge length allowed
