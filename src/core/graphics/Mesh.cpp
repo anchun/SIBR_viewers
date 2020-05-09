@@ -35,13 +35,13 @@ namespace sibr
 		aiScene scene;
 		scene.mRootNode = new aiNode();
 
-		scene.mMaterials = new aiMaterial*[1];
+		scene.mMaterials = new aiMaterial * [1];
 		scene.mMaterials[0] = nullptr;
 		scene.mNumMaterials = 1;
 
 		scene.mMaterials[0] = new aiMaterial();
 
-		scene.mMeshes = new aiMesh*[1];
+		scene.mMeshes = new aiMesh * [1];
 		scene.mNumMeshes = 1;
 
 		scene.mMeshes[0] = new aiMesh();
@@ -53,25 +53,27 @@ namespace sibr
 
 		auto pMesh = scene.mMeshes[0];
 
-		const auto& vVertices = _vertices; 
+		const auto& vVertices = _vertices;
 
 		pMesh->mVertices = new aiVector3D[vVertices.size()];
 		pMesh->mNumVertices = static_cast<unsigned int>(vVertices.size());
 
-		if(hasNormals()) {
+		if (hasNormals()) {
 			pMesh->mNormals = new aiVector3D[vVertices.size()];
-		} else {
+		}
+		else {
 			pMesh->mNormals = nullptr;
 		}
-		
+
 		if (hasTexCoords()) {
 			pMesh->mTextureCoords[0] = new aiVector3D[vVertices.size()];
 			pMesh->mNumUVComponents[0] = 2;
-		} else {
-			pMesh->mTextureCoords[0] = nullptr;
-			pMesh->mNumUVComponents[0] =0;
 		}
-		
+		else {
+			pMesh->mTextureCoords[0] = nullptr;
+			pMesh->mNumUVComponents[0] = 0;
+		}
+
 		int j = 0;
 		for (auto itr = vVertices.begin(); itr != vVertices.end(); ++itr)
 		{
@@ -88,8 +90,8 @@ namespace sibr
 
 		for (uint i = 0; i < _triangles.size(); ++i)
 		{
-			const Vector3u&	tri = _triangles[i];
-			aiFace &face = pMesh->mFaces[i];
+			const Vector3u& tri = _triangles[i];
+			aiFace& face = pMesh->mFaces[i];
 			face.mIndices = new unsigned int[3];
 			face.mNumIndices = 3;
 
@@ -98,7 +100,7 @@ namespace sibr
 			face.mIndices[2] = tri[2];
 		}
 		Assimp::Exporter mAiExporter;
-		const aiScene *s = (const aiScene*)&(scene);
+		const aiScene* s = (const aiScene*)&(scene);
 
 		SIBR_LOG << "Saving (via ASSIMP) " << filename << "'..." << std::endl;
 		mAiExporter.Export(s, "obj", filename);
@@ -194,7 +196,7 @@ namespace sibr
 
 			for (uint i = 0; i < _triangles.size(); ++i)
 			{
-				const Vector3u&	tri = _triangles[i];
+				const Vector3u& tri = _triangles[i];
 
 				bytes << uint8(3);
 				for (uint j = 0; j < 3; ++j)
@@ -315,7 +317,7 @@ namespace sibr
 
 			for (uint i = 0; i < _triangles.size(); ++i)
 			{
-				const Vector3u&		tri = _triangles[i];
+				const Vector3u& tri = _triangles[i];
 
 				file << 3;
 				for (uint j = 0; j < 3; ++j)
@@ -449,7 +451,7 @@ namespace sibr
 	}
 
 
-	bool sibr::Mesh::loadMtsXML(const std::string & xmlFile)
+	bool sibr::Mesh::loadMtsXML(const std::string& xmlFile)
 	{
 		bool allLoaded = true;
 		std::string pathFolder = boost::filesystem::path(xmlFile).parent_path().string();
@@ -458,9 +460,9 @@ namespace sibr
 		std::map<std::string, sibr::Mesh> meshes;
 		std::map<std::string, std::string> idToFilename;
 
-		rapidxml::xml_node<> *nodeScene = doc.first_node("scene");
+		rapidxml::xml_node<>* nodeScene = doc.first_node("scene");
 
-		for (rapidxml::xml_node<> *node = nodeScene->first_node("shape");
+		for (rapidxml::xml_node<>* node = nodeScene->first_node("shape");
 			node; node = node->next_sibling("shape"))
 		{
 			if (strcmp(node->first_attribute()->name(), "type") == 0 &&
@@ -474,14 +476,14 @@ namespace sibr
 			}
 		}
 
-		for (rapidxml::xml_node<> *node = nodeScene->first_node("shape");
+		for (rapidxml::xml_node<>* node = nodeScene->first_node("shape");
 			node; node = node->next_sibling("shape"))
 		{
 
 			if (strcmp(node->first_attribute()->name(), "type") == 0 &&
 				strcmp(node->first_attribute()->value(), "instance") == 0
 				) {
-				rapidxml::xml_node<> *nodeRef = node->first_node("ref");
+				rapidxml::xml_node<>* nodeRef = node->first_node("ref");
 				const std::string id = nodeRef->first_attribute("id")->value();
 				const std::string filename = idToFilename[id];
 				const std::string meshPath = pathFolder + "/" + filename;
@@ -496,12 +498,12 @@ namespace sibr
 
 				std::cout << "Adding one instance of : " << filename << std::endl;
 
-				rapidxml::xml_node<> *nodeTrans = node->first_node("transform");
+				rapidxml::xml_node<>* nodeTrans = node->first_node("transform");
 				if (nodeTrans) {
 					sibr::Mesh toWorldMesh = meshes[filename];
-					rapidxml::xml_node<> *nodeM1 = nodeTrans->first_node("matrix");
+					rapidxml::xml_node<>* nodeM1 = nodeTrans->first_node("matrix");
 					std::string matrix1 = nodeM1->first_attribute("value")->value();
-					rapidxml::xml_node<> *nodeM2 = nodeM1->next_sibling("matrix");
+					rapidxml::xml_node<>* nodeM2 = nodeM1->next_sibling("matrix");
 					std::string matrix2 = nodeM2->first_attribute("value")->value();
 
 
@@ -528,7 +530,7 @@ namespace sibr
 					sibr::Mesh::Vertices vertices;
 					for (int v = 0; v < toWorldMesh.vertices().size(); v++) {
 						sibr::Vector4f v4(toWorldMesh.vertices()[v].x(), toWorldMesh.vertices()[v].y(), toWorldMesh.vertices()[v].z(), 1.0);
-						vertices.push_back((m2*(m1*v4)).xyz());
+						vertices.push_back((m2 * (m1 * v4)).xyz());
 
 					}
 
@@ -545,7 +547,7 @@ namespace sibr
 			else if (strcmp(node->first_attribute()->name(), "type") == 0 &&
 				strcmp(node->first_attribute()->value(), "obj") == 0
 				) {
-				rapidxml::xml_node<> *nodeRef = node->first_node("string");
+				rapidxml::xml_node<>* nodeRef = node->first_node("string");
 				const std::string filename = nodeRef->first_attribute("value")->value();
 				const std::string meshPath = pathFolder + "/" + filename;
 
@@ -559,10 +561,10 @@ namespace sibr
 
 				std::cout << "Adding one instance of : " << filename << std::endl;
 
-				rapidxml::xml_node<> *nodeTrans = node->first_node("transform");
+				rapidxml::xml_node<>* nodeTrans = node->first_node("transform");
 				if (nodeTrans) {
 					sibr::Mesh toWorldMesh = meshes[filename];
-					rapidxml::xml_node<> *nodeM1 = nodeTrans->first_node("matrix");
+					rapidxml::xml_node<>* nodeM1 = nodeTrans->first_node("matrix");
 					std::string matrix1 = nodeM1->first_attribute("value")->value();
 
 
@@ -580,7 +582,7 @@ namespace sibr
 					sibr::Mesh::Vertices vertices;
 					for (int v = 0; v < toWorldMesh.vertices().size(); v++) {
 						sibr::Vector4f v4(toWorldMesh.vertices()[v].x(), toWorldMesh.vertices()[v].y(), toWorldMesh.vertices()[v].z(), 1.0);
-						vertices.push_back((m1*v4).xyz());
+						vertices.push_back((m1 * v4).xyz());
 
 					}
 
@@ -608,9 +610,10 @@ namespace sibr
 		// internally).
 
 		const std::string ext = sibr::getExtension(filename);
-		if(ext == "obj") {
+		if (ext == "obj") {
 			saveToObj(filename);
-		} else {
+		}
+		else {
 			// If you encounter problem with the resulting mesh, you can switch
 			// to the ASCII version for easy reading
 			// Meshlab does not support uint16 colors, if you want to use the mesh in such
@@ -622,7 +625,7 @@ namespace sibr
 				saveToBinaryPLY(filename, false);
 			}
 		}
-		
+
 	}
 
 	void	Mesh::vertices(const std::vector<float>& vertices)
@@ -974,7 +977,7 @@ namespace sibr
 		/// Build neighbors information.
 		/// \todo TODO: we could also detect vertices on the edges of the mesh to preserve their positions.
 		std::vector<std::set<unsigned>> neighbors(_vertices.size());
-		for (const sibr::Vector3u & tri : _triangles) {
+		for (const sibr::Vector3u& tri : _triangles) {
 			neighbors[tri[0]].emplace(tri[1]);
 			neighbors[tri[0]].emplace(tri[2]);
 			neighbors[tri[1]].emplace(tri[0]);
@@ -991,7 +994,7 @@ namespace sibr
 
 			for (size_t vid = 0; vid < verticesSize; ++vid) {
 				newVertices[vid] = sibr::Vector3f(0.0f, 0.0f, 0.f);
-				for (const auto & ovid : neighbors[vid]) {
+				for (const auto& ovid : neighbors[vid]) {
 					newVertices[vid] += _vertices[ovid];
 				}
 				newVertices[vid] /= float(neighbors[vid].size());
@@ -1015,7 +1018,7 @@ namespace sibr
 		/// \todo TODO: we could also detect vertices on the edges of the mesh to preserve their positions.
 		std::vector<std::set<unsigned>> neighbors(_vertices.size());
 		std::map<int, std::map<int, std::set<float>>> cotanW;
-		for (const sibr::Vector3u & tri : _triangles) {
+		for (const sibr::Vector3u& tri : _triangles) {
 			neighbors[tri[0]].emplace(tri[1]);
 			neighbors[tri[0]].emplace(tri[2]);
 			neighbors[tri[1]].emplace(tri[0]);
@@ -1049,10 +1052,10 @@ namespace sibr
 
 				std::vector<sibr::Vector3f> colorsLocal;
 				colorsLocal.push_back(_colors[vid]);
-				for (const auto & ovid : neighbors[vid]) {
+				for (const auto& ovid : neighbors[vid]) {
 					float w = 0;
-					for (const auto & cot : cotanW[vid][ovid]) {
-						w += 0.5*cot;
+					for (const auto& cot : cotanW[vid][ovid]) {
+						w += 0.5 * cot;
 					}
 					totalW += w;
 					dtV += w * _vertices[ovid];
@@ -1060,12 +1063,12 @@ namespace sibr
 				}
 
 				sibr::Vector3f meanColor;
-				for (const auto & c : colorsLocal) {
+				for (const auto& c : colorsLocal) {
 					meanColor += c;
 				}
 				meanColor /= colorsLocal.size();
 				sibr::Vector3f varColor;
-				for (const auto & c : colorsLocal) {
+				for (const auto& c : colorsLocal) {
 					pow(c.x() - meanColor.x(), 2);
 					varColor += sibr::Vector3f(pow(c.x() - meanColor.x(), 2), pow(c.y() - meanColor.y(), 2), pow(c.z() - meanColor.z(), 2));
 				}
@@ -1077,10 +1080,10 @@ namespace sibr
 					dtV /= totalW;
 					dtV = dtV - v;
 					if (it % 2 == 0) {
-						newVertices[vid] = v + 0.25*dtV;
+						newVertices[vid] = v + 0.25 * dtV;
 					}
 					else {
-						newVertices[vid] = v + 0.25*dtV;
+						newVertices[vid] = v + 0.25 * dtV;
 					}
 				}
 			}
@@ -1393,7 +1396,7 @@ namespace sibr
 		}
 
 		std::vector<bool> isInRemovedTriangle(numOldVertices, false);
-		for (const auto & t : triangles()) {
+		for (const auto& t : triangles()) {
 			sibr::Vector3i newVerticesId = t.cast<int>().unaryExpr([&oldToNewVertexId](int v_id) { return oldToNewVertexId[v_id];  });
 			if (newVerticesId.unaryViewExpr([](int v_id) { return v_id >= 0 ? 1 : 0; }).all()) {
 				newTriangles.push_back(newVerticesId.cast<unsigned>());
@@ -1409,7 +1412,7 @@ namespace sibr
 
 		Mesh::SubMesh subMesh;
 		subMesh.meshPtr = std::make_shared<sibr::Mesh>(oldMeshHasGraphics);
-		sibr::Mesh &mesh = *subMesh.meshPtr;
+		sibr::Mesh& mesh = *subMesh.meshPtr;
 		mesh.vertices(newVertices);
 		mesh.triangles(newTriangles);
 		if (hasColors()) {
@@ -1468,7 +1471,7 @@ namespace sibr
 		Mesh::UVs Nuvs(hasTexCoords() ? 2 * nVertices : 0);
 
 		int v_id = 0;
-		for (const auto & v : vertices()) {
+		for (const auto& v : vertices()) {
 			Nvertices[v_id] = v;
 			Nvertices[v_id + nVertices] = v;
 
@@ -1503,7 +1506,7 @@ namespace sibr
 
 		sibr::Vector3u shift(nVertices, nVertices, nVertices);
 		int t_id = 0;
-		for (const auto & t : triangles()) {
+		for (const auto& t : triangles()) {
 			Ntriangles[t_id] = t;
 			Ntriangles[t_id + nTriangles] = t.yxz() + shift;
 			++t_id;
@@ -1518,7 +1521,7 @@ namespace sibr
 		return _meshPath;
 	}
 
-	void					Mesh::getBoundingSphere(Vector3f& outCenter, float& outRadius, bool referencedOnly) const
+	void					Mesh::getBoundingSphere(Vector3f& outCenter, float& outRadius, bool referencedOnly, bool usePCcenter) const
 	{
 		// Get the center of mass
 
@@ -1527,30 +1530,43 @@ namespace sibr
 
 		const Triangles& tri = _triangles;
 		const Vertices& vert = _vertices;
+		if (usePCcenter) {
+			sibr::Vector3d outCenterDbl;
+			for (const Vector3f& v : vert)
+			{
+				outCenterDbl += v.cast<double>();
+			}
 
-		for (const Vector3u& t : tri)
-		{
-			float trix1 = vert[t[0]].x();
-			float triy1 = vert[t[0]].y();
-			float triz1 = vert[t[0]].z();
-
-			float trix2 = vert[t[1]].x();
-			float triy2 = vert[t[1]].y();
-			float triz2 = vert[t[1]].z();
-
-			float trix3 = vert[t[2]].x();
-			float triy3 = vert[t[2]].y();
-			float triz3 = vert[t[2]].z();
-
-			currentArea = ((vert[t[1]] - vert[t[0]]).cross(vert[t[2]] - vert[t[0]])).norm() / 2.0;
-			totalArea += currentArea;
-
-			xCenter += ((trix1 + trix2 + trix3) / 3) * currentArea;
-			yCenter += ((triy1 + triy2 + triy3) / 3) * currentArea;
-			zCenter += ((triz1 + triz2 + triz3) / 3) * currentArea;
+			outCenter = (outCenterDbl / vert.size()).cast<float>();
 		}
+		else {
+			if (tri.size() == 0) {
+				SIBR_WRG << "No triangles found for evaluation of sphere center, result will be NaN";
+			}
+			for (const Vector3u& t : tri)
+			{
+				float trix1 = vert[t[0]].x();
+				float triy1 = vert[t[0]].y();
+				float triz1 = vert[t[0]].z();
 
-		outCenter = Vector3f(float(xCenter / totalArea), float(yCenter / totalArea), float(zCenter / totalArea));
+				float trix2 = vert[t[1]].x();
+				float triy2 = vert[t[1]].y();
+				float triz2 = vert[t[1]].z();
+
+				float trix3 = vert[t[2]].x();
+				float triy3 = vert[t[2]].y();
+				float triz3 = vert[t[2]].z();
+
+				currentArea = ((vert[t[1]] - vert[t[0]]).cross(vert[t[2]] - vert[t[0]])).norm() / 2.0;
+				totalArea += currentArea;
+
+				xCenter += ((trix1 + trix2 + trix3) / 3) * currentArea;
+				yCenter += ((triy1 + triy2 + triy3) / 3) * currentArea;
+				zCenter += ((triz1 + triz2 + triz3) / 3) * currentArea;
+			}
+
+			outCenter = Vector3f(float(xCenter / totalArea), float(yCenter / totalArea), float(zCenter / totalArea));
+		}
 
 
 		outRadius = 0.f;
@@ -1572,7 +1588,7 @@ namespace sibr
 	Eigen::AlignedBox<float, 3> Mesh::getBoundingBox(void) const
 	{
 		Eigen::AlignedBox<float, 3> box;
-		for (const auto & vertex : _vertices) {
+		for (const auto& vertex : _vertices) {
 			box.extend(vertex);
 		}
 		return box;
@@ -1607,10 +1623,10 @@ namespace sibr
 		for (int lat = lowLimit; lat <= highLimit; lat++) {
 			for (int lgt = 0; lgt <= 360; lgt++) {
 
-				sibr::Vector3f point = cos(0.5* M_PI * lat / 90.0f)*(cos(2 * M_PI * lgt / 360.0f)*north + sin(2 * M_PI * lgt / 360.0f)*east)
-					+ sin(0.5* M_PI * lat / 90.0f)*zenith;
+				sibr::Vector3f point = cos(0.5 * M_PI * lat / 90.0f) * (cos(2 * M_PI * lgt / 360.0f) * north + sin(2 * M_PI * lgt / 360.0f) * east)
+					+ sin(0.5 * M_PI * lat / 90.0f) * zenith;
 
-				vert.push_back(10.f*radius*point + center);
+				vert.push_back(10.f * radius * point + center);
 
 				uvs.push_back(sibr::Vector2f(lgt / 360.0f, 0.5 + lat / 180.0f));
 
@@ -1636,7 +1652,7 @@ namespace sibr
 	sibr::Vector3f Mesh::centroid() const
 	{
 		sibr::Vector3d centroid(0, 0, 0);
-		for (auto & vertex : _vertices) {
+		for (auto& vertex : _vertices) {
 			centroid += vertex.cast<double>();
 		}
 		if (_vertices.size() > 0) {
@@ -1654,11 +1670,11 @@ namespace sibr
 		std::stringstream s;
 		s << "OFF \n \n" << vertices().size() << " " << triangles().size() << " 0 " << std::endl;
 
-		for (const auto & v : vertices()) {
+		for (const auto& v : vertices()) {
 			s << v.x() << " " << v.y() << " " << v.z() << std::endl;
 		}
 
-		for (const auto & t : triangles()) {
+		for (const auto& t : triangles()) {
 			s << "3 " << t.x() << " " << t.y() << " " << t.z() << std::endl;
 		}
 
@@ -1669,7 +1685,7 @@ namespace sibr
 		return s;
 	}
 
-	void Mesh::fromOffStream(std::stringstream & stream, bool computeNormals)
+	void Mesh::fromOffStream(std::stringstream& stream, bool computeNormals)
 	{
 		int n_vert;
 		int n_faces;
@@ -1747,25 +1763,25 @@ namespace sibr
 		return mesh;
 	}
 
-	Mesh::Ptr Mesh::getSphereMesh(const Vector3f & center, float radius, bool withGraphics, int precision) {
+	Mesh::Ptr Mesh::getSphereMesh(const Vector3f& center, float radius, bool withGraphics, int precision) {
 		const int nTheta = precision;
 		const int nPhi = precision;
 		const int nPoints = nTheta * nPhi;
 		std::vector<Vector3f> vertices(nPoints), normals(nPoints);
 
 		for (int t = 0; t < nTheta; ++t) {
-			double theta = (t / (double)(nTheta - 1))* M_PI;
+			double theta = (t / (double)(nTheta - 1)) * M_PI;
 			double cosT = std::cos(theta);
 			double sinT = std::sin(theta);
 			for (int p = 0; p < nPhi; ++p) {
-				double phi = 2.0*(p / (double)(nPhi - 1) - 0.5)* M_PI;
+				double phi = 2.0 * (p / (double)(nPhi - 1) - 0.5) * M_PI;
 				double cosP = std::cos(phi), sinP = std::sin(phi);
-				normals[p + nPhi * t] = Vector3d(sinT*cosP, sinT*sinP, cosT).cast<float>();
+				normals[p + nPhi * t] = Vector3d(sinT * cosP, sinT * sinP, cosT).cast<float>();
 				vertices[p + nPhi * t] = center + radius * normals[p + nPhi * t];
 			}
 		}
 
-		std::vector<uint> indices(6 * (nTheta - 1)*nPhi);
+		std::vector<uint> indices(6 * (nTheta - 1) * nPhi);
 		int triangle_id = 0;
 		for (int t = 0; t < nTheta - 1; ++t) {
 			for (int p = 0; p < nPhi; ++p) {
@@ -1795,7 +1811,7 @@ namespace sibr
 	sibr::Mesh::Ptr Mesh::subDivide(float limitSize, size_t maxRecursion) const
 	{
 		struct Less {
-			bool operator()(const sibr::Vector3f &a, const sibr::Vector3f &b) const {
+			bool operator()(const sibr::Vector3f& a, const sibr::Vector3f& b) const {
 				return a < b;
 			}
 		};
@@ -1822,22 +1838,22 @@ namespace sibr
 
 		int t_id = 0;
 		int e_id = 0;
-		for (const auto & t : triangles()) {
+		for (const auto& t : triangles()) {
 			bool degenerate = false;
 			for (int k = 0; k < 3; ++k) {
 				int v0 = t[k];
 				int v1 = t[(k + 1) % 3];
 				// Skip degenerate faces.
 				if (v0 == v1) {
-					degenerate  = true;
+					degenerate = true;
 					break;
 				}
-				const sibr::Vector3f midPoint = 0.5f*(vertices()[v0] + vertices()[v1]);
+				const sibr::Vector3f midPoint = 0.5f * (vertices()[v0] + vertices()[v1]);
 				sibr::Vector3f midNormal(0.0f, 0.0f, 0.0f);
-				if(hasNormals()) {
-					midNormal = (0.5f*(normals()[v0] + normals()[v1])).normalized();
+				if (hasNormals()) {
+					midNormal = (0.5f * (normals()[v0] + normals()[v1])).normalized();
 				}
-				
+
 				const float length = (vertices()[v0] - vertices()[v1]).norm();
 				if (mapEdges.count(midPoint) == 0) {
 					mapEdges[midPoint] = e_id;
@@ -1868,10 +1884,10 @@ namespace sibr
 		std::vector<int> edge_to_divided_edges(edges.size(), -1);
 
 		sibr::Mesh::Triangles newTriangles;
-		
+
 		bool dbg = false;
 		int num_divided_edges = 0;
-		for (const Triangle & t : tris) {
+		for (const Triangle& t : tris) {
 			// Ignore undef triangles.
 			if (t.edges_ids[0] == -1 && t.edges_ids[1] == -1 && t.edges_ids[2] == -1) {
 				continue;
@@ -1896,7 +1912,7 @@ namespace sibr
 						newVertices.push_back(edges[e_id].midPoint);
 						newNormals.push_back(edges[e_id].midNormal);
 						++num_divided_edges;
-						
+
 					}
 
 				}
@@ -1909,10 +1925,10 @@ namespace sibr
 
 			const sibr::Vector3i corners_ids = sibr::Vector3i(0, 1, 2).unaryViewExpr([&](int i) {
 				return edges[t.edges_ids[i]].v_ids[t.edges_flipped[i] ? 1 : 0];
-			});
+				});
 			const sibr::Vector3i midpoints_ids = sibr::Vector3i(0, 1, 2).unaryViewExpr([&](int i) {
 				return  edge_to_divided_edges[t.edges_ids[i]] >= 0 ? nOldVertices + edge_to_divided_edges[t.edges_ids[i]] : -1;
-			});
+				});
 
 			if (ks[2] >= 0) {
 				newTriangles.push_back(sibr::Vector3u(corners_ids[0], midpoints_ids[0], midpoints_ids[2]));
@@ -1953,7 +1969,7 @@ namespace sibr
 		}
 		subMeshPtr->triangles(newTriangles);
 		if (num_divided_edges > 0 && maxRecursion > 0) {
-			return subMeshPtr->subDivide(limitSize, maxRecursion-1);
+			return subMeshPtr->subDivide(limitSize, maxRecursion - 1);
 		}
 
 		return subMeshPtr;
@@ -1962,10 +1978,10 @@ namespace sibr
 	float Mesh::meanEdgeSize() const
 	{
 		double sumSizes = 0;
-		for (const auto & t : triangles()) {
-			const auto & v1 = vertices()[t[0]];
-			const auto & v2 = vertices()[t[1]];
-			const auto & v3 = vertices()[t[2]];
+		for (const auto& t : triangles()) {
+			const auto& v1 = vertices()[t[0]];
+			const auto& v2 = vertices()[t[1]];
+			const auto& v3 = vertices()[t[2]];
 			sumSizes += (double)((v1 - v2).norm() + (v2 - v3).norm() + (v3 - v1).norm());
 		}
 
@@ -2125,7 +2141,7 @@ namespace sibr
 
 		std::vector<std::vector<int>> v_triangles(vertices().size());
 		int t_id = 0;
-		for (const auto & t : triangles()) {
+		for (const auto& t : triangles()) {
 			for (int k = 0; k < 3; ++k) {
 				v_triangles[t[k]].push_back(t_id);
 			}
@@ -2135,7 +2151,7 @@ namespace sibr
 
 		std::vector<bool> wasVisited(vertices().size(), false);
 		int v_id = 0;
-		for (const auto & v : vertices()) {
+		for (const auto& v : vertices()) {
 
 			if (!wasVisited[v_id]) {
 				std::priority_queue<int> next_ids;
