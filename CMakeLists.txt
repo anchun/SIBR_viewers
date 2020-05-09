@@ -140,6 +140,7 @@ endif()
 # ENDIF(MSVC)
 
 ## Include all projects
+set(SIBR_PROJECTS_SUBPAGE_REF "")
 set(DOXY_APP_SPECIFIC_IMG_PATH "")
 ADD_SUBDIRECTORY(src)
 

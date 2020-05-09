@@ -30,13 +30,15 @@ namespace sibr
 		typedef std::vector<std::string>						MatId2Name;
 
 		typedef std::map<std::string, sibr::ImageRGB::Ptr>		OpacityMaps;
-		typedef std::map<std::string, sibr::ImageRGB::Ptr>		DiffuseMaps;
+		typedef std::map<std::string, sibr::ImageRGBA::Ptr>		DiffuseMaps;
 
 		typedef sibr::ImageRGB::Ptr								TagsMap;
-		typedef sibr::ImageRGB::Ptr								TagsCoveringMap;
+		typedef std::map<std::string, sibr::ImageRGB::Ptr>		TagsCoveringMaps;
 
 		typedef std::vector<Mesh>								SubMeshes;
-		typedef std::vector<sibr::ImageRGB>						AlbedoTextures;
+		typedef std::vector<sibr::ImageRGBA>					AlbedoTextures;
+
+		typedef std::map<std::string, bool>						SwitchTagsProperty;
 
 		SIBR_CLASS_PTR(MaterialMesh);
 
@@ -70,13 +72,17 @@ namespace sibr
 			"//out float material;			\n"
 			"layout (location = 3) out vec3 normal;									\n"
 			"out float ao ;									\n"
+			"out vec3 pos_vertex;									\n"
 			"layout (location = 1) out vec3 colors;									\n"
 			"uniform mat4 MVP;									\n"
+			"uniform bool lightIsPresent;									\n"
+			"uniform vec3 lightPos;									\n"
 			"void main(void) {									\n"
 			"	normal = in_normal;		\n"
 			"	ao = in_ao;		\n"
 			"	uvCoords = in_uvCoords;		\n"
 			"	colors= in_colors;		\n"
+			"	pos_vertex= in_vertex;		\n"
 			"	//material= float(in_material);		\n"
 			"	gl_Position = MVP*vec4(in_vertex,1) ;		\n"
 			"}													\n";
@@ -89,6 +95,10 @@ namespace sibr
 			"uniform bool AoIsActive;													\n"
 			"uniform vec2 grid;												\n"
 			"uniform float IlluminanceCoefficient;												\n"
+			"uniform bool lightIsPresent;									\n"
+			"uniform float scaleTags;													\n"
+			"uniform float intensityLight;									\n"
+			"uniform vec3 lightPos;									\n"
 			"layout (location = 2) in vec2 uvCoords;													\n"
 			"layout (location = 3) in vec3 normal ;									\n"
 			"layout (location = 1) in vec3 colors;									\n"
@@ -101,18 +111,15 @@ namespace sibr
 			"	colorsModified.x = lighter_ao;\n"
 			"	colorsModified.y = lighter_ao;\n"
 			"	colorsModified.z = lighter_ao;\n"
-			"	//int n = int (material);	 \n"
-			"	//out_color = mix(out_color, texture(texArray,vec3(uvCoords.x,uvCoords.y,n)), 0.9);\n"
-			"	//out_color = texture(texArray,vec3(uvCoords.x,1.0-uvCoords.y,n));\n"
-			"	//out_color = vec4(normal,1.0);\n"
 			"	opacityColor = texture(opacity,vec2(uvCoords.x,1.0-uvCoords.y));\n"
-			"	if (opacityColor.x < 0.1f) discard;						\n"
-			"	if (AoIsActive ) {						\n"
-			"	out_color = texture(tex,vec2(uvCoords.x,1.0-uvCoords.y))* vec4(colorsModified,1);\n"
-			"	out_color = vec4(out_color.x,out_color.y,out_color.z,opacityColor.x);\n}"
-			"	else /*(colors.x == 0 && colors.y == 0 && colors.z == 0)*/	\n"
+			"	if (opacityColor.x < 0.1f && opacityColor.y < 0.1f && opacityColor.z < 0.1f ) discard;\n"
+			"							\n"
 			"	out_color = texture(tex,vec2(uvCoords.x,1.0-uvCoords.y));\n"
-			"	//out_color = vec4(colors,1);										\n"
+			//"	if (out_color.a != 0.f ) discard; \n"
+			//"							\n"
+			"	if (AoIsActive ) {						\n"
+			"	out_color = out_color * vec4(colorsModified,1);\n}"
+			"	out_color = vec4(out_color.x,out_color.y,out_color.z,out_color.a);\n"
 			"}																	\n";
 
 
@@ -122,34 +129,55 @@ namespace sibr
 			"layout(binding = 1) uniform sampler2D tags;				\n"
 			"layout(binding = 2) uniform sampler2D opacity;				\n"
 			"uniform int layer;													\n"
+			"uniform float scaleTags;													\n"
 			"uniform bool AoIsActive;													\n"
 			"uniform vec2 grid;												\n"
 			"uniform float IlluminanceCoefficient;												\n"
+			"uniform bool lightIsPresent;									\n"
+			"uniform float intensityLight;									\n"
+			"uniform vec3 lightPos;									\n"
 			"layout (location = 2) in vec2 uvCoords;													\n"
 			"layout (location = 3) in vec3 normal ;									\n"
 			"layout (location = 1) in vec3 colors;									\n"
 			"out vec4 out_color;												\n"
+			"in vec3 pos_vertex;									\n"
 			"void main(void) {													\n"
 			"	vec4 opacityColor;												\n"
 			"	vec3 colorsModified = colors;\n"
 			"	float lighter_ao = colors.x * IlluminanceCoefficient; \n"
-			"	if (lighter_ao > 1.f ) lighter_ao = 1.f;\n"
+			"	if (lighter_ao >= 1.f ) lighter_ao = 1.f;\n"
 			"	colorsModified.x = lighter_ao;\n"
 			"	colorsModified.y = lighter_ao;\n"
 			"	colorsModified.z = lighter_ao;\n"
 			"	opacityColor = texture(opacity,vec2(uvCoords.x,1.0-uvCoords.y));\n"
-			"	if (opacityColor.x < 0.1f) discard;						\n"
+			"	if (opacityColor.x < 0.1f || opacityColor.y < 0.1f || opacityColor.z < 0.1f ) discard;\n"
 			"							\n"
 			"							\n"
-			"	out_color = texture(tags,vec2((uvCoords.x/3.f),1.0-(uvCoords.y/3.f)));\n"
+			"	out_color = texture(tex,vec2(uvCoords.x,1.0-uvCoords.y));\n"
+			"	if (out_color.a < 0.1f ) discard; \n"
+			//"							\n"
+			"	out_color = texture(tags,vec2((uvCoords.x)*scaleTags,(1.0-(uvCoords.y))*scaleTags));\n"
+			"							\n"
 			"	if (out_color.x == 1.f && out_color.y == 1.f && out_color.z == 1.f)		\n"
 			"	out_color = texture(tex,vec2(uvCoords.x,1.0-uvCoords.y));\n"
 			"							\n"
 			"							\n"
+			"	float coeffLight = 1.f;						\n"
+			"	if( lightIsPresent) {						\n"
+			"				vec3 vertexToLight = normalize( lightPos - pos_vertex );\n"
+			"				coeffLight = abs(intensityLight*dot( vertexToLight, normal )) ; \n"
+			//"				coeffLight = max(0.0,powerLight* dot( vertexToLight, normal )) ; \n"
+			"				coeffLight = 0.50+coeffLight/2.0 ; \n"
+			"							\n"
+			"							\n"
+			"							\n"
+			"	}						\n"
 			"							\n"
 			"	if (AoIsActive ) {						\n"
 			"	out_color = out_color * vec4(colorsModified,1);\n}"
-			"	out_color = vec4(out_color.x,out_color.y,out_color.z,opacityColor.x);\n"
+			"	out_color = out_color * vec4(coeffLight,coeffLight,coeffLight,1);\n"
+			"	out_color = vec4(out_color.x,out_color.y,out_color.z,out_color.a);\n"
+			//"	if (out_color.x < 0.01f && out_color.y < 0.01f && out_color.z < 0.01f) discard;		\n"
 			"}																	\n";
 
 	public:
@@ -212,11 +240,17 @@ namespace sibr
 		/** \return all opacity maps. */
 		inline const OpacityMaps& opacityMaps(void) const;
 
+		/// Set the switchTag 
+		inline void switchTag(const SwitchTagsProperty& switchTag);
+		/// get the switchTag 
+		inline const SwitchTagsProperty& switchTag(void) const;
+
+		/// Return the pointer to oppacity texture if it exist
 		/** Query a material diffuse map.
 		\param matName the material name
 		\return the diffuse texture if it exist
 		*/
-		inline sibr::ImageRGB::Ptr diffuseMap(const std::string& matName) const;
+		inline sibr::ImageRGBA::Ptr diffuseMap(const std::string& matName) const;
 		
 		/** Set all material diffuse maps.
 		\param maps the new maps
@@ -253,10 +287,12 @@ namespace sibr
 		/** Set the covering tag map.
 		\param map the new map
 		*/
-		inline void tagsCoveringMap(const TagsMap & map);
+		inline void tagsCoveringMaps(const TagsCoveringMaps & map);
 		
 		/** \return the current covering tag map. */
-		inline const TagsMap& tagsCoveringMap(void) const;
+		inline const TagsCoveringMaps& tagsCoveringMaps(void) const;
+		/// Return the pointer to oppacity texture if it exist
+		inline sibr::ImageRGB::Ptr tagsCoveringMap(const std::string& matName) const;
 		
 		/** Set the sub meshes.
 		\param subMeshes a list of submeshes
@@ -283,7 +319,7 @@ namespace sibr
 		inline const AmbientOcclusion& ambientOcclusion(void);
 
 		/** Set the function used to compute ambient occlusion at each vertex. 
-		\pram aoFunction the new function to use 
+		\param aoFunction the new function to use 
 		*/
 		inline void aoFunction(std::function<sibr::Mesh::Colors(
 			sibr::MaterialMesh&,
@@ -297,11 +333,18 @@ namespace sibr
 		bool	load(const std::string& filename);
 
 		/** Load a scene from a set of mitsuba XML scene files (referencing multiple OBJs/PLYs). 
-		It handles instances (duplicating the geoemtry and applying the per-instance transformation).
-		\param filename the file path
+		It handles instances (duplicating the geometry and applying the per-instance transformation).
+		\param xmlFile the file path
+		\param loadTextures should the material textures be loaded
 		\return a success flag
 		*/
 		bool	loadMtsXML(const std::string& xmlFile, bool loadTextures = true);
+
+		/*
+		Load tags image files from a list of file paths.
+		\param listFilesTags a list of image paths
+		*/
+		void	loadCoveringTagsTexture(const std::vector<std::string>& listFilesTags);
 
 		/** Attribute a random color at each vertex based on the material IDs of the faces it belongs to. */
 		void	fillColorsWithIndexMaterials();
@@ -382,7 +425,9 @@ namespace sibr
 			bool backFaceCulling = true,
 			RenderMode mode = FillRenderMode,
 			bool frontFaceCulling = false,
-			bool invertDepthTest = false
+			bool invertDepthTest = false,
+			bool specificMaterial = false,
+			std::string nameOfSpecificMaterial = ""
 		) const;
 
 		/** Render the geometry for 360 environment maps.
@@ -422,15 +467,16 @@ namespace sibr
 		OpacityMaps _opacityMaps; ///< Material opacity images.
 		DiffuseMaps _diffuseMaps; ///< Material diffuse images.
 
+		//std::vector<std::string>	_uniformColorMtlList;
 		TagsMap		_tagsMap;  ///< Material tag images.
-		TagsMap		_tagsCoveringMap;  ///< Material covering tag images.
+		TagsCoveringMaps _tagsCoveringMaps;  ///< Material covering tag images.
 		std::vector<std::string> uniformColorMtlList; ///< List of materials with a diffuse map.
 
 		SubMeshes	_subMeshes; ///< Submeshes, one per material, for rendering them separately.
 		RenderCategory _typeOfRender = RenderCategory::diffuseMaterials; ///< Synthetic rendering mode.
 
 		bool _albedoTexturesInitialized = false; ///< Are the texture initialized.
-		std::vector<sibr::Texture2DRGB::Ptr> _albedoTextures; ///< Albedo textures.
+		std::vector<sibr::Texture2DRGBA::Ptr> _albedoTextures; ///< Albedo textures.
 		std::vector<GLuint> _idTextures; ///< Texture handles.
 		std::vector<sibr::Texture2DRGB::Ptr> _opacityTextures;///< Opacity textures.
 		std::vector<GLuint> _idTexturesOpacity;///< Opacity texture handles.
@@ -443,11 +489,20 @@ namespace sibr
 		sibr::Texture2DRGB::Ptr _tagCoveringTexture;///< Convering tag texture.
 		GLuint _idTagCoveringTexture = 0; ///< Covering tag texture handle.
 
+		std::vector<sibr::ImageRGB::Ptr> _listCoveringImagesTags;
+		std::map<std::string,sibr::Texture2DRGB::Ptr> _tagsCoveringTexture;
+		std::map<std::string,GLuint> _idTagsCoveringTexture;
+
+		SwitchTagsProperty _switchTags;
+
+		//AO attributes
+		float _currentThreshold;
 		AmbientOcclusion _ambientOcclusion; ///< AO options.
 		std::function<sibr::Mesh::Colors(sibr::MaterialMesh&, const int)> _aoFunction; ///< AO generation function.
 		bool _aoInitialized = false; ///< Is AO data initialized.
 		float _averageSize = 0.0f; ///< Average maximum edge length.
 		float _averageArea = 0.0f; ///< Average triangle area.
+
 	};
 
 	///// DEFINITION /////
@@ -531,21 +586,38 @@ namespace sibr
 		return _tagsMap;
 	}
 
-	void MaterialMesh::tagsCoveringMap(const TagsMap & map) {
-		_tagsCoveringMap = map;
+	void MaterialMesh::tagsCoveringMaps(const TagsCoveringMaps & map) {
+		_tagsCoveringMaps = map;
 	}
 
-	const MaterialMesh::TagsMap& MaterialMesh::tagsCoveringMap(void) const {
-		return _tagsCoveringMap;
+	const MaterialMesh::TagsCoveringMaps& MaterialMesh::tagsCoveringMaps(void) const {
+		return _tagsCoveringMaps;
 	}
 
-	ImageRGB::Ptr MaterialMesh::diffuseMap(const std::string& matName) const
+	sibr::ImageRGB::Ptr MaterialMesh::tagsCoveringMap(const std::string& matName) const {
+		auto & el = _tagsCoveringMaps.find(matName);
+		if (el != _tagsCoveringMaps.end()) {
+			return el->second;
+		}
+		else return nullptr;
+	}
+
+	/// Set the switchTag 
+	void MaterialMesh::switchTag(const SwitchTagsProperty& switchTag) {
+		_switchTags = switchTag;
+	}
+	/// get the switchTag 
+	const MaterialMesh::SwitchTagsProperty& MaterialMesh::switchTag(void) const {
+		return _switchTags;
+	}
+
+	ImageRGBA::Ptr MaterialMesh::diffuseMap(const std::string& matName) const
 	{
 		auto & el = _diffuseMaps.find(matName);
 		if (el != _diffuseMaps.end()) {
 			return el->second;
 		}
-		return nullptr;
+		else return nullptr;
 	}
 
 	/*ImageRGB MaterialMesh::diffuseMap(const std::string& matName)
@@ -597,7 +669,6 @@ namespace sibr
 	void MaterialMesh::typeOfRender(const RenderCategory& type) {
 		_typeOfRender = type;
 	}
-
 
 
 } // namespace sibr

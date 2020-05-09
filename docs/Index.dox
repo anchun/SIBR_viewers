@@ -1,4 +1,4 @@
-/*! \mainpage SIBR - Documentation
+/*! \mainpage Getting Started
  *
  * \section intro_sec Introduction
 
@@ -23,8 +23,8 @@
  *
  * \subsection sibr_generate_and_compile Generating the solution and compiling
  *
- * - Clone sibr_basic repository (https://gitlab.inria.fr/sprakash/sibr_basic2).
- *  \code git clone https://gitlab.inria.fr/sprakash/sibr_basic2 \endcode
+ * - Clone sibr_core repository (https://gitlab.inria.fr/sibr/sibr_core).
+ *  \code git clone https://gitlab.inria.fr/sibr/sibr_core \endcode
  * - Run Cmake-gui once, select the sibr_root/ as a source directory, sibr_root/build/ as the build directory. Configure, select the Visual Studio C++ Win64 compiler.
  * - Select the projects you want to generate among the BUILD elements in the list.
  * - Generate.
@@ -38,14 +38,14 @@
  * \subsection sibr_projects_generate_and_compile Adding projects to SIBR
  *
  * SIBR comes with ULR as the default project. If you need to create a new project, it can be based upon ULR and created.
- * For more information see \subpage help_new_project.
+ * For more information see \ref help_new_project "Creating a new project".
  *
  * In addition to ULR, there are several IBR algorithms already implemented in SIBR.
  * Existing projects can be added as subdirectories in the src/projects directory.
- * Users need access to the project's gitlab repository to clone it and ise ot.
+ * Users need access to the project's gitlab repository to clone it and use it.
  * You can follow the given steps to add a project once access is given.
  *
- * - Go to the sibr_basic2 repository and pull.
+ * - Go to the sibr_core repository and pull.
  * - Go to src/projects
  * - Clone the project repository with the default directory name.
  * - Run Cmake-gui again, (with sibr_root/ as a source directory, sibr_root/build/ as the build directory). Configure, select the Visual Studio C++ Win64 compiler.
@@ -106,7 +106,7 @@
  * - A renderer/ subdirectory contains a library with the bulk of the project-specific code.
  * - A preprocess/ subdirectory containing one or more preprocessing executables.
  * - An apps/ subdirectory contains one or more demo applications demonstrating the rendering algorithms of the project.
- * For more details on the setup, see \subpage help_new_project
+ * For more details on the setup, see \ref help_new_project "Creating a new project".
  *
  *
  * \section sibr_troubleshooting Troubleshoot
@@ -116,5 +116,5 @@
  * - 'Cmd.exe failed wither error 009' or similar: make sure Python is installed and in the PATH.
  * - BUILD_ALL or INSTALL fail because of a project you don't really need: build and install each project separately by selecting the proper targets.
  * - Some projects may depend on other projects. Make sure you have checked all the required projects before generating the solution.
- *
+ * - Error in CUDA headers under Visual Studio 2019: make sure CUDA >= 10.1 is installed.
  */

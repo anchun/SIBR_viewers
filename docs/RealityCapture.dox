@@ -25,7 +25,8 @@
   * (Suggested directory name: Dataset\\SibrData (see above))
   *
   * \li Generate and build the solution to generate executables for preprocessing applications.
-  * \li Run the python script using \code python ibr_preprocess_rc_to_sibr.py -i dataset_path (typically Dataset\RcOuts ) -d (typically Dataset\SibrData ) --bin path_to_sibr_bin \endcode
+  * \li Go to `src/projects/ulr/preprocess`
+  * \li Run the python script using \code python ibr_preprocess_rc_to_sibr.py -i dataset_path (typically Dataset\RcOuts ) -o output_path (typically Dataset\SibrData ) --bin path_to_sibr_bin \endcode
   * \li Specifying the binaries directory is optional. While compiling cmake automatically generates settings file which is parsed by the script to set bin directory.
   * \li If the preprocessing apps are compiled in RelWithDeb mode, provide -r parameter while running the script.
   * \li The script calls the distordCrop, cropFromCenter, and clipping_planes app executables; make sure they are up to date.

@@ -126,11 +126,12 @@ namespace sibr {
 				{
 					split(splitS, line, is_any_of(" "));
 					//std::cout << splitS.size() << std::endl;
-					if (splitS.size() > 1) {
+					if (splitS.size() >= 1) {
 						for (auto& s : splitS)
 							if (!s.empty())
 								_activeImages[stoi(s)] = true;
 						splitS.clear();
+						break;
 					}
 					else
 						break;
@@ -148,11 +149,12 @@ namespace sibr {
 				while (getline(scene_metadata, line))
 				{
 					split(splitS, line, is_any_of(" "));
-					if (splitS.size() > 1) {
+					if (splitS.size() >= 1) {
 						for (auto& s : splitS)
 							if (!s.empty())
 								_activeImages[stoi(s)] = false;
 						splitS.clear();
+						break;
 					}
 					else
 						break;
@@ -232,6 +234,30 @@ namespace sibr {
 		}
 
 		_imgPath = _basePathName + "/images/";
+
+		std::string blackListFile = dataset_path + "/colmap/database.blacklist";
+
+		if (sibr::fileExists(blackListFile)) {
+			std::string line;
+			std::vector<std::string> splitS;
+			std::ifstream blackListFile(blackListFile);
+			if (blackListFile.is_open()) {
+				while (std::getline(blackListFile, line)) {
+					split(splitS, line, is_any_of(" "));
+					//std::cout << splitS.size() << std::endl;
+					if (splitS.size() > 0) {
+						for (uint cam_id = 0; cam_id < _camInfos.size(); cam_id++) {
+							if (find_any(splitS, _camInfos[cam_id].name())) {
+								_camInfos[cam_id].setActive(false);
+							}
+						}
+						splitS.clear();
+					}
+					else
+						break;
+				}
+			}
+		}
 
 		populateFromCamInfos();
 

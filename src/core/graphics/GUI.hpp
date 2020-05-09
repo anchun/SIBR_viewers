@@ -20,6 +20,7 @@ namespace sibr
 	\param viewport will contain the window extent on screen
 	\param invalidTexture ignore the RT
 	\param updateLayout force update the camera location on screen
+	\param handle the texture index to display from the input RT
 	\return true if window is focused (useful for managing interactions).
 	\ingroup sibr_graphics
 	*/
@@ -67,6 +68,18 @@ namespace ImGui {
 	* \ingroup sibr_graphics
 	*/
 	SIBR_GRAPHICS_EXPORT bool TabButton(const char* label, bool highlight, const ImVec2& size = ImVec2(0, 0));
+
+	/** Plot multiple curves on a graph. All curves should have the same number of samples.
+		Only lines are supported, code is based on internal ImGui implementation for one curve.
+		\param the graph ImGui label
+		\param values a list of pointers to list of values
+		\param values_count number of samples in each list
+		\param colors one or mulitple colors to use for each curve
+		\param scale_min the value corresponding to the bottom of the graph
+		\param scale_max the value corresponding to the top of the graph
+		\param graph_size size of the graph widget
+	*/
+	SIBR_GRAPHICS_EXPORT void PlotMultiLines(const char* label, std::vector<float*> values, int values_count, const std::vector<ImVec4>& colors, float scale_min = FLT_MAX, float scale_max = FLT_MAX, ImVec2 graph_size = ImVec2(0.0f, 0.0f));
 }
 
 namespace sibr {

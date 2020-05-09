@@ -22,6 +22,7 @@ namespace sibr {
 			
 		}
 
+		SIBR_LOG << "Rendering resolution: (" << _width << "," << _height << ")" << std::endl;
 		_isInit = true;
 	}
 
@@ -196,6 +197,7 @@ namespace sibr {
 	{
 		if (!isInit()) {
 			initRenderTargetRes(cams);
+			
 		}
 		initializeImageRenderTargets(cams, imgs);
 		initializeDepthRenderTargets(cams, proxies, true);

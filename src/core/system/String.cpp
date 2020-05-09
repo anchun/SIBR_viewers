@@ -122,6 +122,17 @@ namespace sibr
 	}
 
 
+	SIBR_SYSTEM_EXPORT bool find_any(const std::vector<std::string>& needles, const std::string& haystack)
+	{
+		for (std::string needle : needles)
+		{
+			if (haystack.find(needle) != std::string::npos)
+				return true;
+		}
+
+		return false;
+	}
+
 	std::string timestamp(const std::string & format) {
 		auto now = std::time(nullptr);
 #ifdef SIBR_OS_WINDOWS

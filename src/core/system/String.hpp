@@ -87,6 +87,13 @@ namespace sibr
 	 */
 	SIBR_SYSTEM_EXPORT std::string					to_lower(const std::string& str);
 
+	/** Find if a list of substring is present in a given string.
+	 * \param needles the list of substring
+	 * \param haystack the search string
+	 * \return true if any substring is present in the search string, else false
+	 */
+	SIBR_SYSTEM_EXPORT bool					find_any(const std::vector<std::string>& needles, const std::string& haystack);
+
 	/** Write the current timestamp to a string.
 	 * \param format the formatting to use for the timestamp (see default value for an example)
 	 * \return a string containing the timestamp

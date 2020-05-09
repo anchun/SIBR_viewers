@@ -29,7 +29,7 @@ int main(const int argc, const char** argv)
 	std::vector<std::string> dirs = { "cameras", "images", "meshes"};
 
 	std::cout << "Generating SIBR scene." << std::endl;
-	BasicIBRScene scene(myArgs, true);
+	BasicIBRScene scene(myArgs, true, true);
 
 	// load the cams
 	std::vector<InputCamera>	cams = scene.cameras()->inputCameras();
@@ -87,8 +87,11 @@ int main(const int argc, const char** argv)
 	outputListIm.close();
 	outputSceneMetadata.close();
 
-	const std::string meshPath = pathScene + "/capreal/mesh.ply";
-	sibr::copyFile(meshPath, pathScene + "/meshes/recon.ply", true);
-
+	std::string meshPath = pathScene + "/capreal/mesh.obj";
+	sibr::copyFile(meshPath, pathScene + "/meshes/recon.obj", true);
+	meshPath = pathScene + "/capreal/mesh.mtl";
+	sibr::copyFile(meshPath, pathScene + "/meshes/", true);
+	meshPath = pathScene + "/capreal/mesh_u1_v1.png";
+	sibr::copyFile(meshPath, pathScene + "/meshes/", true);
 	return EXIT_SUCCESS;
 }

@@ -1,4 +1,6 @@
- /*! \page help_docu Documenting projects
+ /*! \page document_project Documenting projects
+
+@ingroup setup_project
 
 \section gendoc Writing
 Each class created in one of the core SIBR modules (system, assets,...) should be properly documented.
@@ -47,6 +49,7 @@ If you need to create a new module and want it to appear in the Modules doxygen 
 \endverbatim
 
 You can also write general .dox pages to give more details on a process or a project. For projects, you can link them in <a href="projects.html">docs/Projects.dox</a> as subpages ; for scripts, in <a href="preprocess_main_page.html">docs/Preprocess.dox</a>.
+Please add them to your project `documentation/` folder.
 
 \section compileDoc Generating
 

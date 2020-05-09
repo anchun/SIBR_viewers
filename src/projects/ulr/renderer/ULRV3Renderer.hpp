@@ -98,6 +98,9 @@ namespace sibr {
 		/// Flip the RGB images before using them.
 		bool & flipRGBs() { return _flipRGBs.get(); }
 
+		/// Enable or diable occlusion testing.
+		bool& occTest() { return _occTest.get(); }
+
 		/// Show debug weights.
 		bool & showWeights() { return _showWeights.get(); }
 
