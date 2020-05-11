@@ -316,7 +316,7 @@ void sibr::CamEditMeshViewer::onGUI() {
 				writeCameras();
 			}
 			ImGui::SameLine();
-			if (ImGui::Button("Save bundle")) {
+			if (ImGui::Button("Save bundle/path")) {
 				std::vector<InputCamera> camerasToSaveRecons;
 				std::vector<InputCamera> camerasToSaveRender;
 				for (std::pair<cameraCategory, std::vector<InputCamera>>
@@ -334,14 +334,24 @@ void sibr::CamEditMeshViewer::onGUI() {
 					}
 				}
 
-				std::string outputBundlePath;
-				if (sibr::showFilePicker(outputBundlePath, FilePickerMode::Save,
-					"", "out")) {
-					if (!outputBundlePath.empty()) {
+				std::string outputBPath;
+				if (sibr::showFilePicker(outputBPath, FilePickerMode::Save,
+					"", "out,path") && !outputBPath.empty()) {
+					if (sibr::getExtension(outputBPath) == "path") {
+						// Save in the same format as the camera recorder (resolution independent, binary).
+						sibr::ByteStream stream;
+						int32 num = (int32)camerasToSaveRender.size();
+						stream << num;
+						for (const InputCamera& cam : camerasToSaveRender) {
+							stream << Camera(cam);
+						}
+						stream.saveToFile(outputBPath);
+					}
+					else {
 						sibr::InputCamera::saveAsBundle(camerasToSaveRender,
-							outputBundlePath + ".out", false, false);
+							outputBPath + ".out", false, false);
 						sibr::InputCamera::saveAsBundle(camerasToSaveRecons,
-							outputBundlePath + "_recons.out", false, false);
+							outputBPath + "_recons.out", false, false);
 					}
 				}
 
