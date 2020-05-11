@@ -310,6 +310,13 @@ namespace sibr
 		template<typename FuncType>
 		sibr::Mesh::Ptr getAllCellMeshWithCond(bool filled, const FuncType & func) const;
 
+		/** Generate a mesh from all voxels satisfying a condition.
+		\param filled should the mesh be wireframe (false) or faceted (true)
+		\param func the predicate to evaluate, will receive as unique argument a voxel (CellType).
+		\return the generated mesh
+		*/
+		sibr::Mesh::Ptr getAllCellMeshWithIds(bool filled, std::vector<std::size_t> cell_ids) const;
+
 		/** List the voxels that statisfy a condition (for instance fullness)
 		\param func the predicate to evaluate, will receive as unique argument a voxel (CellType).
 		\return a list of linear indices of all voxels such that func(voxel) is true.
@@ -328,6 +335,7 @@ namespace sibr
 	};
 
 
+
 	template<typename CellType> template<typename FuncType>
 	inline std::vector<std::size_t> VoxelGrid<CellType>::detect_non_empty_cells(const FuncType & func) const {
 		std::vector<std::size_t> out_ids;
@@ -343,6 +351,14 @@ namespace sibr
 	inline sibr::Mesh::Ptr VoxelGrid<CellType>::getAllCellMeshWithCond(bool filled, const FuncType & f) const
 	{
 		std::vector<std::size_t> cell_ids = detect_non_empty_cells(f);
+		return getAllCellMeshWithIds(filled, cell_ids);
+	}
+
+	/** }@ */
+
+	template<typename CellType>
+	inline sibr::Mesh::Ptr VoxelGrid<CellType>::getAllCellMeshWithIds(bool filled, std::vector<std::size_t> cell_ids) const
+	{
 		int numNonZero = (int)cell_ids.size();
 
 		auto out = std::make_shared<sibr::Mesh>();
@@ -350,22 +366,22 @@ namespace sibr
 		sibr::Mesh::Ptr baseMesh = filled ? baseCellMeshFilled : baseCellMesh;
 
 		const int numT = (int)baseMesh->triangles().size();
-		const int numTtotal = numNonZero *numT;
+		const int numTtotal = numNonZero * numT;
 		const int numV = (int)baseMesh->vertices().size();
-		const int numVtotal = numNonZero *numV;
+		const int numVtotal = numNonZero * numV;
 		const sibr::Vector3u offsetT = sibr::Vector3u(numV, numV, numV);
 
 		sibr::Mesh::Vertices vs(numVtotal);
 		sibr::Mesh::Triangles ts(numTtotal);
-		for (int i = 0; i < numNonZero; ++i ) {
+		for (int i = 0; i < numNonZero; ++i) {
 			const auto cell = getCell(cell_ids[i]);
-			const sibr::Vector3f offsetV = cell.cast<float>().array()*getCellSize().array();
+			const sibr::Vector3f offsetV = cell.cast<float>().array() * getCellSize().array();
 
 			for (int v = 0; v < numV; ++v) {
-				vs[i*numV + v] = baseMesh->vertices()[v] + offsetV;
+				vs[i * numV + v] = baseMesh->vertices()[v] + offsetV;
 			}
 			for (int t = 0; t < numT; ++t) {
-				ts[i*numT + t] = baseMesh->triangles()[t] + i * offsetT;
+				ts[i * numT + t] = baseMesh->triangles()[t] + i * offsetT;
 			}
 		}
 
@@ -373,8 +389,6 @@ namespace sibr
 		out->triangles(ts);
 		return out;
 	}
-
-	/** }@ */
 
 } // namespace sibr
 
