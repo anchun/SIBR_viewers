@@ -65,11 +65,65 @@ namespace sibr {
 		*/
 		void createRenderTargets() override;
 		
+				/**
+		 * \brief Getter for the pointer holding the data related to the scene.
+		 * 
+		 */
+		const IParseData::Ptr						data(void) const override;
+
+		/**
+		* \brief Setter for the pointer holding the data related to the scene for scene creation.
+		* \param data the setup data
+		*/
+		void										data(const sibr::IParseData::Ptr & data) override;
+
+
+		/**
+		 * \brief Getter for the pointer holding cameras related to each input iamge of the scene.
+		 *
+		 */
+		const ICalibratedCameras::Ptr				cameras(void) const override;
+
+		/**
+		 * \brief Getter for the pointer holding the input images to the scene.
+		 *
+		 */
+		const IInputImages::Ptr						images(void) const override;
+
+		/**
+		 * \brief Getter for the pointer holding the proxies required by the scene.
+		 *
+		 */
+		const IProxyMesh::Ptr						proxies(void) const override;
+
+		/**
+		 * \brief Getter for the pointer holding the render targets textures related to the scene.
+		 *
+		 */
+		const RenderTargetTextures::Ptr	&		renderTargets(void) const override;
+		
+		/**
+		 * \brief Getter for the pointer holding the render targets textures related to the scene.
+		 *
+		 */
+		RenderTargetTextures::Ptr &				renderTargets(void) override;
+
+		/**
+		 * \brief Getter for the pointer holding the mesh textures related to the mesh loaded for the scene.
+		 *
+		 */
+		Texture2DRGB::Ptr &						inputMeshTextures(void) override;
 
 	protected:
 		BasicIBRScene(BasicIBRScene & scene);
 		BasicIBRScene& operator =(const BasicIBRScene&) = delete;
 
+		IParseData::Ptr				_data;
+		ICalibratedCameras::Ptr		_cams;
+		IInputImages::Ptr			_imgs;
+		IProxyMesh::Ptr				_proxies;
+		Texture2DRGB::Ptr			_inputMeshTexture;
+		RenderTargetTextures::Ptr	_renderTargets;
 		SceneOptions				_currentOpts;
 
 		/**
@@ -81,5 +135,47 @@ namespace sibr {
 
 		
 	};
+
+	///// INLINE DEFINITIONS /////
+
+	inline const IParseData::Ptr			BasicIBRScene::data(void) const
+	{
+		return _data;
+	}
+
+	inline void BasicIBRScene::data(const IParseData::Ptr & data) 
+	{
+		_data = data;
+	}
+
+	inline const ICalibratedCameras::Ptr BasicIBRScene::cameras(void) const
+	{
+		return _cams;
+	}
+
+	inline const IInputImages::Ptr BasicIBRScene::images(void) const
+	{
+		return _imgs;
+	}
+
+	inline const IProxyMesh::Ptr BasicIBRScene::proxies(void) const
+	{
+		return _proxies;
+	}
+
+	inline const RenderTargetTextures::Ptr & BasicIBRScene::renderTargets(void) const
+	{
+		return _renderTargets;
+	}
+
+	inline RenderTargetTextures::Ptr & BasicIBRScene::renderTargets(void)
+	{
+		return _renderTargets;
+	}
+
+	inline Texture2DRGB::Ptr & BasicIBRScene::inputMeshTextures(void)
+	{
+		return _inputMeshTexture;
+	}
 
 }

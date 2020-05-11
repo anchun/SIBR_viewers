@@ -198,7 +198,7 @@ namespace sibr
 		Matrix4f			view( void ) const { return _transform.invMatrix(); }
 
 		/** \return the camera projection matrix. */
-		Matrix4f			proj( void ) const;
+		virtual Matrix4f	proj( void ) const;
 
 		/** \return the camera view-proj matrix (cached). */
 		const Matrix4f&		viewproj( void ) const;

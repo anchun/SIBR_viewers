@@ -15,7 +15,7 @@ namespace sibr {
 		}
 	}
 
-	void ProxyMesh::replaceProxy(std::shared_ptr<Mesh> newProxy)
+	void ProxyMesh::replaceProxy(Mesh::Ptr newProxy)
 	{
 		_proxy.reset(new Mesh());
 		_proxy->vertices(newProxy->vertices());

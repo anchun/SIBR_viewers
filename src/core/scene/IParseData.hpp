@@ -100,194 +100,104 @@ namespace sibr{
 		* \brief Getter for the information regarding the input images.
 		*
 		*/
-		const std::vector<sibr::ImageListFile::Infos>&	imgInfos(void) const;
+		virtual const std::vector<sibr::ImageListFile::Infos>&	imgInfos(void) const = 0;
 
 		/**
 		* \brief Setter for the information regarding the input images.
 		*
 		*/
-		void											imgInfos(std::vector<sibr::ImageListFile::Infos>& infos);
+		virtual void											imgInfos(std::vector<sibr::ImageListFile::Infos>& infos) = 0;
 
 		/**
 		* \brief Getter to the number of cameras defined in the bundle file.
 		*
 		*/
-		const int										numCameras(void) const;
+		virtual const int										numCameras(void) const = 0;
 
 		/**
 		* \brief Setter to the number of cameras defined in the bundle file.
 		*
 		*/
-		void											numCameras(int numCams);
+		virtual void											numCameras(int numCams) = 0;
 
 		/**
 		* \brief Getter for the list of active cameras/images.
 		*
 		*/
-		const std::vector<bool>&						activeImages(void) const;
+		virtual const std::vector<bool>&						activeImages(void) const = 0;
 
 		/**
 		* \brief Setter for the list of active cameras/images.
 		*
 		*/
-		void											activeImages(std::vector<bool>& activeCams);
+		virtual void											activeImages(std::vector<bool>& activeCams) = 0;
 
 		/**
 		* \brief Getter for the base path name where the dataset is located.
 		*
 		*/
-		const std::string&								basePathName(void) const;
+		virtual const std::string&								basePathName(void) const = 0;
 
 		/**
 		* \brief Setter for the base path name where the dataset is located.
 		*
 		*/
-		void											basePathName(std::string & path) ;
+		virtual void											basePathName(std::string & path)  = 0;
 		
 		/**
 		* \brief Getter for the mesh path where the dataset is located.
 		*
 		*/
-		const std::string&								meshPath(void) const;
+		virtual const std::string&								meshPath(void) const = 0;
 
 		/**
 		* \brief Setter for the mesh path where the dataset is located.
 		*
 		*/
-		void											meshPath(std::string & path) ;
+		virtual void											meshPath(std::string & path)  = 0;
 
 		/**
 		* \brief Getter for the dataset type.
 		*
 		*/
-		const IParseData::Type&							datasetType(void) const;
+		virtual const IParseData::Type&							datasetType(void) const = 0;
 
 		/**
 		* \brief Setter for the dataset type.
 		*
 		*/
-		void											datasetType(IParseData::Type dataType);
+		virtual void											datasetType(IParseData::Type dataType) = 0;
 
 		/**
 		* \brief Getter for the camera infos.
 		*
 		*/
-		const std::vector<InputCamera::Ptr>			cameras(void) const;
+		virtual const std::vector<InputCamera::Ptr>	cameras(void) const = 0;
 
 		/**
 		* \brief Setter for the camera infos.
 		*
 		*/
-		void											cameras(std::vector<InputCamera::Ptr>& cams);
+		virtual void											cameras(std::vector<InputCamera::Ptr>& cams) = 0;
 
 		/**
 		* \brief Getter for the image path.
 		*
 		*/
-		const std::string								imgPath(void) const;
+		virtual const std::string								imgPath(void) const = 0;
 
 		/**
 		* \brief Setter for the image path.
 		*
 		*/
-		void											imgPath(std::string& imPath);
+		virtual void											imgPath(std::string& imPath) = 0;
 
 		/**
 		* \brief Function to parse the scene metadata file to read image data.
 		*
 		*/
-		virtual bool									parseSceneMetadata(const std::string & scene_metadata_path) = 0;
-
-	protected:
-
-		std::vector<InputCamera::Ptr>	_camInfos;
-		std::string									_basePathName;
-		std::string									_meshPath;
-		std::vector<sibr::ImageListFile::Infos>		_imgInfos;
-		std::string									_imgPath = "";
-		std::vector<bool>							_activeImages;
-		int											_numCameras;		
-		Type										_datasetType = Type::EMPTY;
+		virtual bool											parseSceneMetadata(const std::string & scene_metadata_path) = 0;
 		
 	};
-
-
-	///// INLINE DEFINITIONS /////
-	
-	inline const std::vector<sibr::ImageListFile::Infos>&	IParseData::imgInfos(void) const {
-		return _imgInfos;
-	}
-
-	inline void IParseData::imgInfos(std::vector<sibr::ImageListFile::Infos>& infos)
-	{
-		_imgInfos = infos;
-	}
-
-	inline const int IParseData::numCameras( void ) const {		
-		return _numCameras;		
-	}
-
-	inline void IParseData::numCameras(int numCams)
-	{
-		_numCameras = numCams;
-	}
-	
-	inline const std::vector<bool>& IParseData::activeImages(void) const {
-		return _activeImages;
-	}
-
-	inline void IParseData::activeImages(std::vector<bool>& activeCams)
-	{
-		_activeImages = activeCams;
-	}
-
-	inline const std::string & IParseData::basePathName(void) const
-	{
-		return _basePathName;
-	}
-
-	inline void IParseData::basePathName(std::string& path)
-	{
-		_basePathName = path;
-	}
-
-	inline const std::string & IParseData::meshPath(void) const
-	{
-		return _meshPath;
-	}
-
-	inline void IParseData::meshPath(std::string& path)
-	{
-		_meshPath = path;
-	}
-
-	inline void		IParseData::datasetType(IParseData::Type dataType) {
-		_datasetType = dataType;
-	}
-
-	inline const std::vector<InputCamera::Ptr> IParseData::cameras(void) const
-	{
-		return _camInfos;
-	}
-
-	inline void IParseData::cameras(std::vector<InputCamera::Ptr>& cams)
-	{
-		_camInfos = cams;
-	}
-
-	inline const std::string IParseData::imgPath(void) const
-	{
-		return _imgPath;
-	}
-
-	inline void IParseData::imgPath(std::string& imPath)
-	{
-		_imgPath = imPath;
-	}
-
-	inline const IParseData::Type & IParseData::datasetType(void) const
-	{
-		return _datasetType;
-	}
 
 }

@@ -79,11 +79,107 @@ namespace sibr{
 		void  getParsedData(const BasicIBRAppArgs & myArgs, const std::string & customPath = "") override;
 
 		/**
+		* \brief Getter for the information regarding the input images.
+		*
+		*/
+		const std::vector<sibr::ImageListFile::Infos>&	imgInfos(void) const override;
+
+		/**
+		* \brief Setter for the information regarding the input images.
+		*
+		*/
+		void											imgInfos(std::vector<sibr::ImageListFile::Infos>& infos) override;
+
+		/**
+		* \brief Getter to the number of cameras defined in the bundle file.
+		*
+		*/
+		const int										numCameras(void) const override;
+
+		/**
+		* \brief Setter to the number of cameras defined in the bundle file.
+		*
+		*/
+		void											numCameras(int numCams) override;
+
+		/**
+		* \brief Getter for the list of active cameras/images.
+		*
+		*/
+		const std::vector<bool>&						activeImages(void) const override;
+
+		/**
+		* \brief Setter for the list of active cameras/images.
+		*
+		*/
+		void											activeImages(std::vector<bool>& activeCams) override;
+
+		/**
+		* \brief Getter for the base path name where the dataset is located.
+		*
+		*/
+		const std::string&								basePathName(void) const override;
+
+		/**
+		* \brief Setter for the base path name where the dataset is located.
+		*
+		*/
+		void											basePathName(std::string & path)  override;
+		
+		/**
+		* \brief Getter for the mesh path where the dataset is located.
+		*
+		*/
+		const std::string&								meshPath(void) const override;
+
+		/**
+		* \brief Setter for the mesh path where the dataset is located.
+		*
+		*/
+		void											meshPath(std::string & path)  override;
+
+		/**
+		* \brief Getter for the dataset type.
+		*
+		*/
+		const IParseData::Type&							datasetType(void) const override;
+
+		/**
+		* \brief Setter for the dataset type.
+		*
+		*/
+		void											datasetType(IParseData::Type dataType) override;
+
+		/**
+		* \brief Getter for the camera infos.
+		*
+		*/
+		const std::vector <InputCamera::Ptr>			cameras(void) const override;
+
+		/**
+		* \brief Setter for the camera infos.
+		*
+		*/
+		void											cameras(std::vector<InputCamera::Ptr>& cams) override;
+
+		/**
+		* \brief Getter for the image path.
+		*
+		*/
+		const std::string								imgPath(void) const override;
+
+		/**
+		* \brief Setter for the image path.
+		*
+		*/
+		void											imgPath(std::string& imPath) override;
+
+		/**
 		* \brief Function to parse the scene metadata file to read image data.
 		*
 		*/
-		bool									parseSceneMetadata(const std::string & scene_metadata_path) override;
-
+		virtual bool									parseSceneMetadata(const std::string & scene_metadata_path) override;
+	
 	protected:
 		
 		/**
@@ -98,7 +194,95 @@ namespace sibr{
 		*
 		*/
 		void populateFromCamInfos();
+
+		std::vector<InputCamera::Ptr>				_camInfos;
+		std::string									_basePathName;
+		std::string									_meshPath;
+		std::vector<sibr::ImageListFile::Infos>		_imgInfos;
+		std::string									_imgPath = "";
+		std::vector<bool>							_activeImages;
+		int											_numCameras;
+		Type										_datasetType = Type::EMPTY;
 		
 	};
+
+
+	///// INLINE DEFINITIONS /////
+	
+	inline const std::vector<sibr::ImageListFile::Infos>&	ParseData::imgInfos(void) const {
+		return _imgInfos;
+	}
+
+	inline void ParseData::imgInfos(std::vector<sibr::ImageListFile::Infos>& infos)
+	{
+		_imgInfos = infos;
+	}
+
+	inline const int ParseData::numCameras( void ) const {		
+		return _numCameras;		
+	}
+
+	inline void ParseData::numCameras(int numCams)
+	{
+		_numCameras = numCams;
+	}
+	
+	inline const std::vector<bool>& ParseData::activeImages(void) const {
+		return _activeImages;
+	}
+
+	inline void ParseData::activeImages(std::vector<bool>& activeCams)
+	{
+		_activeImages = activeCams;
+	}
+
+	inline const std::string & ParseData::basePathName(void) const
+	{
+		return _basePathName;
+	}
+
+	inline void ParseData::basePathName(std::string& path)
+	{
+		_basePathName = path;
+	}
+
+	inline const std::string & ParseData::meshPath(void) const
+	{
+		return _meshPath;
+	}
+
+	inline void ParseData::meshPath(std::string& path)
+	{
+		_meshPath = path;
+	}
+
+	inline void		ParseData::datasetType(IParseData::Type dataType) {
+		_datasetType = dataType;
+	}
+
+	inline const std::vector<InputCamera::Ptr> ParseData::cameras(void) const
+	{
+		return _camInfos;
+	}
+
+	inline void ParseData::cameras(std::vector<InputCamera::Ptr>& cams)
+	{
+		_camInfos = cams;
+	}
+
+	inline const std::string ParseData::imgPath(void) const
+	{
+		return _imgPath;
+	}
+
+	inline void ParseData::imgPath(std::string& imPath)
+	{
+		_imgPath = imPath;
+	}
+
+	inline const ParseData::Type & ParseData::datasetType(void) const
+	{
+		return _datasetType;
+	}
 
 }

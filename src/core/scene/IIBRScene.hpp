@@ -66,110 +66,50 @@ namespace sibr {
 		 * \brief Getter for the pointer holding the data related to the scene.
 		 * 
 		 */
-		const IParseData::Ptr						data(void) const;
+		virtual const IParseData::Ptr						data(void) const = 0;
 
 		/**
 		* \brief Setter for the pointer holding the data related to the scene for scene creation.
 		* \param data the setup data
 		*/
-		void										data(const sibr::IParseData::Ptr & data);
+		virtual void										data(const sibr::IParseData::Ptr & data) = 0;
 
 
 		/**
 		 * \brief Getter for the pointer holding cameras related to each input iamge of the scene.
 		 *
 		 */
-		const ICalibratedCameras::Ptr				cameras(void) const;
+		virtual const ICalibratedCameras::Ptr				cameras(void) const = 0;
 
 		/**
 		 * \brief Getter for the pointer holding the input images to the scene.
 		 *
 		 */
-		const IInputImages::Ptr						images(void) const;
+		virtual const IInputImages::Ptr						images(void) const = 0;
 
 		/**
 		 * \brief Getter for the pointer holding the proxies required by the scene.
 		 *
 		 */
-		const IProxyMesh::Ptr						proxies(void) const;
+		virtual const IProxyMesh::Ptr						proxies(void) const = 0;
 
 		/**
 		 * \brief Getter for the pointer holding the render targets textures related to the scene.
 		 *
 		 */
-		const RenderTargetTextures::Ptr	&		renderTargets(void) const;
+		virtual const RenderTargetTextures::Ptr	&			renderTargets(void) const = 0;
 		
 		/**
 		 * \brief Getter for the pointer holding the render targets textures related to the scene.
 		 *
 		 */
-		RenderTargetTextures::Ptr &				renderTargets(void);
+		virtual RenderTargetTextures::Ptr &					renderTargets(void) = 0;
 
 		/**
 		 * \brief Getter for the pointer holding the mesh textures related to the mesh loaded for the scene.
 		 *
 		 */
-		Texture2DRGB::Ptr &						inputMeshTextures(void);
-		
-
-	protected:
-
-		IParseData::Ptr				_data;
-		ICalibratedCameras::Ptr		_cams;
-		IInputImages::Ptr			_imgs;
-		IProxyMesh::Ptr				_proxies;
-		Texture2DRGB::Ptr			_inputMeshTexture;
-		RenderTargetTextures::Ptr	_renderTargets;
-
-		/**
-		* \brief Creates an IIBRScene from the internal stored data component in the scene.
-		* The data could be populated either from dataset path or customized by the user externally.
-		* \param width the constrained width for GPU texture data.
-		*/
-		virtual void createFromData(const uint width = 0) = 0;
-
+		virtual Texture2DRGB::Ptr &							inputMeshTextures(void) = 0;
 		
 	};
-
-	///// INLINE DEFINITIONS /////
-
-	inline const IParseData::Ptr			IIBRScene::data(void) const
-	{
-		return _data;
-	}
-
-	inline void IIBRScene::data(const IParseData::Ptr & data) 
-	{
-		_data = data;
-	}
-
-	inline const ICalibratedCameras::Ptr IIBRScene::cameras(void) const
-	{
-		return _cams;
-	}
-
-	inline const IInputImages::Ptr IIBRScene::images(void) const
-	{
-		return _imgs;
-	}
-
-	inline const IProxyMesh::Ptr IIBRScene::proxies(void) const
-	{
-		return _proxies;
-	}
-
-	inline const RenderTargetTextures::Ptr & IIBRScene::renderTargets(void) const
-	{
-		return _renderTargets;
-	}
-
-	inline RenderTargetTextures::Ptr & IIBRScene::renderTargets(void)
-	{
-		return _renderTargets;
-	}
-
-	inline Texture2DRGB::Ptr & IIBRScene::inputMeshTextures(void)
-	{
-		return _inputMeshTexture;
-	}
 }

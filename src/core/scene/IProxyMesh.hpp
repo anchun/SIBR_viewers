@@ -14,32 +14,15 @@ namespace sibr {
 		typedef std::shared_ptr<IProxyMesh>					Ptr;
 
 		virtual void												loadFromData(const IParseData::Ptr & data) = 0;
-		virtual void												replaceProxy(std::shared_ptr<sibr::Mesh> newProxy) = 0;
+		virtual void												replaceProxy(Mesh::Ptr newProxy) = 0;
 		virtual void												replaceProxyPtr(Mesh::Ptr newProxy) = 0;
-		virtual bool												hasProxy(void) const;
-		virtual const Mesh&											proxy(void) const;
-		virtual const Mesh::Ptr										proxyPtr(void) const;
+		virtual bool												hasProxy(void) const = 0;
+		virtual const Mesh&											proxy(void) const = 0;
+		virtual const Mesh::Ptr										proxyPtr(void) const = 0;
 
 	protected:
 		IProxyMesh() {};
 
-		Mesh::Ptr											_proxy;
-
 	};
-
-	inline bool												sibr::IProxyMesh::hasProxy(void) const
-	{
-		return _proxy && !_proxy->vertices().empty();
-	}
-
-	inline const Mesh &										IProxyMesh::proxy(void) const
-	{
-		return *_proxy;
-	}
-
-	inline const Mesh::Ptr										IProxyMesh::proxyPtr(void) const
-	{
-		return _proxy;
-	}
 
 }
