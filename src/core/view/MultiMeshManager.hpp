@@ -345,6 +345,8 @@ namespace sibr {
 		*/
 		void		removeMesh(const std::string & name);
 
+		void		setIntialView(const std::string& dataset_path);
+
 		// ViewBase interface
 
 		/** Update state based on user input.
@@ -396,7 +398,6 @@ namespace sibr {
 		using Iterator = ListMesh::iterator;
 	
 		std::string							name; ///< View name.
-
 		ListMesh							list_meshes; ///< Meshes to display.
 		Iterator 							selected_mesh_it; ///< Currently selected mesh.
 		bool								selected_mesh_it_is_valid = false; ///< Is there a valid currently selected mesh.

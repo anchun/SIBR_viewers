@@ -383,6 +383,23 @@ namespace sibr {
 		}
 	}
 
+	void MultiMeshManager::setIntialView(const std::string& dataset_path)
+	{
+		const std::string topViewPath = dataset_path + "/cameras/topview.txt";
+		std::ifstream topViewFile(topViewPath);
+		if (topViewFile.good())
+		{
+			SIBR_LOG << "Loaded saved topview (" << topViewPath << ")." << std::endl;
+			// Intialize a temp camera (used to load the saved top view pose) with
+			// the current top view camera to get the resolution/fov right.
+			InputCamera cam(camera_handler.getCamera());
+			cam.readFromFile(topViewFile);
+			// Apply it to the top view FPS camera.
+			//camera_handler.fromCamera(cam, false);
+			camera_handler.fromTransform(cam.transform(), false, true);
+		}
+	}
+
 	void MultiMeshManager::initShaders()
 	{
 		const std::string folder = sibr::getBinDirectory() + "/shaders_rsc/";
