@@ -6,7 +6,7 @@
   * \section secDataStruct Data structure and render passes
   *
   * \subsection subsecSpixelInputDataSetFormats SpixelWarp input dataset formats
-  */
+  *
   * You can use the src/submodule/ibr-dataset-generation project to generate the dataset !
   *
   * |  			files									| 		comeFrom (if not from dataset generation process)		 						  | format (Text/Binary) |
