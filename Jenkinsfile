@@ -25,7 +25,6 @@ pipeline {
     }
     environment {
         CMAKE_PATH='cmake.exe'
-        MSBUILD_PATH='"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\MSBuild\\Current\\Bin\\MSBuild.exe"'
         CONFIGURATION='RelWithDebInfo'
     }
     stages {
@@ -46,9 +45,14 @@ pipeline {
         stage('build') {
             steps {
                 updateGitlabCommitStatus name: '2-build', state: 'running'
-                bat '%MSBUILD_PATH% build\\ALL_BUILD.vcxproj /p:Configuration=RelWithDebInfo'
-                bat '%MSBUILD_PATH% build\\INSTALL.vcxproj /p:Configuration=RelWithDebInfo'
-                bat '%MSBUILD_PATH% build\\docs\\doxygen\\compileDocs.vcxproj'
+                dir('build') {
+                    bat '%CMAKE_PATH% --build . --target ALL_BUILD --config RelWithDebInfo'
+                    bat '%CMAKE_PATH% --build . --target INSTALL --config RelWithDebInfo'
+
+                    dir('docs/doxygen') {
+                        bat '%CMAKE_PATH% --build . --target compileDocs'
+                    }
+                }
             }
             post {
                 failure {
@@ -56,6 +60,7 @@ pipeline {
                 }
                 success {
                     updateGitlabCommitStatus name: '2-build', state: 'success'
+                    archiveArtifacts(artifacts: 'build/**, install/**, extlibs/**', fingerprint: true)
                 }
             }
         }
@@ -75,7 +80,7 @@ pipeline {
         }
         stage('deploy') {
             parallel {
-                stage('deploy_docs') {
+                stage('trigger_projects_build') {
                     when {
                         expression {
                             return gitlabBranch == "master"
@@ -84,17 +89,9 @@ pipeline {
                     steps {
                         updateGitlabCommitStatus name: '4-deploy', state: 'running'
 
-                        bat 'if not exist "sibr_docs" mkdir sibr_docs'
-
-                        dir('sibr_docs') {
-                            git branch: 'master',
-                                credentialsId: 'GitlabCredentials',
-                                url: 'https://gitlab.inria.fr/sibr/docs.git'
-                            bat 'del /Q public'
-                            bat 'copy /Y ..\\docs\\doxygen\\CompiledDocs\\html\\* public'
-                            bat 'git add -A && git commit -m "Update master" --allow-empty'
-                            bat 'git push origin master'
-                        }
+                        // trigger sibr projects build
+                        bat 'echo building projects and documentation'
+                        build 'sibr_projects/master'
                     }
                     post {
                         failure {
