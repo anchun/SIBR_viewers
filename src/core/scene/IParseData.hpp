@@ -50,46 +50,6 @@ namespace sibr{
 		typedef std::shared_ptr<IParseData>				Ptr;
 
 		/**
-		* \brief Function to parse data from a template dataset path.
-		* \param dataset_path Path to the folder containing data
-		* \param customPath Path to algorithm specific data
-		* \param scene_metadata_filename Specify the filename of the Scene Metadata file to load specific scene
-		*/
-		virtual void  getParsedBundlerData(const std::string & dataset_path, const std::string & customPath, const std::string & scene_metadata_filename) = 0;
-
-		/**
-		* \brief Function to parse data from a template dataset path.
-		* \param dataset_path Path to the folder containing data
-		* \param customPath Path to algorithm specific data
-		*/
-		virtual void  getParsedMeshroomData(const std::string & dataset_path, const std::string & customPath = "") = 0;
-
-
-		/**
-		* \brief Function to parse data from a colmap sparse dataset path.
-		* \param dataset_path Path to the colmap dataset sparse folder containing data
-		*
-		* The function takes in a colmap dataset sparse folder path and populates IParseData members with data.
-		* This function can be used for direct compatibility with colmap data in SIBR.
-		* The function automatically computes the intrinsic and extrinsic parameters of the camera, input images filename, widht and height etc.
-		* Colmap uses LHS coordinate system while SIBR uses RHS coordinate system. The function applies appropriate transformation to handle this case.
-		* 
-		* For further compatibility with FrIBR, which enforces a Y-up RHS coordinate system, we need to apply an extra conversion to the rotation matrix, to 'flip back' from y-down to y-up.
-		* \note Note: when applying the above mentioned conversion, the mesh needs to be converted by the same converter matrix
-		* \brief Function to parse data from a colmap dataset path.
-		* \param dataset_path Path to the folder containing data
-		*/
-		virtual void  getParsedColmapData(const std::string & dataset_path) = 0;
-
-		/**
-		* \brief Function to parse data from a template dataset path.
-		* \param dataset_path Path to the folder containing data
-		* \param customPath Path to algorithm specific data
-		* \param nvm_path Specify the filename of the NVM path.
-		*/
-		virtual void  getParsedNVMData(const std::string & dataset_path, const std::string & customPath, const std::string & nvm_path) = 0;
-
-		/**
 		* \brief Function to parse data from a dataset path. Will automatically determine the type of dataset based on the files present.
 		* \param myArgs Arguments containing the dataset path and other infos
 		* \param customPath additional data path
@@ -191,12 +151,6 @@ namespace sibr{
 		*
 		*/
 		virtual void											imgPath(std::string& imPath) = 0;
-
-		/**
-		* \brief Function to parse the scene metadata file to read image data.
-		*
-		*/
-		virtual bool											parseSceneMetadata(const std::string & scene_metadata_path) = 0;
 		
 	};
 

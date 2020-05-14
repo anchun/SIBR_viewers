@@ -37,14 +37,14 @@ namespace sibr{
 		* \param customPath Path to algorithm specific data
 		* \param scene_metadata_filename Specify the filename of the Scene Metadata file to load specific scene
 		*/
-		void  getParsedBundlerData(const std::string & dataset_path, const std::string & customPath, const std::string & scene_metadata_filename) override;
+		void  getParsedBundlerData(const std::string & dataset_path, const std::string & customPath, const std::string & scene_metadata_filename);
 
 		/**
 		* \brief Function to parse data from a template dataset path.
 		* \param dataset_path Path to the folder containing data
 		* \param customPath Path to algorithm specific data
 		*/
-		void  getParsedMeshroomData(const std::string & dataset_path, const std::string & customPath = "") override;
+		void  getParsedMeshroomData(const std::string & dataset_path, const std::string & customPath = "");
 
 
 		/**
@@ -61,7 +61,7 @@ namespace sibr{
 		* \brief Function to parse data from a colmap dataset path.
 		* \param dataset_path Path to the folder containing data
 		*/
-		void  getParsedColmapData(const std::string & dataset_path) override;
+		void  getParsedColmapData(const std::string & dataset_path);
 
 		/**
 		* \brief Function to parse data from a template dataset path.
@@ -69,7 +69,7 @@ namespace sibr{
 		* \param customPath Path to algorithm specific data
 		* \param nvm_path Specify the filename of the NVM path.
 		*/
-		void  getParsedNVMData(const std::string & dataset_path, const std::string & customPath, const std::string & nvm_path) override;
+		void  getParsedNVMData(const std::string & dataset_path, const std::string & customPath, const std::string & nvm_path);
 
 		/**
 		* \brief Function to parse data from a dataset path. Will automatically determine the type of dataset based on the files present.
@@ -178,7 +178,7 @@ namespace sibr{
 		* \brief Function to parse the scene metadata file to read image data.
 		*
 		*/
-		virtual bool									parseSceneMetadata(const std::string & scene_metadata_path) override;
+		virtual bool									parseSceneMetadata(const std::string & scene_metadata_path);
 	
 	protected:
 		
