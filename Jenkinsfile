@@ -60,7 +60,7 @@ pipeline {
                 }
                 success {
                     updateGitlabCommitStatus name: '2-build', state: 'success'
-                    archiveArtifacts(artifacts: 'build/**, install/**, extlibs/**', fingerprint: true)
+                    archiveArtifacts(artifacts: 'install/**', fingerprint: true)
                 }
             }
         }
@@ -114,6 +114,12 @@ pipeline {
                     }
                 }
             }
+        }
+    }
+    
+    post {
+        success {
+            archiveArtifacts artifacts: 'install/**'
         }
     }
 }
