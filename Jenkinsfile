@@ -91,7 +91,7 @@ pipeline {
 
                         // trigger sibr projects build
                         bat 'echo building projects and documentation'
-                        build 'sibr_projects/master'
+                        build job: 'sibr_projects', parameters: [string(name: 'API_TOKEN', value: env.API_TOKEN)]
                     }
                     post {
                         failure {
