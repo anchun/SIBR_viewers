@@ -142,6 +142,7 @@ endif()
 ## Include all projects
 set(SIBR_PROJECTS_SUBPAGE_REF "")
 set(DOXY_APP_SPECIFIC_IMG_PATH "")
+set(DOXY_DOC_EXCLUDE_PATTERNS_DIRS "")
 ADD_SUBDIRECTORY(src)
 
 

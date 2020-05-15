@@ -9,7 +9,7 @@ if(BUILD_DOCUMENTATION)
 	else()
 		set(DOXY_DOC_DEST_DIR               ${CMAKE_CURRENT_SOURCE_DIR}) 	    							## used in the doxyfile.in
 		set(DOXY_DOC_INPUT_ROOT_DIRS        "${CMAKE_HOME_DIRECTORY}/src/ ${CMAKE_HOME_DIRECTORY}/docs ${CMAKE_CURRENT_BINARY_DIR}/generated/")    				## used in the doxyfile.in
-		set(DOXY_DOC_EXCLUDE_PATTERNS_DIRS  "${CMAKE_HOME_DIRECTORY}/src/core/graphics/imgui ${CMAKE_HOME_DIRECTORY}/src/core/assets/xatlas ${CMAKE_HOME_DIRECTORY}/src/core/raycaster/nanoflann ${CMAKE_HOME_DIRECTORY}/src/core/system/rapidxml-1.13") ## used in the doxyfile.in
+		set(DOXY_DOC_EXCLUDE_PATTERNS_DIRS  "${DOXY_DOC_EXCLUDE_PATTERNS_DIRS} ${CMAKE_HOME_DIRECTORY}/src/core/graphics/imgui ${CMAKE_HOME_DIRECTORY}/src/core/assets/xatlas ${CMAKE_HOME_DIRECTORY}/src/core/raycaster/nanoflann ${CMAKE_HOME_DIRECTORY}/src/core/system/rapidxml-1.13") ## used in the doxyfile.in
 		set(DOXY_DOC_COMMON_IMG_PATH        "${CMAKE_CURRENT_SOURCE_DIR}/img ${CMAKE_HOME_DIRECTORY}/src/projects/")
 
 		## Generate project list in the projects page
