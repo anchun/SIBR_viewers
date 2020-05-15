@@ -14,18 +14,18 @@ add_library(${PROJECT_NAME} SHARED ${SOURCES})
 
 include_directories(${Boost_INCLUDE_DIRS} .)
 target_link_libraries(${PROJECT_NAME}
-${Boost_LIBRARIES}
-${ASSIMP_LIBRARIES}
-${GLEW_LIBRARIES}
-${OPENGL_LIBRARIES}
-${OpenCV_LIBRARIES}
-#${CGAL_LIBRARIES}			## from IBR_spixelWarp needed dependencies
-#${SuiteSparse_LIBRARIES}	## from IBR_spixelWarp needed dependencies
-glfw3
-sibr_system
-sibr_view
-sibr_assets
-sibr_renderer
+	${Boost_LIBRARIES}
+	${ASSIMP_LIBRARIES}
+	${GLEW_LIBRARIES}
+	${OPENGL_LIBRARIES}
+	${OpenCV_LIBRARIES}
+	# ${CGAL_LIBRARIES}			## from IBR_spixelWarp needed dependencies
+	# ${SuiteSparse_LIBRARIES}	## from IBR_spixelWarp needed dependencies
+	glfw3
+	sibr_system
+	sibr_view
+	sibr_assets
+	sibr_renderer
 )
 
 #define postfix for various debug/release
@@ -43,7 +43,6 @@ set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER "__projects__/__ulr__/__
 
 set(RESOURCES ${SHADERS})
 set_target_properties(${PROJECT_NAME} PROPERTIES RESOURCE "${RESOURCES}")
-set(DOXY_DOC_ULR_IMG_PATH "${CMAKE_CURRENT_SOURCE_DIR}/doc" CACHE INTERNAL "") ## globale variable used in doxyfile.in)
 
 ## Hight level macro to install in an homogen way all our ibr targets
 include(install_runtime)
