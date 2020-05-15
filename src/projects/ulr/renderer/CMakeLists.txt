@@ -44,7 +44,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER "__projects__/__ulr__/__
 set(RESOURCES ${SHADERS})
 set_target_properties(${PROJECT_NAME} PROPERTIES RESOURCE "${RESOURCES}")
 
-## Hight level macro to install in an homogen way all our ibr targets
+## High level macro to install in an homogen way all our ibr targets
 include(install_runtime)
 ibr_install_target(${PROJECT_NAME}
     INSTALL_PDB                         ## mean install also MSVC IDE *.pdb file (DEST according to target type)

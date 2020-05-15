@@ -568,7 +568,7 @@ endfunction()
 
 
 
-## Hight level macro to install in an homogen way all our ibr targets (it use some functions inside this file)
+## High level macro to install in an homogen way all our ibr targets (it use some functions inside this file)
 ##
 ## RSC_FILE_ADD : [opt] is used to auto write/append relative paths of target ressources into a common file
 ## INSTALL_PDB  : [opt] is used to auto install PDB file (when using MSVC according to the target type)
