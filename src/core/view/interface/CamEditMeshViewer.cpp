@@ -336,8 +336,9 @@ void sibr::CamEditMeshViewer::onGUI() {
 
 				std::string outputBPath;
 				if (sibr::showFilePicker(outputBPath, FilePickerMode::Save,
-					"", "out,path") && !outputBPath.empty()) {
-					if (sibr::getExtension(outputBPath) == "path") {
+					"", "out,path,lookat") && !outputBPath.empty()) {
+					const std::string ext = sibr::getExtension(outputBPath);
+					if (ext == "path") {
 						// Save in the same format as the camera recorder (resolution independent, binary).
 						sibr::ByteStream stream;
 						int32 num = (int32)camerasToSaveRender.size();
@@ -347,7 +348,10 @@ void sibr::CamEditMeshViewer::onGUI() {
 						}
 						stream.saveToFile(outputBPath);
 					}
-					else {
+					else if (ext == "lookat") {
+						sibr::InputCamera::saveAsLookat(camerasToSaveRender, outputBPath);
+					} else {
+						outputBPath = sibr::removeExtension(outputBPath);
 						sibr::InputCamera::saveAsBundle(camerasToSaveRender,
 							outputBPath + ".out", false, false);
 						sibr::InputCamera::saveAsBundle(camerasToSaveRecons,
@@ -357,9 +361,12 @@ void sibr::CamEditMeshViewer::onGUI() {
 
 			}
 			ImGui::SameLine();
-			if (ImGui::Button("Load cameras")) {
-				//load();
-				SIBR_WRG << "Uninmplemented for now." << std::endl;
+			if (ImGui::Button("Load cameras (lookat)")) {
+				std::string inPath;
+				if (sibr::showFilePicker(inPath, Default, _outputPath) && !inPath.empty()) {
+					_currentList = InputCamera::loadLookat(inPath, { sibr::Vector2u(1920, 1080) });
+				}
+				
 			}
 			if (ImGui::Button("Set output directory")) {
 				std::string output;
