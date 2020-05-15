@@ -3,7 +3,7 @@ set (CMAKE_SYSTEM_VERSION 10.0.15063.0 CACHE TYPE INTERNAL FORCE)
 PROJECT(sibr_projects)
 
 ## Check the cmake version
-set(CHECKED_VERSION "3.16.4")
+set(CHECKED_VERSION "3.17.2")
 if (CMAKE_VERSION VERSION_GREATER CHECKED_VERSION)
     message(WARNING "Untested version of cmake. If you checked everything is working properly, please update ${CHECKED_VERSION} in the main CmakeLists.txt with the version you tested.")
 endif()
