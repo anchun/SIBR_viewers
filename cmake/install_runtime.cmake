@@ -247,10 +247,18 @@ function(install_runtime installedFilePathTargetAppToResolve)
     ## This macro is used internaly here to recursilvely get path of LINK_LIBRARIES of each non imported target
     ## Typically if you have 2 internal dependencies between cmake targets, we want cmake to be able to get back path where are these dependencies
     macro(recurseDepList target)
+        get_target_property(type ${target} TYPE)
+        if(type STREQUAL "INTERFACE_LIBRARY")
+            return()
+        endif()
         get_target_property(linkLibs ${target} LINK_LIBRARIES)
         foreach(lib ${linkLibs})
             string(FIND ${lib} ">" strId) ## cmake is using generator-expression?
             if(TARGET ${lib})
+                get_target_property(type ${lib} TYPE)
+                if(type STREQUAL "INTERFACE_LIBRARY")
+                    return()
+                endif()
                 ## it's not a path but a single target name
                 ## for build-target which are part of the current cmake configuration : nothing to do as cmake already know the output path
                 ## for imported target, we need to look for theire imported location

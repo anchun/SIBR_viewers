@@ -230,7 +230,7 @@ if(BUILD_SIBR) ## ffmpeg only needed with vbr projects
         MSVC14 "win3rdParty/MSVC14/ffmpeg" "https://gforge.inria.fr/frs/download.php/file/37657/ffmpeg-4.0.2-win64-win3rdParty.7z"
         SET CHECK_CACHED_VAR FFMPEG_DIR PATH ${FFMPEG_WIN3RDPARTY_DIR}
 	)
-	find_package(FFmpeg QUIET)
+	find_package(FFMPEG QUIET)
 	if(FFMPEG_FOUND)
 	  include_directories(${FFMPEG_INCLUDE_DIR})
 	  message("FFmpeg was found in : ${FFMPEG_INCLUDE_DIR}")
