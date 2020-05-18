@@ -153,7 +153,7 @@ namespace sibr
 		 * \param camHandler a camera handler to display as a "user camera"
 		 * \param myArgs dataset arguments (needed to load/save the camera location)
 		 */
-		SceneDebugView(const BasicIBRScene::Ptr& scene, const InteractiveCameraHandler::Ptr & camHandler, const BasicDatasetArgs& myArgs);
+		SceneDebugView(const IIBRScene::Ptr& scene, const InteractiveCameraHandler::Ptr & camHandler, const BasicDatasetArgs& myArgs);
 
 		/** Constructor.
 		 * \param scene the scene to display
@@ -162,7 +162,7 @@ namespace sibr
 		 * \param myArgs dataset arguments (needed to load/save the camera location)
 		 * \warning Deprecated, use the version without the viewport.
 		 */
-		SceneDebugView(const BasicIBRScene::Ptr& scene, const Viewport& viewport, const InteractiveCameraHandler::Ptr& camHandler, const BasicDatasetArgs& myArgs);
+		SceneDebugView(const IIBRScene::Ptr& scene, const Viewport& viewport, const InteractiveCameraHandler::Ptr& camHandler, const BasicDatasetArgs& myArgs);
 
 		/** Update state based on user input.
 		 * \param input user input
@@ -213,7 +213,7 @@ namespace sibr
 		 *\param scene the new scene
 		 *\param preserveCamera should the current camera position be preserved
 		 **/
-		void setScene(const BasicIBRScene::Ptr & scene, bool preserveCamera = false);
+		void setScene(const IIBRScene::Ptr & scene, bool preserveCamera = false);
 
 		/** Update the active status of all cameras
 		 *\param cams_id the active camera IDs. 
@@ -234,15 +234,15 @@ namespace sibr
 		/** Setup the geometry. */
 		void setupMeshes();
 
-		InteractiveCameraHandler::Ptr _userCurrentCam; ///< The "main view" camera handler (will be displayed as an extra camera).
-		std::shared_ptr<BasicIBRScene> _scene; ///< Current displayed scene.
-		std::vector<CameraInfos> _cameras; ///< Additional scene cameras info.
-		CameraInfoDisplay _camInfoOption = SIZE; ///< Camera info to display in the GUI.
-		std::string _topViewPath; ///< Path to the topview saved file.
-		int					_snapToImage = 0; ///< ID of the camera to snap to.
-		int					_cameraIdInfoGUI = 0; ///< ID of the camera to display info about.
-		bool				_showImages = true; ///< Show the image planes.
-		bool				_showLabels = false; ///< Show camera labels.
+		InteractiveCameraHandler::Ptr	_userCurrentCam; ///< The "main view" camera handler (will be displayed as an extra camera).
+		IIBRScene::Ptr					_scene; ///< Current displayed scene.
+		std::vector<CameraInfos>		_cameras; ///< Additional scene cameras info.
+		CameraInfoDisplay				_camInfoOption = SIZE; ///< Camera info to display in the GUI.
+		std::string						_topViewPath; ///< Path to the topview saved file.
+		int								_snapToImage = 0; ///< ID of the camera to snap to.
+		int								_cameraIdInfoGUI = 0; ///< ID of the camera to display info about.
+		bool							_showImages = true; ///< Show the image planes.
+		bool							_showLabels = false; ///< Show camera labels.
 
 	};
 

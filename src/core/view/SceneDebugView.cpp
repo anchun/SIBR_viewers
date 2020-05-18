@@ -177,7 +177,7 @@ namespace sibr
 		_shaderArray.end();
 	}
 
-	SceneDebugView::SceneDebugView(const BasicIBRScene::Ptr & scene, 
+	SceneDebugView::SceneDebugView(const IIBRScene::Ptr & scene, 
 		const InteractiveCameraHandler::Ptr & camHandler, const BasicDatasetArgs & myArgs)
 	{
 		initImageCamShaders();
@@ -207,7 +207,7 @@ namespace sibr
 		setup();
 	}
 
-	SceneDebugView::SceneDebugView(const BasicIBRScene::Ptr & scene, const Viewport & viewport,
+	SceneDebugView::SceneDebugView(const IIBRScene::Ptr & scene, const Viewport & viewport,
 		const InteractiveCameraHandler::Ptr & camHandler, const BasicDatasetArgs & myArgs) : SceneDebugView(scene, camHandler, myArgs) {
 		SIBR_WRG << "Deprecated SceneDebugView constructor, use the version without viewport passed as argument." << std::endl;
 	}
@@ -328,7 +328,7 @@ namespace sibr
 		camera_handler.getCamera().writeToFile(outfile);
 	}
 
-	void SceneDebugView::setScene(const BasicIBRScene::Ptr & scene, bool preserveCamera)
+	void SceneDebugView::setScene(const IIBRScene::Ptr & scene, bool preserveCamera)
 	{
 		_scene = scene;
 		const InputCamera cameraBack = camera_handler.getCamera();
