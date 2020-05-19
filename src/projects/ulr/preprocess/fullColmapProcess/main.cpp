@@ -28,6 +28,7 @@ struct FullProcessColmapPreprocessArgs :
 	Arg<std::string>			remoteUnix = { "remoteUnix","","ssh account, example: user@nef-devel.inria.fr" };
 	Arg<std::string>			colmapWorkingDir = { "colmapWorkingDir","","colmap working directory in your Unix system" };
 	Arg<std::string>			clusterGPU = { "clusterGPU","any","GPU number, example : \"clusterGPU 12\" , \"clusterGPU any\"" };
+	Arg<uint>					time = { "time",1,"node allocation time (number of hours)" };
 
 	//Feature extractor 
 	Arg<uint>	siftExtraction_ImageSize = 
@@ -200,19 +201,34 @@ std::string convertWindowsToLinuxPath(const std::string& winPath) {
 int sendImages(
 	const std::string& datasetPath,
 	const std::string& colmapWorkingDir,
-	const std::string& sshAccount) {
-	const std::string command = "scp -r " + convertWindowsToLinuxPath 
-		(datasetPath)+ "/images " + sshAccount + ":" + colmapWorkingDir;
+	const std::string& sshAccount,
+	const std::string& displayOption) {
 
-	SIBR_LOG << "Sending images ... " << std::endl;
-	const int result = boost::process::system(command);
-	SIBR_LOG << "Running: " << command << std::endl;
+	//We do not send the files if the script was already launched
+	const std::string commandTestExistence = "ssh" + displayOption + sshAccount + " test -f " + colmapWorkingDir + "/started.txt\"";
+	const int resultTestExistence = boost::process::system(commandTestExistence);
 
-	if (result == EXIT_FAILURE) {
-		SIBR_ERR << "Impossible to send the images dir to your remote dir ... " << std::endl
-			<< "Are you sure that your remote working dir exists ?" << std::endl;
+	if (resultTestExistence == EXIT_FAILURE) {
+		const std::string command = "scp -r " + convertWindowsToLinuxPath
+		(datasetPath)+"/images " + sshAccount + ":" + colmapWorkingDir;
+
+
+		SIBR_LOG << "Sending images ... " << std::endl;
+		const int result = boost::process::system(command);
+		SIBR_LOG << "Running: " << command << std::endl;
+
+		if (result == EXIT_FAILURE) {
+			SIBR_ERR << "Impossible to send the images dir to your remote dir ... " << std::endl
+				<< "Are you sure that your remote working dir exists ?" << std::endl;
+		}
+		return result;
 	}
-	return result;
+	else {
+		return EXIT_SUCCESS;
+	}
+
+
+
 }
 
 void getProject(
@@ -233,6 +249,7 @@ void runColmap(const std::string& colmapProgramPath,
 	const std::string& sshAccount = "",
 	const std::string& displayOption = " ",
 	std::string gpuNodeNum = "any",
+	unsigned int time = 1,
 	unsigned int numGPUs = 2
 	){
 	if (gpuNodeNum.size() == 1) {
@@ -389,7 +406,7 @@ void runColmap(const std::string& colmapProgramPath,
 		}
 
 		runScript += "gpu='YES' and gpucapability>='5.0'\\\" -l /nodes=1/gpunum="
-			+ std::to_string(numGPUs) + ",walltime=04:00:00 " +
+			+ std::to_string(numGPUs) + ",walltime=" + std::to_string(time) + ":00:00 " +
 			colmapWorkingDir + "/colmapScript.sh\"";
 		const int resultRunScript = boost::process::system(runScript);
 		if (resultRunScript == EXIT_FAILURE) {
@@ -412,7 +429,7 @@ std::string getDisplayOption(
 	//with the endline character, so if the option is available, we use it. If the option is not
 	//available, we don't use it
 
-	//We are sure that this directory exists, but we test if the -t option are available
+	//We are sure that this directory exists, but we test if the -t option is available
 	const std::string command = "ssh -t " + sshAccount + " test -d " + colmapWorkingDir;
 
 	const int result = boost::process::system(command);
@@ -621,6 +638,7 @@ void printExample() {
         << "--clusterGPU 34                                                 Optional option. It's the number of the node. If you do not specify it, the Cluster will decide" << std::endl
         << "--numGPUs                                                       Optional option. It's the number of the GPUs present in the Node" << std::endl
         << "--quality medium                                                Optional option. It's the pre-defined quality (low,medium,high,extreme,deepBlending)" << std::endl
+        << "--time 6														Optional option. It's the maximum time where the node can create the colmap project ( in hours )" << std::endl
         << std::endl;
 }
 
@@ -702,9 +720,12 @@ int main(const int argc, const char** argv)
 	}
 	//-------------------------------------------------//
 
+
+	const std::string displayOption = getDisplayOption(myArgs.colmapWorkingDir.get(),
+														myArgs.remoteUnix.get());
 	if (!runLocally) {
 		if (sendImages(myArgs.dataset_path.get(), myArgs.colmapWorkingDir.get(),
-			myArgs.remoteUnix.get()) == EXIT_FAILURE) {
+			myArgs.remoteUnix.get(), displayOption) == EXIT_FAILURE) {
 			printExample();
 			return EXIT_FAILURE;
 		}
@@ -712,8 +733,6 @@ int main(const int argc, const char** argv)
 
 	//----------------------------CHECKING FINISHED------------------------------//
 
-	const std::string displayOption = getDisplayOption(myArgs.colmapWorkingDir.get(),
-														myArgs.remoteUnix.get());
 	makeDirectories(workingPath, myArgs.remoteUnix.get(), displayOption);
 
 	ColmapParameters colmapParams(*qualityRecon);
@@ -726,7 +745,8 @@ int main(const int argc, const char** argv)
 	else {
 	//REMOTE UNIX
 	runColmap(colmapProgram, myArgs.dataset_path,myArgs.colmapWorkingDir , 
-		colmapParams, myArgs.remoteUnix.get(), displayOption, myArgs.clusterGPU.get(), myArgs.numGPUs.get());
+		colmapParams, myArgs.remoteUnix.get(), displayOption, myArgs.clusterGPU.get(),
+		myArgs.numGPUs.get(), myArgs.time.get());
 	waitSteps(myArgs.colmapWorkingDir, myArgs.remoteUnix.get(), displayOption);
 	getProject(myArgs.dataset_path.get(), myArgs.colmapWorkingDir.get(), myArgs.remoteUnix.get());
 	}
