@@ -129,9 +129,61 @@
   * tasks.
   *
   * \subsubsection ColmapInstallRequirementsRemote Install requirements
+  *
+  * - You need to install the SSH operations on your local machine to connect on the Cluster
+  * - Install a specific terminal...
   * 
-  * \subsubsection ColmapInputArgumentsRemote Input arguments examples
+  *
+  * \subsubsection ColmapInputArgumentsRemote Input arguments
   * 
-  * \subsubsection ColmapInputArgumentsRemoteExamples Input arguments examples
+  * Required arguments:
+  *
+  * \code --path YOUR_DATA_PATH\ \endcode
+  *
+  * Equivalent to the local method
+  *
+  * \code --sibrBinariesPath YOUR_SIBR_DIR\install\bin \endcode
+  *
+  * Equivalent to the local method
+  *
+  * \code --colmapPath COLMAP_DIR/ \endcode
+  *
+  * The directory containing the binary executable. 
+  * 
+  * \note Here you have to respect the Unix format : /path/to/colmapdir/colmap
+  * 
+  *
+  * Optional arguments:
+  *
+  * \code --remoteUnix SSHACCOUNT \endcode
+  *
+  * That is your SSH account to connect on the Cluster.
+  * 
+  * \code --colmapWorkingDir /path/to/an/empty/directory/ \endcode
+  * 
+  * You have to specify a directory on the Cluster in which Colmap can generate the project.
+  * 
+  * \code --numGPUs \endcode 
+  * 
+  * The number of GPUs that the node has to contain at least and allocate them. \endcode
+  * 
+  * \code --clusterGPU 30 \endcode
+  *
+  * Use this option to choose a specific node on the Cluster. If you do not specify it, oarsub
+  * program will choose one that is available. 
+  *
+  * \code --quality  \endcode
+  *
+  * Use a pre-defined configuration as with the local version.
+  *
+  * \code --time \endcode
+  *
+  * Use this option to specify the max time allocation for the remote node ( number of hours ) 
+  *
+  *
+  * \subsubsection ColmapInputArgumentsRemoteExamples Input arguments example
+  *
+  *
+  * \code --path E:\USERNAME\dataset --sibrBinariesPath E:\USERNAME\dev\sibr_basic2\install\bin --colmapPath --colmapPath /data/graphdeco/share/colmap/bin/ --quality high --colmapWorkingDir /data/graphdeco/user/USERNAME/AnyDirectory/ --remoteUnix USERNAME@nef-devel.inria.fr --clusterGPU 30 --numGPUs 4 --time 8  \endcode
   *
   **/
