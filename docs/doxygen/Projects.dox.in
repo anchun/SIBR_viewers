@@ -3,5 +3,13 @@
 Here is the list of integrated projects.\n
 For projects that led to publications, the link to the paper is available.\n
 Most of other projects are helper libraries that can be used to augment SIBR with new functionalities.\n
-@SIBR_PROJECTS_SUBPAGE_REF@
+
+Here are our algorithms:\n
+@SIBR_PROJECTS_OURS_SUBPAGE_REF@
+
+Here are integrated toolboxes:\n
+@SIBR_PROJECTS_TOOLBOX_SUBPAGE_REF@
+
+Here are other algorithms:\n
+@SIBR_PROJECTS_OTHERS_SUBPAGE_REF@
  **/

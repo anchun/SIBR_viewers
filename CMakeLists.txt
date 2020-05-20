@@ -47,6 +47,8 @@ elseif(APPLE) ## \todo TODO: do a better test and send error on unsupported c++1
     add_definitions(-std=c++11 -stdlib=libc++)
 endif()
 
+add_definitions(-DOPENCV_TRAITS_ENABLE_DEPRECATED)
+
 ## Default install path; user doesn't have to specify
 ## will cause the GUI will be not updated, and unavailable for changing by user
 #set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/OUTPUTS/${CONFIG_TYPES}") # /!\ We don't know the CONFIG_TYPES used at this step...
@@ -140,7 +142,9 @@ endif()
 # ENDIF(MSVC)
 
 ## Include all projects
-set(SIBR_PROJECTS_SUBPAGE_REF "")
+set(SIBR_PROJECTS_OURS_SUBPAGE_REF "")
+set(SIBR_PROJECTS_TOOLBOX_SUBPAGE_REF "")
+set(SIBR_PROJECTS_OTHERS_SUBPAGE_REF "")
 set(DOXY_APP_SPECIFIC_IMG_PATH "")
 set(DOXY_DOC_EXCLUDE_PATTERNS_DIRS "")
 ADD_SUBDIRECTORY(src)
