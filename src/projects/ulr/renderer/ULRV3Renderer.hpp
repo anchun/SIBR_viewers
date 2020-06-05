@@ -130,7 +130,7 @@ namespace sibr {
 		 * \param mesh the proxy mesh.
 		 * \param eye The novel viewpoint.
 		 */
-		void renderProxyDepth(const sibr::Mesh & mesh, const sibr::Camera& eye);
+		virtual void renderProxyDepth(const sibr::Mesh & mesh, const sibr::Camera& eye);
 
 		/**
 		* Perform ULR blending.
@@ -140,7 +140,7 @@ namespace sibr {
 		* \param inputDepths A texture array containing the input depth maps.
 		* \param passthroughDepth If true, depth from the position map will be output to the depth buffer for ulterior passes.
 		*/
-		void renderBlending(
+		virtual void renderBlending(
 			const sibr::Camera& eye,
 			IRenderTarget& dst,
 			uint inputRGBHandle,
