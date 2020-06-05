@@ -205,7 +205,7 @@ function(downloadAndExtractZipFile ZIP_URL ZIP_DL_PATH EXCTRATED_ZIP_PATH)
         if(dwnlezf_VERBOSE)
             message(STATUS "Downloading...\n   SRC=${ZIP_URL}\n   DEST=${ZIP_DL_PATH}.tmp\n   INACTIVITY_TIMEOUT=180s")
         endif()
-		file(DOWNLOAD ${ZIP_URL} ${ZIP_DL_PATH}.tmp INACTIVITY_TIMEOUT 180 STATUS status SHOW_PROGRESS)
+		file(DOWNLOAD ${ZIP_URL} ${ZIP_DL_PATH}.tmp INACTIVITY_TIMEOUT 360 STATUS status SHOW_PROGRESS)
 
 		list(GET status 0 numResult)
 		if(${numResult} MATCHES "0")

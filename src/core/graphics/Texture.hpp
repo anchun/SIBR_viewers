@@ -25,16 +25,16 @@ namespace sibr
 	public:
 
 		/// Destructor.
-		virtual ~ITexture2D( void ) { }
+		virtual ~ITexture2D(void) { }
 
 		/** \return the texture handle. */
-		virtual GLuint handle (void) const = 0;
+		virtual GLuint handle(void) const = 0;
 
 		/** \return the texture width. */
-		virtual uint   w      (void) const = 0;
+		virtual uint   w(void) const = 0;
 
 		/** \return the texture height. */
-		virtual uint   h      (void) const = 0;
+		virtual uint   h(void) const = 0;
 	};
 
 	/** Represent a 2D texture on the GPU, with custom format and type.
@@ -43,7 +43,7 @@ namespace sibr
 	*/
 	template<typename T_Type, unsigned int T_NumComp>
 	class Texture2D : public ITexture2D {
-		SIBR_DISALLOW_COPY( Texture2D );
+		SIBR_DISALLOW_COPY(Texture2D);
 	public:
 		typedef		Image<T_Type, T_NumComp>			PixelImage;
 		typedef		typename PixelImage::Pixel			PixelFormat;
@@ -59,35 +59,35 @@ namespace sibr
 		\param img the image to upload to the GPU
 		\param flags options
 		*/
-		template<typename ImageType> Texture2D(const ImageType & img, uint flags = 0);
+		template<typename ImageType> Texture2D(const ImageType& img, uint flags = 0);
 
 		/** Constructor from a list of images, one for each mip level.
 		\param miparray the images to upload to the GPU
 		\param flags options
 		*/
-		Texture2D(const std::vector<PixelImage>& miparray, uint flags=0);
+		Texture2D(const std::vector<PixelImage>& miparray, uint flags = 0);
 
 		/// Destructor.
 		~Texture2D(void);
 
 		/** \return the texture handle. */
-		GLuint handle (void) const;
+		GLuint handle(void) const;
 
 		/** \return the texture width. */
-		uint   w      (void) const;
+		uint   w(void) const;
 
 		/** \return the texture height. */
-		uint   h      (void) const;
+		uint   h(void) const;
 
 		/** \return a CPU image containing the texture content.
 			\warning Can cause a GPU flush/sync.
 		*/
-		sibr::Image<T_Type, T_NumComp>		readBack( void ) const;
+		sibr::Image<T_Type, T_NumComp>		readBack(void) const;
 
 		/** Update the content of the txeture with a new image.
 		\param img the new content.
 		*/
-		template<typename ImageType> void update(const ImageType & img);
+		template<typename ImageType> void update(const ImageType& img);
 
 		/** Trigger an update of the mipmaps for level 0 to maxLOD.
 		\param maxLOD the maximum level of mipmap to generate. If -1, as many as possible based on the texture size.
@@ -207,7 +207,7 @@ namespace sibr
 		\param flags options
 		\warning RTs should be of the same size.
 		*/
-		Texture2DArray(const std::vector<typename PixelRT::Ptr> & images, uint flags = 0);
+		Texture2DArray(const std::vector<typename PixelRT::Ptr>& images, uint flags = 0);
 
 		/** Constructor from a set of CPU images.
 		\param images list of images, one for each layer
@@ -215,7 +215,7 @@ namespace sibr
 		\note All images will be resized to the dimensions of the largest one.
 		*/
 		template<typename ImageType>
-		Texture2DArray(const std::vector<ImageType> & images, uint flags = 0);
+		Texture2DArray(const std::vector<ImageType>& images, uint flags = 0);
 
 		/** Constructor from a set of CPU images that will be resized to a fix size.
 		\param images list of images, one for each layer
@@ -224,7 +224,7 @@ namespace sibr
 		\param flags options
 		*/
 		template<typename ImageType>
-		Texture2DArray(const std::vector<ImageType> & images, uint w, uint h, uint flags = 0);
+		Texture2DArray(const std::vector<ImageType>& images, uint w, uint h, uint flags = 0);
 
 		/** Constructor from a set of CPU images, with custom mipmaps.
 		\param images list of lists of images, one for each mip level, each containing an image for each layer
@@ -249,7 +249,7 @@ namespace sibr
 		\note All images will be resized to the dimensions of the largest one.
 		*/
 		template<typename ImageType>
-		void createFromImages(const std::vector<ImageType> & images, uint flags = 0);
+		void createFromImages(const std::vector<ImageType>& images, uint flags = 0);
 
 		/** Create the texture from a set of images and send it to GPU. images will be resized to the target size.
 		\param images list of images, one for each layer
@@ -258,7 +258,26 @@ namespace sibr
 		\param flags options
 		*/
 		template<typename ImageType>
-		void createFromImages(const std::vector<ImageType> & images, uint w, uint h, uint flags = 0);
+		void createFromImages(const std::vector<ImageType>& images, uint w, uint h, uint flags = 0);
+
+		/** Create the texture from a set of images and send it to GPU while compressing them.
+		\param images list of images, one for each layer
+		\param compression the GL_COMPRESSED format. It must be choosen accordingly to the texture internal format.
+		\param flags options
+		\note All images will be resized to the dimensions of the largest one.
+		*/
+		template<typename ImageType>
+		void createCompressedFromImages(const std::vector<ImageType>& images, uint compression, uint flags = 0);
+
+		/** Create the texture from a set of images and send it to GPU while compressing them. images will be resized to the target size.
+		\param images list of images, one for each layer
+		\param w the target width
+		\param h the target height
+		\param compression the GL_COMPRESSED format. It must be choosen accordingly to the texture internal format.
+		\param flags options
+		*/
+		template<typename ImageType>
+		void createCompressedFromImages(const std::vector<ImageType>& images, uint w, uint h, uint compression, uint flags = 0);
 
 		/** Create the texture from a set of images with custom mipmaps and send it to GPU.
 		\param images list of lists of images, one for each mip level, each containing an image for each layer
@@ -282,14 +301,14 @@ namespace sibr
 		\note All images will be resized to the size of the largest one.
 		*/
 		template<typename ImageType>
-		void updateFromImages(const std::vector<ImageType> & images);
+		void updateFromImages(const std::vector<ImageType>& images);
 
 		/** Create the texture from a set of rendertargets and send it to GPU.
 		\param RTs list of rendertargets, one for each layer
 		\param flags options
 		\warning RTs should be of the same size.
 		*/
-		void createFromRTs(const std::vector<typename PixelRT::Ptr> & RTs, uint flags = 0);
+		void createFromRTs(const std::vector<typename PixelRT::Ptr>& RTs, uint flags = 0);
 
 		/** Update the content of specific layers of the texture.
 		\param images the new content to use
@@ -297,8 +316,8 @@ namespace sibr
 		\note All images will be resized to the size of the largest one.
 		*/
 		template<typename ImageType>
-		void updateSlices(const std::vector<ImageType> & images, const std::vector<int> & slices);
-		
+		void updateSlices(const std::vector<ImageType>& images, const std::vector<int>& slices);
+
 		/// Destructor.
 		~Texture2DArray(void);
 
@@ -330,18 +349,18 @@ namespace sibr
 	private:
 
 		/** Create the texture array. */
-		void createArray();
+		void createArray(uint compression = 0);
 
 		/** Upload the images data to the GPU.
 		\param images the data to upload
 		*/
 		template<typename ImageType>
-		void sendArray(const std::vector<ImageType> & images);
+		void sendArray(const std::vector<ImageType>& images);
 
 		/** Copy the rendertargets data to the texture.
 		\param RTs the rendertargets to copy
 		*/
-		void sendRTarray(const std::vector<typename PixelRT::Ptr> & RTs);
+		void sendRTarray(const std::vector<typename PixelRT::Ptr>& RTs);
 
 		/** Upload the images data to the GPU.
 		\param images the data to upload
@@ -359,9 +378,9 @@ namespace sibr
 		*/
 		template<typename ImageType>
 		std::vector<const ImageType*> applyFlipAndResize(
-			const std::vector<ImageType> & images,
-			std::vector<ImageType> & tmp, uint tw, uint th,
-			const std::vector<int> & slices
+			const std::vector<ImageType>& images,
+			std::vector<ImageType>& tmp, uint tw, uint th,
+			const std::vector<int>& slices
 		);
 
 		/** Flip and rescale a set of images.
@@ -373,8 +392,8 @@ namespace sibr
 		*/
 		template<typename ImageType>
 		std::vector<const ImageType*> applyFlipAndResize(
-			const std::vector<ImageType> & images,
-			std::vector<ImageType> & tmp, uint tw, uint th
+			const std::vector<ImageType>& images,
+			std::vector<ImageType>& tmp, uint tw, uint th
 		);
 
 		GLuint  m_Handle = 0; ///< Texture handle.
@@ -436,7 +455,7 @@ namespace sibr
 		\param flags options
 		*/
 		TextureCubeMap(const uint w, const uint h, uint flags = 0);
-		
+
 		/** Create a cubemap from 6 images.
 		\param xpos positive X face
 		\param xneg negative X face
@@ -446,10 +465,10 @@ namespace sibr
 		\param zneg negative Z face
 		\param flags options
 		*/
-		TextureCubeMap(	const PixelImage& xpos, const PixelImage& xneg,
+		TextureCubeMap(const PixelImage& xpos, const PixelImage& xneg,
 			const PixelImage& ypos, const PixelImage& yneg,
 			const PixelImage& zpos, const PixelImage& zneg, uint flags = 0);
-		
+
 		/** Create the texture from 6 images.
 		\param xpos positive X face
 		\param xneg negative X face
@@ -510,7 +529,7 @@ namespace sibr
 	\ingroup sibr_graphics
 	*/
 	SIBR_GRAPHICS_EXPORT void			blit(const ITexture2D& src, const ITexture2D& dst, GLbitfield mask = GL_COLOR_BUFFER_BIT, GLenum filter = GL_LINEAR);
-	
+
 
 	/**
 	Copy the content of a texture to a render target, resizing if needed.
@@ -554,7 +573,7 @@ namespace sibr
 	\ingroup sibr_graphics
 	*/
 	template <typename T_Type, unsigned T_NumComp>
-	static void		show( const RenderTarget<T_Type, T_NumComp> & rt, const std::string& winTitle="sibr::show()" ) {
+	static void		show(const RenderTarget<T_Type, T_NumComp>& rt, const std::string& winTitle = "sibr::show()") {
 		Image<T_Type, T_NumComp> img;
 		rt.readBack(img);
 		show(img, winTitle);
@@ -566,9 +585,9 @@ namespace sibr
 	\ingroup sibr_graphics
 	*/
 	template <typename T_Type, unsigned T_NumComp>
-	static void		show(const Texture2D<T_Type, T_NumComp> & texture, const std::string& winTitle = "sibr::show()") {
-		Image<T_Type, T_NumComp> img(texture.w(),texture.h());
-		
+	static void		show(const Texture2D<T_Type, T_NumComp>& texture, const std::string& winTitle = "sibr::show()") {
+		Image<T_Type, T_NumComp> img(texture.w(), texture.h());
+
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texture.handle());
 
@@ -578,20 +597,20 @@ namespace sibr
 
 	// --- TYPEDEFS --------------------------------------------------
 
-	typedef Texture2D<unsigned char,3>     Texture2DRGB;
-	typedef Texture2D<unsigned char,4>     Texture2DRGBA;
-	typedef Texture2D<unsigned char,1>     Texture2DLum;
+	typedef Texture2D<unsigned char, 3>     Texture2DRGB;
+	typedef Texture2D<unsigned char, 4>     Texture2DRGBA;
+	typedef Texture2D<unsigned char, 1>     Texture2DLum;
 
-	typedef Texture2D<unsigned short,4>    Texture2DRGBA16;
-	typedef Texture2D<unsigned short,1>    Texture2DLum16;
-	typedef Texture2D<unsigned short,2>    Texture2DUV16;
+	typedef Texture2D<unsigned short, 4>    Texture2DRGBA16;
+	typedef Texture2D<unsigned short, 1>    Texture2DLum16;
+	typedef Texture2D<unsigned short, 2>    Texture2DUV16;
 
-	typedef Texture2D<short,2>             Texture2DUV16s;
+	typedef Texture2D<short, 2>             Texture2DUV16s;
 
-	typedef Texture2D<float,3>             Texture2DRGB32F;
-	typedef Texture2D<float,4>             Texture2DRGBA32F;
-	typedef Texture2D<float,2>             Texture2DUV32F;
-	typedef Texture2D<float,1>             Texture2DLum32F;
+	typedef Texture2D<float, 3>             Texture2DRGB32F;
+	typedef Texture2D<float, 4>             Texture2DRGBA32F;
+	typedef Texture2D<float, 2>             Texture2DUV32F;
+	typedef Texture2D<float, 1>             Texture2DLum32F;
 
 
 	typedef Texture2DArray<unsigned char, 1>     Texture2DArrayLum;
@@ -653,7 +672,8 @@ namespace sibr
 		if (flags & SIBR_CLAMP_UVS) {
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		} else if (flags & SIBR_CLAMP_TO_BORDER) {
+		}
+		else if (flags & SIBR_CLAMP_TO_BORDER) {
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 		}
@@ -663,7 +683,8 @@ namespace sibr
 			}
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		} else {
+		}
+		else {
 #if SIBR_COMPILE_FORCE_SAMPLING_LINEAR
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -671,7 +692,8 @@ namespace sibr
 			if (flags & SIBR_GPU_LINEAR_SAMPLING) {
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			} else {
+			}
+			else {
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 			}
@@ -686,19 +708,20 @@ namespace sibr
 	/*static*/ GLuint Texture2D<T_Type, T_NumComp>::create2D(const std::vector<PixelImage>& miparray, uint flags) {
 		GLuint id = 0;
 		CHECK_GL_ERROR;
-		glGenTextures(1,&id);
-		glBindTexture(GL_TEXTURE_2D,id);
+		glGenTextures(1, &id);
+		glBindTexture(GL_TEXTURE_2D, id);
 		if (flags & SIBR_CLAMP_UVS) {
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		} else if (flags & SIBR_CLAMP_TO_BORDER) {
+		}
+		else if (flags & SIBR_CLAMP_TO_BORDER) {
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 		}
-		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR_MIPMAP_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, int(miparray.size())-1);
-		send2Dmipmap(id,miparray,flags);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, int(miparray.size()) - 1);
+		send2Dmipmap(id, miparray, flags);
 		CHECK_GL_ERROR;
 		return id;
 	}
@@ -712,13 +735,13 @@ namespace sibr
 				throw std::runtime_error("Texture format does not support integer mapping");
 			}
 		}
-	
+
 		bool flip = flags & SIBR_FLIP_TEXTURE;
 		ImageType flippedImg;
 		if (flip) {
 			flippedImg = FormatInfos::flip(img);
 		}
-		const ImageType & sendedImg = flip ? flippedImg : img;
+		const ImageType& sendedImg = flip ? flippedImg : img;
 
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 		glPixelStorei(GL_PACK_ALIGNMENT, 1);
@@ -747,28 +770,28 @@ namespace sibr
 			throw std::runtime_error("Mipmapping on integer texture not supported, probably not even by OpenGL");
 		}
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-		glPixelStorei(GL_PACK_ALIGNMENT,   1);
-		glBindTexture(GL_TEXTURE_2D,id);
+		glPixelStorei(GL_PACK_ALIGNMENT, 1);
+		glBindTexture(GL_TEXTURE_2D, id);
 
 		std::vector<PixelImage> flippedMipArray;
 		bool flip = flags & SIBR_FLIP_TEXTURE;
 		if (flip) {
 			flippedMipArray.resize(miparray.size());
 #pragma omp parallel for
-			for (uint l = 0; l<miparray.size(); l++) {
+			for (uint l = 0; l < miparray.size(); l++) {
 				flippedMipArray[l] = miparray[l].clone();
 				flippedMipArray[l].flipH();
 			}
 		}
-		const std::vector<PixelImage> & sendedMipArray = flip ? flippedMipArray : miparray;
+		const std::vector<PixelImage>& sendedMipArray = flip ? flippedMipArray : miparray;
 
-		for (uint l=0; l<miparray.size(); l++) {
+		for (uint l = 0; l < miparray.size(); l++) {
 			glTexImage2D(GL_TEXTURE_2D,
 				l,
-				GLFormat<typename PixelFormat::Type,PixelFormat::NumComp>::internal_format,
+				GLFormat<typename PixelFormat::Type, PixelFormat::NumComp>::internal_format,
 				miparray[l].w(), miparray[l].h(),
 				0,
-				GLFormat<typename PixelFormat::Type,PixelFormat::NumComp>::format,
+				GLFormat<typename PixelFormat::Type, PixelFormat::NumComp>::format,
 				GLType<typename PixelFormat::Type>::type,
 				sendedMipArray[l].data()
 			);
@@ -779,9 +802,9 @@ namespace sibr
 	template<typename T_Type, unsigned int T_NumComp>
 	Texture2D<T_Type, T_NumComp>::Texture2D(void) {
 		m_Flags = 0;
-		m_W     = 0;
-		m_H     = 0;
-		m_Handle= 0;
+		m_W = 0;
+		m_H = 0;
+		m_Handle = 0;
 		m_autoMIPMAP = false;
 	}
 
@@ -798,46 +821,46 @@ namespace sibr
 	template<typename T_Type, unsigned int T_NumComp>
 	Texture2D<T_Type, T_NumComp>::Texture2D(const std::vector<PixelImage>& miparray, uint flags) {
 		m_Flags = flags;
-		m_W     = miparray[0].w();
-		m_H     = miparray[0].h();
-		m_Handle= create2D(miparray,m_Flags);
+		m_W = miparray[0].w();
+		m_H = miparray[0].h();
+		m_Handle = create2D(miparray, m_Flags);
 		m_autoMIPMAP = false;
 	}
 
 	template<typename T_Type, unsigned int T_NumComp>
 	Texture2D<T_Type, T_NumComp>::~Texture2D(void) {
 		CHECK_GL_ERROR;
-		glDeleteTextures(1,&m_Handle);
+		glDeleteTextures(1, &m_Handle);
 		CHECK_GL_ERROR;
 	}
 
 	template<typename T_Type, unsigned int T_NumComp>
-	GLuint Texture2D<T_Type, T_NumComp>::handle (void) const { return m_Handle;}
+	GLuint Texture2D<T_Type, T_NumComp>::handle(void) const { return m_Handle; }
 	template<typename T_Type, unsigned int T_NumComp>
-	uint   Texture2D<T_Type, T_NumComp>::w      (void) const { return m_W;     }
+	uint   Texture2D<T_Type, T_NumComp>::w(void) const { return m_W; }
 	template<typename T_Type, unsigned int T_NumComp>
-	uint   Texture2D<T_Type, T_NumComp>::h      (void) const { return m_H;     }
+	uint   Texture2D<T_Type, T_NumComp>::h(void) const { return m_H; }
 
 
 	template<typename T_Type, unsigned int T_NumComp>
-	sibr::Image<T_Type, T_NumComp>		Texture2D<T_Type, T_NumComp>::readBack( void ) const {
+	sibr::Image<T_Type, T_NumComp>		Texture2D<T_Type, T_NumComp>::readBack(void) const {
 
 		// makes sure Vertex have the correct size (read back relies on pointers)
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-		glPixelStorei(GL_PACK_ALIGNMENT,   1);
+		glPixelStorei(GL_PACK_ALIGNMENT, 1);
 		glBindTexture(GL_TEXTURE_2D, handle());
 
 		int w, h;
-		glGetTexLevelParameteriv(GL_TEXTURE_2D,0,GL_TEXTURE_WIDTH, &w);
-		glGetTexLevelParameteriv(GL_TEXTURE_2D,0,GL_TEXTURE_HEIGHT,&h);
+		glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &w);
+		glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &h);
 
 		sibr::Image<T_Type, T_NumComp> img(w, h);
 
 		glGetTexImage(GL_TEXTURE_2D,
-		0,
-		GLFormat<typename PixelFormat::Type,PixelFormat::NumComp>::format,
-		GLType<typename PixelFormat::Type>::type,
-		img.data()
+			0,
+			GLFormat<typename PixelFormat::Type, PixelFormat::NumComp>::format,
+			GLType<typename PixelFormat::Type>::type,
+			img.data()
 		);
 
 		// flip data vertically to get origin on lower left corner
@@ -858,7 +881,7 @@ namespace sibr
 			if (flip) {
 				flippedImg = FormatInfos::flip(img);
 			}
-			const ImageType & sendedImg = flip ? flippedImg : img;
+			const ImageType& sendedImg = flip ? flippedImg : img;
 
 			glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 			glPixelStorei(GL_PACK_ALIGNMENT, 1);
@@ -871,7 +894,8 @@ namespace sibr
 			);
 			if (m_autoMIPMAP)
 				glGenerateMipmap(GL_TEXTURE_2D);
-		} else {
+		}
+		else {
 			m_W = FormatInfos::width(img);
 			m_H = FormatInfos::height(img);
 			send2D(m_Handle, img, m_Flags);
@@ -885,7 +909,7 @@ namespace sibr
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		m_autoMIPMAP = true;
-		glGenerateMipmap(GL_TEXTURE_2D);	
+		glGenerateMipmap(GL_TEXTURE_2D);
 	}
 
 
@@ -908,13 +932,13 @@ namespace sibr
 	}
 
 	template<typename T_Type, unsigned int T_NumComp> template<typename ImageType>
-	Texture2DArray<T_Type, T_NumComp>::Texture2DArray(const std::vector<ImageType> & images, uint flags) {
+	Texture2DArray<T_Type, T_NumComp>::Texture2DArray(const std::vector<ImageType>& images, uint flags) {
 		m_Flags = flags;
-		createFromImages(images,flags);
+		createFromImages(images, flags);
 	}
 
 	template<typename T_Type, unsigned int T_NumComp> template<typename ImageType>
-	Texture2DArray<T_Type, T_NumComp>::Texture2DArray(const std::vector<ImageType> & images, uint w, uint h, uint flags) {
+	Texture2DArray<T_Type, T_NumComp>::Texture2DArray(const std::vector<ImageType>& images, uint w, uint h, uint flags) {
 		m_Flags = flags;
 		createFromImages(images, w, h, flags);
 	}
@@ -932,13 +956,13 @@ namespace sibr
 	}
 
 	template<typename T_Type, unsigned int T_NumComp>
-	Texture2DArray<T_Type, T_NumComp>::Texture2DArray(const std::vector<typename PixelRT::Ptr> & RTs, uint flags) {
+	Texture2DArray<T_Type, T_NumComp>::Texture2DArray(const std::vector<typename PixelRT::Ptr>& RTs, uint flags) {
 		m_Flags = flags;
 		createFromRTs(RTs, flags);
 	}
 
 	template<typename T_Type, unsigned int T_NumComp>
-	void Texture2DArray<T_Type, T_NumComp>::createArray() {
+	void Texture2DArray<T_Type, T_NumComp>::createArray(uint compression) {
 		CHECK_GL_ERROR;
 		glGenTextures(1, &m_Handle);
 		glBindTexture(GL_TEXTURE_2D_ARRAY, m_Handle);
@@ -952,16 +976,19 @@ namespace sibr
 			if (m_Flags & SIBR_GPU_LINEAR_SAMPLING) {
 				glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 				glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			} else {
+			}
+			else {
 				glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 				glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 			}
 
-		} else {
+		}
+		else {
 			if (m_Flags & SIBR_GPU_LINEAR_SAMPLING) {
 				glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 				glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			} else {
+			}
+			else {
 				glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
 				glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 			}
@@ -970,8 +997,12 @@ namespace sibr
 		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
+		uint internal_format = GLFormat<T_Type, T_NumComp>::internal_format;
+		if (compression)
+			internal_format = compression;
+
 		glTexStorage3D(GL_TEXTURE_2D_ARRAY, numMipMap,
-			GLFormat<T_Type, T_NumComp>::internal_format,
+			internal_format,
 			m_W,
 			m_H,
 			m_Depth
@@ -981,7 +1012,7 @@ namespace sibr
 	}
 
 	template<typename T_Type, unsigned int T_NumComp> template<typename ImageType>
-	void Texture2DArray<T_Type, T_NumComp>::sendArray(const std::vector<ImageType> & images) {
+	void Texture2DArray<T_Type, T_NumComp>::sendArray(const std::vector<ImageType>& images) {
 		using ImgTypeInfo = GLTexFormat<ImageType, T_Type, T_NumComp>;
 		glBindTexture(GL_TEXTURE_2D_ARRAY, m_Handle);
 
@@ -990,7 +1021,7 @@ namespace sibr
 
 		// Make sure all images have the same size.
 		std::vector<ImageType> tmp;
-		std::vector<const ImageType*> imagesPtrToSend = applyFlipAndResize(images,tmp, m_W, m_H);
+		std::vector<const ImageType*> imagesPtrToSend = applyFlipAndResize(images, tmp, m_W, m_H);
 
 		for (int im = 0; im < (int)m_Depth; ++im) {
 			glTexSubImage3D(GL_TEXTURE_2D_ARRAY,
@@ -1030,7 +1061,7 @@ namespace sibr
 			const uint dH = m_H / (1 << lid);
 			std::vector<ImageType> tmp;
 			std::vector<const ImageType*> imagesPtrToSend = applyFlipAndResize(images[lid], tmp, dW, dH);
-			
+
 			for (int im = 0; im < (int)m_Depth; ++im) {
 				glTexSubImage3D(GL_TEXTURE_2D_ARRAY,
 					lid,
@@ -1053,7 +1084,7 @@ namespace sibr
 	std::vector<const ImageType*> Texture2DArray<T_Type, T_NumComp>::applyFlipAndResize(
 		const std::vector<ImageType>& images,
 		std::vector<ImageType>& tmp, uint tw, uint th,
-		const std::vector<int>& slices ) 
+		const std::vector<int>& slices)
 	{
 		using ImgTypeInfo = GLTexFormat<ImageType, T_Type, T_NumComp>;
 
@@ -1064,11 +1095,12 @@ namespace sibr
 		//#pragma omp parallel for // Disabled due to performance reasons when live-updating slices.
 		for (int slice_id = 0; slice_id < (int)slices.size(); ++slice_id) {
 			int im = slices[slice_id];
-			
+
 			bool resize = !(tw == ImgTypeInfo::width(images[im]) && th == ImgTypeInfo::height(images[im]));
 			if (!flip && !resize) {
 				imagesPtrToSend[im] = &images[im];
-			} else {
+			}
+			else {
 				if (resize) {
 					tmp[im] = ImgTypeInfo::resize(images[im], tw, th);
 				}
@@ -1096,7 +1128,7 @@ namespace sibr
 	}
 
 	template<typename T_Type, unsigned int T_NumComp>
-	void Texture2DArray<T_Type, T_NumComp>::sendRTarray(const std::vector<typename PixelRT::Ptr> & RTs) {
+	void Texture2DArray<T_Type, T_NumComp>::sendRTarray(const std::vector<typename PixelRT::Ptr>& RTs) {
 		CHECK_GL_ERROR;
 		glBindTexture(GL_TEXTURE_2D_ARRAY, m_Handle);
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -1118,23 +1150,44 @@ namespace sibr
 	}
 
 	template<typename T_Type, unsigned int T_NumComp> template<typename ImageType>
-	void Texture2DArray<T_Type, T_NumComp>::createFromImages(const std::vector<ImageType> & images, uint flags) {
-		using ImgTypeInfo = GLTexFormat<ImageType,T_Type,T_NumComp>;
+	void Texture2DArray<T_Type, T_NumComp>::createFromImages(const std::vector<ImageType>& images, uint flags) {
+		using ImgTypeInfo = GLTexFormat<ImageType, T_Type, T_NumComp>;
 
 		sibr::Vector2u maxSize(0, 0);
-		for (const auto & img : images) {
-			maxSize = maxSize.cwiseMax(sibr::Vector2u(ImgTypeInfo::width(img),ImgTypeInfo::height(img)));
+		for (const auto& img : images) {
+			maxSize = maxSize.cwiseMax(sibr::Vector2u(ImgTypeInfo::width(img), ImgTypeInfo::height(img)));
 		}
 		createFromImages(images, maxSize[0], maxSize[1], flags);
 	}
 
 	template<typename T_Type, unsigned int T_NumComp> template<typename ImageType>
-	void Texture2DArray<T_Type, T_NumComp>::createFromImages(const std::vector<ImageType> & images, uint w, uint h, uint flags) {
+	void Texture2DArray<T_Type, T_NumComp>::createFromImages(const std::vector<ImageType>& images, uint w, uint h, uint flags) {
 		m_W = w;
 		m_H = h;
 		m_Depth = (uint)images.size();
 		m_Flags = flags;
 		createArray();
+		sendArray(images);
+	}
+
+	template<typename T_Type, unsigned int T_NumComp> template<typename ImageType>
+	void Texture2DArray<T_Type, T_NumComp>::createCompressedFromImages(const std::vector<ImageType>& images, uint compression, uint flags) {
+		using ImgTypeInfo = GLTexFormat<ImageType, T_Type, T_NumComp>;
+
+		sibr::Vector2u maxSize(0, 0);
+		for (const auto& img : images) {
+			maxSize = maxSize.cwiseMax(sibr::Vector2u(ImgTypeInfo::width(img), ImgTypeInfo::height(img)));
+		}
+		createCompressedFromImages(images, maxSize[0], maxSize[1], compression, flags);
+	}
+
+	template<typename T_Type, unsigned int T_NumComp> template<typename ImageType>
+	void Texture2DArray<T_Type, T_NumComp>::createCompressedFromImages(const std::vector<ImageType>& images, uint w, uint h, uint compression, uint flags) {
+		m_W = w;
+		m_H = h;
+		m_Depth = (uint)images.size();
+		m_Flags = flags;
+		createArray(compression);
 		sendArray(images);
 	}
 
@@ -1163,22 +1216,23 @@ namespace sibr
 
 
 	template<typename T_Type, unsigned int T_NumComp> template<typename ImageType>
-	void Texture2DArray<T_Type, T_NumComp>::updateFromImages(const std::vector<ImageType> & images) {
+	void Texture2DArray<T_Type, T_NumComp>::updateFromImages(const std::vector<ImageType>& images) {
 		using ImgTypeInfo = GLTexFormat<ImageType, T_Type, T_NumComp>;
 
 		sibr::Vector2u maxSize(0, 0);
-		for (const auto & img : images) {
+		for (const auto& img : images) {
 			maxSize = maxSize.cwiseMax(sibr::Vector2u(ImgTypeInfo::width(img), ImgTypeInfo::height(img)));
 		}
 		if (images.size() == m_Depth && m_W == maxSize[0] && m_H == maxSize[1]) {
 			sendArray(images);
-		} else {
+		}
+		else {
 			createFromImages(images, m_Flags);
 		}
 	}
 
 	template<typename T_Type, unsigned int T_NumComp>  template<typename ImageType>
-	void Texture2DArray<T_Type, T_NumComp>::updateSlices(const std::vector<ImageType> & images, const std::vector<int>& slices) {
+	void Texture2DArray<T_Type, T_NumComp>::updateSlices(const std::vector<ImageType>& images, const std::vector<int>& slices) {
 		using ImgTypeInfo = GLTexFormat<ImageType, T_Type, T_NumComp>;
 
 		int numSlices = (int)slices.size();
@@ -1190,7 +1244,7 @@ namespace sibr
 		for (int i = 0; i < numSlices; ++i) {
 			maxSize = maxSize.cwiseMax(sibr::Vector2u(ImgTypeInfo::width(images[slices[i]]), ImgTypeInfo::height(images[slices[i]])));
 		}
-		if ( m_W != maxSize[0] || m_H != maxSize[1]) {
+		if (m_W != maxSize[0] || m_H != maxSize[1]) {
 			m_W = maxSize[0];
 			m_H = maxSize[1];
 		}
@@ -1219,10 +1273,10 @@ namespace sibr
 	}
 
 	template<typename T_Type, unsigned int T_NumComp>
-	void Texture2DArray<T_Type, T_NumComp>::createFromRTs(const std::vector<typename PixelRT::Ptr> & RTs, uint flags) {
+	void Texture2DArray<T_Type, T_NumComp>::createFromRTs(const std::vector<typename PixelRT::Ptr>& RTs, uint flags) {
 		m_W = 0;
 		m_H = 0;
-		for (const auto & RT : RTs) {
+		for (const auto& RT : RTs) {
 			m_W = (std::max)(m_W, RT->w());
 			m_H = (std::max)(m_H, RT->h());
 		}
@@ -1241,7 +1295,7 @@ namespace sibr
 
 	template<typename T_Type, unsigned int T_NumComp>
 	GLuint Texture2DArray<T_Type, T_NumComp>::handle(void) const { return m_Handle; }
-		
+
 	template<typename T_Type, unsigned int T_NumComp>
 	uint Texture2DArray<T_Type, T_NumComp>::w(void) const { return m_W; }
 
@@ -1250,7 +1304,7 @@ namespace sibr
 
 	template<typename T_Type, unsigned int T_NumComp>
 	uint Texture2DArray<T_Type, T_NumComp>::depth(void) const { return m_Depth; }
-	
+
 	template<typename T_Type, unsigned int T_NumComp>
 	uint Texture2DArray<T_Type, T_NumComp>::numLODs(void) const { return m_numLODs; }
 
@@ -1290,7 +1344,7 @@ namespace sibr
 		createFromImages(xpos, xneg, ypos, yneg, zpos, zneg, flags);
 	}
 
-	
+
 	template<typename T_Type, unsigned int T_NumComp>
 	void TextureCubeMap<T_Type, T_NumComp>::createCubeMap() {
 
@@ -1309,7 +1363,8 @@ namespace sibr
 		if (m_Flags & SIBR_GPU_LINEAR_SAMPLING) {
 			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		} else {
+		}
+		else {
 			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		}
@@ -1321,7 +1376,7 @@ namespace sibr
 		CHECK_GL_ERROR;
 	}
 
-	
+
 
 	template<typename T_Type, unsigned int T_NumComp>
 	void TextureCubeMap<T_Type, T_NumComp>::sendCubeMap(const PixelImage& xpos, const PixelImage& xneg,
@@ -1336,26 +1391,26 @@ namespace sibr
 		}
 
 		// Handle flipping.
-		const PixelImage * sendedXpos = &xpos;
-		const PixelImage * sendedYpos = &ypos;
-		const PixelImage * sendedZpos = &zpos;
-		const PixelImage * sendedXneg = &xneg;
-		const PixelImage * sendedYneg = &yneg;
-		const PixelImage * sendedZneg = &zneg;
+		const PixelImage* sendedXpos = &xpos;
+		const PixelImage* sendedYpos = &ypos;
+		const PixelImage* sendedZpos = &zpos;
+		const PixelImage* sendedXneg = &xneg;
+		const PixelImage* sendedYneg = &yneg;
+		const PixelImage* sendedZneg = &zneg;
 
 		PixelImage flippedXpos, flippedYpos, flippedZpos;
 		PixelImage flippedXneg, flippedYneg, flippedZneg;
-		
+
 		// ...
 		if (m_Flags & SIBR_FLIP_TEXTURE) {
 			flippedXpos = xpos.clone();
 			flippedXpos.flipH();
 			sendedXpos = &flippedXpos;
-			
+
 			flippedYpos = ypos.clone();
 			flippedYpos.flipH();
 			sendedYpos = &flippedYpos;
-			
+
 			flippedZpos = zpos.clone();
 			flippedZpos.flipH();
 			sendedZpos = &flippedZpos;
@@ -1398,8 +1453,8 @@ namespace sibr
 		if (autoMIPMAP) {
 			glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
 		}
-		
-	
+
+
 	}
 
 
