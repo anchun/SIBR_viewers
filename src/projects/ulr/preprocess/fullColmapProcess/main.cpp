@@ -746,7 +746,7 @@ int main(const int argc, const char** argv)
 	//REMOTE UNIX
 	runColmap(colmapProgram, myArgs.dataset_path,myArgs.colmapWorkingDir , 
 		colmapParams, myArgs.remoteUnix.get(), displayOption, myArgs.clusterGPU.get(),
-		myArgs.numGPUs.get(), myArgs.time.get());
+		myArgs.time.get(), myArgs.numGPUs.get());
 	waitSteps(myArgs.colmapWorkingDir, myArgs.remoteUnix.get(), displayOption);
 	getProject(myArgs.dataset_path.get(), myArgs.colmapWorkingDir.get(), myArgs.remoteUnix.get());
 	}
