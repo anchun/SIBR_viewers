@@ -887,7 +887,7 @@ if (BUILD_IBR_TORCHGL_INTEROP)
     sibr_addlibrary(
         NAME libtorch
         MSVC11 "https://gforge.inria.fr/frs/download.php/file/38148/libtorch.7z"
-        MSVC14 "https://gforge.inria.fr/frs/download.php/file/38282/libtorch-1.4.0.7z"
+        MSVC14 "https://gforge.inria.fr/frs/download.php/file/38331/libtorch-1.5.0.7z"
         REQUIREDFOR BUILD_IBR_TORCHGL_INTEROP
     )
 endif()
