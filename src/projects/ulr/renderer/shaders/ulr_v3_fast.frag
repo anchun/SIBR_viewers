@@ -34,11 +34,14 @@ uniform bool doMasking = false;
 uniform bool flipRGBs = false;
 uniform bool showWeights = false;
 uniform bool gammaCorrection = false;
-uniform float epsilonOcclusion = 1e-3;
+uniform float epsilonOcclusion = 1e-2;
 
 
 #define INFTY_W 100000.0
-#define BETA 	1e-1  	/* Relative importance of resolution penalty */
+/* Relative importance of resolution penalty */
+#define BETA 	1e-1
+/* Relative importance of edges penalty */
+#define BETA_UV 0.0
 
 // Textures.
 // To support both the regular version (using texture arrays) and the streaming version (using 2D RTs),
@@ -138,7 +141,7 @@ void main(void){
 		vec2 fc = vec2(1.0) - smoothstep(vec2(0.7), vec2(1.0), abs(2.0*uvd.xy-1.0));
     	float penalty_uv = 1.0 - fc.x * fc.y; 
 
-		penaltyValue = penalty_ang + BETA*penalty_res + BETA*penalty_uv;
+		penaltyValue = penalty_ang + BETA*penalty_res + BETA_UV*penalty_uv;
 		
 
 
@@ -187,9 +190,9 @@ void main(void){
     color3.w = 1.0 - 1.0/1.0000001;
 
     // ignore any candidate which is uninit
-	//if (color0.w == INFTY_W) color0.w = 0;
-   // if (color1.w == INFTY_W) color1.w = 0;
-    //if (color2.w == INFTY_W) color2.w = 0;
+	if (color0.w == INFTY_W) color0.w = 0;
+    if (color1.w == INFTY_W) color1.w = 0;
+    if (color2.w == INFTY_W) color2.w = 0;
     //if (color3.w == INFTY_W) color3.w = 0; uneeded, color3.w = 1.0 - 1.0/1.0000001
 	
 	// Support output weights as random colors for debug.
