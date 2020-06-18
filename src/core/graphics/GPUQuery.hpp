@@ -10,7 +10,7 @@ namespace sibr {
 	 * (time elapsed, number of primitives, number of fragment writes...).
 	 * 
 	 * For example, to get the processing time of a mesh draw call, you can use the following.
-	 * In initialisation:
+	 * In renderer initialisation:
 	 *		GPUQuery query(GL_TIME_ELAPSED);
 	 * In the rendering loop:
 	 *		query.begin();
@@ -19,7 +19,9 @@ namespace sibr {
 	 * In your GUI loop:
 	 *		const uint64 time = query.value();
 	 *		//... display it.
-	 *		
+	 *	
+	 * Note that if you want to create a query inline (for a one shot measurement), set the buffer 
+	 * count to 1, and know that it will introduce a stall when querying the value.
 	* \ingroup sibr_graphics
 	*/
 	class SIBR_GRAPHICS_EXPORT GPUQuery
@@ -40,7 +42,8 @@ namespace sibr {
 		/** Stop measuring. */
 		void end();
 
-		/** Obtain the raw value (time in nanoseconds, number of primitives,...).
+		/** Obtain the raw value (time in nanoseconds, number of primitives,...) for the query before last.
+		This allows for buffering from one frame to the next and avoid stalls (except if count is set to 1).
 		\return the query value.
 		*/
 		uint64 value();
