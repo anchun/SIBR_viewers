@@ -21,7 +21,9 @@ namespace sibr {
 	 *		//... display it.
 	 *	
 	 * \warning Because the query is using buffering to avoid stalling when querying the value, 
-	 * you SHOULD NOT use the same query object for multiple timings in the same frame.
+	 * you SHOULD NOT use the same query object for multiple timings in the same frame. 
+	 * It should also be use for multiple consecutive frames ; because of buffering again, 
+	 * the first time value() is queried, it might be erroneous.
 	 *
 	 * \note If you want to create a query inline (for a one shot measurement), set the buffer 
 	 * count to 1, and know that it will introduce a stall when querying the value.
