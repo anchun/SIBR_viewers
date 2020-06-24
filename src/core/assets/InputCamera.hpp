@@ -249,7 +249,7 @@ namespace sibr
 		* \param wh indicative size of each camera image
 		* \returns the loaded cameras
 		*/
-		static std::vector<InputCamera::Ptr> loadLookat(const std::string& lookatPath, const std::vector<sibr::Vector2u>& wh= std::vector<sibr::Vector2u>());
+		static std::vector<InputCamera::Ptr> loadLookat(const std::string& lookatPath, const std::vector<sibr::Vector2u>& wh= std::vector<sibr::Vector2u>(),float znear= -1, float zfar= -1);
 
 		/** Load cameras from a Colmap txt file.
 		* \param colmapSparsePath path to the Colmap sparse directory, should contains cameras.txt and images.txt

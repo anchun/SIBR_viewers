@@ -412,7 +412,7 @@ namespace sibr
 		return cameras;
 	}
 
-	std::vector<InputCamera::Ptr> InputCamera::loadLookat(const std::string& lookatPath, const std::vector<sibr::Vector2u>& wh)
+	std::vector<InputCamera::Ptr> InputCamera::loadLookat(const std::string& lookatPath, const std::vector<sibr::Vector2u>& wh, float znear, float zfar)
 	{
 
 		std::ifstream in(lookatPath);
@@ -513,8 +513,18 @@ namespace sibr
 
 				cameras.emplace_back(new InputCamera((int)cameras.size(), w, h, m, isActive));
 
-				cameras[i]->znear(clip.x());
-				cameras[i]->zfar(clip.y());
+				if (znear > 0) {
+					cameras[i]->znear(znear);
+				}
+				else {
+					cameras[i]->znear(clip.x());
+				}
+				if (zfar > 0) {
+					cameras[i]->zfar(zfar);
+				}
+				else {
+					cameras[i]->zfar(clip.y());
+				}
 				cameras[i]->name(camName);
 			}
 
@@ -559,21 +569,21 @@ namespace sibr
 		return infos;
 	}
 
-	void InputCamera::saveAsLookat(const std::vector<InputCamera::Ptr> & cams, const std::string & fileName) {
+	void InputCamera::saveAsLookat(const std::vector<InputCamera::Ptr>& cams, const std::string& fileName) {
 
 		std::ofstream fileRender(fileName, std::ios::out | std::ios::trunc);
-		for (const auto & cam : cams) {
+		for (const auto& cam : cams) {
 
 			fileRender << cam->name() << cam->lookatString();
 		}
 
 		fileRender.close();
 	}
-	
-	void InputCamera::saveImageSizes(const std::vector<InputCamera::Ptr> & cams, const std::string & fileName) {
+
+	void InputCamera::saveImageSizes(const std::vector<InputCamera::Ptr>& cams, const std::string& fileName) {
 
 		std::ofstream fileRender(fileName, std::ios::out | std::ios::trunc);
-		for (const auto & cam : cams) {
+		for (const auto& cam : cams) {
 
 			fileRender << cam->w() << "x" << cam->h() << "\n";
 		}
@@ -861,7 +871,7 @@ namespace sibr
 
 	std::vector<InputCamera::Ptr> InputCamera::loadMeshroom(const std::string& meshroomSFMPath, const float zNear, const float zFar)
 	{
-		
+
 		std::string file_path = meshroomSFMPath + "/cameras.sfm";
 
 		std::ifstream json_file(file_path, std::ios::in);
@@ -900,7 +910,7 @@ namespace sibr
 
 		for (size_t i = 0; i < numCameras; ++i)
 		{
-			
+
 			Matrix4f m;
 			//std::vector<std::string> splitS;
 
@@ -931,7 +941,7 @@ namespace sibr
 			m(1) = dx;
 			//std::stof(intrinsincs[intrinsic_idx].get("distortionParams").get<picojson::array>()[1].get<std::string>());
 			m(2) = dy;
-			
+
 			std::string camName = pose_id + ".exr";
 			int width = std::stoi(views[view_idx].get("width").get<std::string>());
 			int height = std::stoi(views[view_idx].get("height").get<std::string>());
@@ -956,7 +966,7 @@ namespace sibr
 			orientation.row(1) = rows[1];
 			orientation.row(2) = rows[2];
 			orientation = orientation * converter;
-			
+
 			for (int ii = 0; ii < 9; ii++) {
 				m(3 + ii) = orientation(ii);
 			}
@@ -1173,32 +1183,32 @@ namespace sibr
 		}
 	}
 
-	void InputCamera::saveAsLookat(const std::vector<sibr::Camera>& cams, const std::string & fileName)
+	void InputCamera::saveAsLookat(const std::vector<sibr::Camera>& cams, const std::string& fileName)
 	{
 
 		std::ofstream file(fileName, std::ios::out | std::ios::trunc);
-		if(!file.is_open()) {
+		if (!file.is_open()) {
 			SIBR_WRG << "Unable to save to file at path " << fileName << std::endl;
 			return;
 		}
 		// Get the padding count.
-		const int len = int(std::floor(std::log10(cams.size())))+1;
+		const int len = int(std::floor(std::log10(cams.size()))) + 1;
 		for (size_t cid = 0; cid < cams.size(); ++cid) {
-			const auto & cam = cams[cid];
+			const auto& cam = cams[cid];
 			std::string id = std::to_string(cid);
 			const std::string pad = std::string(len - id.size(), '0');
 
-			const sibr::Vector3f & pos = cam.position();
-			const sibr::Vector3f & up = cam.up();
+			const sibr::Vector3f& pos = cam.position();
+			const sibr::Vector3f& up = cam.up();
 			const sibr::Vector3f tgt = cam.position() + cam.dir();
 
-			
+
 			file << "Cam" << pad << id;
 			file << " -D origin=" << pos[0] << "," << pos[1] << "," << pos[2];
 			file << " -D target=" << tgt[0] << "," << tgt[1] << "," << tgt[2];
 			file << " -D up=" << up[0] << "," << up[1] << "," << up[2];
 			file << " -D fovy=" << cam.fovy();
-			file << " -D clip=" << cam.znear() <<"," << cam.zfar();
+			file << " -D clip=" << cam.znear() << "," << cam.zfar();
 			file << "\n";
 		}
 
