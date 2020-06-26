@@ -1390,12 +1390,12 @@ namespace sibr
 
 	void	MaterialMesh::render(bool depthTest, bool backFaceCulling,
 		RenderMode mode, bool frontFaceCulling, bool invertDepthTest,
-		bool tessellation) const
+		bool tessellation, bool adjacency) const
 	{
 		if (_typeOfRender == RenderCategory::classic)
 		{
 			Mesh::render(depthTest, backFaceCulling, mode, frontFaceCulling,
-				invertDepthTest);
+				invertDepthTest, adjacency);
 		}
 		else if (_typeOfRender == RenderCategory::diffuseMaterials)
 		{

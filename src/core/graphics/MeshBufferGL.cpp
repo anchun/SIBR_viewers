@@ -2,6 +2,8 @@
 #include "core/graphics/Mesh.hpp"
 #include "core/graphics/MeshBufferGL.hpp"
 
+#include <unordered_map>
+
 namespace sibr
 {
 	template <typename TTo, typename TFrom>
@@ -53,7 +55,7 @@ namespace sibr
 	//===========================================================================
 
 	MeshBufferGL::MeshBufferGL( void )
-		: _vaoId(0), _indexCount(0), _vertexCount(0)
+		: _vaoId(0), _indexCount(0), _adjacentIndexCount(0), _vertexCount(0)
 	{
 		_bufferIds.fill(0);
 	}
@@ -64,44 +66,108 @@ namespace sibr
 	}
 
 	MeshBufferGL::MeshBufferGL( MeshBufferGL&& other ) :
-		_vaoId		(std::move(other._vaoId)),
-		_bufferIds	(std::move(other._bufferIds)),
-		_indexCount	(std::move(other._indexCount)),
-		_vertexCount(std::move(other._vertexCount))
+		_vaoId				(std::move(other._vaoId)),
+		_bufferIds			(std::move(other._bufferIds)),
+		_indexCount			(std::move(other._indexCount)),
+		_adjacentIndexCount	(std::move(other._adjacentIndexCount)),
+		_vertexCount		(std::move(other._vertexCount))
 	{
 	}
 
 	MeshBufferGL& MeshBufferGL::operator =( MeshBufferGL&& other )
 	{
-		_vaoId		= std::move(other._vaoId);
-		_bufferIds	= std::move(other._bufferIds);
-		_indexCount	= std::move(other._indexCount);
-		_vertexCount= std::move(other._vertexCount);
+		_vaoId				= std::move(other._vaoId);
+		_bufferIds			= std::move(other._bufferIds);
+		_indexCount			= std::move(other._indexCount);
+		_adjacentIndexCount	= std::move(other._adjacentIndexCount);
+		_vertexCount		= std::move(other._vertexCount);
 
 		return *this;
 	}
 
-	void 	MeshBufferGL::build( const Mesh& mesh )
+	void MeshBufferGL::fetchIndices( const Mesh& mesh, bool adjacency )
+	{
+		// Create buffer for indices (called elements in opengl)
+		std::vector<GLuint> indices;
+
+		if(adjacency) {
+
+			std::unordered_map<std::pair<GLuint, GLuint>, GLuint, hash_pair> trianglesByEdges(mesh.triangles().size() * 3);
+			indices.reserve(mesh.triangles().size() * 6);
+
+			for(int i = 0; i < mesh.triangles().size(); i++)
+			{
+				// store triangles vertices by edges
+
+				trianglesByEdges.insert({ { mesh.triangles()[i][0], mesh.triangles()[i][1] }, mesh.triangles()[i][2] });
+				trianglesByEdges.insert({ { mesh.triangles()[i][1], mesh.triangles()[i][2] }, mesh.triangles()[i][0] });
+				trianglesByEdges.insert({ { mesh.triangles()[i][2], mesh.triangles()[i][0] }, mesh.triangles()[i][1] });
+			}
+
+			for (int i = 0; i < mesh.triangles().size(); i++)
+			{
+				// input triangle
+				//   1 - 2
+				//    \ /
+				//     0
+
+				// adjacency list
+				//     3
+				//    / \
+				//   2 - 4
+				//  / \ / \
+				// 1 - 0 - 5
+
+				// use reverse edges to find adjacent triangles
+				
+				// 0
+				indices.push_back(mesh.triangles()[i][0]);
+				// 1
+				indices.push_back(trianglesByEdges[{ mesh.triangles()[i][1], mesh.triangles()[i][0] }]);
+				// 2
+				indices.push_back(mesh.triangles()[i][1]);
+				// 3
+				indices.push_back(trianglesByEdges[{ mesh.triangles()[i][2], mesh.triangles()[i][1] }]);
+				// 4
+				indices.push_back(mesh.triangles()[i][2]);
+				// 5
+				indices.push_back(trianglesByEdges[{ mesh.triangles()[i][0], mesh.triangles()[i][2] }]);
+			}
+
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _bufferIds[BUFADJINDEX]);
+			glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint)*indices.size(), indices.data(), GL_STATIC_DRAW);
+			_adjacentIndexCount = (uint)indices.size();
+
+			CHECK_GL_ERROR
+		}
+		else {
+
+			indices.insert(indices.begin(), mesh.triangleArray(), mesh.triangleArray() + mesh.triangles().size()*3);
+
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _bufferIds[BUFINDEX]);
+			glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint)*indices.size(), indices.data(), GL_STATIC_DRAW);
+			_indexCount = (uint)indices.size();
+
+			CHECK_GL_ERROR
+		}
+	}
+
+	void 	MeshBufferGL::build( const Mesh& mesh, bool adjacency )
 	{
 		if (!_vaoId)
 		{
 			glGenVertexArrays(1, &_vaoId);
-			glGenBuffers(2, &_bufferIds[BUFINDEX]);
+			glGenBuffers(BUFCOUNT, &_bufferIds[0]);
 		}
 
 		glBindVertexArray(_vaoId);
+
+		CHECK_GL_ERROR
+
+		fetchIndices(mesh, false);
 		
-		CHECK_GL_ERROR
-
-		// Create buffer for indices (called elements in opengl)
-
-		std::vector<GLuint>   indices(mesh.triangleArray(), mesh.triangleArray() + mesh.triangles().size()*3);
-
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _bufferIds[BUFINDEX]);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint)*indices.size(), indices.data(), GL_STATIC_DRAW);
-		_indexCount = (uint)indices.size();
-
-		CHECK_GL_ERROR
+		if(adjacency)
+			fetchIndices(mesh, true);
 
 		uint numVertices = (uint)mesh.vertices().size();
 		_vertexCount = numVertices;
@@ -139,13 +205,13 @@ namespace sibr
 		CHECK_GL_ERROR;
 
 		glVertexAttribPointer(VertexAttribLocation, 3, GL_FLOAT, GL_FALSE, 0, (uint8_t*)(0));
-		glEnableVertexAttribArray(0);
+		glEnableVertexAttribArray(VertexAttribLocation);
 		glVertexAttribPointer(ColorAttribLocation, 3, GL_FLOAT, GL_FALSE, 0, (uint8_t*)(0) + getVectorDataSize(vertices));
-		glEnableVertexAttribArray(1);
+		glEnableVertexAttribArray(ColorAttribLocation);
 		glVertexAttribPointer(TexCoordAttribLocation, 2, GL_FLOAT, GL_FALSE, 0, (uint8_t*)(0) + getVectorDataSize(vertices) + getVectorDataSize(colors));
-		glEnableVertexAttribArray(2);
+		glEnableVertexAttribArray(TexCoordAttribLocation);
 		glVertexAttribPointer(NormalAttribLocation, 3, GL_FLOAT, GL_FALSE, 0, (uint8_t*)(0) + getVectorDataSize(vertices) + getVectorDataSize(colors) + getVectorDataSize(texcoords));
-		glEnableVertexAttribArray(3);
+		glEnableVertexAttribArray(NormalAttribLocation);
 
 		/// \todo TODO:
 		/// We could ignore attrib that are empty (where mesh.colors().empty() == true, don't do anything with this).
@@ -156,9 +222,9 @@ namespace sibr
 
 	void	MeshBufferGL::free(void)
 	{
-		if (_bufferIds[0] && _bufferIds[1])
+		if (_bufferIds[0] && _bufferIds[1] && _bufferIds[2])
 		{
-			glDeleteBuffers(2, _bufferIds.data());
+			glDeleteBuffers(3, _bufferIds.data());
 			_bufferIds.fill(0);
 		}
 
@@ -169,19 +235,44 @@ namespace sibr
 		}
 	}
 
-	void  MeshBufferGL::draw( void ) const
+	void  MeshBufferGL::draw(bool adjacency) const
 	{
 		glBindVertexArray(_vaoId);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _bufferIds[BUFINDEX]);
-		glDrawElements(GL_TRIANGLES, _indexCount, GL_UNSIGNED_INT, (void*)0); 
+
+		if(adjacency)
+		{
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _bufferIds[BUFADJINDEX]);
+			glDrawElements(GL_TRIANGLES_ADJACENCY, _adjacentIndexCount, GL_UNSIGNED_INT, (void*)0);
+		}
+		else
+		{
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _bufferIds[BUFINDEX]);
+			glDrawElements(GL_TRIANGLES, _indexCount, GL_UNSIGNED_INT, (void*)0); 
+		}
+
+		CHECK_GL_ERROR;
+
 		glBindVertexArray(0);
+
+		CHECK_GL_ERROR;
 	}
 
-	void MeshBufferGL::draw(unsigned int begin, unsigned int end) const {
+	void MeshBufferGL::draw(unsigned int begin, unsigned int end, bool adjacency) const
+	{
 		const unsigned int count = end-begin;
 		glBindVertexArray(_vaoId);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _bufferIds[BUFINDEX]);
-		glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, (void*)(sizeof(GLuint) * begin));
+		
+		if(adjacency)
+		{
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _bufferIds[BUFADJINDEX]);
+			glDrawElements(GL_TRIANGLES_ADJACENCY, count, GL_UNSIGNED_INT, (void*)(sizeof(GLuint) * begin));
+		}
+		else
+		{
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _bufferIds[BUFINDEX]);
+			glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, (void*)(sizeof(GLuint) * begin)); 
+		}
+
 		glBindVertexArray(0);
 	}
 
@@ -219,11 +310,6 @@ namespace sibr
 	void MeshBufferGL::bind(void) const
 	{
 		glBindVertexArray(_vaoId);
-	}
-
-	void MeshBufferGL::bindIndices(void) const
-	{
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _bufferIds[BUFINDEX]);
 	}
 
 	void MeshBufferGL::unbind(void) const
