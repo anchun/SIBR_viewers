@@ -138,7 +138,7 @@ namespace sibr
 			glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint)*indices.size(), indices.data(), GL_STATIC_DRAW);
 			_adjacentIndexCount = (uint)indices.size();
 
-			CHECK_GL_ERROR
+			CHECK_GL_ERROR;
 		}
 		else {
 
@@ -148,7 +148,7 @@ namespace sibr
 			glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint)*indices.size(), indices.data(), GL_STATIC_DRAW);
 			_indexCount = (uint)indices.size();
 
-			CHECK_GL_ERROR
+			CHECK_GL_ERROR;
 		}
 	}
 
@@ -162,7 +162,7 @@ namespace sibr
 
 		glBindVertexArray(_vaoId);
 
-		CHECK_GL_ERROR
+		CHECK_GL_ERROR;
 
 		fetchIndices(mesh, false);
 		
@@ -250,11 +250,7 @@ namespace sibr
 			glDrawElements(GL_TRIANGLES, _indexCount, GL_UNSIGNED_INT, (void*)0); 
 		}
 
-		CHECK_GL_ERROR;
-
 		glBindVertexArray(0);
-
-		CHECK_GL_ERROR;
 	}
 
 	void MeshBufferGL::draw(unsigned int begin, unsigned int end, bool adjacency) const
