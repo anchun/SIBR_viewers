@@ -17,7 +17,6 @@
 
 namespace sibr
 {
-
 	/** Store both CPU and GPU data for a geometric mesh.
 		Provide many processing and display methods.
 	\ingroup sibr_graphics
@@ -40,6 +39,17 @@ namespace sibr
 			PointRenderMode,
 			LineRenderMode,
 			FillRenderMode
+		};
+
+		/** Mesh rendering options. */
+		struct RenderingOptions {
+			bool depthTest = true; ///< Should depth test be performed.
+			bool backFaceCulling = true; ///< Should back faces be culled.
+			RenderMode mode = FillRenderMode; ///< Rendering mode: points, lines, filled.
+			bool frontFaceCulling = false; ///< Cull fornt faces.
+			bool invertDepthTest = false; ///< Invert the depth test.
+			bool tessellation = false; ///< Is there a tessellation shader
+			bool adjacency = false;
 		};
 
 	public:
@@ -267,6 +277,7 @@ namespace sibr
 		\param frontFaceCulling should the culling test be flipped
 		\param invertDepthTest should the depth test be flipped (GL_GREATER_THAN)
 		\param tessellation should the rendering call tesselation shaders
+		\param adjacency should we get adjacent triangles info in geometry shader
 		*/
 		void	render(
 			bool depthTest = true,
@@ -274,7 +285,8 @@ namespace sibr
 			RenderMode mode = FillRenderMode,
 			bool frontFaceCulling = false,
 			bool invertDepthTest = false,
-			bool tessellation = false
+			bool tessellation = false,
+			bool adjacency = false
 		) const;
 
 		/** Render a part of the geometry (taken either from the index buffer or directly in the vertex buffer) using OpenGL.
@@ -294,8 +306,10 @@ namespace sibr
 			bool invertDepthTest = false
 		) const;
 
-		/** Force upload of data to the GPU. */
-		void	forceBufferGLUpdate( void ) const;
+		/** Force upload of data to the GPU.
+		\param adjacency should we give adjacent triangles info in buffer
+		*/
+		void	forceBufferGLUpdate( bool adjacency = false ) const;
 
 		/** Delete GPU mesh data. */
 		void	freeBufferGLUpdate(void) const;
@@ -450,7 +464,7 @@ namespace sibr
 
 	private:
 		std::string _meshPath; ///< Source path, can be used to reload the mesh with/without graphics option in constructor
-
+		mutable RenderingOptions _renderingOptions; // Keeps last rendering options
 	};
 
 	///// DEFINITION /////
@@ -528,15 +542,6 @@ namespace sibr
 	const float* Mesh::texCoordArray( void ) const {
 		return _texcoords.empty() ? nullptr : &(_texcoords[0][0]);
 	}
-
-	/** Mesh rendering options. */
-	struct RenderingOptions {
-		bool depthTest = true; ///< Should depth test be performed.
-		bool backFaceCulling = true; ///< Should back faces be culled.
-		Mesh::RenderMode mode = Mesh::FillRenderMode; ///< Rendering mode: points, lines, filled.
-		bool frontFaceCulling = false; ///< Cull fornt faces.
-		bool invertDepthTest = false; ///< Invert the depth test.
-	};
 
 	//*/
 

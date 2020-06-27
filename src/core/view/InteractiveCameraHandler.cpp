@@ -591,9 +591,9 @@ namespace sibr {
 							SIBR_LOG << "Loading" << std::endl;
 							_cameraRecorder.reset();
 							if (boost::filesystem::extension(selectedFile) == ".out")
-								_cameraRecorder.loadBundle(selectedFile, 1920, 1080);
+								_cameraRecorder.loadBundle(selectedFile, _currentCamera.w(), _currentCamera.h());
 							else if (boost::filesystem::extension(selectedFile) == ".lookat")
-								_cameraRecorder.loadLookat(selectedFile, 1920, 1080);
+								_cameraRecorder.loadLookat(selectedFile, _currentCamera.w(), _currentCamera.h());
 							else
 								_cameraRecorder.load(selectedFile);
 							_cameraRecorder.playback();
