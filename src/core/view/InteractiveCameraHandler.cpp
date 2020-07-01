@@ -474,20 +474,20 @@ namespace sibr {
 		_clippingPlanes[1] = _currentCamera.zfar();
 	}
 
-	const sibr::InputCamera & InteractiveCameraHandler::getCamera(void) const {
+	const sibr::InputCamera& InteractiveCameraHandler::getCamera(void) const {
 		return _currentCamera;
 	}
 
-	void InteractiveCameraHandler::onRender(const sibr::Viewport & viewport) {
+	void InteractiveCameraHandler::onRender(const sibr::Viewport& viewport) {
 		if (_currentMode == TRACKBALL) {
 			_trackball.onRender(viewport);
 		}
 	}
 
-	void InteractiveCameraHandler::onGUI(const std::string & suffix) {
+	void InteractiveCameraHandler::onGUI(const std::string& suffix) {
 
 		const std::string fullName = (suffix);
-		
+
 
 		// Saving camera.
 		if (ImGui::Begin(fullName.c_str())) {
@@ -507,7 +507,7 @@ namespace sibr {
 					}
 				}
 			}
-			
+
 			ImGui::SameLine();
 			if (ImGui::Button("Save camera (bin)")) {
 				std::string selectedFile;
@@ -521,8 +521,8 @@ namespace sibr {
 					}
 				}
 			}
-			
-			
+
+
 			ImGui::Separator();
 			if (ImGui::Button("Snap to closest")) {
 				_currentCamId = findNearestCamera(_interpPath);
@@ -533,7 +533,7 @@ namespace sibr {
 				_currentCamId = sibr::clamp(_currentCamId, 0, int(_interpPath.size()) - 1);
 				snapToCamera(_currentCamId);
 			}
-			
+
 			if (_currentMode == TRACKBALL) {
 				ImGui::SameLine();
 				ImGui::Checkbox("Show trackball", &_trackball.drawThis);
@@ -546,7 +546,7 @@ namespace sibr {
 				fromCamera(_currentCamera, _shouldSmooth);
 			}
 			ImGui::SameLine();
-			if(ImGui::InputFloat("Near", &_clippingPlanes[0], 1.0f, 10.0f)) {
+			if (ImGui::InputFloat("Near", &_clippingPlanes[0], 1.0f, 10.0f)) {
 				_currentCamera.znear(_clippingPlanes[0]);
 				fromCamera(_currentCamera);
 			}
@@ -555,9 +555,32 @@ namespace sibr {
 				_currentCamera.zfar(_clippingPlanes[1]);
 				fromCamera(_currentCamera);
 			}
-			
+
 			ImGui::Separator();
 			ImGui::PopItemWidth();
+
+			// Record camera keypoints.
+			ImGui::Text("Key cameras: %d", _keyCameras.size());
+			ImGui::SameLine();
+			if (ImGui::Button("Add key")) {
+				_keyCameras.emplace_back(new InputCamera(getCamera()));
+			}
+			ImGui::SameLine();
+
+			if (!_keyCameras.empty()) {
+				if (ImGui::Button("Remove key")) {
+					_keyCameras.pop_back();
+				}
+				ImGui::SameLine();
+			}
+
+			if (ImGui::Button("Save key cameras...")) {
+				std::string outpath;
+				if (sibr::showFilePicker(outpath, Save, "", "lookat") && !outpath.empty()) {
+					InputCamera::saveAsLookat(_keyCameras, outpath);
+				}
+			}
+			ImGui::Separator();
 		}
 		ImGui::End();
 
