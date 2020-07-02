@@ -177,6 +177,7 @@ namespace sibr
 		\return a reference to the argument value
 		*/
 		T & operator=(const T & t) { value = t; return value; }
+
 	protected:
 
 		T value; ///< the argument value.
@@ -224,6 +225,7 @@ namespace sibr
 			const std::string defaultDesc = (default_value ? "enabled" : "disabled");
 			CommandLineArgs::getGlobal().registerCommand(key, description, defaultDesc);
 		}	
+
 	};
 	using ArgSwitch = Arg<Switch>;
 
@@ -242,6 +244,8 @@ namespace sibr
 			value = arg_is_present;
 			CommandLineArgs::getGlobal().registerCommand(key, description, "disabled");
 		}
+
+		using ArgBase<bool>::operator=;
 	};
 
 	/// Represent a mandatory argument
