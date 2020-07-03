@@ -45,10 +45,12 @@ int main(const int argc, const char** argv)
 
 	std::ofstream outputBundleCam;
 	std::ofstream outputListIm;
+	std::ofstream outputListImColmap;
 	std::ofstream outputSceneMetadata;
 
 	outputBundleCam.open(pathScene + "/cameras/bundle.out");
 	outputListIm.open(pathScene + "/images/list_images.txt");
+	outputListImColmap.open(pathScene + "/colmap/stereo/images/list_images.txt");
 	outputSceneMetadata.open(pathScene + "/scene_metadata.txt");
 	outputBundleCam << "# Bundle file v0.3" << std::endl;
 	outputBundleCam << maxCam << " " << 0 << std::endl;
@@ -70,6 +72,7 @@ int main(const int argc, const char** argv)
 		boost::filesystem::copy_file(pathScene + "/colmap/stereo/images/" + camIm.name(), pathScene + "/images/" + newFileName, boost::filesystem::copy_option::overwrite_if_exists);
 		outputBundleCam << camIm.toBundleString();
 		outputListIm << newFileName << " " << camIm.w() << " " << camIm.h() << std::endl;
+		outputListImColmap << camIm.name() << " " << camIm.w() << " " << camIm.h() << std::endl;
 		outputSceneMetadata << newFileName << " " << camIm.w() << " " << camIm.h() << " " << camIm.znear() << " " << camIm.zfar() << std::endl;
 	}
 
@@ -85,6 +88,7 @@ int main(const int argc, const char** argv)
 
 	outputBundleCam.close();
 	outputListIm.close();
+	outputListImColmap.close();
 	outputSceneMetadata.close();
 
 	std::string meshPath = pathScene + "/capreal/mesh.obj";
