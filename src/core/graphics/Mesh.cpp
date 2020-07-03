@@ -1174,11 +1174,11 @@ namespace sibr
 		return newMesh;
 	}
 
-	void	Mesh::forceBufferGLUpdate(void) const
+	void	Mesh::forceBufferGLUpdate(bool adjacency) const
 	{
 		if (!_gl.bufferGL) { SIBR_ERR << "Tried to forceBufferGL on a non OpenGL Mesh" << std::endl; return; }
 		_gl.dirtyBufferGL = false;
-		_gl.bufferGL->build(*this);
+		_gl.bufferGL->build(*this, adjacency);
 	}
 
 	void	Mesh::freeBufferGLUpdate(void) const
@@ -1187,11 +1187,25 @@ namespace sibr
 		_gl.bufferGL->free();
 	}
 
-	void	Mesh::render(bool depthTest, bool backFaceCulling, RenderMode mode, bool frontFaceCulling, bool invertDepthTest, bool tessellation) const
+	void	Mesh::render(bool depthTest, bool backFaceCulling, RenderMode mode, bool frontFaceCulling, bool invertDepthTest, bool tessellation, bool adjacency) const
 	{
 		if (!_gl.bufferGL) { SIBR_ERR << "Tried to render a non OpenGL Mesh" << std::endl; return; }
+
+		if(adjacency && _renderingOptions.adjacency != adjacency)
+		{
+			_renderingOptions.adjacency = adjacency;
+			_gl.dirtyBufferGL = true;
+		}
+		
+		_renderingOptions.depthTest = depthTest;
+		_renderingOptions.backFaceCulling = backFaceCulling;
+		_renderingOptions.mode = mode;
+		_renderingOptions.frontFaceCulling = frontFaceCulling;
+		_renderingOptions.invertDepthTest = invertDepthTest;
+		_renderingOptions.tessellation = tessellation;
+
 		if (_gl.dirtyBufferGL)
-			forceBufferGLUpdate();
+			forceBufferGLUpdate(adjacency);
 
 		if (depthTest)
 			glEnable(GL_DEPTH_TEST);
@@ -1233,7 +1247,7 @@ namespace sibr
 				_gl.bufferGL->drawTessellated();
 			}
 			else {
-				_gl.bufferGL->draw();
+				_gl.bufferGL->draw(adjacency);
 			}
 		}
 		else if (_vertices.size() != 0) {

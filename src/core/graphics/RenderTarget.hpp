@@ -307,7 +307,7 @@ namespace sibr
 		int maxRenterTargets = 0;
 		glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, &maxRenterTargets);
 
-		SIBR_ASSERT(num < uint(maxRenterTargets) && num > 0);
+		SIBR_ASSERT(num <= uint(maxRenterTargets) && num > 0);
 		SIBR_ASSERT(!is_depth || num == 1);
 
 		if (flags & SIBR_GPU_INTEGER) {

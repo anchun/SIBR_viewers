@@ -403,6 +403,7 @@ namespace sibr
 		\param frontFaceCulling should the culling test be flipped
 		\param invertDepthTest should the depth test be flipped (GL_GREATER_THAN)
 		\param tessellation should the rendering call tesselation shaders
+		\param adjacency should we get adjacent triangles info in geometry shader
 		*/
 		void	render(
 			bool depthTest = true,
@@ -410,7 +411,8 @@ namespace sibr
 			RenderMode mode = FillRenderMode,
 			bool frontFaceCulling = false,
 			bool invertDepthTest = false,
-			bool tessellation = false
+			bool tessellation = false,
+			bool adjacency = false
 		) const;
 
 		/** Render the geometry with albedo and tag textures.

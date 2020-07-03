@@ -221,6 +221,7 @@ namespace sibr {
 
 		sibr::CameraRecorder _cameraRecorder; ///< Camera recorder.
 		bool _supportRecording; ///< Does the camera support recording (uneeded).
+		std::vector<InputCamera::Ptr> _keyCameras; ///< Key cameras saved punctually. \note This could be merged with the camera recorder.
 
 		sibr::Vector2f _clippingPlanes; ///< Clipping planes parameter (for GUI).
 		bool _saveFrame; ///< Should the frame be saved as an image.
