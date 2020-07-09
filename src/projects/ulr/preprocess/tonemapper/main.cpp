@@ -49,7 +49,7 @@ int main(int ac, char** av) {
 	// If we output in the same dir, we want to avoid collisions.
 	if (outputPath.empty()) {
 		outputPath = inputPath;
-		extension = "_denoised" + extension;
+		extension = "_ldr" + extension;
 	} else {
 		sibr::makeDirectory(outputPath);
 	}
