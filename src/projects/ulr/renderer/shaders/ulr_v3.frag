@@ -37,10 +37,10 @@ uniform float epsilonOcclusion = 1e-2;
 uniform bool winner_takes_all = false;
 
 // for uv derivatives blending
-uniform bool useUVDerivatives;
+uniform bool useUVDerivatives = false;
 uniform float uvDerivativesAlphaBlending = 0.5f;
 uniform float uvDerivativesScaleFactor = 1.0f;
-uniform vec2 rtResolution;
+uniform vec2 rtResolution = vec2(1.0);
 
 #define INFTY_W 100000.0
 #define BETA 	1e-1  	/* Relative importance of resolution penalty */

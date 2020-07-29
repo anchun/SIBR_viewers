@@ -121,38 +121,6 @@ UVUnwrapper::UVUnwrapper(const sibr::Mesh& mesh, unsigned int res) : _mesh(mesh)
 	xatlas::AddMeshJoin(_atlas);
 }
 
-
-
-	/*CommandLineArgs::parseMainArgs(ac, av);
-	SyntheticUVMapperArgs args;
-	std::string outputFile = args.output;
-	if(outputFile.empty()) {
-		outputFile = sibr::removeExtension(args.path.get()) + "_output.obj";
-	}
-	const std::string addOutputFile = sibr::removeExtension(outputFile) + "_ids.bin";
-	const std::string refOutputFile = sibr::removeExtension(outputFile) + "_ref.bin";
-	sibr::makeDirectory(sibr::parentDirectory(outputFile));*/
-
-	// Load object file.
-	/*MaterialMesh mesh(false);
-	if(sibr::getExtension(args.path) == "xml") {
-		mesh.loadMtsXML(args.path);
-	} else {
-		mesh.load(args.path);
-	}*/
-
-
-	// Build material ID buffer.
-	/*std::vector<uint> ids(mesh.vertices().size());
-	const auto & matIds = mesh.matIds();
-	const auto & meshTris = mesh.triangles();
-	for (unsigned int i = 0; i < matIds.size(); i++){
-		const uint matId = uint(matIds.at(i) + 1);
-		ids.at(meshTris.at(i)[0]) = matId;
-		ids.at(meshTris.at(i)[1]) = matId;
-		ids.at(meshTris.at(i)[2]) = matId;
-	}*/
-
 	
 sibr::Mesh::Ptr UVUnwrapper::unwrap() {
 
