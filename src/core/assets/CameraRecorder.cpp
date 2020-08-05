@@ -15,13 +15,14 @@ namespace sibr
 
 			//std::cout << _playing << std::endl;
 			// If we reach the last frame of the interpolation b/w two cameras, skip to next camera.
-			if (_interp >= (1.0f - _speed))
+			if (_interp > (1.0f - _speed))
 			{
 				_interp = 0.0f;
 				_pos++;
 			}
 			// Interpolate between the two closest cameras.
-			const float k = std::min(std::max(_interp, 1e-6f), 1.0f - 1e-6f);
+			const float k = std::min(std::max(_interp, 0.0f), 1.0f);
+			
 			sibr::Camera & camStart = _cameras[std::min(int(_pos), int(_cameras.size()) - 1)];
 			sibr::Camera & camNext = _cameras[std::min(int(_pos) + 1, int(_cameras.size())-1)];
 			// Preserve the znear and zfar.
@@ -37,7 +38,7 @@ namespace sibr
 
 			if (_saving) {
 				std::ostringstream ssZeroPad;
-				ssZeroPad << std::setw(8) << std::setfill('0') << (_pos - 1);
+				ssZeroPad << std::setw(8) << std::setfill('0') << (_pos);
 				cam.setSavePath(_savingPath + "/" + ssZeroPad.str() + ".png");
 				//std::cout << "Saving frame as: " << cam.savePath() << std::endl;
 			}
