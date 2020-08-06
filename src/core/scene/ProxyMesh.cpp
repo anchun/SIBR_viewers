@@ -7,7 +7,7 @@ namespace sibr {
 	{
 		_proxy.reset(new Mesh());
 		if (!_proxy->load(data->meshPath()) && !_proxy->load(removeExtension(data->meshPath()) + ".ply") && !_proxy->load(removeExtension(data->meshPath()) + ".obj")) {
-			SIBR_ERR << "proxy model not found at " << data->meshPath() << std::endl;
+			SIBR_WRG << "proxy model not found at " << data->meshPath() << std::endl;
 		}
 		if (!_proxy->hasNormals()) {
 			SIBR_WRG << "generating normals for the proxy (no normals found in the proxy file)" << std::endl;
