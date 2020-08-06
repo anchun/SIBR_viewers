@@ -15,6 +15,7 @@ namespace sibr
 	class SIBR_GRAPHICS_EXPORT Camera
 	{
 	public:
+		SIBR_CLASS_PTR(Camera);
 		typedef Transform3<float>		Transform3f;
 
 	public:

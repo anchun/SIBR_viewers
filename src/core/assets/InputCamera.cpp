@@ -24,6 +24,19 @@ namespace sibr
 		_id = id;
 	}
 
+	InputCamera::InputCamera(float fy, float fx, float k1, float k2, int w, int h, int id) :
+		_focal(fy), _k1(k1), _k2(k2), _w(w), _h(h), _id(id), _active(true), _name("")
+	{
+		// Update fov and aspect ratio.
+		float fovY = 2.0f * atan(0.5f * h / fy);
+		float fovX = 2.0f * atan(0.5f * w / fx);
+
+		Camera::aspect(tan(fovX/2)/ tan(fovY/2));
+		Camera::fovy(fovY);
+
+		_id = id;
+	}
+
 
 	InputCamera::InputCamera(int id, int w, int h, sibr::Matrix4f m, bool active) :
 		_active(active)
@@ -695,7 +708,7 @@ namespace sibr
 
 			sibr::Vector3f position = -(orientation * converter * translation);
 
-			sibr::InputCamera::Ptr camera = std::make_shared<InputCamera>(InputCamera(camParams.fy, 0.0f, 0.0f, int(camParams.width), int(camParams.height), int(cId)));
+			sibr::InputCamera::Ptr camera = std::make_shared<InputCamera>(InputCamera(camParams.fy, camParams.fx, 0.0f, 0.0f, int(camParams.width), int(camParams.height), int(cId)));
 			camera->name(imageName);
 			camera->position(position);
 			camera->rotation(sibr::Quaternionf(orientation));

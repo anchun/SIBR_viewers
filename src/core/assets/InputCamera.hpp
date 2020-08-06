@@ -51,6 +51,7 @@ namespace sibr
 		* \param id ID of input image
 		*/
 		InputCamera(float f, float k1, float k2, int w, int h, int id);
+		InputCamera(float fy, float fx, float k1, float k2, int w, int h, int id);
 
 		/** Constructor, initialize the input camera.
 		* \param id ID of input image
