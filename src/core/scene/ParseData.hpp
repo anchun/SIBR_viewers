@@ -61,7 +61,7 @@ namespace sibr{
 		* \brief Function to parse data from a colmap dataset path.
 		* \param dataset_path Path to the folder containing data
 		*/
-		void  getParsedColmapData(const std::string & dataset_path);
+		void  getParsedColmapData(const std::string & dataset_path, const int fovXfovY_flag);
 
 		/**
 		* \brief Function to parse data from a template dataset path.

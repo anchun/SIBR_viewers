@@ -367,6 +367,7 @@ namespace sibr
 		Arg<float> texture_ratio = { "texture-ratio", 1.0f };
 		Arg<int> rendering_mode = { "rendering-mode", RENDERMODE_MONO, "select mono (0) or stereo (1) rendering mode" };
 		Arg<sibr::Vector3f> focal_pt = { "focal-pt", {0.0f, 0.0f, 0.0f} };
+		Arg<Switch> colmap_fovXfovY_flag = { "colmap_fovXfovY_flag", false };
 	};
 
 	/// Dataset related arguments.

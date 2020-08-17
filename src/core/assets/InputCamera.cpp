@@ -607,7 +607,7 @@ namespace sibr
 
 
 
-	std::vector<InputCamera::Ptr> InputCamera::loadColmap(const std::string& colmapSparsePath, const float zNear, const float zFar)
+	std::vector<InputCamera::Ptr> InputCamera::loadColmap(const std::string& colmapSparsePath, const float zNear, const float zFar, const int fovXfovYFlag)
 	{
 		const std::string camerasListing = colmapSparsePath + "/cameras.txt";
 		const std::string imagesListing = colmapSparsePath + "/images.txt";
@@ -708,7 +708,14 @@ namespace sibr
 
 			sibr::Vector3f position = -(orientation * converter * translation);
 
-			sibr::InputCamera::Ptr camera = std::make_shared<InputCamera>(InputCamera(camParams.fy, camParams.fx, 0.0f, 0.0f, int(camParams.width), int(camParams.height), int(cId)));
+			sibr::InputCamera::Ptr camera;
+			if (fovXfovYFlag) {
+				 camera = std::make_shared<InputCamera>(InputCamera(camParams.fy, camParams.fx, 0.0f, 0.0f, int(camParams.width), int(camParams.height), int(cId)));
+			}
+			else {
+				camera = std::make_shared<InputCamera>(InputCamera(camParams.fy, 0.0f, 0.0f, int(camParams.width), int(camParams.height), int(cId)));
+			}
+
 			camera->name(imageName);
 			camera->position(position);
 			camera->rotation(sibr::Quaternionf(orientation));

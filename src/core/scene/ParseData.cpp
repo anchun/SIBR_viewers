@@ -223,11 +223,11 @@ namespace sibr {
 
 	}
 
-	void ParseData::getParsedColmapData(const std::string & dataset_path)
+	void ParseData::getParsedColmapData(const std::string & dataset_path, const int fovXfovY_flag)
 	{
 		_basePathName = dataset_path + "/colmap/stereo";
 
-		_camInfos = sibr::InputCamera::loadColmap(_basePathName + "/sparse");
+		_camInfos = sibr::InputCamera::loadColmap(_basePathName + "/sparse", 0.01f, 1000.0f, fovXfovY_flag);
 
 		if (_camInfos.empty()) {
 			SIBR_ERR << "Colmap camera calibration file does not exist at /" + _basePathName + "/sparse/." << std::endl;
@@ -296,7 +296,7 @@ namespace sibr {
 			getParsedBundlerData(myArgs.dataset_path, customPath, myArgs.scene_metadata_filename);
 			_datasetType = Type::SIBR;
 		}else if (sibr::fileExists(colmap)) {
-			getParsedColmapData(myArgs.dataset_path);
+			getParsedColmapData(myArgs.dataset_path, myArgs.colmap_fovXfovY_flag);
 			_datasetType = Type::COLMAP;
 		}
 		else if (sibr::fileExists(nvmscene)) {
