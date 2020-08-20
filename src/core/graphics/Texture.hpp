@@ -537,11 +537,12 @@ namespace sibr
 	\param dst destination rendertarget
 	\param mask which part of the buffer to copy (color, depth, stencil).
 	\param filter filtering mode if the two buffers have different dimensions (linear or nearest)
+	\param flip flip the texture vertically when copying it
 	\note The blit can only happen for color attachment 0 in dst.
 	\warning If the mask contains the depth or stencil, filter must be GL_NEAREST
 	 \ingroup sibr_graphics
 	*/
-	SIBR_GRAPHICS_EXPORT void			blit(const ITexture2D& src, const IRenderTarget& dst, GLbitfield mask = GL_COLOR_BUFFER_BIT, GLenum filter = GL_LINEAR);
+	SIBR_GRAPHICS_EXPORT void			blit(const ITexture2D& src, const IRenderTarget& dst, GLbitfield mask = GL_COLOR_BUFFER_BIT, GLenum filter = GL_LINEAR, bool flip = false);
 
 	/**
 	Copy the content of a texture to a render target, resizing if needed and flipping the result.
@@ -555,6 +556,18 @@ namespace sibr
 	*/
 	SIBR_GRAPHICS_EXPORT void			blit_and_flip(const ITexture2D& src, const IRenderTarget& dst, GLbitfield mask = GL_COLOR_BUFFER_BIT, GLenum filter = GL_LINEAR);
 
+	/**
+	Copy the content of a texture to a specific color attachment of the destination render target, resizing if needed.
+	\param src source texture
+	\param dst destination rendertarget
+	\param location the color attachment to blit to
+	\param filter filtering mode if the two buffers have different dimensions (linear or nearest)
+	\param flip flip the texture vertically when copying it
+	\note No mask to specify, as this is assumed to be COLOR.
+	\ingroup sibr_graphics
+	*/
+	SIBR_GRAPHICS_EXPORT void			blitToColorAttachment(const ITexture2D& src, IRenderTarget& dst, int location, GLenum filter = GL_LINEAR, bool flip = false);
+	
 	/**
 	Copy the content of a rendertarget first color attachment to a texture, resizing if needed.
 	\param src source rendertarget

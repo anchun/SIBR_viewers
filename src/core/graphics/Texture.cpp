@@ -3,7 +3,7 @@
 
 namespace sibr
 {
-	void			blit(const ITexture2D& src, const IRenderTarget& dst, GLbitfield mask, GLenum filter)
+	void			blit(const ITexture2D& src, const IRenderTarget& dst, GLbitfield mask, GLenum filter, bool flip)
 	{
 		GLuint sourceFrameBuffer = 0;
 		glGenFramebuffers(1, &sourceFrameBuffer);
@@ -15,7 +15,7 @@ namespace sibr
 		glBlitNamedFramebuffer(
 			sourceFrameBuffer, dst.fbo(),
 			0, 0, src.w(), src.h(),
-			0, 0, dst.w(), dst.h(),
+			0, (flip ? dst.h() : 0), dst.w(), (flip ? 0 : dst.h()),
 			mask, filter);
 
 		glDeleteFramebuffers(1, &sourceFrameBuffer);
@@ -23,6 +23,16 @@ namespace sibr
 
 	void			blit_and_flip(const ITexture2D& src, const IRenderTarget& dst, GLbitfield mask, GLenum filter)
 	{
+		blit(src, dst, mask, filter, true);
+	}
+
+	void			blitToColorAttachment(const ITexture2D& src, IRenderTarget& dst, int location, GLenum filter, bool flip)
+	{
+		// To blit only to a specific color attachment, it should be the only draw buffer registered.
+		// So we override the drawbuffer from dst temporarily.
+		glBindFramebuffer(GL_FRAMEBUFFER, dst.fbo());
+		glDrawBuffer(GL_COLOR_ATTACHMENT0 + location);
+		
 		GLuint sourceFrameBuffer = 0;
 		glGenFramebuffers(1, &sourceFrameBuffer);
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, sourceFrameBuffer);
@@ -33,9 +43,15 @@ namespace sibr
 		glBlitNamedFramebuffer(
 			sourceFrameBuffer, dst.fbo(),
 			0, 0, src.w(), src.h(),
-			0, dst.h(), dst.w(), 0,
-			mask, filter);
+			0, (flip ? dst.h() : 0), dst.w(), (flip ? 0 : dst.h()),
+			GL_COLOR_BUFFER_BIT, filter);
+
 		glDeleteFramebuffers(1, &sourceFrameBuffer);
+
+		// Restore the drawbuffers.
+		// We use bind() as it guarantees that all color buffers will be bound.
+		dst.bind();
+		dst.unbind();
 	}
 
 	void			blit(const IRenderTarget& src, const ITexture2D& dst, GLbitfield mask, GLenum filter)
