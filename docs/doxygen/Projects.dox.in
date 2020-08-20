@@ -1,5 +1,14 @@
 /** @page projects Projects
 
+Each research project has its own subdirectory in src/projects, that contain renderers and preprocessing classes used only for that particular project.
+An example Unstructured Lumigraph Rendering (ULR) application is provided by default with SIBR to help users get started.
+Some projects might also be used by other projects to bring additional functionalities (for instance the SIBR/Optix integration). Such dependencies should be documented in the project readme.
+For each project, the following structure is recommended:
+- A renderer/ subdirectory contains a library with the bulk of the project-specific code.
+- A preprocess/ subdirectory containing one or more preprocessing executables.
+- An apps/ subdirectory contains one or more demo applications demonstrating the rendering algorithms of the project.
+For more details on the setup, see \ref help_new_project "Creating a new project".
+
 Here is the list of integrated projects.\n
 For projects that led to publications, the link to the paper is available.\n
 Most of other projects are helper libraries that can be used to augment SIBR with new functionalities.\n

@@ -1,0 +1,189 @@
+/** @page Colmap How to create a dataset from Colmap
+  *
+  * \tableofcontents
+  * \section ULR_RC Creating from Reality Capture
+  * The ULR application takes the path to the SibrData directory generated using ibr_preprocess_rc_to_sibr.py script, to create and render a scene.
+  * For more details see: \subpage HowToSibr.
+  *
+  * \section ULR_Col Creating from Colmap
+  *
+  * \subsection ColmapInstallRequirements Install requirements
+  *
+  * - Colmap : https://demuc.de/colmap/
+  *
+  * You can choose the Pre-Release of Release Version for Windows. The .bat file corresponds
+  * to the application. Download and install it in any folder.
+  *
+  *
+  * - SIBR ULR apps and preprocess
+  *
+  * Install the SIBR Core on your computer : https://gitlab.inria.fr/sibr/sibr_core
+  * 
+  * The page contains all the steps to install it.
+  *
+  * Tick the ULR box in CMAKE, BUILD and INSTALL the ULR project (Apps and Preprocess).
+  *
+  *
+  * \subsection ColmapHToPrepareDataset How to prepare the dataset
+  * - Create the directory which will contain the future dataset
+  * - In the dataset directory, create a new directory with the name images
+  * - In the images directory, place your images that you want to use to create 
+  * the SIBR dataset
+  *
+  * Your architecture should be like that:
+  *
+  * \verbatim
+     dataset/                              # your dataset directory
+             images/                       # your images directory
+                     im001.jpeg
+                     im002.jpeg
+                     im003.jpeg
+                     im004.jpeg
+                     ...
+   \endverbatim
+  *
+  * 
+  * \subsection ColmapHToRunPipeline How to run the pipeline 
+  *
+  * This section shows the different steps that you need to run to create the dataset.
+  * The SIBR ULR project contains some applications which allows to run Colmap, generate UVs
+  * and create a textured mesh. All the steps can be directly done through the 
+  * fullColmapPreprocess application ( present in preprocess in the Visual Studio Project ).
+  *
+  *
+  * \image HTML colmapfullpipeline.png
+  *
+  * - Colmap creates a reconstruction from your images
+  * - UnwrapMesh program gens UV coordinates on the mesh
+  * - colmapToSibr creates the architecture and files required by a SIBR scene
+  * - TextureMesh create a texture and bind it to the reconstruction.
+  *
+  * \subsubsection ColmapInputArgs Input arguments
+  *
+  * Required arguments:
+  *
+  * \code --path YOUR_DATA_PATH\ \endcode
+  *
+  * The path to your dataset folder. It must contain an images folder
+  *
+  * \code --sibrBinariesPath YOUR_SIBR_DIR\install\bin \endcode
+  *
+  * That is the directory which contains the binaries of SIBR
+  *
+  * \code --colmapPath COLMAP_DIR\ \endcode
+  *
+  * The directory containing the .bat executable
+  *
+  * Optional arguments:
+  *
+  * Those optional arguments are about the Colmap parametrization. You have several ways to
+  * set the colmap parameters
+  *
+  * - Use a pre-defined configuration. You have 4 configurations : low, medium, high, extreme.
+  * If you don't use a pre-defined configuration, all the parameters are set to the default
+  * value ( usually it is a mix between high and extreme ). To apply it, use the 
+  * \code --quality  \endcode option
+  *
+  * - Specify the parameters separately. You can set each parameters by yourself. Here is 
+  * a tab contains the default values and the values for each pre-defined configuration:
+  * 
+  * \image HTML colmapParametersComparison.PNG
+  * 
+  * - Mix a pre-defined configuration and your own parameters. First, the parameters
+  * of the pre-defined configuration are applied. Then, your parameters are applied over them.
+  *
+  *
+  *
+  * \subsubsection ColmapInputArgsExamples Input arguments examples
+  *
+  * The most basic version looks like that
+  * 
+  *
+  * \code --path E:\USERNAME\dataset --sibrBinariesPath E:\USERNAME\dev\sibr_basic2\install\bin --colmapPath D:\colmap \endcode
+  *
+  * \note Do not forget that your dataset path has to contain an image directory with the images inside it.
+  *
+  * Now an example using the pre-defined configuration
+  *
+  * \code --path E:\USERNAME\dataset --sibrBinariesPath E:\YOU\dev\sibr_basic2\install\bin --colmapPath D:\colmap --quality low  \endcode
+  *
+  * Finally, an example with the mix of the two ways
+  *
+  * \code --path E:\USERNAME\dataset --sibrBinariesPath E:\YOU\dev\sibr_basic2\install\bin --colmapPath D:\colmap --quality medium --SiftExtraction.max_num_features 4096 \endcode
+  *
+  * All the parameters will be set to the medium configuration except the max_num_features that
+  * will be setted to 4096.
+  *
+  *
+  * \subsection ColmapRemoteVersion Colmap Remote Version
+  *
+  * At INRIA, we use a Cluster which regroup some CPU and CPU nodes that are more powerful than 
+  * our personal machines. So if you have a similar architecture you can use this feature and 
+  * adapt yours. The remote machine works on Unix/Linux system. There is a little graphic :
+  *
+  * \image HTML colmapfullpipelineRemote.png
+  * 
+  * So, the images are send to the remote system, and from your personal parameters, the program
+  * gen a script that Colmap will run on the Cluster. The request to get a Node is started and 
+  * the fullColmapPreprocess program waits that all the steps are finished and it runs the others
+  * tasks.
+  *
+  * \subsubsection ColmapInstallRequirementsRemote Install requirements
+  *
+  * - You need to install the SSH operations on your local machine to connect on the Cluster
+  * - Install a specific terminal...
+  * 
+  *
+  * \subsubsection ColmapInputArgumentsRemote Input arguments
+  * 
+  * Required arguments:
+  *
+  * \code --path YOUR_DATA_PATH\ \endcode
+  *
+  * Equivalent to the local method
+  *
+  * \code --sibrBinariesPath YOUR_SIBR_DIR\install\bin \endcode
+  *
+  * Equivalent to the local method
+  *
+  * \code --colmapPath COLMAP_DIR/ \endcode
+  *
+  * The directory containing the binary executable. 
+  * 
+  * \note Here you have to respect the Unix format : /path/to/colmapdir/colmap
+  * 
+  *
+  * Optional arguments:
+  *
+  * \code --remoteUnix SSHACCOUNT \endcode
+  *
+  * That is your SSH account to connect on the Cluster.
+  * 
+  * \code --colmapWorkingDir /path/to/an/empty/directory/ \endcode
+  * 
+  * You have to specify a directory on the Cluster in which Colmap can generate the project.
+  * 
+  * \code --numGPUs \endcode 
+  * 
+  * The number of GPUs that the node has to contain at least and allocate them. \endcode
+  * 
+  * \code --clusterGPU 30 \endcode
+  *
+  * Use this option to choose a specific node on the Cluster. If you do not specify it, oarsub
+  * program will choose one that is available. 
+  *
+  * \code --quality  \endcode
+  *
+  * Use a pre-defined configuration as with the local version.
+  *
+  * \code --time \endcode
+  *
+  * Use this option to specify the max time allocation for the remote node ( number of hours ) 
+  *
+  *
+  * \subsubsection ColmapInputArgumentsRemoteExamples Input arguments example
+  *
+  *
+  * \code --path E:\USERNAME\dataset --sibrBinariesPath E:\USERNAME\dev\sibr_basic2\install\bin --colmapPath --colmapPath /data/graphdeco/share/colmap/bin/ --quality high --colmapWorkingDir /data/graphdeco/user/USERNAME/AnyDirectory/ --remoteUnix USERNAME@nef-devel.inria.fr --clusterGPU 30 --numGPUs 4 --time 8  \endcode
+  *
+  **/
