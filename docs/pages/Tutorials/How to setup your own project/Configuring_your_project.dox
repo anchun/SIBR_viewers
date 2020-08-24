@@ -5,7 +5,7 @@
 \section gen_setup_config General setup
 
 - Create a repository in `src/projects/my_project` (name your project at your convenience)
-- Setup your project structure as stated in \ref project_structure "Project Structure"
+- Setup your project structure as stated in \ref project_structure
 - Use the following sample files (form the following sections) for your `CMakeLists.txt` files and `Config.hpp` structure
 - Re-run configure for the main SIBR `CMakeLists.txt`.
 - The project should be automatically detected; If so, check `BUILD_IBR_MY_PROJECT` (`MY_PROJECT` being your project name folder) in CMake and re-generate.

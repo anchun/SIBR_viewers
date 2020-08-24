@@ -6,7 +6,7 @@
 - **Cmake >= 3.16**
 - **7zip**
 - **Python 3** for the shaders installation scripts
-- **Doxygen** for documentation
+- **Doxygen 1.8.17+** for documentation
 - **CUDA 10.1** if projects requires it
 
 Make sure Python, CUDA and Doxygen are in the PATH

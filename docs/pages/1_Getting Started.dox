@@ -17,7 +17,7 @@
  * - Python 3 should be installed and configured in the PATH (https://www.python.org/downloads/).
  * - PIL (pip install pillow, in an admin command if needed: https://pypi.org/project/Pillow/) might be needed for some preprocess scripts.
  * - ImageMagick (https://imagemagick.org/script/download.php).
- * - Doxygen should be installed and configured in the PATH for generating the documentation (http://www.doxygen.nl/download.html).
+ * - Doxygen 1.8.17+ should be installed and configured in the PATH for generating the documentation (http://www.doxygen.nl/download.html).
  * - If needed (Optix, Tensorflow, Pytorch,... integration), CUDA 10.1+ (https://developer.nvidia.com/cuda-downloads) and cuDNN.
  * - An internet connection, as external dependencies will be downloaded from our servers during the CMake configuration.
  *
@@ -25,7 +25,7 @@
  *
  * - Clone sibr_core repository (https://gitlab.inria.fr/sibr/sibr_core).
  *  \code git clone https://gitlab.inria.fr/sibr/sibr_core \endcode
- * - You can add the projects' source code you would like to compile with SIBR, for this see \ref sibr_projects_add "Adding projects to SIBR")
+ * - You can add the projects' source code you would like to compile with SIBR, for this see \ref sibr_projects_add)
 
  * \subsection sibr_configure_cmake Configuring the solution
  *
@@ -36,7 +36,7 @@
  *
  * \subsection sibr_compile Compiling
  *
- * - Configure the solution & Generate like we did in \ref sibr_configure_cmake "Configuring the solution".
+ * - Configure the solution & Generate like we did in \ref sibr_configure_cmake.
  * - Open the generated Visual Studio solution (sibr_root/build/sibr_projects.sln).
  * - Build the BUILD_ALL target, and then the INSTALL target.
  * - The compiled executables will be put in install/bin.
@@ -46,7 +46,7 @@
  *
  * \subsection sibr_generate_documentation Generating the documentation
  *
- * - Configure the solution like we did in \ref sibr_configure_cmake "Configuring the solution" and choose BUILD_DOCUMENTATION along with the projects you want in the documentation. Then generate the solution.
+ * - Configure the solution like we did in \ref sibr_configure_cmake and choose BUILD_DOCUMENTATION along with the projects you want in the documentation. Then generate the solution.
  * - Open the generated Visual Studio solution (sibr_root/build/sibr_projects.sln).
  * - Build the CompileDocs target.
  * - The generated documentation will be put in docs/doxygen and can be accessed through docs/Documentation.html.
