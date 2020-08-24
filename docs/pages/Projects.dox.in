@@ -6,28 +6,29 @@ Some projects called toolboxes might also be used by other projects to bring add
 
 \subsection sibr_projects_documentation Access projects documentation
 
-Each project documentation is compilable through SIBR
+Each project documentation is compilable through SIBR.
+To access the projects documentation, first :
+- Add the project to SIBR like explained in \ref sibr_projects_add "Adding projects to SIBR"
+- Compile the documentation 
 
-\subsection sibr_projects_generate_and_compile Adding projects to SIBR
+\subsection sibr_projects_add Adding projects to SIBR
+
 Existing projects can be added as subdirectories in the src/projects directory.
 For this, you need to access to the project's source code (most of them are in https://gitlab.inria.fr/sibr/projects) to clone it, build it with SIBR and use it.
 If you want to create your own project, see \ref howto_setup_project "How to setup your own project".
 You can follow the given steps to add a project once access is given.
-- Go to the sibr_core repository and pull.
+- You will need to checkout SIBR Core source code (see \ref sibr_checkout "Checkout the code").
 - Go to src/projects
-- Clone the project repository with the default directory name.
-- Run Cmake-gui again, (with sibr_root/ as a source directory, sibr_root/build/ as the build directory). Configure, select the Visual Studio C++ Win64 compiler.
-- Select the projects you want to generate among the BUILD elements in the list.
-- Generate.
-- Open the generated Visual Studio solution (sibr_root/build/sibr_projects.sln) and build the project as above.
+- Clone/Copy the project source code in the correct project folder (it should be the same as the project repository, or check the README for more information).
+- You can then resume with \ref sibr_generate_documentation "Generating the documentation" or \ref sibr_compile "Compiling"
 
-For each project, the following structure is recommended:
-- A renderer/ subdirectory contains a library with the bulk of the project-specific code.
-- A preprocess/ subdirectory containing one or more preprocessing executables.
-- An apps/ subdirectory contains one or more demo applications demonstrating the rendering algorithms of the project.
-For more details on the setup, see \ref help_new_project "Creating a new project".
+\subsection sibr_project_structure Project structure
 
-Here is the list of integrated projects.\n
+See \ref project_structure "Project Structure"
+
+\subsection sibr_projects_available Projects available
+
+Here is the list of projects that have been added to this generated version of SIBR's documentation.\n
 For projects that led to publications, the link to the paper is available.\n
 Most of other projects are helper libraries that can be used to augment SIBR with new functionalities.\n
 

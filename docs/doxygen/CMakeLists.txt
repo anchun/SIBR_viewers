@@ -13,7 +13,7 @@ if(BUILD_DOCUMENTATION)
 		set(DOXY_DOC_COMMON_IMG_PATH        "${CMAKE_CURRENT_SOURCE_DIR}/img ${CMAKE_HOME_DIRECTORY}/src/projects/")
 
 		## Generate project list in the projects page
-		configure_file(Projects.dox.in ${CMAKE_CURRENT_BINARY_DIR}/generated/Projects.dox @ONLY)
+		configure_file(../pages/Projects.dox.in ${CMAKE_CURRENT_BINARY_DIR}/generated/Projects.dox @ONLY)
 
 		configure_file(layout.xml.in		${CMAKE_BINARY_DIR}/layout.xml			@ONLY)
 		configure_file(doxyfile.in			${CMAKE_BINARY_DIR}/doxyfile			@ONLY)

@@ -1,0 +1,62 @@
+/*! \mainpage Getting Started
+ *
+ * \section intro_sec Introduction
+
+ * Simple Image-Based Rendering or **SIBR**, is a specialized collection of libraries and toolkits for quickly implementing image-based rendering applications.
+ * \todo Add more Description about SIBR.
+ *
+ * \image HTML ulr_screenshot.png SIBR width=700px
+ * \section install_sec Installation
+ *
+ * \subsection sibr_prerequisite Prerequisites
+ *
+ * - git
+ * - Visual Studio 2019 (https://visualstudio.microsoft.com/).
+ * - Cmake 3.16 or higher,(https://cmake.org/).
+ * - 7zip should be installed (https://www.7-zip.org/download.html).
+ * - Python 3 should be installed and configured in the PATH (https://www.python.org/downloads/).
+ * - PIL (pip install pillow, in an admin command if needed: https://pypi.org/project/Pillow/) might be needed for some preprocess scripts.
+ * - ImageMagick (https://imagemagick.org/script/download.php).
+ * - Doxygen should be installed and configured in the PATH for generating the documentation (http://www.doxygen.nl/download.html).
+ * - If needed (Optix, Tensorflow, Pytorch,... integration), CUDA 10.1+ (https://developer.nvidia.com/cuda-downloads) and cuDNN.
+ * - An internet connection, as external dependencies will be downloaded from our servers during the CMake configuration.
+ *
+ * \subsection sibr_checkout Checkout the code
+ *
+ * - Clone sibr_core repository (https://gitlab.inria.fr/sibr/sibr_core).
+ *  \code git clone https://gitlab.inria.fr/sibr/sibr_core \endcode
+ * - You can add the projects' source code you would like to compile with SIBR, for this see \ref sibr_projects_add "Adding projects to SIBR")
+
+ * \subsection sibr_configure_cmake Configuring the solution
+ *
+ * - Run Cmake, select SIBR root folder as a source directory and <sibr_root_folder>/build/ as the build directory.
+ * - Configure, select the Visual Studio C++ Win64 compiler.
+ * - Select the projects you want to generate among the BUILD_* variables in the list.
+ * - Generate.
+ *
+ * \subsection sibr_compile Compiling
+ *
+ * - Configure the solution & Generate like we did in \ref sibr_configure_cmake "Configuring the solution".
+ * - Open the generated Visual Studio solution (sibr_root/build/sibr_projects.sln).
+ * - Build the BUILD_ALL target, and then the INSTALL target.
+ * - The compiled executables will be put in install/bin.
+ * \note If install fails, you will have to copy the required .dll files which are not copied automatically in the install/bin directory.
+ *       In general make sure these .dll files are in the bin directory : boost_system-vc141-mt-1_64.dll, boost_filesystem-vc141-mt-1_64.dll, glew32.dll, assimp-vc140-mt.dll, embree.dll.
+ *       Alternatively, you can selectively execute some of the install targets for specific projects.
+ *
+ * \subsection sibr_generate_documentation Generating the documentation
+ *
+ * - Configure the solution like we did in \ref sibr_configure_cmake "Configuring the solution" and choose BUILD_DOCUMENTATION along with the projects you want in the documentation. Then generate the solution.
+ * - Open the generated Visual Studio solution (sibr_root/build/sibr_projects.sln).
+ * - Build the CompileDocs target.
+ * - The generated documentation will be put in docs/doxygen and can be accessed through docs/Documentation.html.
+ *
+ * \section sibr_troubleshooting Troubleshoot
+ *
+ * - Cmake can't find GLU, GLEW or another library: use an up-to-date CMake, check that you are connected to the Internet.
+ * - Weird OpenCV error: you probably selected the 32-bits compiler in cmake-gui.
+ * - 'Cmd.exe failed wither error 009' or similar: make sure Python is installed and in the PATH.
+ * - BUILD_ALL or INSTALL fail because of a project you don't really need: build and install each project separately by selecting the proper targets.
+ * - Some projects may depend on other projects. Make sure you have checked all the required projects before generating the solution.
+ * - Error in CUDA headers under Visual Studio 2019: make sure CUDA >= 10.1 is installed.
+ */
