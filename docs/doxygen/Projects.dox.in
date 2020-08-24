@@ -1,8 +1,26 @@
 /** @page projects Projects
 
-Each research project has its own subdirectory in src/projects, that contain renderers and preprocessing classes used only for that particular project.
-An example Unstructured Lumigraph Rendering (ULR) application is provided by default with SIBR to help users get started.
-Some projects might also be used by other projects to bring additional functionalities (for instance the SIBR/Optix integration). Such dependencies should be documented in the project readme.
+Research algorithms and toolboxes have been implemented for SIBR as plugins named "Projects".
+Unstructured Lumigraph Rendering (ULR) application is provided by default with SIBR to help users get started.
+Some projects called toolboxes might also be used by other projects to bring additional functionalities (for instance the SIBR/Optix integration).
+
+\subsection sibr_projects_documentation Access projects documentation
+
+Each project documentation is compilable through SIBR
+
+\subsection sibr_projects_generate_and_compile Adding projects to SIBR
+Existing projects can be added as subdirectories in the src/projects directory.
+For this, you need to access to the project's source code (most of them are in https://gitlab.inria.fr/sibr/projects) to clone it, build it with SIBR and use it.
+If you want to create your own project, see \ref howto_setup_project "How to setup your own project".
+You can follow the given steps to add a project once access is given.
+- Go to the sibr_core repository and pull.
+- Go to src/projects
+- Clone the project repository with the default directory name.
+- Run Cmake-gui again, (with sibr_root/ as a source directory, sibr_root/build/ as the build directory). Configure, select the Visual Studio C++ Win64 compiler.
+- Select the projects you want to generate among the BUILD elements in the list.
+- Generate.
+- Open the generated Visual Studio solution (sibr_root/build/sibr_projects.sln) and build the project as above.
+
 For each project, the following structure is recommended:
 - A renderer/ subdirectory contains a library with the bulk of the project-specific code.
 - A preprocess/ subdirectory containing one or more preprocessing executables.

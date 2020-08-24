@@ -26,7 +26,7 @@
  * - Clone sibr_core repository (https://gitlab.inria.fr/sibr/sibr_core).
  *  \code git clone https://gitlab.inria.fr/sibr/sibr_core \endcode
  * - Run Cmake-gui once, select the sibr_root/ as a source directory, sibr_root/build/ as the build directory. Configure, select the Visual Studio C++ Win64 compiler.
- * - Select the projects you want to generate among the BUILD elements in the list.
+ * - Select the projects you want to generate among the BUILD_* variables in the list.
  * - Generate.
  * - Open the generated Visual Studio solution (sibr_root/build/sibr_projects.sln).
  * - Build the BUILD_ALL target, and then the INSTALL target.
@@ -34,24 +34,17 @@
  * \note If install fails, you will have to copy the required .dll files which are not copied automatically in the install/bin directory.
  *       In general make sure these .dll files are in the bin directory : boost_system-vc141-mt-1_64.dll, boost_filesystem-vc141-mt-1_64.dll, glew32.dll, assimp-vc140-mt.dll, embree.dll.
  *       Alternatively, you can selectively execute some of the install targets for specific projects.
+  *
+ * \subsection sibr_documentation Generating the documentation
  *
- * \subsection sibr_projects_generate_and_compile Adding projects to SIBR
- *
- * SIBR comes with ULR as the default project. If you need to create a new project, it can be based upon ULR and created.
- * For more information see \ref help_new_project "Creating a new project".
- *
- * In addition to ULR, there are several IBR algorithms already implemented in SIBR.
- * Existing projects can be added as subdirectories in the src/projects directory.
- * Users need access to the project's gitlab repository to clone it and use it.
- * You can follow the given steps to add a project once access is given.
- *
- * - Go to the sibr_core repository and pull.
- * - Go to src/projects
- * - Clone the project repository with the default directory name.
- * - Run Cmake-gui again, (with sibr_root/ as a source directory, sibr_root/build/ as the build directory). Configure, select the Visual Studio C++ Win64 compiler.
- * - Select the projects you want to generate among the BUILD elements in the list.
+ * - Clone sibr_core repository (https://gitlab.inria.fr/sibr/sibr_core).
+ *  \code git clone https://gitlab.inria.fr/sibr/sibr_core \endcode
+ * - Run Cmake-gui once, select the sibr_root/ as a source directory, sibr_root/build/ as the build directory. Configure, select the Visual Studio C++ Win64 compiler.
+ * - Select the projects you want to generate among the BUILD_* variables in the list. Don't forget to select BUILD_DOCUMENTATION.
  * - Generate.
- * - Open the generated Visual Studio solution (sibr_root/build/sibr_projects.sln) and build the project as above.
+ * - Open the generated Visual Studio solution (sibr_root/build/sibr_projects.sln).
+ * - Build the CompileDocs target.
+ * - The generated documentation will be put in docs/doxygen and can be accessed through docs/Documentation.html.
  *
  * \section sibr_troubleshooting Troubleshoot
  *
