@@ -7,6 +7,7 @@
 
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/classification.hpp>
+#include <boost/algorithm/string/case_conv.hpp>
 #include <map>
 #include "core/system/String.hpp"
 #include "core/graphics/Mesh.hpp"
@@ -223,7 +224,7 @@ namespace sibr {
 
 	}
 
-	void ParseData::getParsedColmapData(const std::string & dataset_path, const int fovXfovY_flag)
+	void ParseData::getParsedColmapData(const std::string & dataset_path, const int fovXfovY_flag, const bool capreal_flag)
 	{
 		_basePathName = dataset_path + "/colmap/stereo";
 
@@ -261,8 +262,13 @@ namespace sibr {
 
 		populateFromCamInfos();
 
-		_meshPath = dataset_path + "/capreal/mesh.obj";
-		_meshPath = (sibr::fileExists(_meshPath)) ? _meshPath : dataset_path + "/capreal/mesh.ply";
+		if(capreal_flag) {
+			_meshPath = dataset_path + "/capreal/mesh.obj";
+			_meshPath = (sibr::fileExists(_meshPath)) ? _meshPath : dataset_path + "/capreal/mesh.ply";
+		}
+		else {
+			_meshPath = dataset_path + "/colmap/stereo/meshed-delaunay.ply";
+		}
 
 	}
 
@@ -285,34 +291,85 @@ namespace sibr {
 
 	void ParseData::getParsedData(const BasicIBRAppArgs & myArgs, const std::string & customPath)
 	{
+		std::string datasetTypeStr = myArgs.dataset_type.get();
+		
+		boost::algorithm::to_lower(datasetTypeStr);
+
 		std::string bundler = myArgs.dataset_path.get() + customPath + "/cameras/bundle.out";
 		std::string colmap = myArgs.dataset_path.get() + "/colmap/stereo/sparse/images.txt";
+		std::string caprealobj = myArgs.dataset_path.get() + "/capreal/mesh.obj";
+		std::string caprealply = myArgs.dataset_path.get() + "/capreal/mesh.ply";
 		std::string nvmscene = myArgs.dataset_path.get() + customPath + "/nvm/scene.nvm";
 		std::string meshroom = myArgs.dataset_path.get() + "/../../StructureFromMotion/";
 		std::string meshroom_sibr = myArgs.dataset_path.get() + "/StructureFromMotion/";
 
+		if(datasetTypeStr == "sibr") {
+			if (!sibr::fileExists(bundler))
+				SIBR_ERR << "Cannot use dataset_type " + myArgs.dataset_type.get() + " at /" + myArgs.dataset_path.get() + "." << std::endl
+						 << "Reason : bundler folder (" << bundler << ") does not exist" << std::endl;
 
-		if (sibr::fileExists(bundler)) {
-			getParsedBundlerData(myArgs.dataset_path, customPath, myArgs.scene_metadata_filename);
 			_datasetType = Type::SIBR;
-		}else if (sibr::fileExists(colmap)) {
-			getParsedColmapData(myArgs.dataset_path, myArgs.colmap_fovXfovY_flag);
+		}
+		else if (datasetTypeStr == "colmap_capreal") {
+			if (!sibr::fileExists(colmap))
+				SIBR_ERR << "Cannot use dataset_type " + myArgs.dataset_type.get() + " at /" + myArgs.dataset_path.get() + "." << std::endl
+						 << "Reason : colmap folder (" << colmap << ") does not exist" << std::endl;
+			
+			if (!(sibr::fileExists(caprealobj) || sibr::fileExists(caprealply)))
+				SIBR_ERR << "Cannot use dataset_type " + myArgs.dataset_type.get() + " at /" + myArgs.dataset_path.get() + "." << std::endl
+						 << "Reason : capreal mesh (" << caprealobj << ", " << caprealply << ") does not exist" << std::endl;
+
+			_datasetType = Type::COLMAP_CAPREAL;
+		}
+		else if (datasetTypeStr == "colmap") {
+			if (!sibr::fileExists(colmap))
+				SIBR_ERR << "Cannot use dataset_type " + myArgs.dataset_type.get() + " at /" + myArgs.dataset_path.get() + "." << std::endl
+						 << "Reason : colmap folder (" << colmap << ") does not exist" << std::endl;
+
 			_datasetType = Type::COLMAP;
 		}
-		else if (sibr::fileExists(nvmscene)) {
-			getParsedNVMData(myArgs.dataset_path, customPath, "/nvm/");
+		else if (datasetTypeStr == "nvm") {
+			if (!sibr::fileExists(nvmscene))
+				SIBR_ERR << "Cannot use dataset_type " + myArgs.dataset_type.get() + " at /" + myArgs.dataset_path.get() + "." << std::endl
+						 << "Reason : nvmscene folder (" << nvmscene << ") does not exist" << std::endl;
+
 			_datasetType = Type::NVM;
 		}
-		else if (sibr::directoryExists(meshroom)) {
-			getParsedMeshroomData(myArgs.dataset_path.get() + "/../../");
-			_datasetType = Type::MESHROOM;
-		}
-		else if (sibr::directoryExists(meshroom_sibr)) {
-			getParsedMeshroomData(myArgs.dataset_path);
+		else if (datasetTypeStr == "meshroom") {
+			if (!(sibr::directoryExists(meshroom) || sibr::directoryExists(meshroom_sibr)))
+				SIBR_ERR << "Cannot use dataset_type " + myArgs.dataset_type.get() + " at /" + myArgs.dataset_path.get() + "." << std::endl
+						 << "Reason : meshroom folder (" << meshroom << ", " << meshroom_sibr << ") does not exist" << std::endl;
+
 			_datasetType = Type::MESHROOM;
 		}
 		else {
-			SIBR_ERR << "Cannot determine type of dataset at /" + myArgs.dataset_path.get() + customPath << std::endl;
+			if (sibr::fileExists(bundler)) {
+				_datasetType = Type::SIBR;
+			}
+			else if (sibr::fileExists(colmap) && (sibr::fileExists(caprealobj) || sibr::fileExists(caprealply))) {
+				_datasetType = Type::COLMAP_CAPREAL;
+			}
+			else if (sibr::fileExists(colmap)) {
+				_datasetType = Type::COLMAP;
+			}
+			else if (sibr::fileExists(nvmscene)) {
+				_datasetType = Type::NVM;
+			}
+			else if (sibr::directoryExists(meshroom) || sibr::directoryExists(meshroom_sibr)) {
+				_datasetType = Type::MESHROOM;
+			}
+			else {
+				SIBR_ERR << "Cannot determine type of dataset at /" + myArgs.dataset_path.get() + customPath << std::endl;
+			}
+		}
+
+		switch(_datasetType) {
+			case Type::SIBR : 			getParsedBundlerData(myArgs.dataset_path, customPath, myArgs.scene_metadata_filename); break;
+			case Type::COLMAP_CAPREAL : getParsedColmapData(myArgs.dataset_path, myArgs.colmap_fovXfovY_flag, true); break;
+			case Type::COLMAP : 		getParsedColmapData(myArgs.dataset_path, myArgs.colmap_fovXfovY_flag, false); break;
+			case Type::NVM : 			getParsedNVMData(myArgs.dataset_path, customPath, "/nvm/"); break;
+			case Type::MESHROOM : 		if (sibr::directoryExists(meshroom)) getParsedMeshroomData(myArgs.dataset_path.get() + "/../../");
+										else if (sibr::directoryExists(meshroom_sibr)) getParsedMeshroomData(myArgs.dataset_path); break;
 		}
 		
 		// What happens if multiple are present?

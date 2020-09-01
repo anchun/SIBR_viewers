@@ -374,6 +374,7 @@ namespace sibr
 	/// \ingroup sibr_system
 	struct SIBR_SYSTEM_EXPORT BasicDatasetArgs {
 		RequiredArg<std::string> dataset_path = { "path", "path to the dataset root" };
+		Arg<std::string> dataset_type = { "dataset_type", "", "type of dataset" };
 	};
 
 	/// "Default" set of arguments.

@@ -60,8 +60,10 @@ namespace sibr{
 		* \note Note: when applying the above mentioned conversion, the mesh needs to be converted by the same converter matrix
 		* \brief Function to parse data from a colmap dataset path.
 		* \param dataset_path Path to the folder containing data
+		* \param fovXfovY_flag activate two dimensional fov parameters
+		* \param capreal_flag use capreal data
 		*/
-		void  getParsedColmapData(const std::string & dataset_path, const int fovXfovY_flag);
+		void  getParsedColmapData(const std::string & dataset_path, const int fovXfovY_flag, const bool capreal_flag = true);
 
 		/**
 		* \brief Function to parse data from a template dataset path.
