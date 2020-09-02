@@ -5,6 +5,6 @@ Each application is provided with multiple pre-processing utilities, some genera
 Python scripts designed to process and prepare datasets are provided with each project along with instructions on how to use them.
 
 We provide pre-processing documentation following which you can create SIBR compatible datasets from output of some proprietary utility programs:
-  - \subpage realitycapture
-  - \subpage colmap
+  - \subpage HowToCapreal
+  - \subpage HowToColmap
  */

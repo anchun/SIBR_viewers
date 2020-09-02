@@ -48,17 +48,15 @@ namespace sibr{
 
 
 		/**
-		* \brief Function to parse data from a colmap sparse dataset path.
-		* \param dataset_path Path to the colmap dataset sparse folder containing data
+		* \brief Function to parse data from a colmap dataset path.
 		*
-		* The function takes in a colmap dataset sparse folder path and populates ParseData members with data.
+		* The function takes in a colmap dataset folder path and populates ParseData members with data.
 		* This function can be used for direct compatibility with colmap data in SIBR.
 		* The function automatically computes the intrinsic and extrinsic parameters of the camera, input images filename, widht and height etc.
 		* Colmap uses LHS coordinate system while SIBR uses RHS coordinate system. The function applies appropriate transformation to handle this case.
 		* 
 		* For further compatibility with FrIBR, which enforces a Y-up RHS coordinate system, we need to apply an extra conversion to the rotation matrix, to 'flip back' from y-down to y-up.
 		* \note Note: when applying the above mentioned conversion, the mesh needs to be converted by the same converter matrix
-		* \brief Function to parse data from a colmap dataset path.
 		* \param dataset_path Path to the folder containing data
 		* \param fovXfovY_flag activate two dimensional fov parameters
 		* \param capreal_flag use capreal data

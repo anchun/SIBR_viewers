@@ -18,7 +18,7 @@ To access the projects documentation, first :\n
 
 Existing projects can be added as subdirectories in the src/projects directory.\n
 For this, you need to access to the project's source code (most of them are in https://gitlab.inria.fr/sibr/projects) to clone it, build it with SIBR and use it.\n
-If you want to create your own project, see \ref howto_setup_project.\n
+If you want to create your own project, see \ref howto_setup_project .\n
 You can follow the given steps to add a project once access is given.\n
 - You will need to checkout SIBR Core source code (see \ref sibr_checkout).
 - Go to src/projects

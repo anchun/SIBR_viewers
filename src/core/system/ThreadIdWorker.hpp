@@ -51,8 +51,7 @@ namespace sibr
 
 		/** Constructor. Will call the passed function for each given task ID.
 		 \param ids a list of task ids
-		 \param func a function receiving a task ID as parameter
-		 \return either FALSE for signaling the worker to stop or  TRUE for keep going.
+		 \param func a function receiving a task ID as parameter returning either FALSE for signaling the worker to stop or TRUE for keep going.
 		*/
 		ThreadIdWorker( TaskIds& ids, std::function<bool(uint)> func );
 

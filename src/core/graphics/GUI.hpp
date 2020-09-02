@@ -71,7 +71,7 @@ namespace ImGui {
 
 	/** Plot multiple curves on a graph. All curves should have the same number of samples.
 		Only lines are supported, code is based on internal ImGui implementation for one curve.
-		\param the graph ImGui label
+		\param label the graph ImGui label
 		\param values a list of pointers to list of values
 		\param values_count number of samples in each list
 		\param colors one or mulitple colors to use for each curve

@@ -4,6 +4,6 @@
 \tableofcontents
 \section ULR_RC Creating from Reality Capture
 The ULR application takes the path to the SibrData directory generated using ibr_preprocess_rc_to_sibr.py script, to create and render a scene.
-For more details see: \subpage HowToSibr.
+For more details see: \subpage capreal_HowToSibr.
 
 */

@@ -1,7 +1,7 @@
 /*!
-@page colmap How to create a dataset from Colmap
+@page HowToColmap How to create a dataset from Colmap
 
-\subsection ColmapInstallRequirements Install requirements
+\section ColmapInstallRequirements Install requirements
 
 - Colmap : https://demuc.de/colmap/
 
@@ -34,7 +34,7 @@ Your architecture should be like that:
                  im003.jpeg
                  im004.jpeg
                  ...
-endverbatim
+\endverbatim
 
 
 \subsection ColmapHToRunPipeline How to run the pipeline 
@@ -56,15 +56,21 @@ fullColmapPreprocess application ( present in preprocess in the Visual Studio Pr
 
 Required arguments:
 
-\code --path YOUR_DATA_PATH\ \endcode
+\code
+--path YOUR_DATA_PATH\
+\endcode
 
 The path to your dataset folder. It must contain an images folder
 
-\code --sibrBinariesPath YOUR_SIBR_DIR\install\bin \endcode
+\code
+--sibrBinariesPath YOUR_SIBR_DIR\install\bin
+\endcode
 
 That is the directory which contains the binaries of SIBR
 
-\code --colmapPath COLMAP_DIR\ \endcode
+\code
+--colmapPath COLMAP_DIR\
+\endcode
 
 The directory containing the .bat executable
 
@@ -76,7 +82,9 @@ set the colmap parameters
 - Use a pre-defined configuration. You have 4 configurations : low, medium, high, extreme.
 If you don't use a pre-defined configuration, all the parameters are set to the default
 value ( usually it is a mix between high and extreme ). To apply it, use the 
-\code --quality  \endcode option
+\code
+--quality
+\endcode option
 
 - Specify the parameters separately. You can set each parameters by yourself. Here is 
 a tab contains the default values and the values for each pre-defined configuration:
@@ -93,17 +101,23 @@ of the pre-defined configuration are applied. Then, your parameters are applied 
 The most basic version looks like that
 
 
-\code --path E:\USERNAME\dataset --sibrBinariesPath E:\USERNAME\dev\sibr_basic2\install\bin --colmapPath D:\colmap \endcode
+\code
+--path E:\USERNAME\dataset --sibrBinariesPath E:\USERNAME\dev\sibr_basic2\install\bin --colmapPath D:\colmap
+\endcode
 
 \note Do not forget that your dataset path has to contain an image directory with the images inside it.
 
 Now an example using the pre-defined configuration
 
-\code --path E:\USERNAME\dataset --sibrBinariesPath E:\YOU\dev\sibr_basic2\install\bin --colmapPath D:\colmap --quality low  \endcode
+\code
+--path E:\USERNAME\dataset --sibrBinariesPath E:\YOU\dev\sibr_basic2\install\bin --colmapPath D:\colmap --quality low
+\endcode
 
 Finally, an example with the mix of the two ways
 
-\code --path E:\USERNAME\dataset --sibrBinariesPath E:\YOU\dev\sibr_basic2\install\bin --colmapPath D:\colmap --quality medium --SiftExtraction.max_num_features 4096 \endcode
+\code
+--path E:\USERNAME\dataset --sibrBinariesPath E:\YOU\dev\sibr_basic2\install\bin --colmapPath D:\colmap --quality medium --SiftExtraction.max_num_features 4096
+\endcode
 
 All the parameters will be set to the medium configuration except the max_num_features that
 will be setted to 4096.
@@ -132,15 +146,21 @@ tasks.
 
 Required arguments:
 
-\code --path YOUR_DATA_PATH\ \endcode
+\code
+ --path YOUR_DATA_PATH\ 
+\endcode
 
 Equivalent to the local method
 
-\code --sibrBinariesPath YOUR_SIBR_DIR\install\bin \endcode
+\code
+ --sibrBinariesPath YOUR_SIBR_DIR\install\bin 
+\endcode
 
 Equivalent to the local method
 
-\code --colmapPath COLMAP_DIR/ \endcode
+\code
+ --colmapPath COLMAP_DIR/ 
+\endcode
 
 The directory containing the binary executable. 
 
@@ -149,28 +169,40 @@ The directory containing the binary executable.
 
 Optional arguments:
 
-\code --remoteUnix SSHACCOUNT \endcode
+\code
+ --remoteUnix SSHACCOUNT 
+\endcode
 
 That is your SSH account to connect on the Cluster.
 
-\code --colmapWorkingDir /path/to/an/empty/directory/ \endcode
+\code
+ --colmapWorkingDir /path/to/an/empty/directory/ 
+\endcode
 
 You have to specify a directory on the Cluster in which Colmap can generate the project.
 
-\code --numGPUs \endcode 
+\code
+ --numGPUs 
+\endcode 
 
-The number of GPUs that the node has to contain at least and allocate them. \endcode
+The number of GPUs that the node has to contain at least and allocate them.
 
-\code --clusterGPU 30 \endcode
+\code
+ --clusterGPU 30 
+\endcode
 
 Use this option to choose a specific node on the Cluster. If you do not specify it, oarsub
 program will choose one that is available. 
 
-\code --quality  \endcode
+\code
+ --quality  
+\endcode
 
 Use a pre-defined configuration as with the local version.
 
-\code --time \endcode
+\code
+ --time 
+\endcode
 
 Use this option to specify the max time allocation for the remote node ( number of hours ) 
 
@@ -178,6 +210,8 @@ Use this option to specify the max time allocation for the remote node ( number 
 \subsubsection ColmapInputArgumentsRemoteExamples Input arguments example
 
 
-\code --path E:\USERNAME\dataset --sibrBinariesPath E:\USERNAME\dev\sibr_basic2\install\bin --colmapPath --colmapPath /data/graphdeco/share/colmap/bin/ --quality high --colmapWorkingDir /data/graphdeco/user/USERNAME/AnyDirectory/ --remoteUnix USERNAME@nef-devel.inria.fr --clusterGPU 30 --numGPUs 4 --time 8  \endcode
+\code
+ --path E:\USERNAME\dataset --sibrBinariesPath E:\USERNAME\dev\sibr_basic2\install\bin --colmapPath --colmapPath /data/graphdeco/share/colmap/bin/ --quality high --colmapWorkingDir /data/graphdeco/user/USERNAME/AnyDirectory/ --remoteUnix USERNAME@nef-devel.inria.fr --clusterGPU 30 --numGPUs 4 --time 8  
+\endcode
 
 */

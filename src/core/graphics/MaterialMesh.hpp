@@ -421,6 +421,8 @@ namespace sibr
 		\param mode the primitives rendering mode
 		\param frontFaceCulling should the culling test be flipped
 		\param invertDepthTest should the depth test be flipped (GL_GREATER_THAN)
+		\param specificMaterial should we use a specific material
+		\param nameOfSpecificMaterial name of the specific material
 		*/
 		void	renderAlbedo(
 			bool depthTest = true,

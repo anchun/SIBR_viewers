@@ -54,7 +54,8 @@ namespace sibr {
 	using Volume1u = VideoVolume<uchar, 1>;
 
 	/**
-	* \ingroup sibr_video
+	* \addtogroup sibr_video
+	* @{
 	*/
 	template<typename T, uint N>
 	class VideoVolume {
@@ -530,12 +531,6 @@ namespace sibr {
 
 	};
 
-
-	/**
-	\addtogroup sibr_video
-	@{
-	*/
-
 	SIBR_VIDEO_EXPORT Volume3u loadVideoVolume(const std::string & filepath);
 	SIBR_VIDEO_EXPORT Volume3u loadVideoVolume(sibr::Video & vid);
 	
@@ -727,12 +722,6 @@ namespace sibr {
 		return total_vars;
 	}
 
-	/** }@ */
-
-
-	/**
-	\ingroup sibr_video
-	*/
 	struct SIBR_VIDEO_EXPORT PyramidLayer {
 		PyramidLayer() {}
 		PyramidLayer(int _w, int _h, int _l, int cv_type = CV_32FC1) : l(_l), w(_w), h(_h) {
@@ -775,9 +764,7 @@ namespace sibr {
 		int w, h, l;
 	};
 
-	/**
-	\ingroup sibr_video
-	*/
+
 	struct SIBR_VIDEO_EXPORT PyramidParameters {
 		PyramidParameters(int nlevels = 5, int temporal = 3, int spatial = 2, bool spatial_ds = true) :
 			num_levels(nlevels), temporal_radius(temporal), spatial_radius(spatial), splacialDS(spatial_ds) {}
@@ -787,11 +774,6 @@ namespace sibr {
 		bool splacialDS = true;
 	};
 
-
-	/**
-	\addtogroup sibr_video
-	@{
-	*/
 	SIBR_VIDEO_EXPORT PyramidLayer blur(const PyramidLayer & layer, const PyramidParameters &  params );
 	SIBR_VIDEO_EXPORT PyramidLayer temporalBlur(const PyramidLayer & volume, const PyramidParameters & params, float scaling = 1);
 	SIBR_VIDEO_EXPORT void temporalBlurInPlace(PyramidLayer & volume, const PyramidParameters & params, float scaling = 1);
