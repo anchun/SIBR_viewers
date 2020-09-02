@@ -1,61 +1,61 @@
-/** @page realitycapture How to create a dataset from Reality Capture
-  *
-  * \tableofcontents
-  *
-  * \section DirStruc Suggested directory structure
-  * (Note: This directory structure is only suggested for user accessibility. You can store/create the dataset in separate directories as you like, as long as you provide correct input to the scripts to generate SIBR datasets.)
-  * \li Dataset\\RcProjs
-  * \n Contains the .rcproj files and the data directories (these are big after reconstruction, since they contain the mesh and texture).
-  * \n
-  * \li Dataset\\RcOuts
-  * \n Contains the exported undistorted images with black borders, the file  bundle.out, pmvs_recon.ply and optionally textured.obj, textured.mtl and textured_u1_v1.png (see what to save below)
-  * \n
-  * \li Dataset\\SibrData
-  * \n Contains the extracted data to create scene(s) using SIBR, containing bundle file, reconstructed mesh, list of images, scene metadata etc. in proper directory structure.
-  * \n
-  *
-  * \section WhatToSave What to save from RealityCapture
-  * (Suggested directory name: Dataset\\RcOuts (see above))
-  *
-  * \li After alignment and reconstruction, save Registration (choose negative z bundle.out, jpg image type)
-  * \li After reconstruction -> Mesh -> save pmvs_recon.ply
-  * \li After texturing -> Mesh -> save textured.obj (which will save textured.mtl and textured_u1_v1.png containing the texture);
-  *
-  * \section HowToSibr How to create SIBR Dataset
-  * (Suggested directory name: Dataset\\SibrData (see above))
-  *
-  * \li Generate and build the solution to generate executables for preprocessing applications.
-  * \li Go to `src/projects/ulr/preprocess`
-  * \li Run the python script using \code python ibr_preprocess_rc_to_sibr.py -i dataset_path (typically Dataset\RcOuts ) -o output_path (typically Dataset\SibrData ) --bin path_to_sibr_bin \endcode
-  * \li Specifying the binaries directory is optional. While compiling cmake automatically generates settings file which is parsed by the script to set bin directory.
-  * \li If the preprocessing apps are compiled in RelWithDeb mode, provide -r parameter while running the script.
-  * \li The script calls the distordCrop, cropFromCenter, and clipping_planes app executables; make sure they are up to date.
-  *     - They crop the images to remove the black borders; the --ratio parameter to distordCrop (currently 0.2 (/.5)) sets the percentage of border which can be removed. Images that have larger black borders are removed from the dataset.
-  *     - They also copy the meshes (ply and obj if available) and modifies the bundle.out and list_images.txt to the new values of resolution, and removes the images excluded (the numbers can be found in Dataset\\SibrData\\raw\\excluded_images.txt)
-  *     - Next they compute the clipping planes for each camera corresponding to input images and stores them in a clipping_planes.txt file.
-  *     - Finally, they parse all data to create a scene_metadata.txt file which holds information of the images, clipping planes etc. and is used to create the scene. This file can be manually extended.
-  * \li *[Recommended]* If you do not want to create a copy of the dataset, you can only specify the input directory with -i option. The dataset will be generated within the input directory itself.
-  * \n
-  * \image HTML sibr_dataset.png An SIBR dataset directory structure after preprocessing
-  *
-  **/
-  *
-  * \section Miscs Miscellanious Utilities
-  *
-  * \subsection ScalingSec Scaling a Scene to Meters
-  * \li Scenes from RealityCapture are not in meters (and the scaling feature doesnt always work well.)
-  * \li Find the scale factor (eg using the measure tool in meshlab or CloudCompare)
-  *  \li use xformScene (in SIBR bin) to scale the scene: xformScene -s ScaleFactor
-  * \li This modifies bundle.out and pmvs_recon.ply for the new scale
-  * \li and creates a backup bundle_orig_RC.out, and pmvs_recon_orig_RC.out  (also textured.obj and mtl if available)
-  * \li Save scale_factor.txt in a file in the datasetPath for reference
-  * \n
-  * \subsection XformSec Transforming a Scene (for pieces)
-  * \li If you have several pieces in a scene, first scale one piece (P1) to meters (see above), then find transformation of the the current piece to P1 (eg with align in CloudCompare)
-  * \li Store the 4x4 transformation matrix in a text file (e.g., xform.txt) with an extra line for the scale factor
-  * \li use xformScene -x xform.txt dataset_path
-  * \li This behaves as above for scaling, but applies the transformation to bundle.out, pmvs_recon.ply, textured.obj
-  * \li Save xform.txt in the datasetPath for reference
-  * \subsection Restore
-  * \li If something goes wrong, use python restore_dataset.py to restore all original files (bundle, ply, obj) as exported from RealityCapture
-  **/
+/*!
+@page realitycapture How to create a dataset from Reality Capture
+
+\tableofcontents
+
+\section DirStruc Suggested directory structure
+(Note: This directory structure is only suggested for user accessibility. You can store/create the dataset in separate directories as you like, as long as you provide correct input to the scripts to generate SIBR datasets.)
+\li Dataset\\RcProjs
+\n Contains the .rcproj files and the data directories (these are big after reconstruction, since they contain the mesh and texture).
+\n
+\li Dataset\\RcOuts
+\n Contains the exported undistorted images with black borders, the file  bundle.out, pmvs_recon.ply and optionally textured.obj, textured.mtl and textured_u1_v1.png (see what to save below)
+\n
+\li Dataset\\SibrData
+\n Contains the extracted data to create scene(s) using SIBR, containing bundle file, reconstructed mesh, list of images, scene metadata etc. in proper directory structure.
+\n
+
+\section WhatToSave What to save from RealityCapture
+(Suggested directory name: Dataset\\RcOuts (see above))
+
+\li After alignment and reconstruction, save Registration (choose negative z bundle.out, jpg image type)
+\li After reconstruction -> Mesh -> save pmvs_recon.ply
+\li After texturing -> Mesh -> save textured.obj (which will save textured.mtl and textured_u1_v1.png containing the texture);
+
+\section HowToSibr How to create SIBR Dataset
+(Suggested directory name: Dataset\\SibrData (see above))
+
+\li Generate and build the solution to generate executables for preprocessing applications.
+\li Go to `src/projects/ulr/preprocess`
+\li Run the python script using \code python ibr_preprocess_rc_to_sibr.py -i dataset_path (typically Dataset\RcOuts ) -o output_path (typically Dataset\SibrData ) --bin path_to_sibr_bin \endcode
+\li Specifying the binaries directory is optional. While compiling cmake automatically generates settings file which is parsed by the script to set bin directory.
+\li If the preprocessing apps are compiled in RelWithDeb mode, provide -r parameter while running the script.
+\li The script calls the distordCrop, cropFromCenter, and clipping_planes app executables; make sure they are up to date.
+    - They crop the images to remove the black borders; the --ratio parameter to distordCrop (currently 0.2 (/.5)) sets the percentage of border which can be removed. Images that have larger black borders are removed from the dataset.
+    - They also copy the meshes (ply and obj if available) and modifies the bundle.out and list_images.txt to the new values of resolution, and removes the images excluded (the numbers can be found in Dataset\\SibrData\\raw\\excluded_images.txt)
+    - Next they compute the clipping planes for each camera corresponding to input images and stores them in a clipping_planes.txt file.
+    - Finally, they parse all data to create a scene_metadata.txt file which holds information of the images, clipping planes etc. and is used to create the scene. This file can be manually extended.
+\li *[Recommended]* If you do not want to create a copy of the dataset, you can only specify the input directory with -i option. The dataset will be generated within the input directory itself.
+\n
+\image HTML sibr_dataset.png An SIBR dataset directory structure after preprocessing
+
+\section Miscs Miscellanious Utilities
+
+\subsection ScalingSec Scaling a Scene to Meters
+\li Scenes from RealityCapture are not in meters (and the scaling feature doesnt always work well.)
+\li Find the scale factor (eg using the measure tool in meshlab or CloudCompare)
+ \li use xformScene (in SIBR bin) to scale the scene: xformScene -s ScaleFactor
+\li This modifies bundle.out and pmvs_recon.ply for the new scale
+\li and creates a backup bundle_orig_RC.out, and pmvs_recon_orig_RC.out  (also textured.obj and mtl if available)
+\li Save scale_factor.txt in a file in the datasetPath for reference
+\n
+\subsection XformSec Transforming a Scene (for pieces)
+\li If you have several pieces in a scene, first scale one piece (P1) to meters (see above), then find transformation of the the current piece to P1 (eg with align in CloudCompare)
+\li Store the 4x4 transformation matrix in a text file (e.g., xform.txt) with an extra line for the scale factor
+\li use xformScene -x xform.txt dataset_path
+\li This behaves as above for scaling, but applies the transformation to bundle.out, pmvs_recon.ply, textured.obj
+\li Save xform.txt in the datasetPath for reference
+\subsection Restore
+\li If something goes wrong, use python restore_dataset.py to restore all original files (bundle, ply, obj) as exported from RealityCapture
+
+*/

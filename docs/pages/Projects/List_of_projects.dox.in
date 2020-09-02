@@ -1,0 +1,23 @@
+/*!
+\page sibr_projects_samples Sample algorithms
+
+@SIBR_PROJECTS_SAMPLES_SUBPAGE_REF@
+*/
+
+/*!
+\page sibr_projects_ours Our algorithms
+
+@SIBR_PROJECTS_OURS_SUBPAGE_REF@
+*/
+
+/*!
+\page sibr_projects_toolbox Integrated toolboxes
+
+@SIBR_PROJECTS_TOOLBOX_SUBPAGE_REF@
+*/
+
+/*!
+\page sibr_projects_others Other algorithms
+
+@SIBR_PROJECTS_OTHERS_SUBPAGE_REF@
+*/

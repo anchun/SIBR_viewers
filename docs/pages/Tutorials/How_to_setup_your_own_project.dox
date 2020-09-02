@@ -1,4 +1,5 @@
-/*! \page howto_setup_project How to setup your own project
+/*!
+@page howto_setup_project How to setup your own project
 
 - \subpage project_structure
 - \subpage configure_project

@@ -1,4 +1,5 @@
- /*! \page document_project Documenting projects
+ /*!
+@page document_project Documenting projects
 
 @ingroup setup_project
 
@@ -8,13 +9,13 @@ Please try to document as many methods as possible (especially public ones). Don
 You will find below an example of a commented class.
 
 \verbatim
- /** Represents a general view.
+ /* Represents a general view.
     \ingroup sibr_view
  */
  class MyView {
  	public:
 
- 		/** Loads everything.
+ 		/* Loads everything.
  			\param flags the options to use.
  			\return a boolean denoting the success of the operation.
  		*/
@@ -25,7 +26,7 @@ You will find below an example of a commented class.
 
  	private:
 
- 		/** Performs complex operations.
+ 		/* Performs complex operations.
  			\param val the value to use.
  		*/
  		void performComplexOps(const float val);

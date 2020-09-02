@@ -1,4 +1,5 @@
-/** @page howto_generate_dataset How to generate your dataset
+/*!
+@page howto_generate_dataset How to generate your dataset
 
 Each application is provided with multiple pre-processing utilities, some general, some specific to the project.
 Python scripts designed to process and prepare datasets are provided with each project along with instructions on how to use them.
@@ -6,4 +7,4 @@ Python scripts designed to process and prepare datasets are provided with each p
 We provide pre-processing documentation following which you can create SIBR compatible datasets from output of some proprietary utility programs:
   - \subpage realitycapture
   - \subpage colmap
- **/
+ */
