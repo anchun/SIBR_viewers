@@ -84,12 +84,9 @@ endif()
 set(SIBR_PROJECTS_FOLDER           "${CMAKE_CURRENT_SOURCE_DIR}/projects/")
 SUBDIRLIST(SUBDIRS ${SIBR_PROJECTS_FOLDER})
 
-message(STATUS "subdir list: ${SUBDIRS}")
-
+# Moving ulr to the top of the list
 list(REMOVE_ITEM SUBDIRS "ulr")
 list(PREPEND SUBDIRS "ulr")
-
-message(STATUS "subdir list after change: ${SUBDIRS}")
 
 FOREACH(subdir ${SUBDIRS})
 
