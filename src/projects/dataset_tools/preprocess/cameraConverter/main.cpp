@@ -92,15 +92,14 @@ void colmapSave(const std::string& filename, const std::vector<InputCamera::Ptr>
 	outputColmapPathCams << "#   CAMERA_ID, MODEL, WIDTH, HEIGHT, PARAMS[]" << std::endl;
 	outputColmapPathCams << "# Number of cameras: 1" << std::endl;
 	if (focalx == -1) {
-		focalx = xformPath[0]->focal();
-		SIBR_WRG << "No focal x given making it equal to focaly; use result at own risk. Should have a colmap dataset as input" << std::endl;
+		focalx = xformPath[0]->focal() * xformPath[0]->aspect(); // use aspect ratio
+		SIBR_WRG << "No focal x given making it equal to focaly * aspect ratio; use result at own risk. Should have a colmap dataset as input" << std::endl;
 	}
 	else
 	{
 		std::cerr << "FX " << focalx << std::endl;
 		focalx = xformPath[0]->focal() * (focalx / focaly);
-		SIBR_WRG << "Focal x set to " << focalx<<std::endl;
-		
+		SIBR_WRG << "Focal x set to f / (fx/fy); f of first image :" << focalx<<std::endl;
 	}
 	for(int i=0; i<xformPath.size(); i++)  {
 		outputColmapPathCams << i+1 << " PINHOLE " << xformPath[0]->w()*scale << " " << xformPath[0]->h()*scale
@@ -165,10 +164,10 @@ int main(int ac, char** av) {
 	float focaly = cams[0]->focal(); // y by default
 	float focalx = cams[0]->focalx();
 
-	std::cerr << "COLMAP " << args.colmapPath << std::endl;
 	// if a path is given try and get focalx
 	std::vector<InputCamera::Ptr> camsFx;
 	if (args.colmapPath != "") {
+		std::cerr << "COLMAP " << args.colmapPath << std::endl;
 		std::string cm_sparse_path = args.colmapPath.get() + "/stereo/sparse";
 		if (directoryExists(cm_sparse_path)) {
 			camsFx = InputCamera::loadColmap(cm_sparse_path, 0.01, 1000, 1);
@@ -214,7 +213,7 @@ int main(int ac, char** av) {
 	const std::string outExt = sibr::getExtension(args.output);
 	if (outExt == "path") {
 		save(args.output, cams);
-	} else if (outExt == "out") {
+	} else if (outExt == "out") { // bundler
 		std::vector<InputCamera::Ptr> outCams;
 		for(const auto & cam : cams) {
 			const int outH = int(args.outputRes.get()[1]);
@@ -232,10 +231,9 @@ int main(int ac, char** av) {
 			const int outW = int(std::round(cam->aspect() * float(outH)));
 			outCams.push_back(std::make_shared<InputCamera>(*cam, outW, outH));
 		}
-		//sibr::InputCamera::saveAsLookat(outCams, args.output, args.bundleImageList, args.bundleImageFiles);
 		sibr::InputCamera::saveAsLookat(outCams, args.output);
 	}
-	else if (getFileName(args.output) == "images.txt" ) {
+	else if (getFileName(args.output) == "images.txt" ) { // colmap
 		colmapSave(args.output, cams, args.scale, focaly, focalx);
 	} else {
 		SIBR_ERR << "Unsupported output file extension: " << outExt << "." << std::endl;
