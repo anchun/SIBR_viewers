@@ -166,6 +166,7 @@ _Note: `OpenXRRdrMode` does not support actions (aka controller buttons). But tw
 3. Headset should be in Oculus AirLink Home screen (white background)
 4. Run `gaussianViewer -m <dataset_path> --rendering-mode 2`
 
+![openxr gaussian viewer](https://gitlab.inria.fr/sibr/sibr_core/-/tree/gaussian_code_release_openxr/docs/img/openxr_gaussian_viewer.png)
 
 5. You can try `Free world standing` and `Seated` VR experiences
 6. If you are experiencing lags in the headset, try to lower the rendering resolution by changing `Down scale factor` slider value.
