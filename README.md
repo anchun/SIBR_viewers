@@ -22,36 +22,8 @@ If you use this code in a publication, please cite the system as follows:
 ```
 ## OpenXR
 
-* Adds a new SIBR rendering mode `OpenXRRdrMode` to support Headed-Mounted dislay (HMD) OpenXR devices
-* GaussianViewer can use this rendering mode with `--rendering-mode 2` option to render 3D Gaussian Splatting scene to two-views headset display through OpenXR stack.
-* Works on Windows and Linux (through the SteamVR OpenXR runtime)
+This branch supports headed-mounted displays through [OpenXR](#use-a-vr-headset). 
 
-_Note: `OpenXRRdrMode` does not support actions (aka controller buttons). But two VR experiences are available:_
-* Free world standing: only headset's displacement allows move within the 3DGS scene
-* Seated: controls with remote keyboard or mouse are available in addition to headset's displacement
-
----
-**How to test:**
-
-**Windows (Meta Quest 1/2/3/Pro):**
-
-1. Install Desktop PC Oculus Application: https://www.meta.com/en-gb/help/quest/articles/headsets-and-accessories/oculus-rift-s/install-app-for-link/
-2. Setup Quest Link: https://www.meta.com/en-gb/help/quest/articles/headsets-and-accessories/oculus-link/set-up-link/
-3. Headset should be in Oculus AirLink Home screen (white background)
-4. Run `gaussianViewer -m <dataset_path> --rendering-mode 2`
-
-
-5. You can try `Free world standing` and `Seated` VR experiences
-6. If you are experiencing lags in the headset, try to lower the rendering resolution by changing `Down scale factor` slider value.
-
-**Linux (through Steam):**
-
-1. Install Steam and SteamVR
-2. Make SteamVR the OpenXR default runtime (Settings > OpenXR > SET STEAMVR AS OPENXR RUNTIME)
-3. Restart SteamVR
-4. Run `gaussianViewer -m <dataset_path> --rendering-mode 2`
-
-Tested with an HTC Vive Pro with `beta - SteamVR Beta Update` on Ubuntu distribution and Meta Quest 2 with `Oculus` on Windows 11.
 
 ## Setup
 
@@ -171,4 +143,40 @@ You will have an interactive viewer and you can navigate freely in the captured 
 Our default interactive viewer has a main view running the algorithm and a top view to visualize the position of the calibrated cameras. By default you are in WASD mode, and can toggle to trackball using the "y" key. Please see the page [Interface](https://sibr.gitlabpages.inria.fr/docs/nightly/howto_sibr_useful_objects.html) for more details on the interface.
 
 Please see the documentation on how to create a dataset from your own scene, and the various other IBR algorithms available.
+
+### Use a vr headset
+
+
+
+* New SIBR rendering mode `OpenXRRdrMode` supports Headed-Mounted dislay (HMD) OpenXR devices.
+* GaussianViewer can use this rendering mode with `--rendering-mode 2` option to render 3D Gaussian Splatting scene to two-views headset display through OpenXR stack.
+* Works on Windows and Linux (through the SteamVR OpenXR runtime).
+
+_Note: `OpenXRRdrMode` does not support actions (aka controller buttons). But two VR experiences are available:_
+* Free world standing: only headset's displacement allows move within the 3DGS scene
+* Seated: controls with remote keyboard or mouse are available in addition to headset's displacement
+
+---
+**How to test:**
+
+**Windows (Meta Quest 1/2/3/Pro):**
+
+1. Install Desktop PC Oculus Application: https://www.meta.com/en-gb/help/quest/articles/headsets-and-accessories/oculus-rift-s/install-app-for-link/
+2. Setup Quest Link: https://www.meta.com/en-gb/help/quest/articles/headsets-and-accessories/oculus-link/set-up-link/
+3. Headset should be in Oculus AirLink Home screen (white background)
+4. Run `gaussianViewer -m <dataset_path> --rendering-mode 2`
+
+
+5. You can try `Free world standing` and `Seated` VR experiences
+6. If you are experiencing lags in the headset, try to lower the rendering resolution by changing `Down scale factor` slider value.
+
+**Linux (through Steam):**
+
+1. Install Steam and SteamVR
+2. Make SteamVR the OpenXR default runtime (Settings > OpenXR > SET STEAMVR AS OPENXR RUNTIME)
+3. Restart SteamVR
+4. Run `gaussianViewer -m <dataset_path> --rendering-mode 2`
+
+Tested with an HTC Vive Pro with `beta - SteamVR Beta Update` on Ubuntu distribution and Meta Quest 2 with `Oculus` on Windows 11.
+
 
