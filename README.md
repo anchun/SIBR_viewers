@@ -144,32 +144,31 @@ Our default interactive viewer has a main view running the algorithm and a top v
 
 Please see the documentation on how to create a dataset from your own scene, and the various other IBR algorithms available.
 
-### Use a vr headset
+### Support for VR headsets using OpenXR (provided by Orange Labs)
 
 
+* The new SIBR rendering mode `OpenXRRdrMode` supports Headed-Mounted dislay (HMD) OpenXR devices.
+* The GaussianViewer can use this rendering mode with `--rendering-mode 2` option to render 3D Gaussian Splatting scene to two-view headset display through OpenXR stack.
+* This mode works on Windows and Linux (through the SteamVR OpenXR runtime).
 
-* New SIBR rendering mode `OpenXRRdrMode` supports Headed-Mounted dislay (HMD) OpenXR devices.
-* GaussianViewer can use this rendering mode with `--rendering-mode 2` option to render 3D Gaussian Splatting scene to two-views headset display through OpenXR stack.
-* Works on Windows and Linux (through the SteamVR OpenXR runtime).
-
-_Note: `OpenXRRdrMode` does not support actions (aka controller buttons). But two VR experiences are available:_
-* Free world standing: only headset's displacement allows move within the 3DGS scene
-* Seated: controls with remote keyboard or mouse are available in addition to headset's displacement
+_Note: `OpenXRRdrMode` does not (yet) support actions (aka controller buttons). But two VR experience modes are available:_
+* Free world standing: only the headset's displacement allows motion within the 3DGS scene
+* Seated: controls with keyboard or mouse are available in addition to headset's displacement
 
 ---
 **How to test:**
 
 **Windows (Meta Quest 1/2/3/Pro):**
 
-1. Install Desktop PC Oculus Application: https://www.meta.com/en-gb/help/quest/articles/headsets-and-accessories/oculus-rift-s/install-app-for-link/
+1. Install the Desktop PC Oculus Application: https://www.meta.com/en-gb/help/quest/articles/headsets-and-accessories/oculus-rift-s/install-app-for-link/
 2. Setup Quest Link: https://www.meta.com/en-gb/help/quest/articles/headsets-and-accessories/oculus-link/set-up-link/
-3. Headset should be in Oculus AirLink Home screen (white background)
+3. The headset should be in the Oculus AirLink Home screen (white background)
 4. Run `gaussianViewer -m <dataset_path> --rendering-mode 2`
 
 ![openxr gaussian viewer](./docs/img/openxr_gaussian_viewer.png)
 
 5. You can try `Free world standing` and `Seated` VR experiences
-6. If you are experiencing lags in the headset, try to lower the rendering resolution by changing `Down scale factor` slider value.
+6. If you are experiencing lags in the headset, try to lower the rendering resolution by changing the `Down scale factor` slider value.
 
 **Linux (through Steam):**
 
