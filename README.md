@@ -144,7 +144,7 @@ Our default interactive viewer has a main view running the algorithm and a top v
 
 Please see the documentation on how to create a dataset from your own scene, and the various other IBR algorithms available.
 
-### Support for VR headsets using OpenXR (provided by Orange Labs)
+### Support for VR headsets using OpenXR (provided by Orange)
 
 
 * The new SIBR rendering mode `OpenXRRdrMode` supports Headed-Mounted dislay (HMD) OpenXR devices.
