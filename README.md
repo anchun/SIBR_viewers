@@ -27,7 +27,7 @@ This branch supports headed-mounted displays through [OpenXR](#use-a-vr-headset)
 
 ## Setup
 
-**Note**: The current release is for *Windows 10* only. We are planning a Linux release soon.
+**Note**: The current release is for *Windows 10* only. Please not that Visual Studio with c++20 standard is required to compile. We are planning a Linux release soon.
 
 #### Binary distribution
 
