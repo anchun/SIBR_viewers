@@ -118,6 +118,7 @@ int main(int ac, char** av)
 	uint win_height = rendering_height; // myArgs.win_height;
 
 	const char* toload = myArgs.modelPath.get().c_str();
+	const char* plyType = myArgs.plyType.get().c_str();
 
 	// Window setup
 	sibr::Window		window(PROGRAM_NAME, sibr::Vector2i(50, 50), myArgs, getResourcesDirectory() + "/gaussians/" + PROGRAM_NAME + ".ini");
@@ -176,13 +177,33 @@ int main(int ac, char** av)
 	if (plyfile.back() != '/')
 		plyfile += "/";
 	plyfile += "point_cloud";
+
+	std::string pointCloudName;
+
+	if (strcmp(plyType, "default") == 0)
+	{
+		pointCloudName = "/point_cloud.ply";
+	}
+	else if (strcmp(plyType, "new") == 0)
+	{
+		pointCloudName = "/point_cloud.ply";
+	}
+	else if (strcmp(plyType, "quantised") == 0)
+	{
+		pointCloudName = "/point_cloud_quantised.ply";
+	}
+	else if (strcmp(plyType, "quantised_half") == 0)
+	{
+		pointCloudName = "/point_cloud_quantised_half.ply";
+	}
+
 	if (!myArgs.iteration.isInit())
 	{
-		plyfile += "/" + findLargestNumberedSubdirectory(plyfile) + "/point_cloud.ply";
+		plyfile += "/" + findLargestNumberedSubdirectory(plyfile) + pointCloudName;
 	}
 	else
 	{
-		plyfile += "/iteration_" + myArgs.iteration.get() + "/point_cloud.ply";
+		plyfile += "/iteration_" + myArgs.iteration.get() + pointCloudName;
 	}
 
 	// Setup the scene: load the proxy, create the texture arrays.
@@ -212,7 +233,7 @@ int main(int ac, char** av)
 	const unsigned int sceneResHeight = usedResolution.y();
 
 	// Create the ULR view.
-	GaussianView::Ptr	gaussianView(new GaussianView(scene, sceneResWidth, sceneResHeight, plyfile.c_str(), &messageRead, sh_degree, white_background, !myArgs.noInterop, device));
+	GaussianView::Ptr	gaussianView(new GaussianView(scene, sceneResWidth, sceneResHeight, plyfile.c_str(), &messageRead, sh_degree, white_background, !myArgs.noInterop, device,  !std::string(plyType).compare("default")));
 
 	// Raycaster.
 	std::shared_ptr<sibr::Raycaster> raycaster = std::make_shared<sibr::Raycaster>();

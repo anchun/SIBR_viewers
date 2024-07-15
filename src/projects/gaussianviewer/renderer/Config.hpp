@@ -50,6 +50,7 @@ namespace sibr {
 		Arg<bool> loadImages = { "load_images", "Whether or not to load images for scene overview."};
 		Arg<bool> noInterop = { "no_interop", "Don't try to use interop (may be required for unconventional OpenGL setups, like WSL)" };
 		Arg<std::string> imagesPath = { "images-path", "path to the dataset images" };
+		Arg<std::string> plyType = { "ply-type", "default", "Type of pcd" };
 	};
 
 }

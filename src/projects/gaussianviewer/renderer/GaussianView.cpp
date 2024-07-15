@@ -19,10 +19,10 @@
 // Define the types and sizes that make up the contents of each Gaussian 
 // in the trained model.
 typedef sibr::Vector3f Pos;
-template<int D>
+template <int D>
 struct SHs
 {
-	float shs[(D+1)*(D+1)*3];
+	float shs[(D + 1) * (D + 1) * 3];
 };
 struct Scale
 {
@@ -32,7 +32,7 @@ struct Rot
 {
 	float rot[4];
 };
-template<int D>
+template <int D>
 struct RichPoint
 {
 	Pos pos;
@@ -64,6 +64,379 @@ SIBR_ERR << cudaGetErrorString(cudaGetLastError());
 #else
 # define CUDA_SAFE_CALL(A) A
 #endif
+
+float halfToFloat(std::int16_t n)
+{
+	// sign
+	std::uint32_t s = (n & 0x0000'8000) >> 15;
+	// exponent
+	std::uint32_t e = (n & 0x0000'7FFF) >> 10;
+	// fraction
+	std::uint32_t f = (n & 0x0000'03FF);
+
+	f <<= 23 - 10;
+	// Subnormal number
+	if (e == 0)
+	{
+		if (f != 0)
+		{
+			e = 127 - 14;
+			while (f < 0x007F'FFFF)
+			{
+				f <<= 1;
+				e -= 1;
+			}
+
+			f &= 0x007F'FFFF;
+		}
+	}
+	else if (e == 31)
+	{
+		e = 255;
+	}
+	else
+	{
+		e += 127 - 15;
+	}
+	std::uint32_t result = s << 31 | e << 23 | f;
+	return *(float *)(&result);
+}
+
+template<typename T>
+T readAndAdvanceFilecontent(char* & filecontent)
+{
+	T var{};
+	memcpy(&var, filecontent, sizeof(T));
+	filecontent += sizeof(T);
+	return var;
+}
+
+template <int D, int CurrentD>
+void readPCD(
+	char* &filecontent,
+	RichPoint<D>* points,
+	const int count)
+{
+	for (int i{0}; i < count; ++i)
+	{
+		// Convert the three components of pos
+		for (int j{0}; j < 3; ++j)
+		{
+			points[i].pos[j] = readAndAdvanceFilecontent<float>(filecontent);
+		}
+
+		// RGB/DC colour
+		for (int j{0}; j < 3; j++)
+		{
+			points[i].shs.shs[j] = readAndAdvanceFilecontent<float>(filecontent);
+		}
+
+		// Rest are given as R[0],R[1]...G[0],G[1]...B[0]B[1]
+		for (int j{0}; j < 3; j++)
+		{
+			for (int k{1}; k < (CurrentD + 1) * (CurrentD + 1); ++k)
+			{
+				// the 15 is equal to the max number of highlight SH coefficient groups.
+				// So basically (D+1)*(D+1)-1 for the max number of D which 3. That makes 15
+				// Could be a variable/input
+				points[i].shs.shs[3 + j * 15 + k - 1] = readAndAdvanceFilecontent<float>(filecontent);
+			}
+		}
+
+		points[i].opacity = readAndAdvanceFilecontent<float>(filecontent);
+
+		points[i].scale.scale[0] = readAndAdvanceFilecontent<float>(filecontent);
+		points[i].scale.scale[1] = readAndAdvanceFilecontent<float>(filecontent);
+		points[i].scale.scale[2] = readAndAdvanceFilecontent<float>(filecontent);
+
+		points[i].rot.rot[0] = readAndAdvanceFilecontent<float>(filecontent);
+		points[i].rot.rot[1] = readAndAdvanceFilecontent<float>(filecontent);
+		points[i].rot.rot[2] = readAndAdvanceFilecontent<float>(filecontent);
+		points[i].rot.rot[3] = readAndAdvanceFilecontent<float>(filecontent);
+	}
+}
+
+template <int D, int CurrentD>
+void readQuantisedPCD(
+	char* &filecontent,
+	RichPoint<D>* points,
+	std::vector<float> &codebooks,
+	const int count,
+	const bool half_precision,
+	const int n_codebook)
+{
+	for (int i{0}; i < count; ++i)
+	{
+		// Convert the three components of pos
+		for (int j{0}; j < 3; ++j)
+		{
+			float pos{0.f};
+			if (half_precision)
+			{
+				pos = halfToFloat(readAndAdvanceFilecontent<std::int16_t>(filecontent));
+			}
+			else
+			{
+				pos = readAndAdvanceFilecontent<float>(filecontent);
+			}
+			points[i].pos[j] = pos;
+		}
+
+		// RGB/DC colour
+		for (int j{0}; j < 3; j++)
+		{
+			points[i].shs.shs[j] = codebooks[readAndAdvanceFilecontent<std::uint8_t>(filecontent) * n_codebook];
+		}
+
+		// Rest are given as R[0],R[1]...G[0],G[1]...B[0]B[1]
+		for (int j{0}; j < 3; j++)
+		{
+			for (int k{1}; k < (CurrentD + 1) * (CurrentD + 1); ++k)
+			{
+				// the 15 is equal to the max number of highlight SH coefficient groups.
+				// So basically (D+1)*(D+1)-1 for the max number of D which 3. That makes 15
+				// Could be a variable/input
+				points[i].shs.shs[3 + j * 15 + k - 1] = codebooks[readAndAdvanceFilecontent<std::uint8_t>(filecontent) * n_codebook + k];
+			}
+		}
+
+		points[i].opacity = codebooks[readAndAdvanceFilecontent<std::uint8_t>(filecontent) * n_codebook + 16];
+
+		points[i].scale.scale[0] = codebooks[readAndAdvanceFilecontent<std::uint8_t>(filecontent) * n_codebook + 17];
+		points[i].scale.scale[1] = codebooks[readAndAdvanceFilecontent<std::uint8_t>(filecontent) * n_codebook + 17];
+		points[i].scale.scale[2] = codebooks[readAndAdvanceFilecontent<std::uint8_t>(filecontent) * n_codebook + 17];
+
+		points[i].rot.rot[0] = codebooks[readAndAdvanceFilecontent<std::uint8_t>(filecontent) * n_codebook + 18];
+		points[i].rot.rot[1] = codebooks[readAndAdvanceFilecontent<std::uint8_t>(filecontent) * n_codebook + 19];
+		points[i].rot.rot[2] = codebooks[readAndAdvanceFilecontent<std::uint8_t>(filecontent) * n_codebook + 19];
+		points[i].rot.rot[3] = codebooks[readAndAdvanceFilecontent<std::uint8_t>(filecontent) * n_codebook + 19];
+	}
+}
+
+// Load Gaussians from the given file.
+// The ply contains D+1 pcds, one for each SH band
+// If quantised, the point entries are byte indices
+// And it also contains the codebooks used to cluster the gaussians
+// If half, the float representation used is half precision (16-bit)
+// D denotes maximum SH degree
+template<int D>
+int loadPlyMultiPCDS(const char* filename,
+	std::vector<Pos>& pos,
+	std::vector<SHs<3>>& shs,
+	std::vector<float>& opacities,
+	std::vector<Scale>& scales,
+	std::vector<Rot>& rot,
+	sibr::Vector3f& minn,
+	sibr::Vector3f& maxx)
+{
+	std::ifstream infile(filename, std::ios_base::binary);
+
+	if (!infile.good())
+		SIBR_ERR << "Unable to find model's PLY file, attempted:\n" << filename << std::endl;
+
+	// "Parse" header (it has to be a specific format anyway)
+	std::string buff;
+	int count[D + 1];
+	int total_count{0};
+	int pcd_idx = 0;
+
+	// Fixed for now
+	constexpr int entries_count{256};
+	// Fixed for now
+	constexpr int n_codebook{20};
+	bool half_precision = false;
+	bool quantised = false;
+
+	while (std::getline(infile, buff))
+	{
+		if (buff.substr(0, 15).compare("element vertex_") == 0)
+		{
+			std::string dummy;
+			std::stringstream ss(buff);
+			ss >> dummy >> dummy >> count[pcd_idx];
+			total_count += count[pcd_idx++];
+		}
+		else if (buff.compare("element codebook_centers 256") == 0)
+		{
+			quantised = true;
+			std::getline(infile, buff);
+			std::string dummy;
+			std::stringstream ss(buff);
+			ss >> dummy >> dummy;
+			if (dummy.compare("short") == 0)
+				half_precision = true;
+		}
+		else if (buff.compare("end_header") == 0)
+		{
+			break;
+		}
+	}
+
+	// Output number of Gaussians contained
+	for (int i{0}; i < D + 1; ++i)
+	{
+		if (i == 1)
+			std::cout << "Loading " << count[i] << " " << i << "-band  Gaussians" << std::endl;
+		else
+			std::cout << "Loading " << count[i] << " " << i << "-bands  Gaussians" << std::endl;
+	}
+	std::vector<RichPoint<D>> points(total_count);
+
+	// Manually setting these because of compiler-platform dependent memory allignment
+	// differences in calculating size
+	size_t richPointByteSize[D + 1];
+
+	const size_t position_parameters{3};
+	const size_t color_parameters{3};
+	const size_t rotation_parameters{4};
+	const size_t scale_parameters{3};
+	const size_t opacity_parameter{1};
+	const size_t position_parameter_size{half_precision ? static_cast<size_t>(2) : static_cast<size_t>(4)};
+	const size_t rest_parameter_size{quantised ? static_cast<size_t>(1) : static_cast<size_t>(4)};
+
+	size_t shs_parameters = 0;
+	for (int i{0}; i < D + 1; ++i)
+	{
+		shs_parameters += (static_cast<size_t>(i) * 2 + 1);
+		richPointByteSize[i] = position_parameters * position_parameter_size +
+			color_parameters * shs_parameters * rest_parameter_size +
+			scale_parameters * rest_parameter_size +
+			rotation_parameters * rest_parameter_size +
+			opacity_parameter * rest_parameter_size;
+	}
+
+	size_t points_size{0};
+	for (int i{0}; i < D + 1; ++i)
+	{
+		points_size += richPointByteSize[i] * count[i];
+	}
+
+	std::vector<char> filecontent(points_size);
+	// if (half_precision)
+		infile.read((char *)filecontent.data(), points_size);
+
+	size_t codebooks_size{0};
+
+	std::vector<float> codebooks(n_codebook * entries_count);
+
+	// Read codebooks
+	if (quantised)
+	{
+		if (half_precision)
+		{
+			std::int16_t temp_codebook[n_codebook * entries_count];
+			infile.read((char *)temp_codebook, n_codebook * entries_count * sizeof(std::int16_t));
+			for (int j{0}; j < entries_count; ++j)
+			{
+				for (int i{0}; i < n_codebook; ++i)
+				{
+					codebooks[j * n_codebook + i] = halfToFloat(temp_codebook[j * n_codebook + i]);
+				}
+			}
+		}
+		else
+		{
+			infile.read((char *)codebooks.data(), n_codebook * entries_count * sizeof(float));
+		}
+	}
+	
+	char* movableFilecontent = filecontent.data();
+
+	if (quantised)
+	{
+		readQuantisedPCD<D, 0>(movableFilecontent, (RichPoint<D> *)points.data(), codebooks, count[0], half_precision, n_codebook);
+		if (D > 0)
+			readQuantisedPCD<D, 1>(movableFilecontent, (RichPoint<D> *)points.data() + count[0], codebooks, count[1], half_precision, n_codebook);
+		if (D > 1)
+			readQuantisedPCD<D, 2>(movableFilecontent, (RichPoint<D> *)points.data() + count[0] + count[1], codebooks, count[2], half_precision, n_codebook);
+		if (D > 2)
+			readQuantisedPCD<D, 3>(movableFilecontent, (RichPoint<D> *)points.data() + count[0] + count[1] + count[2], codebooks, count[3], half_precision, n_codebook);
+	}
+	else
+	{
+		readPCD<D, 0>(movableFilecontent, (RichPoint<D> *)points.data(), count[0]);
+		if (D > 0)
+			readPCD<D, 1>(movableFilecontent, (RichPoint<D> *)points.data() + count[0], count[1]);
+		if (D > 1)
+			readPCD<D, 2>(movableFilecontent, (RichPoint<D> *)points.data() + count[0] + count[1], count[2]);
+		if (D > 2)
+			readPCD<D, 3>(movableFilecontent, (RichPoint<D> *)points.data() + count[0] + count[1] + count[2], count[3]);
+	}
+
+	// Resize our SoA data
+	pos.resize(total_count);
+	shs.resize(total_count);
+	scales.resize(total_count);
+	rot.resize(total_count);
+	opacities.resize(total_count);
+
+	// Gaussians are done training, they won't move anymore. Arrange
+	// them according to 3D Morton order. This means better cache
+	// behavior for reading Gaussians that end up in the same tile 
+	// (close in 3D --> close in 2D).
+	minn = sibr::Vector3f(FLT_MAX, FLT_MAX, FLT_MAX);
+	maxx = -minn;
+	for (int i = 0; i < total_count; i++)
+	{
+		maxx = maxx.cwiseMax(points[i].pos);
+		minn = minn.cwiseMin(points[i].pos);
+	}
+	std::vector<std::pair<uint64_t, int>> mapp(total_count);
+	for (int i = 0; i < total_count; i++)
+	{
+		sibr::Vector3f rel = (points[i].pos - minn).array() / (maxx - minn).array();
+		sibr::Vector3f scaled = ((float((1 << 21) - 1)) * rel);
+		sibr::Vector3i xyz = scaled.cast<int>();
+
+		uint64_t code = 0;
+		for (int i = 0; i < 21; i++) {
+			code |= ((uint64_t(xyz.x() & (1 << i))) << (2 * i + 0));
+			code |= ((uint64_t(xyz.y() & (1 << i))) << (2 * i + 1));
+			code |= ((uint64_t(xyz.z() & (1 << i))) << (2 * i + 2));
+		}
+
+		mapp[i].first = code;
+		mapp[i].second = i;
+	}
+	auto sorter = [](const std::pair < uint64_t, int>& a, const std::pair < uint64_t, int>& b) {
+		return a.first < b.first;
+	};
+	std::sort(mapp.begin(), mapp.end(), sorter);
+
+	// Move data from AoS to SoA
+	int SH_N = (D + 1) * (D + 1);
+	for (int k = 0; k < total_count; k++)
+	{
+		int i = k; //mapp[k].second;
+		pos[k] = points[i].pos;
+
+		// Normalize quaternion
+		float length2 = 0;
+		for (int j = 0; j < 4; j++)
+			length2 += points[i].rot.rot[j] * points[i].rot.rot[j];
+		float length = sqrt(length2);
+		for (int j = 0; j < 4; j++)
+			rot[k].rot[j] = points[i].rot.rot[j] / length;
+
+		// Exponentiate scale
+		for(int j = 0; j < 3; j++)
+			scales[k].scale[j] = exp(points[i].scale.scale[j]);
+
+		// Activate alpha
+		opacities[k] = sigmoid(points[i].opacity);
+
+		shs[k].shs[0] = points[i].shs.shs[0];
+		shs[k].shs[1] = points[i].shs.shs[1];
+		shs[k].shs[2] = points[i].shs.shs[2];
+		for (int j = 1; j < SH_N; j++)
+		{
+			shs[k].shs[j * 3 + 0] = points[i].shs.shs[3 + (j - 1)];
+			shs[k].shs[j * 3 + 1] = points[i].shs.shs[3 + (j - 1) + (SH_N - 1)];
+			shs[k].shs[j * 3 + 2] = points[i].shs.shs[3 + (j - 1) + 2 * (SH_N - 1)];
+		}
+	}
+	return total_count;
+}
 
 // Load the Gaussians from the given file.
 template<int D>
@@ -315,7 +688,7 @@ std::function<char* (size_t N)> resizeFunctional(void** ptr, size_t& S) {
 	return lambda;
 }
 
-sibr::GaussianView::GaussianView(const sibr::BasicIBRScene::Ptr & ibrScene, uint render_w, uint render_h, const char* file, bool* messageRead, int sh_degree, bool white_bg, bool useInterop, int device) :
+sibr::GaussianView::GaussianView(const sibr::BasicIBRScene::Ptr & ibrScene, uint render_w, uint render_h, const char* file, bool* messageRead, int sh_degree, bool white_bg, bool useInterop, int device, bool useDefaultParser) :
 	_scene(ibrScene),
 	_dontshow(messageRead),
 	_sh_degree(sh_degree),
@@ -362,19 +735,23 @@ sibr::GaussianView::GaussianView(const sibr::BasicIBRScene::Ptr & ibrScene, uint
 	std::vector<SHs<3>> shs;
 	if (sh_degree == 0)
 	{
-		count = loadPly<0>(file, pos, shs, opacity, scale, rot, _scenemin, _scenemax);
+		count = useDefaultParser ? loadPly<0>(file, pos, shs, opacity, scale, rot, _scenemin, _scenemax)
+		: loadPlyMultiPCDS<0>(file, pos, shs, opacity, scale, rot, _scenemin, _scenemax);
 	}
 	else if (sh_degree == 1)
 	{
-		count = loadPly<1>(file, pos, shs, opacity, scale, rot, _scenemin, _scenemax);
+		count = useDefaultParser ? loadPly<1>(file, pos, shs, opacity, scale, rot, _scenemin, _scenemax)
+		: loadPlyMultiPCDS<1>(file, pos, shs, opacity, scale, rot, _scenemin, _scenemax);
 	}
 	else if (sh_degree == 2)
 	{
-		count = loadPly<2>(file, pos, shs, opacity, scale, rot, _scenemin, _scenemax);
+		count = useDefaultParser ? loadPly<2>(file, pos, shs, opacity, scale, rot, _scenemin, _scenemax)
+		: loadPlyMultiPCDS<2>(file, pos, shs, opacity, scale, rot, _scenemin, _scenemax);
 	}
 	else if (sh_degree == 3)
 	{
-		count = loadPly<3>(file, pos, shs, opacity, scale, rot, _scenemin, _scenemax);
+		count = useDefaultParser ? loadPly<3>(file, pos, shs, opacity, scale, rot, _scenemin, _scenemax)
+		: loadPlyMultiPCDS<3>(file, pos, shs, opacity, scale, rot, _scenemin, _scenemax);
 	}
 
 	_boxmin = _scenemin;
