@@ -27,6 +27,79 @@
 
 #include <core/view/MultiMeshManager.hpp>
 
+
+struct Chunk
+{
+	std::string name;
+	sibr::Vector3f center;
+	sibr::Vector3f extent;
+	bool selected = false;
+	bool display = true;
+
+	bool contains(const sibr::Vector3f& pos)
+	{
+		sibr::Vector3f minn = center - (0.5 * extent);
+		sibr::Vector3f maxx = center + (0.5 * extent);
+
+		for (int i = 0; i < 3; i++)
+		{
+			if (pos[i] > maxx[i] || pos[i] < minn[i])
+				return false;
+		}
+
+		return true;
+	}
+
+	sibr::Mesh::Ptr generateMesh(bool use_z = false)
+	{
+		const sibr::Vector3f d_extent = 0.5f * extent;
+		sibr::Vector3f origin = center - d_extent;
+		
+		sibr::Mesh::Vertices vertices;
+		vertices.resize(8);
+
+		for (int i = 0; i < 2; i++)
+		{
+			for (int j = 0; j < 2; j++)
+			{
+				sibr::Vector3f p1(
+					origin.x() + (j * extent.x()),
+					origin.y() + (i * extent.y()),
+					use_z ? origin.z() : -50.f
+				);
+
+				sibr::Vector3f p2(
+					origin.x() + (j * extent.x()),
+					origin.y() + (i * extent.y()),
+					use_z ? origin.z() + extent.z() : 50.f
+				);
+
+				vertices[i * 2 + j] = p1;
+				vertices[4 + (i * 2 + j)] = p2;
+			}
+		}
+
+		const sibr::Mesh::Triangles tris = {
+			{0,0,1},{1,1,3},{3,3,2},{2,2,0},
+			{4,4,5},{5,5,7},{7,7,6},{6,6,4},
+			{0,0,4},{1,1,5},{2,2,6},{3,3,7},
+		};
+
+
+		//const sibr::Mesh::Triangles tris = {
+		//{0, 0, 1}, { 1,1,2 }, { 2,2,3 }, { 3,3,0 },
+		//{ 4,4,5 }, { 5,5,6 }, { 6,6,7 }, { 7,7,4 },
+		//{ 0,0,4 }, { 1,1,5 }, { 2,2,6 }, { 3,3,7 },
+		//};
+
+		auto out = std::make_shared<sibr::Mesh>();
+		out->vertices(vertices);
+		out->triangles(tris);
+
+		return out;
+	}
+};
+
 namespace sibr
 {
 
@@ -244,6 +317,15 @@ namespace sibr
 		 */
 		void updateActiveCams(const std::vector<uint> & cams_id);
 
+		/*
+		* Read from chunks.txt files their center, names and extents (if file exists btw)
+		*/
+		void  loadChunksData(const char* file);
+
+		void createChunksMesh(bool use_z = false);
+
+		void recomputeSelectedChunksMesh();
+
 	protected:
 
 		/** Generate the GUI for the display options. */
@@ -251,6 +333,9 @@ namespace sibr
 
 		/** generate the GUI with the camera infos. */
 		void gui_cameras();
+
+		/** generate the GUI with the chunks infos. */
+		void gui_chunks();
 
 		/** Setup the view. */
 		void setup();
@@ -270,9 +355,18 @@ namespace sibr
 
 		std::string						_images_path;
 		int								_renderingCam; ///< ID of the camera used for rendering
-		Mesh::Ptr						_used_cams = std::make_shared<Mesh>();
-		Mesh::Ptr						_non_used_cams = std::make_shared<Mesh>();
-		Mesh::Ptr						_user_cam = std::make_shared<Mesh>();
+		std::string						_currentChunk = "";
+		bool							_highlight_current_chunk;
+		bool							_dirty_selected_chunks_mesh = false;
+		std::vector<Chunk> chunks;
+
+		Mesh::Ptr current_chunk_mesh = std::make_shared<Mesh>();
+		Mesh::Ptr close_cams = std::make_shared<Mesh>();
+		Mesh::Ptr _used_cams = std::make_shared<Mesh>();
+		Mesh::Ptr _non_used_cams = std::make_shared<Mesh>();
+		Mesh::Ptr _user_cam = std::make_shared<Mesh>();
+		Mesh::Ptr chunks_mesh = std::make_shared<Mesh>();
+		Mesh::Ptr selected_chunks_mesh = std::make_shared<Mesh>();
 	};
 
 } // namespace

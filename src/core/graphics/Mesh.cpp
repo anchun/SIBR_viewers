@@ -1418,7 +1418,7 @@ namespace sibr
 			_renderingOptions.adjacency = adjacency;
 			_gl.dirtyBufferGL = true;
 		}
-		
+		glLineWidth(3);
 		_renderingOptions.depthTest = depthTest;
 		_renderingOptions.backFaceCulling = backFaceCulling;
 		_renderingOptions.mode = mode;

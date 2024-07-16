@@ -256,7 +256,15 @@ namespace sibr
 
 		initImageCamShaders();
 		setupLabelsManagerShader();
+		
+		const std::string chunksFile = myArgs.dataset_path.get() + "\\chunks.txt";
+	
+		if (fileExists(chunksFile)) {
+			loadChunksData(chunksFile.c_str());
+		}
 
+		_images_path = imagesPath;
+		std::cout << "images_path: " << _images_path << std::endl;
 		_scene = scene;
 		_userCurrentCam = camHandler;
 
@@ -328,6 +336,26 @@ namespace sibr
 		scaled.scale(_userCameraScaling);
 		getMeshData("scene cam").setTransformation(scaled.matrix());
 
+		//update current chunk (in which user camera is)
+		_currentChunk = "none";
+		removeMesh("current chunk");
+		for (Chunk chunk : chunks)
+		{
+			if (chunk.contains(_userCurrentCam->getCamera().position()))
+			{
+				_currentChunk = chunk.name;
+				if (_highlight_current_chunk)
+				{
+					current_chunk_mesh.reset();
+					current_chunk_mesh = chunk.generateMesh();
+					
+
+					//current_chunk_mesh = std::make_shared<Mesh>();
+					addMeshAsLines("current chunk", current_chunk_mesh).setColor({ 1,0,0 });
+				}
+			}
+		}
+
 		// update input camera (path) scales
 		if (_pathScaling != _lastPathScaling) {
 			removeMesh("used cams");
@@ -392,6 +420,8 @@ namespace sibr
 			gui_options();
 			list_mesh_onGUI();
 			gui_cameras();
+			if(chunks.size() != 0)
+				gui_chunks();
 		}
 		ImGui::End();
 		
@@ -429,6 +459,53 @@ namespace sibr
 				_cameras[id].highlight = true;
 			}
 		}
+	}
+
+	void SceneDebugView::loadChunksData(const char* file)
+	{
+		chunks.clear();
+		std::ifstream infile(file);
+
+		if (!infile.is_open())
+			throw std::runtime_error("File not found!");
+
+		std::string line;
+
+		while (std::getline(infile, line)) {
+			std::istringstream iss(line);
+			std::string value;
+			Chunk chunk;
+
+			iss >> chunk.name;
+			iss >> chunk.center.x() >> chunk.center.y() >> chunk.center.z();
+			iss >> chunk.extent.x() >> chunk.extent.y() >> chunk.extent.z();
+
+			chunks.push_back(chunk);
+		}
+	}
+
+	void SceneDebugView::createChunksMesh(bool use_z)
+	{
+		removeMesh("chunks");
+		if (chunks.size() != 0) {
+			for (Chunk chunk : chunks) {
+				chunks_mesh->merge(*chunk.generateMesh(use_z));
+			}
+
+			addMeshAsLines("chunks", chunks_mesh).setColor({ 0, 0.5f, 0.3f });
+		}
+	}
+
+	void SceneDebugView::recomputeSelectedChunksMesh()
+	{
+		selected_chunks_mesh.reset();
+		selected_chunks_mesh = std::make_shared<Mesh>();
+		for (Chunk chunk : chunks) {
+			if(chunk.selected)
+				selected_chunks_mesh->merge(*chunk.generateMesh());
+		}
+
+		addMeshAsLines("selected_chunks", selected_chunks_mesh).setColor({ 0.9f, 0.9f, 0.f });
 	}
 
 	void SceneDebugView::gui_options()
@@ -589,6 +666,85 @@ namespace sibr
 		}
 	}
 
+	void SceneDebugView::gui_chunks()
+	{
+		Iterator swap_it_src, swap_it_dst;
+		bool do_swap = false;
+		static int num_swap = 1;
+
+		if (ImGui::CollapsingHeader("Chunks##SceneDebugView")) {
+			ImGui::Text("User camera in chunk %s", _currentChunk);
+			ImGui::Checkbox("Highlight current chunk ", &_highlight_current_chunk);
+
+			// 0 name | 1 center | 2 extents
+			ImGui::Columns(3, "chunk info");
+
+			//ImGui::SetColumnWidth(4, 50);
+			if (ImGui::Button("Chunks")) {
+				for (Chunk& c : chunks)
+					c.selected = !c.selected;
+
+				recomputeSelectedChunksMesh();
+			}
+
+			ImGui::SameLine();
+
+			if (ImGui::Button("All")) {
+				for (Chunk& c : chunks)
+					c.selected = true;
+
+				recomputeSelectedChunksMesh();
+			}
+
+
+			ImGui::NextColumn();
+
+			ImGui::Text("Center");
+
+			//ImGui::Separator();
+			ImGui::NextColumn();
+
+			ImGui::Text("Extents");
+			ImGui::Separator();
+
+			ImGui::NextColumn();
+
+
+			for (Chunk& chunk : chunks) {
+				
+				if (ImGui::Checkbox(("##" + chunk.name).c_str(), &chunk.selected)) {
+					recomputeSelectedChunksMesh();
+				}
+				ImGui::SameLine();
+				ImGui::Selectable(chunk.name.c_str());
+				
+
+				ImGui::NextColumn();
+
+				std::string center_str = std::to_string(chunk.center.x()) + " " + std::to_string(chunk.center.y()) + " " + std::to_string(chunk.center.z());
+				ImGui::Text(center_str.c_str());
+
+				ImGui::NextColumn();
+				std::string extent_str = std::to_string(chunk.extent.x()) + " " + std::to_string(chunk.extent.y()) + " " + std::to_string(chunk.extent.z());
+				ImGui::Text(extent_str.c_str());
+
+				ImGui::Separator();
+				ImGui::NextColumn();
+				//ImGui::Separator();
+			}
+
+			ImGui::Columns(1);
+		}
+		if (do_swap) {
+			std::swap(*swap_it_src, *swap_it_dst);
+			++num_swap;
+		}
+		if (ImGui::IsMouseReleased(0)) {
+			num_swap = 1;
+		}
+		
+	}
+
 	void SceneDebugView::setup()
 	{
 		if (_scene) {
@@ -661,6 +817,15 @@ namespace sibr
 		// Add a gizmo.
 		addMeshAsLines("guizmo", RenderUtility::createAxisGizmo())
 			.setDepthTest(false).setColorMode(MeshData::ColorMode::VERTEX);
+
+		// generate and add chunks meshes (wireframes)
+		if (chunks.size() != 0) {
+			for (Chunk chunk : chunks) {
+				chunks_mesh->merge(*chunk.generateMesh());
+			}
+
+			addMeshAsLines("chunks", chunks_mesh).setColor({ 0, 0.5f, 0.3f });
+		}
 	}
 
 } // namespace
