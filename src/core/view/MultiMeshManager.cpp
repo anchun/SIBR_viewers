@@ -219,7 +219,7 @@ namespace sibr {
 		return *this;
 	}
 
-	MeshData& MeshData::setTransformation(sibr::Matrix4f& tr)
+	MeshData& MeshData::setTransformation(const sibr::Matrix4f& tr)
 	{
 		// TODO: insérer une instruction return ici
 		transformation = tr;

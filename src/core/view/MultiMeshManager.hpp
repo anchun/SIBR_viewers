@@ -244,7 +244,7 @@ namespace sibr {
 		 *\param model matrix
 		 *\return the options object, for chaining.
 		 */
-		MeshData& setTransformation(sibr::Matrix4f& tr);
+		MeshData& setTransformation(const sibr::Matrix4f& tr);
 
 		/** Set the opacity.
 		 *\param alpha the opacity value for the whole object
