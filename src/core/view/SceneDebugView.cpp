@@ -257,7 +257,7 @@ namespace sibr
 		initImageCamShaders();
 		setupLabelsManagerShader();
 		
-		const std::string chunksFile = myArgs.dataset_path.get() + "\\chunks.txt";
+		const std::string chunksFile = myArgs.dataset_path.get() + "/chunks.txt";
 	
 		if (fileExists(chunksFile)) {
 			loadChunksData(chunksFile.c_str());
