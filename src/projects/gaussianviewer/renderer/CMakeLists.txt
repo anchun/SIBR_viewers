@@ -43,7 +43,7 @@ target_link_libraries(${PROJECT_NAME}
 	sibr_renderer
 	sibr_basic
 	CUDA::cudart
-	CudaRasterizer
+	CudaDiffRasterizer
 )
 else()
 target_link_libraries(${PROJECT_NAME}
@@ -59,7 +59,7 @@ target_link_libraries(${PROJECT_NAME}
 	sibr_renderer
 	sibr_basic
 	CUDA::cudart
-	CudaRasterizer
+	CudaDiffRasterizer
 )
 endif()
 

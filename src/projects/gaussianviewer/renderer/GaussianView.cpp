@@ -13,7 +13,7 @@
 #include <core/graphics/GUI.hpp>
 #include <thread>
 #include <boost/asio.hpp>
-#include <rasterizer.h>
+#include "../CudaDiffRasterizer/cuda_rasterizer/rasterizer.h"
 #include <imgui_internal.h>
 
 // Define the types and sizes that make up the contents of each Gaussian 
@@ -141,7 +141,7 @@ int loadPly(const char* filename,
 	auto sorter = [](const std::pair < uint64_t, int>& a, const std::pair < uint64_t, int>& b) {
 		return a.first < b.first;
 	};
-	std::sort(mapp.begin(), mapp.end(), sorter);
+	//std::sort(mapp.begin(), mapp.end(), sorter);
 
 	// Move data from AoS to SoA
 	int SH_N = (D + 1) * (D + 1);
@@ -404,6 +404,12 @@ sibr::GaussianView::GaussianView(const sibr::BasicIBRScene::Ptr & ibrScene, uint
 	float bg[3] = { white_bg ? 1.f : 0.f, white_bg ? 1.f : 0.f, white_bg ? 1.f : 0.f };
 	CUDA_SAFE_CALL_ALWAYS(cudaMemcpy(background_cuda, bg, 3 * sizeof(float), cudaMemcpyHostToDevice));
 
+	cudaStreamCreate(&renderStream);
+	cudaHostAlloc((void**)&renderhelper, sizeof(int), 0);
+	cudaHostAlloc((void**)&view_mat_ptr, sizeof(sibr::Matrix4f), 0);
+	cudaHostAlloc((void**)&proj_mat_ptr, sizeof(sibr::Matrix4f), 0);
+	cudaHostAlloc((void**)&cam_pos_ptr, sizeof(sibr::Vector3f), 0);
+
 	gData = new GaussianData(P, 
 		(float*)pos.data(),
 		(float*)rot.data(),
@@ -481,12 +487,16 @@ void sibr::GaussianView::onRenderIBR(sibr::IRenderTarget & dst, const sibr::Came
 		CUDA_SAFE_CALL(cudaMemcpy(proj_cuda, proj_mat.data(), sizeof(sibr::Matrix4f), cudaMemcpyHostToDevice));
 		CUDA_SAFE_CALL(cudaMemcpy(cam_pos_cuda, &eye.position(), sizeof(float) * 3, cudaMemcpyHostToDevice));
 
+		*view_mat_ptr = view_mat;
+		*proj_mat_ptr = proj_mat;
+		*cam_pos_ptr = eye.position();
+
 		float* image_cuda = nullptr;
 		if (!_interop_failed)
 		{
 			// Map OpenGL buffer resource for use with CUDA
 			size_t bytes;
-			CUDA_SAFE_CALL(cudaGraphicsMapResources(1, &imageBufferCuda));
+			CUDA_SAFE_CALL(cudaGraphicsMapResources(1, &imageBufferCuda, renderStream));
 			CUDA_SAFE_CALL(cudaGraphicsResourceGetMappedPointer((void**)&image_cuda, &bytes, imageBufferCuda));
 		}
 		else
@@ -498,38 +508,78 @@ void sibr::GaussianView::onRenderIBR(sibr::IRenderTarget & dst, const sibr::Came
 		int* rects = _fastCulling ? rect_cuda : nullptr;
 		float* boxmin = _cropping ? (float*)&_boxmin : nullptr;
 		float* boxmax = _cropping ? (float*)&_boxmax : nullptr;
+		//CudaRasterizer::Rasterizer::forward(
+		//	geomBufferFunc,
+		//	binningBufferFunc,
+		//	imgBufferFunc,
+		//	count, _sh_degree, 16,
+		//	background_cuda,
+		//	_resolution.x(), _resolution.y(),
+		//	pos_cuda,
+		//	shs_cuda,
+		//	nullptr,
+		//	opacity_cuda,
+		//	scale_cuda,
+		//	_scalingModifier,
+		//	rot_cuda,
+		//	nullptr,
+		//	view_cuda,
+		//	proj_cuda,
+		//	cam_pos_cuda,
+		//	tan_fovx,
+		//	tan_fovy,
+		//	false,
+		//	image_cuda,
+		//	nullptr,
+		//	rects,
+		//	boxmin,
+		//	boxmax
+		//);
 		CudaRasterizer::Rasterizer::forward(
 			geomBufferFunc,
 			binningBufferFunc,
 			imgBufferFunc,
-			count, _sh_degree, 16,
+			count,
+			3,
+			16,
 			background_cuda,
 			_resolution.x(), _resolution.y(),
-			pos_cuda,
-			shs_cuda,
 			nullptr,
-			opacity_cuda,
-			scale_cuda,
+			nullptr,
+			nullptr,
+			nullptr,
+			(float*)pos_cuda,
+			(float*)shs_cuda,
+			nullptr,
+			(float*)opacity_cuda,
+			(float*)scale_cuda,
 			_scalingModifier,
-			rot_cuda,
+			(float*)rot_cuda,
 			nullptr,
-			view_cuda,
-			proj_cuda,
-			cam_pos_cuda,
+			(float*)view_mat_ptr,
+			(float*)proj_mat_ptr,
+			(float*)cam_pos_ptr,
 			tan_fovx,
 			tan_fovy,
 			false,
 			image_cuda,
 			nullptr,
-			rects,
-			boxmin,
-			boxmax
+			nullptr,
+			rect_cuda,
+			nullptr,
+			nullptr,
+			false,
+			0,
+			renderStream,
+			renderhelper,
+			30,
+			true
 		);
 
 		if (!_interop_failed)
 		{
 			// Unmap OpenGL resource for use with OpenGL
-			CUDA_SAFE_CALL(cudaGraphicsUnmapResources(1, &imageBufferCuda));
+			CUDA_SAFE_CALL(cudaGraphicsUnmapResources(1, &imageBufferCuda, renderStream));
 		}
 		else
 		{

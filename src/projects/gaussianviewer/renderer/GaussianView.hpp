@@ -115,6 +115,12 @@ namespace sibr {
 		float* cam_pos_cuda;
 		float* background_cuda;
 
+		int* renderhelper;
+		cudaStream_t renderStream;
+		sibr::Matrix4f* view_mat_ptr;
+		sibr::Matrix4f* proj_mat_ptr;
+		sibr::Vector3f* cam_pos_ptr;
+
 		float _scalingModifier = 1.0f;
 		GaussianData* gData;
 
