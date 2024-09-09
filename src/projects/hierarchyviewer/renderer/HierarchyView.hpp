@@ -228,7 +228,7 @@ namespace sibr {
 
 		int skyboxnum = 0;
 
-		bool disable_interp = false;
+		bool disable_interp = true;
 		bool show_level = false;
 		bool m_use_cpu = false;
 

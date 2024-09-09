@@ -994,23 +994,23 @@ void sibr::HierarchyView::onRenderIBR(sibr::IRenderTarget& dst, const sibr::Came
 		int* kids_ptr = nullptr;
 		if (!disable_interp)
 		{
+			Switching::getTsIndexed(
+				*currSet->to_render,
+				currSet->nodes_of_render_indices,
+				sizeLimit,
+				(int*)currMem->nodes_cuda,
+				(float*)currMem->boxes_cuda,
+				cam_pos->xyz[0], cam_pos->xyz[1], cam_pos->xyz[2],
+				zdir.xyz[0], zdir.xyz[1], zdir.xyz[2],
+				ts_cuda,
+				kids_cuda,
+				renderStream
+			);
+
 			parent_ptr = currSet->parent_indices;
 			ts_ptr = ts_cuda;
 			kids_ptr = kids_cuda;
 		}
-
-		Switching::getTsIndexed(
-			*currSet->to_render,
-			currSet->nodes_of_render_indices,
-			sizeLimit,
-			(int*)currMem->nodes_cuda,
-			(float*)currMem->boxes_cuda,
-			cam_pos->xyz[0], cam_pos->xyz[1], cam_pos->xyz[2],
-			zdir.xyz[0], zdir.xyz[1], zdir.xyz[2],
-			ts_cuda,
-			kids_cuda,
-			renderStream
-		);
 
 		CudaRasterizer::Rasterizer::forward(
 			geomBufferFunc,

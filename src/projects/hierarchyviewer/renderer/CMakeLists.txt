@@ -17,7 +17,7 @@ sibr_gitlibrary(TARGET CudaDiffRasterizer
 
 sibr_gitlibrary(TARGET GaussianHierarchy
     GIT_REPOSITORY 	"https://github.com/anchun/gaussian-hierarchy.git"
-    GIT_TAG			"163695de4d3595fc7ba4a4dcf605d9225aab10d4"
+    GIT_TAG			"a8fdf4d7b7b2f3d14cd53b059d71d61cd2a3cbad"
 )
 
 find_package(CUDAToolkit REQUIRED)
