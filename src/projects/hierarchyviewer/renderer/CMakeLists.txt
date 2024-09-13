@@ -12,12 +12,12 @@ project(sibr_${SIBR_PROJECT} LANGUAGES CXX)
 
 sibr_gitlibrary(TARGET CudaDiffRasterizer
     GIT_REPOSITORY 	"https://github.com/anchun/hierarchy-rasterizer.git"
-    GIT_TAG			"72ac5fe0b0a32bff95985261455816bb073d2c67"
+    GIT_TAG			"4aea64170618ce84193ed62d308065841ca9082b"
 )
 
 sibr_gitlibrary(TARGET GaussianHierarchy
     GIT_REPOSITORY 	"https://github.com/anchun/gaussian-hierarchy.git"
-    GIT_TAG			"a8fdf4d7b7b2f3d14cd53b059d71d61cd2a3cbad"
+    GIT_TAG			"443543d9cd74dd495d9b1e3d4fce62f85b1f6807"
 )
 
 find_package(CUDAToolkit REQUIRED)
