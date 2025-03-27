@@ -42,6 +42,17 @@ struct RichPoint
 	Scale scale;
 	Rot rot;
 };
+template<int S>
+struct RichPointWithSegmentation
+{
+	Pos pos;
+	float n[3];
+	SHs<3> shs;
+	float opacity;
+	Scale scale;
+	Rot rot;
+	float segmentation[S];
+};
 
 float sigmoid(const float m1)
 {
@@ -64,6 +75,78 @@ SIBR_ERR << cudaGetErrorString(cudaGetLastError());
 #else
 # define CUDA_SAFE_CALL(A) A
 #endif
+
+template<int S>
+void loadPlyWithSegmentation(const std::vector<RichPointWithSegmentation<S>>& points,
+	std::vector<Pos>& pos,
+	std::vector<SHs<3>>& shs,
+	std::vector<float>& opacities,
+	std::vector<Scale>& scales,
+	std::vector<Rot>& rot,
+	sibr::Vector3f& minn,
+	sibr::Vector3f& maxx)
+{
+	int count = (int)points.size();
+	for (int i = 0; i < count; i++)
+	{
+		maxx = maxx.cwiseMax(points[i].pos);
+		minn = minn.cwiseMin(points[i].pos);
+	}
+	std::vector<std::pair<uint64_t, int>> mapp(count);
+	for (int i = 0; i < count; i++)
+	{
+		sibr::Vector3f rel = (points[i].pos - minn).array() / (maxx - minn).array();
+		sibr::Vector3f scaled = ((float((1 << 21) - 1)) * rel);
+		sibr::Vector3i xyz = scaled.cast<int>();
+
+		uint64_t code = 0;
+		for (int i = 0; i < 21; i++) {
+			code |= ((uint64_t(xyz.x() & (1 << i))) << (2 * i + 0));
+			code |= ((uint64_t(xyz.y() & (1 << i))) << (2 * i + 1));
+			code |= ((uint64_t(xyz.z() & (1 << i))) << (2 * i + 2));
+		}
+
+		mapp[i].first = code;
+		mapp[i].second = i;
+	}
+	auto sorter = [](const std::pair < uint64_t, int>& a, const std::pair < uint64_t, int>& b) {
+		return a.first < b.first;
+		};
+	std::sort(mapp.begin(), mapp.end(), sorter);
+
+	// Move data from AoS to SoA
+	int SH_N = (3 + 1) * (3 + 1);
+	for (int k = 0; k < count; k++)
+	{
+		int i = mapp[k].second;
+		pos[k] = points[i].pos;
+
+		// Normalize quaternion
+		float length2 = 0;
+		for (int j = 0; j < 4; j++)
+			length2 += points[i].rot.rot[j] * points[i].rot.rot[j];
+		float length = sqrt(length2);
+		for (int j = 0; j < 4; j++)
+			rot[k].rot[j] = points[i].rot.rot[j] / length;
+
+		// Exponentiate scale
+		for (int j = 0; j < 3; j++)
+			scales[k].scale[j] = exp(points[i].scale.scale[j]);
+
+		// Activate alpha
+		opacities[k] = sigmoid(points[i].opacity);
+
+		shs[k].shs[0] = points[i].shs.shs[0];
+		shs[k].shs[1] = points[i].shs.shs[1];
+		shs[k].shs[2] = points[i].shs.shs[2];
+		for (int j = 1; j < SH_N; j++)
+		{
+			shs[k].shs[j * 3 + 0] = points[i].shs.shs[(j - 1) + 3];
+			shs[k].shs[j * 3 + 1] = points[i].shs.shs[(j - 1) + SH_N + 2];
+			shs[k].shs[j * 3 + 2] = points[i].shs.shs[(j - 1) + 2 * SH_N + 1];
+		}
+	}
+}
 
 // Load the Gaussians from the given file.
 template<int D>
@@ -95,85 +178,152 @@ int loadPly(const char* filename,
 	// Output number of Gaussians contained
 	SIBR_LOG << "Loading " << count << " Gaussian splats" << std::endl;
 
-	while (std::getline(infile, buff))
-		if (buff.compare("end_header") == 0)
-			break;
-
-	// Read all Gaussians at once (AoS)
-	std::vector<RichPoint<D>> points(count);
-	infile.read((char*)points.data(), count * sizeof(RichPoint<D>));
-
 	// Resize our SoA data
 	pos.resize(count);
 	shs.resize(count);
 	scales.resize(count);
 	rot.resize(count);
 	opacities.resize(count);
-
-	// Gaussians are done training, they won't move anymore. Arrange
-	// them according to 3D Morton order. This means better cache
-	// behavior for reading Gaussians that end up in the same tile 
-	// (close in 3D --> close in 2D).
 	minn = sibr::Vector3f(FLT_MAX, FLT_MAX, FLT_MAX);
 	maxx = -minn;
-	for (int i = 0; i < count; i++)
-	{
-		maxx = maxx.cwiseMax(points[i].pos);
-		minn = minn.cwiseMin(points[i].pos);
+
+	int property_count = 0;
+	int semantic_property_count = 0;
+	while (std::getline(infile, buff)) {
+		if (buff.compare("end_header") == 0)
+			break;
+		if (buff.find("property float") == 0)
+			property_count++;
+		if (buff.find("property float semantic") == 0)
+			semantic_property_count++;
 	}
-	std::vector<std::pair<uint64_t, int>> mapp(count);
-	for (int i = 0; i < count; i++)
-	{
-		sibr::Vector3f rel = (points[i].pos - minn).array() / (maxx - minn).array();
-		sibr::Vector3f scaled = ((float((1 << 21) - 1)) * rel);
-		sibr::Vector3i xyz = scaled.cast<int>();
-
-		uint64_t code = 0;
-		for (int i = 0; i < 21; i++) {
-			code |= ((uint64_t(xyz.x() & (1 << i))) << (2 * i + 0));
-			code |= ((uint64_t(xyz.y() & (1 << i))) << (2 * i + 1));
-			code |= ((uint64_t(xyz.z() & (1 << i))) << (2 * i + 2));
-		}
-
-		mapp[i].first = code;
-		mapp[i].second = i;
-	}
-	auto sorter = [](const std::pair < uint64_t, int>& a, const std::pair < uint64_t, int>& b) {
-		return a.first < b.first;
-	};
-	std::sort(mapp.begin(), mapp.end(), sorter);
-
-	// Move data from AoS to SoA
-	int SH_N = (D + 1) * (D + 1);
-	for (int k = 0; k < count; k++)
-	{
-		int i = mapp[k].second;
-		pos[k] = points[i].pos;
-
-		// Normalize quaternion
-		float length2 = 0;
-		for (int j = 0; j < 4; j++)
-			length2 += points[i].rot.rot[j] * points[i].rot.rot[j];
-		float length = sqrt(length2);
-		for (int j = 0; j < 4; j++)
-			rot[k].rot[j] = points[i].rot.rot[j] / length;
-
-		// Exponentiate scale
-		for(int j = 0; j < 3; j++)
-			scales[k].scale[j] = exp(points[i].scale.scale[j]);
-
-		// Activate alpha
-		opacities[k] = sigmoid(points[i].opacity);
-
-		shs[k].shs[0] = points[i].shs.shs[0];
-		shs[k].shs[1] = points[i].shs.shs[1];
-		shs[k].shs[2] = points[i].shs.shs[2];
-		for (int j = 1; j < SH_N; j++)
+	if (D == 3 && semantic_property_count > 0) {
+		switch(semantic_property_count)
 		{
-			shs[k].shs[j * 3 + 0] = points[i].shs.shs[(j - 1) + 3];
-			shs[k].shs[j * 3 + 1] = points[i].shs.shs[(j - 1) + SH_N + 2];
-			shs[k].shs[j * 3 + 2] = points[i].shs.shs[(j - 1) + 2 * SH_N + 1];
+			case 2:
+			{
+				std::vector<RichPointWithSegmentation<2>> points(count);
+				infile.read((char*)points.data(), count * sizeof(RichPointWithSegmentation<2>));
+				loadPlyWithSegmentation(points, pos, shs, opacities, scales, rot, minn, maxx);
+				break;
+			}
+			case 5:
+			{
+				std::vector<RichPointWithSegmentation<5>> points(count);
+				infile.read((char*)points.data(), count * sizeof(RichPointWithSegmentation<5>));
+				loadPlyWithSegmentation(points, pos, shs, opacities, scales, rot, minn, maxx);
+				break;
+			}
+			case 10:
+			{
+				std::vector<RichPointWithSegmentation<10>> points(count);
+				infile.read((char*)points.data(), count * sizeof(RichPointWithSegmentation<10>));
+				loadPlyWithSegmentation(points, pos, shs, opacities, scales, rot, minn, maxx);
+				break;
+			}
+			case 20:
+			{
+				std::vector<RichPointWithSegmentation<20>> points(count);
+				infile.read((char*)points.data(), count * sizeof(RichPointWithSegmentation<20>));
+				loadPlyWithSegmentation(points, pos, shs, opacities, scales, rot, minn, maxx);
+				break;
+			}
+			case 30:
+			{
+				std::vector<RichPointWithSegmentation<30>> points(count);
+				infile.read((char*)points.data(), count * sizeof(RichPointWithSegmentation<30>));
+				loadPlyWithSegmentation(points, pos, shs, opacities, scales, rot, minn, maxx);
+				break;
+			}
+			case 40:
+			{
+				std::vector<RichPointWithSegmentation<40>> points(count);
+				infile.read((char*)points.data(), count * sizeof(RichPointWithSegmentation<40>));
+				loadPlyWithSegmentation(points, pos, shs, opacities, scales, rot, minn, maxx);
+				break;
+			}
+			case 50:
+			{
+				std::vector<RichPointWithSegmentation<50>> points(count);
+				infile.read((char*)points.data(), count * sizeof(RichPointWithSegmentation<50>));
+				loadPlyWithSegmentation(points, pos, shs, opacities, scales, rot, minn, maxx);
+				break;
+			}
+			default:
+			{
+				// non-supported
+				return 0;
+			}
 		}
+	}
+	else {
+		// Read all Gaussians at once (AoS)
+		std::vector<RichPoint<D>> points(count);
+		infile.read((char*)points.data(), count * sizeof(RichPoint<D>));
+
+		// Gaussians are done training, they won't move anymore. Arrange
+		// them according to 3D Morton order. This means better cache
+		// behavior for reading Gaussians that end up in the same tile 
+		// (close in 3D --> close in 2D).
+		for (int i = 0; i < count; i++)
+		{
+			maxx = maxx.cwiseMax(points[i].pos);
+			minn = minn.cwiseMin(points[i].pos);
+		}
+		std::vector<std::pair<uint64_t, int>> mapp(count);
+		for (int i = 0; i < count; i++)
+		{
+			sibr::Vector3f rel = (points[i].pos - minn).array() / (maxx - minn).array();
+			sibr::Vector3f scaled = ((float((1 << 21) - 1)) * rel);
+			sibr::Vector3i xyz = scaled.cast<int>();
+
+			uint64_t code = 0;
+			for (int i = 0; i < 21; i++) {
+				code |= ((uint64_t(xyz.x() & (1 << i))) << (2 * i + 0));
+				code |= ((uint64_t(xyz.y() & (1 << i))) << (2 * i + 1));
+				code |= ((uint64_t(xyz.z() & (1 << i))) << (2 * i + 2));
+			}
+
+			mapp[i].first = code;
+			mapp[i].second = i;
+		}
+		auto sorter = [](const std::pair < uint64_t, int>& a, const std::pair < uint64_t, int>& b) {
+			return a.first < b.first;
+			};
+		std::sort(mapp.begin(), mapp.end(), sorter);
+
+		// Move data from AoS to SoA
+		int SH_N = (D + 1) * (D + 1);
+		for (int k = 0; k < count; k++)
+		{
+			int i = mapp[k].second;
+			pos[k] = points[i].pos;
+
+			// Normalize quaternion
+			float length2 = 0;
+			for (int j = 0; j < 4; j++)
+				length2 += points[i].rot.rot[j] * points[i].rot.rot[j];
+			float length = sqrt(length2);
+			for (int j = 0; j < 4; j++)
+				rot[k].rot[j] = points[i].rot.rot[j] / length;
+
+			// Exponentiate scale
+			for (int j = 0; j < 3; j++)
+				scales[k].scale[j] = exp(points[i].scale.scale[j]);
+
+			// Activate alpha
+			opacities[k] = sigmoid(points[i].opacity);
+
+			shs[k].shs[0] = points[i].shs.shs[0];
+			shs[k].shs[1] = points[i].shs.shs[1];
+			shs[k].shs[2] = points[i].shs.shs[2];
+			for (int j = 1; j < SH_N; j++)
+			{
+				shs[k].shs[j * 3 + 0] = points[i].shs.shs[(j - 1) + 3];
+				shs[k].shs[j * 3 + 1] = points[i].shs.shs[(j - 1) + SH_N + 2];
+				shs[k].shs[j * 3 + 2] = points[i].shs.shs[(j - 1) + 2 * SH_N + 1];
+			}
+		}	
 	}
 	return count;
 }

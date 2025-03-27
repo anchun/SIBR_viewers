@@ -1019,6 +1019,7 @@ void sibr::HierarchyView::onRenderIBR(sibr::IRenderTarget& dst, const sibr::Came
 			*currSet->to_render + skyboxnum,
 			3,
 			16,
+			0,//S sementic types
 			background_cuda,
 			_resolution.x(), _resolution.y(),
 			currSet->render_indices,
@@ -1027,6 +1028,7 @@ void sibr::HierarchyView::onRenderIBR(sibr::IRenderTarget& dst, const sibr::Came
 			kids_ptr,
 			(float*)currMem->pos_cuda,
 			(float*)currMem->shs_cuda,
+			nullptr, // semantics
 			nullptr,
 			(float*)currMem->alpha_cuda,
 			(float*)currMem->scale_cuda,
@@ -1040,6 +1042,7 @@ void sibr::HierarchyView::onRenderIBR(sibr::IRenderTarget& dst, const sibr::Came
 			tan_fovy,
 			false,
 			image_cuda,
+			nullptr, // out_semantic
 			nullptr,
 			radii_cuda,
 			rect_cuda,
